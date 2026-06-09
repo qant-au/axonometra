@@ -1,19 +1,36 @@
-export const endpoint = import.meta.env.VITE_SERVICE_URI
-  ? import.meta.env.VITE_SERVICE_URI
-  : 'http://localhost:4133/';
+import {
+  getCategories,
+  getDoorFitting,
+  getFurnitureForCategory,
+  getWindowFitting,
+  resolveCatalogImage
+} from '../res/catalog';
+import type { Category, FurnitureData } from '../stores/FurnitureStore';
 
-export function getCategoriesRequest() {
-  return fetch(endpoint + 'categories');
+// Callers use `await (await fn()).json()`. We preserve that shape so consumers
+// don't change, even though the data is now a synchronous local lookup.
+function asResponse<T>(data: T) {
+  return Promise.resolve({ json: () => Promise.resolve(data) });
 }
 
-export function getCategoryInfo(categoryId: string) {
-  return fetch(endpoint + 'category/' + categoryId);
+export function getCategoriesRequest(): Promise<{
+  json: () => Promise<Category[]>;
+}> {
+  return asResponse(getCategories());
 }
 
-export async function getWindow() {
-  return await (await fetch(endpoint + 'wall/window')).json();
+export function getCategoryInfo(
+  categoryId: string
+): Promise<{ json: () => Promise<FurnitureData[]> }> {
+  return asResponse(getFurnitureForCategory(categoryId));
 }
 
-export async function getDoor() {
-  return await (await fetch(endpoint + 'wall/door')).json();
+export async function getWindow(): Promise<FurnitureData[]> {
+  return [getWindowFitting()];
 }
+
+export async function getDoor(): Promise<FurnitureData[]> {
+  return [getDoorFitting()];
+}
+
+export { resolveCatalogImage };

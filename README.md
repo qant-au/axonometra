@@ -13,7 +13,9 @@ Built for healthcare facility layouts, small-building design (sheds, bunkers, AD
 
 ## Status
 
-Pre-release. This repository is currently undergoing a rename, build-tooling migration (CRA → Vite), and modernization pass under the QANT umbrella. Expect breaking changes until v0.1.0 is tagged.
+v0.2.0 in flight — Stage 4 (lint, strict TS, unit tests, CI) is complete; Stage 5 (Pixi 8, Mantine 7, Zustand 5, full strictNullChecks) is in progress. Expect breaking changes until v1.0.0.
+
+Furniture, doors, and windows ship from a small built-in catalog under `src/res/catalog/`. Extend it by editing the JSON manifests and dropping SVGs into `src/res/catalog/images/`. The upstream `arcada-backend` Express server is **not** required.
 
 ## Relationship to Arcada
 
@@ -35,16 +37,17 @@ If you're looking for the original Arcada — including its server (`arcada-back
 - **Floor-plan engine**: custom-built on [Pixi.js](https://pixijs.com)
 - **State**: [Zustand](https://github.com/pmndrs/zustand)
 - **UI**: [Mantine](https://mantine.dev) + Tabler Icons
-- **Build**: Create React App _(migrating to Vite in v0.1.0)_
+- **Build**: Vite + Vitest
+- **End-to-end**: Playwright
 
 ## Quick start
 
 ```bash
 npm install
-npm start
+npm run dev
 ```
 
-> **Note:** quickstart commands will change to `npm run dev` once the Vite migration lands (tracked in `TODO.md`).
+Run `bash restart.sh NO_WATCH=1` for a containerised local preview, `npm run test` for unit tests, `npm run test:e2e` for the Playwright smoke spec.
 
 ## License
 

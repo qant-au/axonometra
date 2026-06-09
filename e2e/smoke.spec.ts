@@ -22,15 +22,8 @@ test('axonometra loads, renders the welcome modal, and mounts a canvas', async (
 
   await expect(page.locator('canvas').first()).toBeVisible({ timeout: 5000 });
 
-  // The upstream arcada-backend (Express) is not part of this fork; calls
-  // to the default http://localhost:4133/ endpoint surface as
-  // ERR_CONNECTION_REFUSED until a real backend is wired up. Allow those;
-  // fail on anything else.
-  const unexpected = consoleErrors.filter(
-    (msg) => !/ERR_CONNECTION_REFUSED|Failed to load resource/.test(msg)
-  );
   expect(
-    unexpected,
-    `unexpected console errors: ${unexpected.join('\n')}`
+    consoleErrors,
+    `unexpected console errors: ${consoleErrors.join('\n')}`
   ).toEqual([]);
 });

@@ -1,0 +1,29 @@
+[
+  {
+    "_id": "chair",
+    "name": "Chair",
+    "width": 0.5,
+    "height": 0.5,
+    "imagePath": "chair",
+    "category": "basic",
+    "zIndex": 1
+  },
+  {
+    "_id": "table",
+    "name": "Table",
+    "width": 1.5,
+    "height": 0.9,
+    "imagePath": "table",
+    "category": "basic",
+    "zIndex": 1
+  },
+  {
+    "_id": "bed",
+    "name": "Bed",
+    "width": 2.0,
+    "height": 1.5,
+    "imagePath": "bed",
+    "category": "basic",
+    "zIndex": 1
+  }
+]

@@ -1,5 +1,5 @@
 import { Card, Center, Image, Text } from '@mantine/core';
-import { endpoint } from '../../../api/api-client';
+import { resolveCatalogImage } from '../../../api/api-client';
 import { AddFurnitureAction } from '../../../editor/editor/actions/AddFurnitureAction';
 import { FurnitureData } from '../../../stores/FurnitureStore';
 
@@ -19,7 +19,7 @@ export function FurnitureItem(item: IFurnitureData) {
       <Card.Section style={{ height: 120, padding: 5 }}>
         <Center>
           <Image
-            src={`${endpoint}2d/${data.imagePath}`}
+            src={resolveCatalogImage(data.imagePath)}
             fit="contain"
             height={115}
             alt={data.name}

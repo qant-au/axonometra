@@ -1,5 +1,5 @@
 import { Graphics, InteractionEvent, Sprite, Texture } from 'pixi.js';
-import { endpoint } from '../../../api/api-client';
+import { resolveCatalogImage } from '../../../api/api-client';
 import { FurnitureData } from '../../../stores/FurnitureStore';
 import { useStore } from '../../../stores/EditorStore';
 import { DeleteFurnitureAction } from '../actions/DeleteFurnitureAction';
@@ -26,7 +26,7 @@ export class Furniture extends Sprite {
     attachedToRight?: number,
     orientation = 0
   ) {
-    const texture = Texture.from(`${endpoint}2d/${data.imagePath}`);
+    const texture = Texture.from(resolveCatalogImage(data.imagePath));
     super(texture);
     this.resourcePath = data.imagePath;
     this.id = id;

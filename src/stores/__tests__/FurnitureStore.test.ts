@@ -18,8 +18,7 @@ const getCategoryInfo = vi.fn(async () => ({
 
 vi.mock('../../api/api-client', () => ({
   getCategoriesRequest,
-  getCategoryInfo,
-  endpoint: 'http://localhost:4133/'
+  getCategoryInfo
 }));
 
 const { useFurnitureStore } = await import('../FurnitureStore');

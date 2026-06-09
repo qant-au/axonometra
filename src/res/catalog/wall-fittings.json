@@ -1,0 +1,20 @@
+{
+  "window": {
+    "_id": "window",
+    "name": "Window",
+    "width": 1.0,
+    "height": 0.2,
+    "imagePath": "window",
+    "category": "wall",
+    "zIndex": 2
+  },
+  "door": {
+    "_id": "door",
+    "name": "Door",
+    "width": 0.8,
+    "height": 0.8,
+    "imagePath": "door",
+    "category": "wall",
+    "zIndex": 2
+  }
+}
