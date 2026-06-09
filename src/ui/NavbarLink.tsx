@@ -1,5 +1,5 @@
 import { Icon as TablerIcon } from 'tabler-icons-react';
-import { useRef, useState } from 'react';
+
 import { createStyles, Tooltip, UnstyledButton } from '@mantine/core';
 
 const useStyles = createStyles((theme) => ({

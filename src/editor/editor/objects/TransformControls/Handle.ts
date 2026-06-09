@@ -33,7 +33,7 @@ export class Handle extends Graphics {
   private mouseStartPoint: Point;
   private targetStartPoint: Point;
   private mouseEndPoint: Point;
-  private startRotaton: number;
+  private startRotaton!: number;
   private startScale: Point;
   private targetStartCenterPoint: Point;
   localCoords: { x: number; y: number };
@@ -110,7 +110,6 @@ export class Handle extends Graphics {
       this.targetStartPoint.x + this.target.width / 2;
     this.targetStartCenterPoint.y =
       this.targetStartPoint.y + this.target.height / 2;
-    const localCoords = ev.data.getLocalPosition(this.target);
     this.startRotaton = this.target.rotation;
     this.startScale.x = this.target.scale.x;
     this.startScale.y = this.target.scale.y;
@@ -147,7 +146,6 @@ export class Handle extends Graphics {
     // raport > 1 -> se mareste obiectul
     // raport < 1 -> se micsoreaza obiectul
     const sizeFactor = endDistance / startDistance;
-    const startCenterAngle = this.target.centerAngle;
     switch (this.type) {
       case HandleType.Rotate: {
         const relativeStart = {

@@ -2,11 +2,10 @@ import { Graphics, InteractionEvent } from 'pixi.js';
 import { euclideanDistance } from '../../../helpers/EuclideanDistance';
 import { Point } from '../../../helpers/Point';
 import { viewportX, viewportY } from '../../../helpers/ViewportCoordinates';
-import { Tool, WALL_THICKNESS } from '../constants';
+
 import { Label } from '../objects/TransformControls/Label';
 
 export class Preview {
-  private static instance: Preview;
   public preview: Graphics;
   public startPoint: Point;
   private sizeLabel: Label;

@@ -1,13 +1,6 @@
-import {
-  Container,
-  InteractionEvent,
-  Sprite,
-  Text,
-  TextStyle,
-  Texture
-} from 'pixi.js';
+import { Container, Sprite, Text, TextStyle, Texture } from 'pixi.js';
 import { Point } from '../../../../helpers/Point';
-import { METER, WALL_THICKNESS } from '../../constants';
+import { METER } from '../../constants';
 
 export class Label extends Container {
   text: Text;
@@ -35,7 +28,7 @@ export class Label extends Container {
     this.toggleLabel({});
   }
 
-  private toggleLabel(ev: any) {}
+  private toggleLabel(_ev: unknown) {}
   public update(sizeInPixels: number) {
     this.text.text = this.toMeter(sizeInPixels);
     this.textBkg.width = this.text.width;

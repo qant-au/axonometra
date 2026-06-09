@@ -1,5 +1,5 @@
-import { Graphics, InteractionEvent, Point } from 'pixi.js';
-import { INTERIOR_WALL_THICKNESS, Tool, WALL_THICKNESS } from '../../constants';
+import { Graphics, InteractionEvent } from 'pixi.js';
+import { INTERIOR_WALL_THICKNESS, Tool } from '../../constants';
 import { useStore } from '../../../../stores/EditorStore';
 import { AddWallManager } from '../../actions/AddWallManager';
 import { DeleteWallNodeAction } from '../../actions/DeleteWallNodeAction';
@@ -8,7 +8,7 @@ import { FloorPlan } from '../FloorPlan';
 import { viewportX, viewportY } from '../../../../helpers/ViewportCoordinates';
 import { isMobile } from 'react-device-detect';
 export class WallNode extends Graphics {
-  private dragging: boolean;
+  private dragging!: boolean;
   private id: number;
 
   constructor(x: number, y: number, nodeId: number) {
@@ -70,7 +70,7 @@ export class WallNode extends Graphics {
     FloorPlan.Instance.redrawWalls();
   }
 
-  public setPosition(x, y) {
+  public setPosition(x: number, y: number) {
     this.x = viewportX(x);
     this.y = viewportY(y);
     FloorPlan.Instance.redrawWalls();

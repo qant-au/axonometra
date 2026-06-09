@@ -19,7 +19,7 @@ const useStyles = createStyles((theme) => ({
 export function FurnitureAddPanel() {
   const { classes } = useStyles();
   const [category, setCategory] = useState('');
-  const [availableCategories, setAvailableCategories] = useState([]);
+  const [_availableCategories, _setAvailableCategories] = useState([]);
   const { categories, currentFurnitureData, getCurrentFurnitureData } =
     useFurnitureStore();
   const [cards, setCards] = useState([]);

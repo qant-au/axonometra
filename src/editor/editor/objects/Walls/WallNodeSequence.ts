@@ -123,10 +123,10 @@ export class WallNodeSequence extends Container {
     return this.wallNodes.get(nodeId);
   }
 
-  public addWall(leftNodeId: number, rightNodeId: number) {
+  public addWall(leftNodeId: number, rightNodeId: number): Wall | undefined {
     //
     if (leftNodeId == rightNodeId) {
-      return;
+      return undefined;
     }
     if (leftNodeId > rightNodeId) {
       const aux = leftNodeId;
@@ -138,7 +138,7 @@ export class WallNodeSequence extends Container {
       this.wallNodeLinks.has(leftNodeId) &&
       this.wallNodeLinks.get(leftNodeId)?.includes(rightNodeId)
     ) {
-      return;
+      return undefined;
     }
     this.wallNodeLinks.get(leftNodeId).push(rightNodeId);
     const leftNode = this.wallNodes.get(leftNodeId);

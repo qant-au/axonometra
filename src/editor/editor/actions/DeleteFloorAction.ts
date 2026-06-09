@@ -1,5 +1,5 @@
 import { FloorPlan } from '../objects/FloorPlan';
-import { Wall } from '../objects/Walls/Wall';
+
 import { Action } from './Action';
 
 export class DeleteFloorAction implements Action {

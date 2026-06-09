@@ -1,9 +1,7 @@
-import { Center, Grid, Image, Modal } from '@mantine/core';
-import { isMobile } from 'react-device-detect';
 import { EditorRoot } from '../../editor/EditorRoot';
 import { WelcomeModal } from '../WelcomeModal';
 import { ToolNavbar } from './ToolNavbar';
-import AxonometraLogo from '../../res/logo.png';
+import _AxonometraLogo from '../../res/logo.png';
 
 export function PageLayout() {
   // if (isMobile) {

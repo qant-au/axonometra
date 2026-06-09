@@ -2,7 +2,7 @@ import { Graphics, InteractionEvent } from 'pixi.js';
 import { getDoor, getWindow } from '../../../../api/api-client';
 import { euclideanDistance } from '../../../../helpers/EuclideanDistance';
 import { Point } from '../../../../helpers/Point';
-import { getCorrespondingY } from '../../../../helpers/Slope';
+
 import { viewportX, viewportY } from '../../../../helpers/ViewportCoordinates';
 
 import { useStore } from '../../../../stores/EditorStore';
@@ -16,13 +16,13 @@ import { WallNode } from './WallNode';
 export class Wall extends Graphics {
   leftNode: WallNode;
   rightNode: WallNode;
-  length: number;
+  length!: number;
   label: Label;
 
-  x1: number;
-  x2: number;
-  y1: number;
-  y2: number;
+  x1!: number;
+  x2!: number;
+  y1!: number;
+  y2!: number;
   thickness: number;
   isExteriorWall: boolean;
 
@@ -160,7 +160,7 @@ export class Wall extends Graphics {
     );
   }
 
-  private onMouseUp(ev: InteractionEvent) {
+  private onMouseUp(_ev: InteractionEvent) {
     this.dragging = false;
     return;
   }

@@ -21,13 +21,13 @@ import { createElement } from 'react';
 import { DeviceFloppy } from 'tabler-icons-react';
 
 export class Main extends Viewport {
-  private floorPlan: FloorPlan;
+  private floorPlan!: FloorPlan;
   public static viewportPluginManager: PluginManager;
   public static app: Application;
-  transformLayer: TransformLayer;
-  addWallManager: AddWallManager;
-  bkgPattern: TilingSprite;
-  public pointer: Pointer;
+  transformLayer!: TransformLayer;
+  addWallManager!: AddWallManager;
+  bkgPattern!: TilingSprite;
+  public pointer!: Pointer;
   public preview: Preview;
   constructor(options: IViewportOptions) {
     super(options);
@@ -75,7 +75,7 @@ export class Main extends Viewport {
     this.preview.updatePreview(ev);
     this.pointer.update(ev);
   }
-  private updateEnd(ev: InteractionEvent) {
+  private updateEnd(_ev: InteractionEvent) {
     switch (useStore.getState().activeTool) {
       case Tool.Measure:
         this.preview.set(undefined);

@@ -4,11 +4,12 @@ import { Point } from '../../../helpers/Point';
 import { getCorrespondingY } from '../../../helpers/Slope';
 import { FurnitureData } from '../../../stores/FurnitureStore';
 import { main } from '../../EditorRoot';
-import { METER, WALL_THICKNESS } from '../constants';
+import { METER } from '../constants';
 import { FloorSerializable } from '../persistence/FloorSerializable';
-import { FloorPlan } from './FloorPlan';
+
 import { Furniture } from './Furniture';
 import { Wall } from './Walls/Wall';
+import { WallNode } from './Walls/WallNode';
 import { WallNodeSequence } from './Walls/WallNodeSequence';
 
 export class Floor extends Container {
@@ -215,7 +216,7 @@ export class Floor extends Container {
     return this.wallNodeSequence.addNode(x, y, id);
   }
 
-  public addNodeToWall(wall: Wall, coords: Point) {
+  public addNodeToWall(wall: Wall, coords: Point): WallNode | undefined {
     const leftNode = wall.leftNode.getId();
     const rightNode = wall.rightNode.getId();
     // ecuatia dreptei, obtine y echivalent lui x
@@ -234,7 +235,7 @@ export class Floor extends Container {
       ) <
       0.2 * METER
     ) {
-      return;
+      return undefined;
     }
     if (
       Math.abs(
@@ -247,7 +248,7 @@ export class Floor extends Container {
       ) <
       0.2 * METER
     ) {
-      return;
+      return undefined;
     }
 
     // delete wall between left and right node

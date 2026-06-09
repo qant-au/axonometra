@@ -1,7 +1,7 @@
 import { main } from '../editor/EditorRoot';
 
 import { useStore } from '../stores/EditorStore';
-export function viewportX(x: number, customSnap?) {
+export function viewportX(x: number, customSnap?: boolean) {
   let newX = x / main.scale.x + main.corner.x;
   const shouldSnap = customSnap ?? useStore.getState().snap;
   if (shouldSnap) {
@@ -10,7 +10,7 @@ export function viewportX(x: number, customSnap?) {
   return Math.trunc(newX);
 }
 
-export function viewportY(y: number, customSnap?) {
+export function viewportY(y: number, customSnap?: boolean) {
   let newY = y / main.scale.y + main.corner.y;
   const shouldSnap = customSnap ?? useStore.getState().snap;
   if (shouldSnap) {
@@ -19,7 +19,7 @@ export function viewportY(y: number, customSnap?) {
   return Math.trunc(newY);
 }
 
-export function snap(val) {
+export function snap(val: number) {
   const rest = val % 10;
   const cat = val - rest;
   if (rest < 5) {

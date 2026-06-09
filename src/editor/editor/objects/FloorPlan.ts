@@ -16,7 +16,7 @@ export class FloorPlan extends Container {
   private visibleLabels: boolean = true;
   private serializer: Serializer;
   public furnitureId = 0; // TODO uuid?
-  public windowFurniture: FurnitureData;
+  public windowFurniture!: FurnitureData;
   public actions: Action[];
 
   public currentFloor = 0;

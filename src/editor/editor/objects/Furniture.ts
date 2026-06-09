@@ -1,4 +1,4 @@
-import { Graphics, InteractionEvent, Point, Sprite, Texture } from 'pixi.js';
+import { Graphics, InteractionEvent, Sprite, Texture } from 'pixi.js';
 import { endpoint } from '../../../api/api-client';
 import { FurnitureData } from '../../../stores/FurnitureStore';
 import { useStore } from '../../../stores/EditorStore';
@@ -12,8 +12,8 @@ export class Furniture extends Sprite {
   private id: number; // fiecare mobila isi stie index-ul in plan. uuids?
   // private dragging: boolean;
   public isAttached: boolean;
-  public attachedToLeft: number;
-  public attachedToRight: number;
+  public attachedToLeft!: number;
+  public attachedToRight!: number;
   public xLocked: boolean;
   public resourcePath: string;
   private orientation: number;
@@ -103,7 +103,7 @@ export class Furniture extends Sprite {
 
     return;
   }
-  private setOrientation(number) {
+  private setOrientation(number: number) {
     if (number > 0) {
       this.anchor.x = 1;
       this.scale.x = -1 * this.scale.x;

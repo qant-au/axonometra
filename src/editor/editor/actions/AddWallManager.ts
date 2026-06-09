@@ -1,10 +1,10 @@
-import { Graphics, InteractionEvent } from 'pixi.js';
+import { InteractionEvent } from 'pixi.js';
 import { euclideanDistance } from '../../../helpers/EuclideanDistance';
 import { Point } from '../../../helpers/Point';
-import { viewportX, viewportY } from '../../../helpers/ViewportCoordinates';
-import { INTERIOR_WALL_THICKNESS, METER, WALL_THICKNESS } from '../constants';
+
+import { METER } from '../constants';
 import { FloorPlan } from '../objects/FloorPlan';
-import { Label } from '../objects/TransformControls/Label';
+
 import { TransformLayer } from '../objects/TransformControls/TransformLayer';
 import { WallNode } from '../objects/Walls/WallNode';
 import { AddWallAction } from './AddWallAction';
@@ -27,7 +27,7 @@ export class AddWallManager {
   public checkStep(coords: Point) {
     if (this.previousNode == undefined) {
       for (const [
-        id,
+        _id,
         node
       ] of FloorPlan.Instance.getWallNodeSeq().getWallNodes()) {
         if (

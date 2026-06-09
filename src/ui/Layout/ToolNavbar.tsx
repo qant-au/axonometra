@@ -10,7 +10,6 @@ import {
   Drawer
 } from '@mantine/core';
 import {
-  Icon as TablerIcon,
   Armchair,
   BorderLeft,
   ArrowDownSquare,
@@ -25,13 +24,9 @@ import {
   Window,
   Door,
   Plus,
-  Help,
   SquareX,
   Dimensions,
   Printer,
-  Shape,
-  Shape3,
-  BrandWindows,
   Table,
   TableOff,
   Tag
@@ -89,12 +84,12 @@ const modes = [
   { icon: Eraser, label: 'Erase', tool: Tool.Remove }
 ];
 
-function AddMenu({ setter }) {
+function AddMenu({ setter }: { setter: (tool: number) => void }) {
   const { classes } = useStyles();
   const { setTool } = useStore();
   const [drawerOpened, setDrawerOpened] = useState(false);
 
-  const [modalOpened, setModalOpened] = useState(false);
+  const [_modalOpened, _setModalOpened] = useState(false);
   const { getCategories } = useFurnitureStore();
 
   const addButton = (
@@ -197,7 +192,7 @@ export function ToolNavbar() {
   const { setSnap, snap } = useStore();
 
   const fileRef = useRef<HTMLInputElement>();
-  const { classes, cx } = useStyles();
+  const { classes } = useStyles();
 
   const toolModes = modes.map((link, index) => (
     <NavbarLink
@@ -219,7 +214,7 @@ export function ToolNavbar() {
     action.execute();
   };
 
-  const setterAction = (val) => {
+  const setterAction = (val: number) => {
     setActive(val);
   };
 

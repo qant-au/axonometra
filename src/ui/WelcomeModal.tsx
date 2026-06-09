@@ -2,11 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import {
   Modal,
   Button,
-  Group,
   useMantineTheme,
-  Center,
   Image,
-  Menu,
   createStyles,
   Stack
 } from '@mantine/core';

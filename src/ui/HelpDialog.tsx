@@ -1,17 +1,13 @@
 import { ReactNode, useState } from 'react';
-import { Dialog, Group, Button, TextInput, Text } from '@mantine/core';
+import { Dialog, Group, Text } from '@mantine/core';
 import { useStore } from '../stores/EditorStore';
 import { NavbarLink } from './NavbarLink';
 import {
   ArrowNarrowRight,
-  ArrowRight,
   Click,
   Edit,
-  Eye,
   GitFork,
-  GitPullRequest,
   Help,
-  Icon,
   LayoutAlignMiddle,
   Multiplier2x,
   Trash,

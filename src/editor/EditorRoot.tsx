@@ -15,8 +15,10 @@ export let main: Main;
 
 export function EditorRoot() {
   const ref = useRef<HTMLDivElement>(null);
-  const state = useStore();
-  const { classes } = useStyles();
+  // Both hooks were called for their side-effect subscriptions in the
+  // upstream code; their return values weren't read. Preserve the calls.
+  useStore();
+  useStyles();
   useEffect(() => {
     // On first render create our application
     const app = new Application({
