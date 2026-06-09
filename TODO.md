@@ -29,19 +29,33 @@ prefix: axo
       Done 2026-06-09 — closes F-09 (smoke portion).
 - [x] Add Dockerfile (multi-stage build → nginx) @priority(medium) @effort(1h) @id(axo-006)
       Shipped in Stage 2 as a transitional CRA-flavoured Dockerfile; Stage 3 updated build/ → dist/ for the Vite output.
-- [ ] Tag v0.1.0 and push @priority(high) @effort(0.25h) @id(axo-007)
+- [x] Tag v0.1.0 and push @priority(high) @effort(0.25h) @id(axo-007)
+      Done 2026-06-09 — tag pushed to GitHub.
 
-## Stage 4 — Modernization (scope driven by Stage 2)
+## Stage 4 — Quality foundation (lint, strict TS, tests, CI)
 
-- [ ] Pixi.js v6 → v8 migration @priority(medium) @effort(8h) @id(axo-008)
-      Large diff touching the floor-plan engine; needs Stage 2 risk assessment first. Captures F-04.
-- [ ] Enable TypeScript strict mode @priority(medium) @effort(2h) @id(axo-009)
-      TS bumped to 5.x in Stage 3 (axo-004); turn on `strict: true` and walk the resulting errors. Captures F-08 remainder.
-- [ ] Dependency upgrades (Mantine 4 → 7, Zustand 3 → 5, Vite 6 + Vitest 2, etc.) @priority(medium) @effort(6h) @id(axo-010)
-      Vite/Vitest bump deferred from Stage 3 — broke `tsc -b` typecheck; needs @vitejs/plugin-react bump in same change.
-- [ ] ESLint flat config + Prettier + .editorconfig @priority(medium) @effort(1h) @id(axo-011)
-      Captures F-10.
-- [ ] GitHub Actions: build + test + e2e on PR @priority(medium) @effort(2h) @id(axo-012)
-      Captures F-11.
+- [x] ESLint flat config + Prettier + .editorconfig @priority(medium) @effort(1h) @id(axo-011)
+      Done 2026-06-09 — closes F-10. Mirrors reticulyne setup.
+- [x] Enable TypeScript strict mode @priority(medium) @effort(2h) @id(axo-009)
+      Done 2026-06-09 — strict: true plus noImplicitAny/Returns/Override + noUnusedLocals/Parameters. 129 errors → 0 across 29 source files. strictNullChecks deferred (axo-015 in Stage 5).
+- [x] Vite 6 + Vitest 2 + plugin-react 5 bump @priority(medium) @effort(2h) @id(axo-010)
+      Done 2026-06-09 — deferred Stage 3 audit-fix. Mantine 4→7 and Zustand 3→5 are now Stage 5 (axo-016).
+- [x] Vitest unit tests — helpers + stores @priority(medium) @effort(3h) @id(axo-019)
+      Done 2026-06-09 — 23 tests (14 helpers, 9 stores). Closes F-09 expansion portion.
+- [x] GitHub Actions CI (lint + format + tsc + test + build) @priority(medium) @effort(2h) @id(axo-012)
+      Done 2026-06-09 — closes F-11. Playwright-in-CI deferred (axo-017).
+- [ ] Tag v0.2.0 and push @priority(high) @effort(0.25h) @id(axo-013)
+
+## Stage 5 — Breaking library bumps + responsiveness (post-v0.2.0)
+
+- [ ] Pixi.js v6 → v8 migration (ladder via v7) @priority(medium) @effort(8h) @id(axo-008)
+      Captures F-04. Stage 4 test net + CI cover regressions.
+- [ ] Enable strictNullChecks @priority(medium) @effort(4h) @id(axo-015)
+      ~56 sites where Pixi parent chains are passed around without null guards. Real refactor, not mechanical.
+- [ ] Mantine 4 → 7 + Zustand 3 → 5 @priority(medium) @effort(4h) @id(axo-016)
+      Breaking UI/store API changes. UI surface is small (~7 components).
 - [ ] WelcomeModal desktop-only gate review @priority(low) @effort(1h) @id(axo-014)
-      Captures F-21 — audit pointer/touch handling in Pixi layer.
+      Captures F-21.
+- [ ] Add Playwright smoke step to GitHub Actions @priority(low) @effort(1h) @id(axo-017)
+      Containerised, once the rest of the CI workflow has had a green run.
+- [ ] Tag v0.3.0 @priority(medium) @effort(0.25h) @id(axo-018)
