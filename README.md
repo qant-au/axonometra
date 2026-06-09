@@ -2,7 +2,7 @@
 
 An open-source 2D floor planner for the browser. Walls, doors, windows, fixtures, furniture, multiple floors, accurate-to-scale measurement — with axonometric and 3D walk-through views on the roadmap.
 
-Built for healthcare facility layouts, small-building design (sheds, bunkers, ADUs), and any place a fast, embeddable plan editor is wanted.
+Built for healthcare facility layouts, small-building design (sheds, bunkers, ADUs), and any place a fast, embeddable plan editor is wanted (see [EMBEDDING.md](./EMBEDDING.md) for the iframe + postMessage contract).
 
 🌐 **Project site:** https://axonometra.com
 
@@ -24,7 +24,7 @@ Axonometra is a fork of [mehanix/arcada](https://github.com/mehanix/arcada), ori
 **Why the rename?**
 
 - To avoid confusion with the upstream `arcada` brand, which retains its own identity, demo, and direction.
-- To signal a different long-term trajectory: Axonometra is maintained under the QANT umbrella as a browser-embeddable plan editor with a roadmap (axonometric / 3D walk-through views, healthcare and small-building presets) that diverges from upstream.
+- To signal a different long-term trajectory: Axonometra is maintained under the QANT umbrella as a browser-embeddable plan editor (see [EMBEDDING.md](./EMBEDDING.md)) with a roadmap (axonometric / 3D walk-through views, healthcare and small-building presets) that diverges from upstream.
 - To match the public brand at [axonometra.com](https://axonometra.com).
 
 We do **not** plan to merge changes back upstream, nor to pull from upstream. **License: MIT** (relicensed from upstream Apache-2.0; see `LICENSE` for upstream attribution). Attribution to the original author is maintained in `LICENSE` and in this README.

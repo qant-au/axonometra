@@ -3,6 +3,7 @@ import './App.css';
 import { PageLayout } from './ui/Layout/PageLayout';
 import { useFurnitureStore } from './stores/FurnitureStore';
 import { NotificationsProvider } from '@mantine/notifications';
+import { EmbedBridge } from './embed/EmbedBridge';
 
 function App() {
   const { getCategories } = useFurnitureStore();
@@ -14,6 +15,7 @@ function App() {
     <>
       <NotificationsProvider>
         <PageLayout />
+        <EmbedBridge />
       </NotificationsProvider>
     </>
   );
