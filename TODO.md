@@ -61,3 +61,15 @@ prefix: axo
 - [ ] Add Playwright smoke step to GitHub Actions @priority(low) @effort(1h) @id(axo-017)
       Containerised, once the rest of the CI workflow has had a green run.
 - [ ] Tag v0.3.0 @priority(medium) @effort(0.25h) @id(axo-018)
+
+## Stage 6 — Architecture refactor (post-v0.3.0)
+
+- [ ] Extract FloorPlan model state into a Zustand store @priority(medium) @effort(8h) @id(axo-020)
+      FloorPlan is currently a Pixi Container + model store + persistence + singleton — four
+      responsibilities in one class, and the root cause of the singleton-lifecycle work in code-review-2026-06-09 finding #5. Stage 6 splits these:
+        - new useFloorPlanStore (floors, currentFloor, furnitureId, version) — Zustand
+        - FloorPlan stays a Pixi Container, subscribes to the store
+        - Serializer reads/writes the store directly, drops the Floor[] traversal
+        - Removes the static .Instance + dispose() pair entirely
+      Prereq: axo-008 (Pixi 8) so we're not refactoring against a deprecated API surface.
+      Touches Floor.ts, FloorPlan.ts, Serializer.ts, every Action. See FLOORPLAN-REFACTOR.md.
