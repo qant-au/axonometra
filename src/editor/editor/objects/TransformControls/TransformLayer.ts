@@ -17,7 +17,7 @@ export class TransformLayer extends Container {
   private border: Graphics;
   private borderOffset: number;
   public static dragging: boolean;
-  private static instance: TransformLayer;
+  private static instance: TransformLayer | undefined;
 
   // private dragging:boolean;
   // private dragStartCoord:Point;
@@ -183,6 +183,14 @@ export class TransformLayer extends Container {
     this.target = null;
     this.visible = false;
     this.interactive = false;
+  }
+
+  public dispose() {
+    this.deselect();
+    this.points = [];
+    this.handles = [];
+    this.labels = [];
+    TransformLayer.instance = undefined;
   }
 
   /**

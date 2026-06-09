@@ -1,12 +1,12 @@
 import { describe, expect, it, vi } from 'vitest';
 
-// The viewportX / viewportY functions read from the EditorRoot's `main`
-// singleton and the EditorStore, both of which require a live Pixi runtime
+// The viewportX / viewportY functions read from the EditorRoot's main
+// holder and the EditorStore, both of which require a live Pixi runtime
 // and Zustand subscriber. We only smoke-test `snap` here (a pure function);
 // viewportX / viewportY get covered by the Playwright e2e suite.
 
 vi.mock('../../editor/EditorRoot', () => ({
-  main: { scale: { x: 1, y: 1 }, corner: { x: 0, y: 0 } }
+  getMain: () => ({ scale: { x: 1, y: 1 }, corner: { x: 0, y: 0 } })
 }));
 vi.mock('../../stores/EditorStore', () => ({
   useStore: { getState: () => ({ snap: false }) }

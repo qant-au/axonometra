@@ -12,7 +12,7 @@ import { Preview } from './MeasureToolManager';
 
 // tracks current action data
 export class AddWallManager {
-  private static instance: AddWallManager;
+  private static instance: AddWallManager | undefined;
 
   public previousNode: WallNode;
 
@@ -92,5 +92,10 @@ export class AddWallManager {
   public resetTools() {
     TransformLayer.Instance.deselect();
     this.unset();
+  }
+
+  public dispose() {
+    this.unset();
+    AddWallManager.instance = undefined;
   }
 }

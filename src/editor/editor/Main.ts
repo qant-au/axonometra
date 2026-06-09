@@ -1,6 +1,5 @@
-import { IViewportOptions, PluginManager, Viewport } from 'pixi-viewport';
+import { IViewportOptions, Viewport } from 'pixi-viewport';
 import {
-  Application,
   InteractionEvent,
   isMobile,
   Loader,
@@ -16,14 +15,9 @@ import { viewportX, viewportY } from '../../helpers/ViewportCoordinates';
 import { Tool } from './constants';
 import { Pointer } from './Pointer';
 import { Preview } from './actions/MeasureToolManager';
-import { showNotification } from '@mantine/notifications';
-import { createElement } from 'react';
-import { DeviceFloppy } from 'tabler-icons-react';
 
 export class Main extends Viewport {
   private floorPlan!: FloorPlan;
-  public static viewportPluginManager: PluginManager;
-  public static app: Application;
   transformLayer!: TransformLayer;
   addWallManager!: AddWallManager;
   bkgPattern!: TilingSprite;
@@ -42,7 +36,6 @@ export class Main extends Viewport {
   }
 
   private setup() {
-    Main.viewportPluginManager = this.plugins;
     this.drag({ mouseButtons: 'right' })
       .clamp({ direction: 'all' })
       .pinch()
@@ -120,21 +113,3 @@ export class Main extends Viewport {
     }
   }
 }
-
-const save = () => {
-  const data = FloorPlan.Instance.save();
-  localStorage.setItem('autosave', data);
-};
-// setInterval(autosave, 60000)
-
-document.onkeydown = (e) => {
-  if (e.code == 'KeyS' && e.ctrlKey) {
-    e.preventDefault();
-    save();
-    showNotification({
-      message: 'Saved to Local Storage!',
-      color: 'green',
-      icon: createElement(DeviceFloppy)
-    });
-  }
-};

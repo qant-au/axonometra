@@ -2,25 +2,30 @@ import { useRef, useEffect } from 'react';
 import { Application } from 'pixi.js';
 import { Main } from './editor/Main';
 import { IViewportOptions } from 'pixi-viewport';
-import { useStore } from '../stores/EditorStore';
-import { createStyles } from '@mantine/core';
 import { METER } from './editor/constants';
+import { FloorPlan } from './editor/objects/FloorPlan';
+import { TransformLayer } from './editor/objects/TransformControls/TransformLayer';
+import { AddWallManager } from './editor/actions/AddWallManager';
+import { showNotification } from '@mantine/notifications';
+import { createElement } from 'react';
+import { DeviceFloppy } from 'tabler-icons-react';
 
-const useStyles = createStyles(() => ({
-  inactive: {
-    display: 'none'
+// Holder for the active Main instance. Non-React Pixi consumers
+// (ViewportCoordinates, Floor) read mainHolder.current via getMain()
+// after mount; the holder is cleared on unmount so a remount (HMR,
+// StrictMode, embed-mode toggle) doesn't reuse a destroyed Viewport.
+export const mainHolder: { current: Main | null } = { current: null };
+
+export function getMain(): Main {
+  if (!mainHolder.current) {
+    throw new Error('EditorRoot is not mounted');
   }
-}));
-export let main: Main;
+  return mainHolder.current;
+}
 
 export function EditorRoot() {
   const ref = useRef<HTMLDivElement>(null);
-  // Both hooks were called for their side-effect subscriptions in the
-  // upstream code; their return values weren't read. Preserve the calls.
-  useStore();
-  useStyles();
   useEffect(() => {
-    // On first render create our application
     const app = new Application({
       view: document.getElementById('pixi-canvas') as HTMLCanvasElement,
       resolution: window.devicePixelRatio || 1,
@@ -30,9 +35,10 @@ export function EditorRoot() {
       resizeTo: window
     });
 
-    app.view.oncontextmenu = (e) => {
+    const handleContextMenu = (e: Event) => {
       e.preventDefault();
     };
+    app.view.addEventListener('contextmenu', handleContextMenu);
 
     const viewportSettings: IViewportOptions = {
       screenWidth: app.screen.width,
@@ -41,16 +47,37 @@ export function EditorRoot() {
       worldHeight: 50 * METER,
       interaction: app.renderer.plugins.interaction
     };
-    main = new Main(viewportSettings);
+    const main = new Main(viewportSettings);
+    mainHolder.current = main;
 
-    // Add app to DOM
     ref.current!.appendChild(app.view);
-    // Start the PixiJS app
     app.start();
     app.stage.addChild(main);
 
+    const handleKeydown = (e: KeyboardEvent) => {
+      if (e.code === 'KeyS' && e.ctrlKey) {
+        e.preventDefault();
+        const data = FloorPlan.Instance.save();
+        localStorage.setItem('autosave', data);
+        showNotification({
+          message: 'Saved to Local Storage!',
+          color: 'green',
+          icon: createElement(DeviceFloppy)
+        });
+      }
+    };
+    document.addEventListener('keydown', handleKeydown);
+
     return () => {
-      // On unload completely destroy the application and all of its children
+      document.removeEventListener('keydown', handleKeydown);
+      app.view.removeEventListener('contextmenu', handleContextMenu);
+      // Dispose singletons before app.destroy so their static .instance
+      // refs reset; a remount then builds fresh objects against the
+      // new Application.
+      FloorPlan.Instance.dispose();
+      TransformLayer.Instance.dispose();
+      AddWallManager.Instance.dispose();
+      mainHolder.current = null;
       app.destroy(true, true);
     };
   }, []);

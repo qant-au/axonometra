@@ -3,7 +3,7 @@ import { euclideanDistance } from '../../../helpers/EuclideanDistance';
 import { Point } from '../../../helpers/Point';
 import { getCorrespondingY } from '../../../helpers/Slope';
 import { FurnitureData } from '../../../stores/FurnitureStore';
-import { main } from '../../EditorRoot';
+import { getMain } from '../../EditorRoot';
 import { METER } from '../constants';
 import { FloorSerializable } from '../persistence/FloorSerializable';
 
@@ -136,6 +136,7 @@ export class Floor extends Container {
       attachedTo.addChild(object);
       object.position.set(coords.x, coords.y);
     } else {
+      const main = getMain();
       this.addChild(object);
       object.position.set(main.corner.x + 150, main.corner.y + 150);
     }

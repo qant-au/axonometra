@@ -13,7 +13,7 @@ import { Point } from '../../../helpers/Point';
 import { showNotification } from '@mantine/notifications';
 
 export class FloorPlan extends Container {
-  private static instance: FloorPlan;
+  private static instance: FloorPlan | undefined;
 
   private floors: Floor[];
   private visibleLabels: boolean = true;
@@ -147,6 +147,19 @@ export class FloorPlan extends Container {
     this.floors[oldCurrentFloor].reset();
     this.floors.splice(oldCurrentFloor, 1);
     this.changeFloor(1);
+  }
+
+  // Releases editor-side state and resets the singleton ref. Called
+  // from EditorRoot's cleanup before app.destroy.
+  public dispose() {
+    for (const floor of this.floors) {
+      floor.reset();
+    }
+    this.floors = [];
+    this.actions = [];
+    this.currentFloor = 0;
+    this.furnitureId = 0;
+    FloorPlan.instance = undefined;
   }
 
   // cleans up everything. prepare for new load. TODO Feature multiple floors
