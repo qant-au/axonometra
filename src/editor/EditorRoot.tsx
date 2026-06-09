@@ -6,6 +6,7 @@ import { METER } from './editor/constants';
 import { FloorPlan } from './editor/objects/FloorPlan';
 import { TransformLayer } from './editor/objects/TransformControls/TransformLayer';
 import { AddWallManager } from './editor/actions/AddWallManager';
+import { useStore } from '../stores/EditorStore';
 import { showNotification } from '@mantine/notifications';
 import { createElement } from 'react';
 import { DeviceFloppy } from 'tabler-icons-react';
@@ -54,6 +55,17 @@ export function EditorRoot() {
     app.start();
     app.stage.addChild(main);
 
+    // Dev/test introspection handle. Playwright specs read this to drive
+    // tool selection and assert wall-node state. Gated on DEV so production
+    // bundles don't expose it.
+    if (import.meta.env.DEV) {
+      (window as unknown as { __axo: unknown }).__axo = {
+        getMain,
+        getFloorPlan: () => FloorPlan.Instance,
+        getStore: () => useStore.getState()
+      };
+    }
+
     const handleKeydown = (e: KeyboardEvent) => {
       if (e.code === 'KeyS' && e.ctrlKey) {
         e.preventDefault();
@@ -78,6 +90,9 @@ export function EditorRoot() {
       TransformLayer.Instance.dispose();
       AddWallManager.Instance.dispose();
       mainHolder.current = null;
+      if (import.meta.env.DEV) {
+        delete (window as unknown as { __axo?: unknown }).__axo;
+      }
       app.destroy(true, true);
     };
   }, []);
