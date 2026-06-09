@@ -26,8 +26,10 @@ export function getDoorFitting(): FurnitureData {
   return wallFittings.door;
 }
 
+const SAFE_IMAGE_PATH = /^[A-Za-z0-9._-]+$/;
+
 export function resolveCatalogImage(imagePath: string): string {
-  return (
-    images[`./images/${imagePath}.svg`] ?? images['./images/placeholder.svg']
-  );
+  const placeholder = images['./images/placeholder.svg'];
+  if (!SAFE_IMAGE_PATH.test(imagePath)) return placeholder;
+  return images[`./images/${imagePath}.svg`] ?? placeholder;
 }
