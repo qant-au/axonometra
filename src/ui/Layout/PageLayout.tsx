@@ -3,7 +3,7 @@ import { isMobile } from 'react-device-detect';
 import { EditorRoot } from '../../editor/EditorRoot';
 import { WelcomeModal } from '../WelcomeModal';
 import { ToolNavbar } from './ToolNavbar';
-import ArcadaLogo from '../../res/logo.png'
+import AxonometraLogo from '../../res/logo.png'
 
 
 export function PageLayout() {
@@ -16,9 +16,9 @@ export function PageLayout() {
     //             onClose={() => (false)}
     //         >
     //             <Center>
-    //                 <Image src={ArcadaLogo}/>
+    //                 <Image src={AxonometraLogo}/>
     //             </Center>
-    //             We're sorry, but Arcada is currently only intended for desktops.
+    //             We're sorry, but Axonometra is currently only intended for desktops.
     //         </Modal>
     //     </>
     // }

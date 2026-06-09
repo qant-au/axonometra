@@ -2,13 +2,13 @@ import { useEffect, useRef, useState } from 'react';
 import { Modal, Button, Group, useMantineTheme, Center, Image, Menu, createStyles, Stack } from '@mantine/core';
 import { Database, Plus, RotateClockwise } from 'tabler-icons-react';
 import { LoadAction } from '../editor/editor/actions/LoadAction';
-import ArcadaLogo from '../res/logo.png'
+import AxonometraLogo from '../res/logo.png'
 import { FloorPlan } from '../editor/editor/objects/FloorPlan';
 import { showNotification } from '@mantine/notifications';
 export function WelcomeModal() {
   const [opened, setOpened] = useState(false);
   const fileRef = useRef<HTMLInputElement>();
-  const image = <Image src={ArcadaLogo} />
+  const image = <Image src={AxonometraLogo} />
   const useStyles = createStyles(() => ({
     padded: {
       padding: '4px'
@@ -36,7 +36,7 @@ export function WelcomeModal() {
   }, [])
 
   const notification = {
-    title: "Welcome to Arcada! 🎉",
+    title: "Welcome to Axonometra! 🎉",
     message: "⚒️ Use the tools on the left to create your floor plan. For detailed instructions, press the Help button on the left."
   }
   return (
