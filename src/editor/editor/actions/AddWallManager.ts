@@ -2,7 +2,7 @@ import { InteractionEvent } from 'pixi.js';
 import { euclideanDistance } from '../../../helpers/EuclideanDistance';
 import { Point } from '../../../helpers/Point';
 
-import { METER } from '../constants';
+import { SNAP_THRESHOLD } from '../constants';
 import { FloorPlan } from '../objects/FloorPlan';
 
 import { TransformLayer } from '../objects/TransformControls/TransformLayer';
@@ -31,8 +31,7 @@ export class AddWallManager {
         node
       ] of FloorPlan.Instance.getWallNodeSeq().getWallNodes()) {
         if (
-          euclideanDistance(coords.x, node.x, coords.y, node.y) <
-          0.3 * METER
+          euclideanDistance(coords.x, node.x, coords.y, node.y) < SNAP_THRESHOLD
         ) {
           return false;
         }
@@ -46,8 +45,7 @@ export class AddWallManager {
         this.previousNode.x,
         coords.y,
         this.previousNode.y
-      ) <
-      0.3 * METER
+      ) < SNAP_THRESHOLD
     ) {
       return false;
     }

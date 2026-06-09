@@ -1,5 +1,5 @@
 import { Graphics, InteractionEvent } from 'pixi.js';
-import { INTERIOR_WALL_THICKNESS, Tool } from '../../constants';
+import { INTERIOR_WALL_THICKNESS, NODE_COLOR, Tool } from '../../constants';
 import { useStore } from '../../../../stores/EditorStore';
 import { AddWallManager } from '../../actions/AddWallManager';
 import { DeleteWallNodeAction } from '../../actions/DeleteWallNodeAction';
@@ -38,7 +38,7 @@ export class WallNode extends Graphics {
 
   public setSize(size: number) {
     this.clear();
-    this.beginFill(0x222222);
+    this.beginFill(NODE_COLOR);
     this.drawRect(0, 0, size, size);
     this.pivot.set(size / 2, size / 2);
   }

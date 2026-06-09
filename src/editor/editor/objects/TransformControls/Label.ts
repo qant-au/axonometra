@@ -1,13 +1,18 @@
 import { Container, Sprite, Text, TextStyle, Texture } from 'pixi.js';
 import { Point } from '../../../../helpers/Point';
-import { METER } from '../../constants';
+import {
+  LABEL_COLOR,
+  LABEL_FONT,
+  LABEL_FONT_SIZE,
+  METER
+} from '../../constants';
 
 export class Label extends Container {
   text: Text;
   textStyle: TextStyle = new TextStyle({
-    fontFamily: 'Arial',
-    fontSize: 16,
-    fill: 0x000000,
+    fontFamily: LABEL_FONT,
+    fontSize: LABEL_FONT_SIZE,
+    fill: LABEL_COLOR,
     align: 'center'
   });
   textBkg: Sprite = new Sprite(Texture.WHITE);

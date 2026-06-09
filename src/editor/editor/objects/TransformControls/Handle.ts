@@ -1,6 +1,6 @@
 import { Graphics, InteractionEvent } from 'pixi.js';
 import { isMobile } from 'react-device-detect';
-import { WALL_THICKNESS } from '../../constants';
+import { HANDLE_MOBILE_SCALE, WALL_THICKNESS } from '../../constants';
 import { Point } from '../../../../helpers/Point';
 import { viewportX, viewportY } from '../../../../helpers/ViewportCoordinates';
 import { Furniture } from '../Furniture';
@@ -67,7 +67,7 @@ export class Handle extends Graphics {
     this.beginFill(this.color).lineStyle(1, this.color);
 
     if (isMobile) {
-      this.size = this.size * 2.5;
+      this.size = this.size * HANDLE_MOBILE_SCALE;
     }
     if (this.type == HandleType.Rotate) {
       this.drawCircle(0, 0, this.size / 1.5).endFill();

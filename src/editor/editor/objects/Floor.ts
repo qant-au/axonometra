@@ -4,7 +4,7 @@ import { Point } from '../../../helpers/Point';
 import { getCorrespondingY } from '../../../helpers/Slope';
 import { FurnitureData } from '../../../stores/FurnitureStore';
 import { getMain } from '../../EditorRoot';
-import { METER } from '../constants';
+import { MISCLICK_THRESHOLD } from '../constants';
 import { FloorSerializable } from '../persistence/FloorSerializable';
 
 import { Furniture } from './Furniture';
@@ -239,8 +239,7 @@ export class Floor extends Container {
     if (
       Math.abs(
         euclideanDistance(coords.x, wall.leftNode.x, coords.y, wall.leftNode.y)
-      ) <
-      0.2 * METER
+      ) < MISCLICK_THRESHOLD
     ) {
       return undefined;
     }
@@ -252,8 +251,7 @@ export class Floor extends Container {
           coords.y,
           wall.rightNode.y
         )
-      ) <
-      0.2 * METER
+      ) < MISCLICK_THRESHOLD
     ) {
       return undefined;
     }

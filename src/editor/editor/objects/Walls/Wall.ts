@@ -9,7 +9,12 @@ import { useStore } from '../../../../stores/EditorStore';
 import { AddFurnitureAction } from '../../actions/AddFurnitureAction';
 import { AddNodeAction } from '../../actions/AddNodeAction';
 import { DeleteWallAction } from '../../actions/DeleteWallAction';
-import { INTERIOR_WALL_THICKNESS, Tool, WALL_THICKNESS } from '../../constants';
+import {
+  INTERIOR_WALL_THICKNESS,
+  Tool,
+  WALL_COLOR,
+  WALL_THICKNESS
+} from '../../constants';
 import { Label } from '../TransformControls/Label';
 import { WallNode } from './WallNode';
 
@@ -112,7 +117,7 @@ export class Wall extends Graphics {
   public drawLine() {
     this.clear();
     [this.x1, this.y1, this.x2, this.y2] = this.setLineCoords();
-    this.lineStyle(1, 0x1a1a1a);
+    this.lineStyle(1, WALL_COLOR);
 
     let theta = Math.atan2(this.y2 - this.y1, this.x2 - this.x1); // aflu unghiul sa pot roti
     theta *= 180 / Math.PI; // rads to degs, range (-180, 180]
