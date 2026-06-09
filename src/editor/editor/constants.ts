@@ -34,7 +34,6 @@ export enum ToolMode {
 
 export enum Tool {
   WallAdd,
-  FurnitureAdd,
   Edit,
   Remove,
   Measure,
