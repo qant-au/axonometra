@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { Suspense, lazy, useRef, useState } from 'react';
 import {
   Navbar,
   Tooltip,
@@ -37,11 +37,18 @@ import { ChangeFloorAction } from '../../editor/editor/actions/ChangeFloorAction
 import { LoadAction } from '../../editor/editor/actions/LoadAction';
 import { SaveAction } from '../../editor/editor/actions/SaveAction';
 import { Tool } from '../../editor/editor/constants';
-import { FurnitureAddPanel } from '../FurnitureControls/FurnitureAddPanel/FurnitureAddPanel';
 import { PrintAction } from '../../editor/editor/actions/PrintAction';
 import { ToggleLabelAction } from '../../editor/editor/actions/ToggleLabelAction';
 import { NavbarLink } from '../NavbarLink';
-import { HelpDialog } from '../HelpDialog';
+
+const FurnitureAddPanel = lazy(() =>
+  import('../FurnitureControls/FurnitureAddPanel/FurnitureAddPanel').then(
+    (m) => ({ default: m.FurnitureAddPanel })
+  )
+);
+const HelpDialog = lazy(() =>
+  import('../HelpDialog').then((m) => ({ default: m.HelpDialog }))
+);
 import { DeleteFloorAction } from '../../editor/editor/actions/DeleteFloorAction';
 import { useFurnitureStore } from '../../stores/FurnitureStore';
 
@@ -112,7 +119,9 @@ function AddMenu({ setter }: { setter: (tool: number) => void }) {
         size="lg"
         overlayOpacity={0}
       >
-        <FurnitureAddPanel />
+        <Suspense fallback={null}>
+          <FurnitureAddPanel />
+        </Suspense>
       </Drawer>
       <Menu
         control={addButton}
@@ -303,7 +312,9 @@ export function ToolNavbar() {
                 });
               }}
             />
-            <HelpDialog />
+            <Suspense fallback={null}>
+              <HelpDialog />
+            </Suspense>
           </Group>
         </Navbar.Section>
         <Navbar.Section>
