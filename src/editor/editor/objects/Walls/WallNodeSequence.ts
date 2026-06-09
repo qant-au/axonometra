@@ -16,8 +16,6 @@ export class WallNodeSequence extends Container {
     this.wallNodes = new Map<number, WallNode>();
     this.wallNodeLinks = new Map<number, number[]>();
     this.drawWalls();
-
-    this.on('mousemove', this.drawWalls);
   }
 
   public setId(id: number) {
