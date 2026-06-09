@@ -50,6 +50,7 @@ prefix: axo
 
 - [ ] Pixi.js v6 → v8 migration (ladder via v7) @priority(medium) @effort(8h) @id(axo-008)
       Captures F-04. Stage 4 test net + CI cover regressions.
+      During migration: verify all Container/Graphics subclasses initialise correctly under useDefineForClassFields: true (tsconfig.json:23). Pixi v8 changes the base-class field init order; if undefined inherited fields appear, flip the flag to false. Tracks action-items #20.
 - [x] Enable strictNullChecks @priority(medium) @effort(4h) @id(axo-015)
       ~56 sites where Pixi parent chains are passed around without null guards. Real refactor, not mechanical.
       Done 2026-06-09 — 51 errors across 13 files, walked through in three buckets (useRef nullability, class-field widening, Map.get guards). Also closes #24 (WallNodeSequence.remove guard), #64 (useRef init + optional chaining), #15 (popup null-check). Closes finding #7 in code-review-2026-06-09.
