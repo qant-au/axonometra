@@ -10,6 +10,7 @@ import { Tool } from "./constants";
 import { Pointer } from "./Pointer";
 import { Preview } from "./actions/MeasureToolManager";
 import { showNotification } from "@mantine/notifications";
+import { createElement } from "react";
 import { DeviceFloppy } from "tabler-icons-react";
 
 export class Main extends Viewport {
@@ -125,7 +126,7 @@ document.onkeydown = (e) => {
         showNotification({
             "message":"Saved to Local Storage!",
             "color":"green",
-            "icon":DeviceFloppy
+            "icon":createElement(DeviceFloppy)
         })
     }
 };       
