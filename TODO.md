@@ -9,8 +9,9 @@ prefix: axo
 
 ## Stage 2 — Project audit
 
-- [ ] Run Stage 2 project review and write STAGE2-REVIEW.md @priority(high) @effort(2h) @id(axo-001)
+- [x] Run Stage 2 project review and write STAGE2-REVIEW.md @priority(high) @effort(2h) @id(axo-001)
   Audit dimensions: CRA deprecation, Pixi 6→8, deps audit, TypeScript version, test coverage, container/CI, lint/format, dead upstream code, a11y/responsiveness, license attribution. Output drives Stage 3/4 scope.
+  Done 2026-06-09 — see STAGE2-REVIEW.md (21 findings across P0/P1/P2).
 
 ## Stage 3 — Rename + Vite migration + container + e2e
 
