@@ -50,8 +50,9 @@ prefix: axo
 
 - [ ] Pixi.js v6 → v8 migration (ladder via v7) @priority(medium) @effort(8h) @id(axo-008)
       Captures F-04. Stage 4 test net + CI cover regressions.
-- [ ] Enable strictNullChecks @priority(medium) @effort(4h) @id(axo-015)
+- [x] Enable strictNullChecks @priority(medium) @effort(4h) @id(axo-015)
       ~56 sites where Pixi parent chains are passed around without null guards. Real refactor, not mechanical.
+      Done 2026-06-09 — 51 errors across 13 files, walked through in three buckets (useRef nullability, class-field widening, Map.get guards). Also closes #24 (WallNodeSequence.remove guard), #64 (useRef init + optional chaining), #15 (popup null-check). Closes finding #7 in code-review-2026-06-09.
 - [ ] Mantine 4 → 7 + Zustand 3 → 5 @priority(medium) @effort(4h) @id(axo-016)
       Breaking UI/store API changes. UI surface is small (~7 components).
 - [ ] WelcomeModal desktop-only gate review @priority(low) @effort(1h) @id(axo-014)

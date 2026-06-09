@@ -12,8 +12,8 @@ export class Furniture extends Sprite {
   private id: number; // fiecare mobila isi stie index-ul in plan. uuids?
   // private dragging: boolean;
   public isAttached: boolean;
-  public attachedToLeft!: number;
-  public attachedToRight!: number;
+  public attachedToLeft?: number;
+  public attachedToRight?: number;
   public xLocked: boolean;
   public resourcePath: string;
   private orientation: number;

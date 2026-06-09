@@ -7,7 +7,7 @@ import { Label } from '../objects/TransformControls/Label';
 
 export class Preview {
   public preview: Graphics;
-  public startPoint: Point;
+  public startPoint: Point | undefined;
   private sizeLabel: Label;
   public constructor() {
     this.startPoint = undefined;
@@ -17,7 +17,7 @@ export class Preview {
     this.preview.addChild(this.sizeLabel);
   }
 
-  public set(value: Point) {
+  public set(value: Point | undefined) {
     this.startPoint = value;
     this.preview.clear();
     this.sizeLabel.visible = false;

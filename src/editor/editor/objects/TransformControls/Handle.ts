@@ -19,13 +19,16 @@ export interface IHandleConfig {
   size?: number;
   color?: number;
   type: HandleType;
-  target: Furniture;
+  target?: Furniture;
   pos?: Point;
 }
 
 export class Handle extends Graphics {
   private type: HandleType;
-  private target: Furniture;
+  // Set via setTarget before any handler runs. The constructor takes
+  // an optional initial value but TransformLayer constructs handles
+  // first and assigns the real target on selection.
+  private target!: Furniture;
   private color: number = 0x000;
   private size: number = 10;
 
@@ -57,7 +60,9 @@ export class Handle extends Graphics {
     this.mouseEndPoint = { x: 0, y: 0 };
 
     this.type = handleConfig.type;
-    this.target = handleConfig.target;
+    if (handleConfig.target) {
+      this.target = handleConfig.target;
+    }
     this.buttonMode = true;
     this.beginFill(this.color).lineStyle(1, this.color);
 

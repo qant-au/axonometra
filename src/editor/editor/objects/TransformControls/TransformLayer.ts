@@ -10,7 +10,7 @@ import { Label } from './Label';
 // handles moving, resizing and rotating of objects.
 // can only work if its state is active.
 export class TransformLayer extends Container {
-  private target: Furniture;
+  private target: Furniture | null;
   private points: Point[];
   private handles: Handle[];
   private labels: Label[];
@@ -57,40 +57,38 @@ export class TransformLayer extends Container {
   }
 
   private computePoints() {
-    [this.points[Coord.NE].x, this.points[Coord.NE].y] = [
-      this.target.width + 5,
-      5
-    ];
+    const target = this.target;
+    if (!target) return;
+    [this.points[Coord.NE].x, this.points[Coord.NE].y] = [target.width + 5, 5];
     [this.points[Coord.E].x, this.points[Coord.E].y] = [
-      this.target.width,
-      this.target.height / 2
+      target.width,
+      target.height / 2
     ];
     [this.points[Coord.SE].x, this.points[Coord.SE].y] = [
-      this.target.width,
-      this.target.height
+      target.width,
+      target.height
     ];
     [this.points[Coord.S].x, this.points[Coord.S].y] = [
-      this.target.width / 2,
-      this.target.height
+      target.width / 2,
+      target.height
     ];
     [this.points[Coord.C].x, this.points[Coord.C].y] = [
-      this.target.width / 2,
-      this.target.height / 2
+      target.width / 2,
+      target.height / 2
     ];
 
-    this.points[Coord.Vertical].x = this.target.width + LABEL_OFFSET;
+    this.points[Coord.Vertical].x = target.width + LABEL_OFFSET;
     this.points[Coord.Vertical].y =
-      this.target.height / 2 - this.labels[LabelAxis.Vertical].height / 2;
+      target.height / 2 - this.labels[LabelAxis.Vertical].height / 2;
 
     this.points[Coord.Horizontal].x =
-      this.target.width / 2 - this.labels[LabelAxis.Horizontal].width / 2;
-    this.points[Coord.Horizontal].y = this.target.height + LABEL_OFFSET;
+      target.width / 2 - this.labels[LabelAxis.Horizontal].width / 2;
+    this.points[Coord.Horizontal].y = target.height + LABEL_OFFSET;
   }
 
   private addHandle(type: HandleType) {
     const handle = new Handle({
       type: type,
-      target: null,
       pos: { x: 0, y: 0 }
     });
     this.border.addChild(handle);
@@ -122,21 +120,23 @@ export class TransformLayer extends Container {
   }
 
   private draw() {
+    const target = this.target;
+    if (!target) return;
     this.drawBorder();
 
     for (let i = 0; i < this.handles.length; i++) {
-      this.handles[i].setTarget(this.target);
+      this.handles[i].setTarget(target);
 
       this.handles[i].update(this.points[i]);
     }
 
     // deactivate Horizontal handle on x-locked furniture
-    if (this.target.resourcePath == 'door') {
+    if (target.resourcePath == 'door') {
       this.handles[HandleType.Rotate].visible = false;
       this.handles[HandleType.Vertical].visible = true;
       this.handles[HandleType.Horizontal].visible = true;
       this.handles[HandleType.HorizontalVertical].visible = true;
-    } else if (this.target.resourcePath == 'window') {
+    } else if (target.resourcePath == 'window') {
       this.handles[HandleType.Horizontal].visible = false;
       this.handles[HandleType.Rotate].visible = false;
       this.handles[HandleType.HorizontalVertical].visible = false;
@@ -150,21 +150,23 @@ export class TransformLayer extends Container {
     // set labels
     this.labels[LabelAxis.Horizontal].updatePos(
       this.points[Coord.Horizontal],
-      this.target.width
+      target.width
     );
     this.labels[LabelAxis.Vertical].updatePos(
       this.points[Coord.Vertical],
-      this.target.height
+      target.height
     );
   }
 
   private drawBorder() {
+    const target = this.target;
+    if (!target) return;
     this.border.clear();
-    const globals = this.target.getGlobalPosition();
+    const globals = target.getGlobalPosition();
     const x = viewportX(globals.x - this.borderOffset, false);
     const y = viewportY(globals.y - this.borderOffset, false);
-    const w = this.target.width + 2 * this.borderOffset;
-    const h = this.target.height + 2 * this.borderOffset;
+    const w = target.width + 2 * this.borderOffset;
+    const h = target.height + 2 * this.borderOffset;
     this.border.lineStyle(3, 0, 1, 0, true).drawRect(0, 0, w, h);
 
     this.border.position.x = x;
@@ -173,10 +175,12 @@ export class TransformLayer extends Container {
   }
 
   private computeTargetRotation() {
-    if (!this.target.isAttached) {
-      return this.target.rotation;
+    const target = this.target;
+    if (!target) return 0;
+    if (!target.isAttached) {
+      return target.rotation;
     }
-    return this.target.parent.rotation;
+    return target.parent.rotation;
   }
 
   public deselect() {
@@ -198,7 +202,8 @@ export class TransformLayer extends Container {
    * Updates externally. Is called by object that is to be moved in order to update the position of the controls grid
    */
   public update() {
-    if (!this.target) return;
+    const target = this.target;
+    if (!target) return;
 
     this.computePoints();
     this.drawBorder();
@@ -209,13 +214,13 @@ export class TransformLayer extends Container {
 
     this.labels[LabelAxis.Horizontal].updatePos(
       this.points[Coord.Horizontal],
-      this.target.width
+      target.width
     );
-    this.labels[LabelAxis.Horizontal].angle = 360 - this.target.angle;
+    this.labels[LabelAxis.Horizontal].angle = 360 - target.angle;
     this.labels[LabelAxis.Vertical].updatePos(
       this.points[Coord.Vertical],
-      this.target.height
+      target.height
     );
-    this.labels[LabelAxis.Vertical].angle = 360 - this.target.angle;
+    this.labels[LabelAxis.Vertical].angle = 360 - target.angle;
   }
 }

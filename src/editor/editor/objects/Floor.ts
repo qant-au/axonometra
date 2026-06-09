@@ -36,21 +36,24 @@ export class Floor extends Container {
         if (fur.zIndex) {
           furnitureData.zIndex = fur.zIndex;
         }
-        const attachedTo = this.wallNodeSequence.getWall(
-          fur.attachedToLeft,
-          fur.attachedToRight
-        );
+        const attachedTo =
+          fur.attachedToLeft != null && fur.attachedToRight != null
+            ? this.wallNodeSequence.getWall(
+                fur.attachedToLeft,
+                fur.attachedToRight
+              )
+            : null;
         const object = new Furniture(
           furnitureData,
           fur.id,
-          attachedTo,
+          attachedTo ?? undefined,
           fur.attachedToLeft,
           fur.attachedToRight,
           fur.orientation
         );
         this.furnitureArray.set(fur.id, object);
 
-        if (attachedTo != undefined) {
+        if (attachedTo != null) {
           attachedTo.addChild(object);
         } else {
           this.addChild(object);
@@ -78,8 +81,9 @@ export class Floor extends Container {
       previousFloor.getExteriorWalls().map((wall) => {
         const newLeftId = nodeCloneMap.get(wall.leftNode.getId());
         const newRightId = nodeCloneMap.get(wall.rightNode.getId());
-
+        if (newLeftId == null || newRightId == null) return;
         const newWall = this.wallNodeSequence.addWall(newLeftId, newRightId);
+        if (!newWall) return;
         newWall.setIsExterior(true);
       });
     }
@@ -132,7 +136,7 @@ export class Floor extends Container {
     );
     this.furnitureArray.set(id, object);
 
-    if (attachedTo !== undefined) {
+    if (attachedTo !== undefined && coords !== undefined) {
       attachedTo.addChild(object);
       object.position.set(coords.x, coords.y);
     } else {
@@ -168,21 +172,23 @@ export class Floor extends Container {
     y: number,
     angle?: number
   ) {
-    this.furnitureArray.get(id).position.set(x, y);
+    const furniture = this.furnitureArray.get(id);
+    if (!furniture) return;
+    furniture.position.set(x, y);
     if (angle) {
-      this.furnitureArray.get(id).angle = angle;
+      furniture.angle = angle;
     }
   }
 
   public removeFurniture(id: number) {
-    if (this.furnitureArray.get(id).isAttached) {
-      this.furnitureArray
-        .get(id)
-        .parent.removeChild(this.furnitureArray.get(id));
+    const furniture = this.furnitureArray.get(id);
+    if (!furniture) return;
+    if (furniture.isAttached) {
+      furniture.parent.removeChild(furniture);
     } else {
-      this.removeChild(this.furnitureArray.get(id));
+      this.removeChild(furniture);
     }
-    this.furnitureArray.get(id).destroy({
+    furniture.destroy({
       children: true,
       texture: false,
       baseTexture: false

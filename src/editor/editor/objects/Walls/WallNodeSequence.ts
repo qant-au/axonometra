@@ -58,8 +58,8 @@ export class WallNodeSequence extends Container {
 
   // drop everything
   public reset() {
-    for (const key of this.wallNodes.keys()) {
-      this.wallNodes.get(key).destroy(true);
+    for (const node of this.wallNodes.values()) {
+      node.destroy(true);
     }
     this.wallNodes.clear();
 
@@ -73,12 +73,14 @@ export class WallNodeSequence extends Container {
   }
   public remove(id: number) {
     //TODO only remove if connected to 2 points.
+    const ownLinks = this.wallNodeLinks.get(id);
+    if (!ownLinks) return;
     let isolated = true;
-    if (this.wallNodeLinks.get(id).length > 0) {
+    if (ownLinks.length > 0) {
       isolated = false;
     } else {
-      for (const src of this.wallNodeLinks.keys()) {
-        for (const dest of this.wallNodeLinks.get(src)) {
+      for (const dests of this.wallNodeLinks.values()) {
+        for (const dest of dests) {
           if (dest == id) {
             isolated = false;
           }
@@ -88,8 +90,11 @@ export class WallNodeSequence extends Container {
 
     if (isolated) {
       // remove node
-      this.wallNodes.get(id)!.destroy(true);
-      this.wallNodes.delete(id);
+      const node = this.wallNodes.get(id);
+      if (node) {
+        node.destroy(true);
+        this.wallNodes.delete(id);
+      }
 
       // remove links containing node TODO if implementing undo. remember these
       // this.wallNodeLinks[id].length = 0;
@@ -109,16 +114,12 @@ export class WallNodeSequence extends Container {
   }
 
   public addNode(x: number, y: number, id?: number) {
-    let nodeId;
-    if (id) {
-      nodeId = id;
-    } else {
-      nodeId = this.getNewNodeId();
-    }
-    this.wallNodes.set(nodeId, new WallNode(x, y, nodeId));
+    const nodeId = id ?? this.getNewNodeId();
+    const node = new WallNode(x, y, nodeId);
+    this.wallNodes.set(nodeId, node);
     this.wallNodeLinks.set(nodeId, []);
-    this.addChild(this.wallNodes.get(nodeId));
-    return this.wallNodes.get(nodeId);
+    this.addChild(node);
+    return node;
   }
 
   public addWall(leftNodeId: number, rightNodeId: number): Wall | undefined {
@@ -132,15 +133,13 @@ export class WallNodeSequence extends Container {
       rightNodeId = aux;
     }
 
-    if (
-      this.wallNodeLinks.has(leftNodeId) &&
-      this.wallNodeLinks.get(leftNodeId)?.includes(rightNodeId)
-    ) {
-      return undefined;
-    }
-    this.wallNodeLinks.get(leftNodeId).push(rightNodeId);
+    const links = this.wallNodeLinks.get(leftNodeId);
+    if (!links) return undefined;
+    if (links.includes(rightNodeId)) return undefined;
     const leftNode = this.wallNodes.get(leftNodeId);
     const rightNode = this.wallNodes.get(rightNodeId);
+    if (!leftNode || !rightNode) return undefined;
+    links.push(rightNodeId);
     const wall = new Wall(leftNode, rightNode);
     this.walls.push(wall);
     this.addChild(wall);
@@ -149,10 +148,12 @@ export class WallNodeSequence extends Container {
   }
 
   public removeWall(leftNode: number, rightNode: number) {
-    const index = this.wallNodeLinks.get(leftNode).indexOf(rightNode);
+    const links = this.wallNodeLinks.get(leftNode);
+    if (!links) return;
+    const index = links.indexOf(rightNode);
 
     if (index != -1) {
-      this.wallNodeLinks.get(leftNode).splice(index, 1);
+      links.splice(index, 1);
       this.drawWalls();
     }
     let toBeRemoved = -1;
@@ -173,10 +174,8 @@ export class WallNodeSequence extends Container {
   }
 
   public getWall(leftNodeId: number, rightNodeId: number) {
-    if (
-      !this.wallNodeLinks.get(leftNodeId) ||
-      !this.wallNodeLinks.get(leftNodeId).includes(rightNodeId)
-    ) {
+    const links = this.wallNodeLinks.get(leftNodeId);
+    if (!links || !links.includes(rightNodeId)) {
       return null;
     }
 

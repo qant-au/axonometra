@@ -23,7 +23,7 @@ export class AddNodeAction implements Action {
   }
 
   public execute() {
-    let node: WallNode;
+    let node: WallNode | undefined;
 
     if (useStore.getState().snap == true) {
       this.coords.x = snap(this.coords.x);
@@ -40,6 +40,7 @@ export class AddNodeAction implements Action {
       }
       node = this.receiver.addNode(this.coords.x, this.coords.y);
     }
+    if (!node) return;
     AddWallManager.Instance.step(node);
     this.receiver.actions.push(this);
   }

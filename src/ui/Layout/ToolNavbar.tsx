@@ -191,7 +191,7 @@ export function ToolNavbar() {
   const { setTool, floor } = useStore();
   const { setSnap, snap } = useStore();
 
-  const fileRef = useRef<HTMLInputElement>();
+  const fileRef = useRef<HTMLInputElement>(null);
   const { classes } = useStyles();
 
   const toolModes = modes.map((link, index) => (
@@ -326,7 +326,7 @@ export function ToolNavbar() {
             />
 
             <NavbarLink
-              onClick={() => fileRef.current.click()}
+              onClick={() => fileRef.current?.click()}
               icon={Upload}
               label="Load plan"
             />

@@ -14,7 +14,7 @@ import { FloorPlan } from '../editor/editor/objects/FloorPlan';
 import { showNotification } from '@mantine/notifications';
 export function WelcomeModal() {
   const [opened, setOpened] = useState(false);
-  const fileRef = useRef<HTMLInputElement>();
+  const fileRef = useRef<HTMLInputElement>(null);
   const image = <Image src={AxonometraLogo} />;
   const useStyles = createStyles(() => ({
     padded: {
@@ -84,7 +84,7 @@ export function WelcomeModal() {
           />
           <Button
             onClick={() => {
-              fileRef.current.click();
+              fileRef.current?.click();
             }}
             leftIcon={<Database />}
             variant="white"

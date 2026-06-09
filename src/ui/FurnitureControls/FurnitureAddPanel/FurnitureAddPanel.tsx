@@ -5,7 +5,7 @@ import {
   Select,
   SimpleGrid
 } from '@mantine/core';
-import { useEffect, useState } from 'react';
+import { ReactElement, useEffect, useState } from 'react';
 import { FurnitureItem } from './FurnitureItem';
 import { useFurnitureStore } from '../../../stores/FurnitureStore';
 import { showNotification } from '@mantine/notifications';
@@ -19,10 +19,12 @@ const useStyles = createStyles((theme) => ({
 export function FurnitureAddPanel() {
   const { classes } = useStyles();
   const [category, setCategory] = useState('');
-  const [_availableCategories, _setAvailableCategories] = useState([]);
+  const [_availableCategories, _setAvailableCategories] = useState<string[]>(
+    []
+  );
   const { categories, currentFurnitureData, getCurrentFurnitureData } =
     useFurnitureStore();
-  const [cards, setCards] = useState([]);
+  const [cards, setCards] = useState<ReactElement[]>([]);
 
   // when a category is selected by user, load its furniture elements from API
   useEffect(() => {
@@ -58,7 +60,7 @@ export function FurnitureAddPanel() {
         <Select
           className={classes.mb}
           value={category}
-          onChange={setCategory}
+          onChange={(value) => setCategory(value ?? '')}
           data={categories.map((cat) => {
             return { value: cat._id, label: cat.name };
           })}

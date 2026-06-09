@@ -6,10 +6,10 @@ import { Action } from './Action';
 
 export class AddFurnitureAction implements Action {
   obj: FurnitureData;
-  attachedTo: Wall;
-  coords: Point;
-  attachedToLeft: number;
-  attachedToRight: number;
+  attachedTo?: Wall;
+  coords?: Point;
+  attachedToLeft?: number;
+  attachedToRight?: number;
   private receiver: FloorPlan;
 
   constructor(

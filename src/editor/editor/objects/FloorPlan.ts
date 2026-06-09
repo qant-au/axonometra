@@ -55,7 +55,7 @@ export class FloorPlan extends Container {
     this.CurrentFloor += by;
     if (this.floors[this.currentFloor] == null) {
       this.floors[this.currentFloor] = new Floor(
-        null,
+        undefined,
         this.floors[previousFloor]
       );
     }
@@ -71,6 +71,14 @@ export class FloorPlan extends Container {
     const renderer = autoDetectRenderer(opts);
     const image = renderer.plugins.extract.image(this);
     const popup = window.open();
+    if (!popup) {
+      showNotification({
+        title: 'Print failed',
+        message: 'Browser blocked the print window. Allow popups and retry.',
+        color: 'red'
+      });
+      return;
+    }
     popup.document.body.appendChild(image);
     popup.focus();
     popup.print();

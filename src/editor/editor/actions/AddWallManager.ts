@@ -14,7 +14,7 @@ import { Preview } from './MeasureToolManager';
 export class AddWallManager {
   private static instance: AddWallManager | undefined;
 
-  public previousNode: WallNode;
+  public previousNode: WallNode | undefined;
 
   public preview: Preview;
 
