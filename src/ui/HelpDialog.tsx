@@ -16,13 +16,15 @@ import {
 } from 'tabler-icons-react';
 import { Tool } from '../editor/editor/constants';
 import { Image } from '@mantine/core';
-import helpAddWall from '../res/add-wall.gif';
-import helpDelete from '../res/delete.gif';
-import helpEditFurniture from '../res/edit-furniture.gif';
-import helpEditWall from '../res/edit-walls.gif';
-import helpAddWindow from '../res/add-window.gif';
-import helpAddDoor from '../res/add-door.gif';
-import helpMeasure from '../res/measure-tool.gif';
+
+const helpAddWall = '/help/add-wall.gif';
+const helpDelete = '/help/delete.gif';
+const helpEditFurniture = '/help/edit-furniture.gif';
+const helpEditWall = '/help/edit-walls.gif';
+const helpAddWindow = '/help/add-window.gif';
+const helpAddDoor = '/help/add-door.gif';
+const helpMeasure = '/help/measure-tool.gif';
+
 interface IHelpBody {
   title: string;
   body: ReactNode;
