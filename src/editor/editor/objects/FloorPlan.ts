@@ -72,23 +72,31 @@ export class FloorPlan extends Container {
     };
 
     const renderer = autoDetectRenderer(opts);
+    let canvas: HTMLCanvasElement;
     try {
-      const image = renderer.plugins.extract.image(this);
-      const popup = window.open();
-      if (!popup) {
+      canvas = renderer.plugins.extract.canvas(this);
+    } finally {
+      renderer.destroy(true);
+    }
+    canvas.toBlob((blob) => {
+      if (!blob) {
         showNotification({
-          title: 'Print failed',
-          message: 'Browser blocked the print window. Allow popups and retry.',
+          title: 'Export failed',
+          message: 'Could not generate plan image.',
           color: 'red'
         });
         return;
       }
-      popup.document.body.appendChild(image);
-      popup.focus();
-      popup.print();
-    } finally {
-      renderer.destroy(true);
-    }
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      const ts = new Date().toISOString().slice(0, 16).replace(/[:T]/g, '-');
+      a.download = `axonometra-plan-${ts}.png`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    }, 'image/png');
   }
 
   public save() {
