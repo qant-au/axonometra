@@ -28,3 +28,6 @@ graphify-out/
 # local origin certs / secrets
 .origin/
 
+# IntelliJ
+.idea/
+
