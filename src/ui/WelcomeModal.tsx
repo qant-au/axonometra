@@ -12,15 +12,17 @@ import { LoadAction } from '../editor/editor/actions/LoadAction';
 import AxonometraLogo from '../res/logo.png';
 import { FloorPlan } from '../editor/editor/objects/FloorPlan';
 import { showNotification } from '@mantine/notifications';
+
+const useStyles = createStyles(() => ({
+  padded: {
+    padding: '4px'
+  }
+}));
+
 export function WelcomeModal() {
   const [opened, setOpened] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
   const image = <Image src={AxonometraLogo} />;
-  const useStyles = createStyles(() => ({
-    padded: {
-      padding: '4px'
-    }
-  }));
 
   const loadFromDisk = async (e: any) => {
     const resultText = await e.target.files.item(0).text();
