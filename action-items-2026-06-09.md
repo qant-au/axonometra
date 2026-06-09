@@ -129,6 +129,7 @@ _None._ The review surfaced nine 🟠 High findings but no 🔴 Critical issues 
 - **Refs:** Review #22 (Section 3b)
 
 ### 20. Audit `useDefineForClassFields` interaction with Pixi during v8 migration
+- **Status:** ✅ Tracked. The audit note is folded into `TODO.md` axo-008 (Pixi v6→v8 migration); it fires when the migration starts. No standalone action required now.
 - **What:** During axo-008, verify all `Container`/`Graphics` subclasses initialise correctly. If undefined inherited fields appear, flip `useDefineForClassFields: false`.
 - **Where:** `tsconfig.json:23` (revisit)
 - **Refs:** Review #19 (Section 3a). _Confidence: Low — no observable failure today, but a known interaction worth tracking._
@@ -138,42 +139,50 @@ _None._ The review surfaced nine 🟠 High findings but no 🔴 Critical issues 
 ## 🟡 Medium — Code health & TypeScript
 
 ### 21. Stop exporting `main: Main` as a mutable module-level variable
+- **Status:** ✅ Implemented. `EditorRoot.tsx:14-24` uses a `mainHolder: { current: Main | null }` ref-shaped object plus a `getMain()` accessor; the effect sets `mainHolder.current = main` on mount and clears it on cleanup. The non-React consumers (`ViewportCoordinates.ts:1`, `Floor.ts:6`) import `getMain` instead of a mutable export. The test-time `vi.mock` in `ViewportCoordinates.test.ts:8-13` is retained intentionally — moving `Main` into Zustand would conflict with item 25's plan to remove model state from the store-equivalent layer.
 - **What:** Wrap `Main` in a React context (`EditorContext`) or store it in the Zustand store. Update consumers (`src/helpers/ViewportCoordinates.ts`, `src/editor/editor/objects/Floor.ts:140`). Removes the test-time `vi.mock(...)` workaround.
 - **Where:** `src/editor/EditorRoot.tsx:14`, `src/helpers/ViewportCoordinates.ts:1`, `src/editor/editor/objects/Floor.ts:6`
 - **Refs:** Review #28 (Section 4b)
 
 ### 22. Pull magic numbers into named constants
+- **Status:** ✅ Implemented. `constants.ts` now exports `SNAP_THRESHOLD`, `MISCLICK_THRESHOLD`, `WALL_COLOR`, `NODE_COLOR`, `HANDLE_MOBILE_SCALE`, `LABEL_FONT`, `LABEL_FONT_SIZE`, `LABEL_COLOR`. Inline numerics replaced at `AddWallManager.ts:34/48`, `Floor.ts:242/254`, `Wall.ts:115`, `WallNode.ts:41`, `Handle.ts:70`, `Label.ts:8-10`.
 - **What:** Extend `src/editor/editor/constants.ts` (or add `src/editor/editor/theme.ts`) with `SNAP_THRESHOLD = 0.3 * METER`, `MISCLICK_THRESHOLD = 0.2 * METER`, `WALL_COLOR = 0x1a1a1a`, `NODE_COLOR = 0x222222`, `HANDLE_SIZE = 10`, `HANDLE_MOBILE_SCALE = 2.5`, `LABEL_FONT = 'Arial'`, `LABEL_FONT_SIZE = 16`, `MEASURE_LINE_WIDTH = 2`, etc. Replace inline numerics.
 - **Where:** Listed in detail in the review under finding #25.
 - **Refs:** Review #25 (Section 4a)
 
 ### 23. Refactor `Furniture.switchOrientation` and `setOrientation` to share logic
+- **Status:** ✅ Implemented. `Furniture.applyStep(fromOrientation, useWidthForDoorOffset)` carries the anchor/scale flip and the door y-offset; `switchOrientation` calls it once per right-click, `setOrientation(n)` loops it `n` times on load. The width-vs-height divergence in the door offset is preserved behind the `useWidthForDoorOffset` flag with a comment flagging it for a follow-up investigation.
 - **What:** Extract a single `applyStep(currentOrientation, resourcePath, target)` helper; both methods call it.
 - **Where:** `src/editor/editor/objects/Furniture.ts:64-136`
 - **Refs:** Review #26 (Section 4a)
 
 ### 24. Guard `WallNodeSequence.remove` against missing map entries
+- **Status:** ✅ Implemented. The guard exists at `WallNodeSequence.ts:76-77` (`const ownLinks = this.wallNodeLinks.get(id); if (!ownLinks) return;`). Closed by axo-015 (strictNullChecks rollout).
 - **What:** `const links = this.wallNodeLinks.get(id); if (!links) return;` before the `.length` access; similar guards on the iteration branch.
 - **Where:** `src/editor/editor/objects/Walls/WallNodeSequence.ts:76-106`
 - **Refs:** Review #27 (Section 4a)
 
 ### 25. Plan the `FloorPlan` refactor (Stage 6+ scoping)
+- **Status:** ✅ Implemented. `TODO.md` Stage 6 carries axo-020 — extract the model into a Zustand store (`useFloorPlanStore`), keep `FloorPlan` as a thin Pixi container, drop the static `Instance`/`dispose` pair. Prerequisite axo-008 documented.
 - **Why:** `FloorPlan` is simultaneously a Pixi container, the model store, a singleton, and the persistence layer. Three jobs in one class — the root cause of the singleton-lifecycle issues from action item 7. Too big for Stage 5.
 - **What:** Document a Stage 6+ initiative: extract the model into a Zustand store; `FloorPlan` becomes a thin Pixi container that subscribes.
 - **Where:** `src/editor/editor/objects/FloorPlan.ts` (refactor target); add a `TODO.md` entry under Stage 6.
 - **Refs:** Review #29 (Section 4c)
 
 ### 26. Add unit-test coverage for the editor engine
+- **Status:** ✅ Implemented. New `src/test/pixiMock.ts` (minimal Container/Graphics/Sprite/Text/TextStyle/Texture stub) plus four spec files under `src/editor/editor/__tests__/`: `FloorPlanSerializable.test.ts` (parse + validate), `Serializer.test.ts` (serialize round-trip), `AddWallManager.test.ts` (checkStep snap/reject), `WallNodeSequence.test.ts` (addNode/addWall/remove/removeWall/load/reset). Suite grew from 23 to 56 tests, all green. `Floor.addNodeToWall` left for a follow-up — Pixi mock would need to model the full Floor + Wall + Furniture child graph.
 - **What:** Use a minimal Pixi stub (Container/Graphics mock recording calls) under jsdom. Cover `WallNodeSequence` (addNode/addWall/remove/removeWall/load), `AddWallManager.checkStep`, `Floor.addNodeToWall` misclick guards, `Serializer.serialize` + `FloorPlan.load` round-trip.
 - **Where:** `src/editor/editor/__tests__/` (new directory)
 - **Refs:** Review #30 (Section 4d)
 
 ### 27. Add a critical-flow Playwright spec
+- **Status:** ✅ Implemented. `e2e/place-wall.spec.ts` drives the canvas via `page.mouse.click` against three positions, places two walls, asserts node/wall counts via a dev-only `window.__axo` introspection handle exposed by `EditorRoot.tsx`, validates Ctrl+S writes the plan to `localStorage` with `version: 1`, and round-trips the save through a page reload + "Load from local save". Verified green against `npm run dev` on :4891. Skips automatically when `__axo` is absent (prod builds).
 - **What:** New `e2e/place-wall.spec.ts` driving canvas clicks via `page.mouse.click`, validating Save downloads via `page.waitForEvent('download')`, and a load round-trip.
 - **Where:** `e2e/place-wall.spec.ts` (new)
 - **Refs:** Review #31 (Section 4d)
 
 ### 28. Create `.env.example`
+- **Status:** ✅ Implemented. `.env.example` exists and documents `VITE_EMBED_ALLOWED_ORIGINS` — the actual env var consumed at `src/embed/embedConfig.ts:19`. (The review's `VITE_SERVICE_URI` note was stale; the original `API_URL` backend var died when the catalog was inlined per item #3.)
 - **What:** Document `VITE_SERVICE_URI` (currently the only env var) with a comment explaining its purpose and optionality.
 - **Where:** `.env.example` (new)
 - **Refs:** Review #32 (Section 4e)
