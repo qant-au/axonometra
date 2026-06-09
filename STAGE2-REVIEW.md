@@ -103,6 +103,8 @@ No `STAGE2-baseline.png` was captured.
 **Finding:** Most flow from `react-scripts@5` → `webpack-dev-server` → `ws`, `yaml`, etc. Switching to Vite (Stage 3) eliminates the whole CRA/Webpack subtree and most advisories.
 **Recommendation:** Re-run `npm audit` after the Stage 3 Vite migration. Stage 3 commit budget should include `npm audit fix` against the new tree. Any remaining advisories carry into Stage 4 for dep-by-dep upgrades.
 
+**Stage 3 status (closed; F-07 partially resolved):** After the CRA→Vite migration the audit shrank from 71 advisories to **5**, all in the Vitest 1.x / Vite 5.x dependency chain (esbuild dev-server CORS — GHSA-67mh-4wv8-2f99). They are **dev-server-only** — the production container build does not invoke esbuild's dev server, so the shipped artifact is unaffected. `npm audit fix` (without `--force`) is a no-op. A speculative bump to Vite 6 + Vitest 2 in Stage 3 broke the `tsc -b` typecheck (`vitest.config.ts` overload mismatch) and was reverted. Deferred to Stage 4, where Vite 6 / Vitest 2 will be paired with a `@vitejs/plugin-react` major bump to clear the typings issue.
+
 ### F-08 — TypeScript 4.6 + strict mode disabled
 **Severity:** P1     **Stage:** 4
 **Where:** `tsconfig.json` — `target: "es2015"`, `strict: false`, all five strict flags (`noImplicitAny`, `noImplicitReturns`, `noUnusedParameters`, `noUnusedLocals`, `noImplicitOverride`) commented out.
