@@ -64,24 +64,31 @@ export class FloorPlan extends Container {
   }
 
   public print() {
+    const bounds = this.getBounds();
     const opts: IRendererOptionsAuto = {
-      preserveDrawingBuffer: true
+      preserveDrawingBuffer: true,
+      width: Math.max(1, Math.ceil(bounds.width)),
+      height: Math.max(1, Math.ceil(bounds.height))
     };
 
     const renderer = autoDetectRenderer(opts);
-    const image = renderer.plugins.extract.image(this);
-    const popup = window.open();
-    if (!popup) {
-      showNotification({
-        title: 'Print failed',
-        message: 'Browser blocked the print window. Allow popups and retry.',
-        color: 'red'
-      });
-      return;
+    try {
+      const image = renderer.plugins.extract.image(this);
+      const popup = window.open();
+      if (!popup) {
+        showNotification({
+          title: 'Print failed',
+          message: 'Browser blocked the print window. Allow popups and retry.',
+          color: 'red'
+        });
+        return;
+      }
+      popup.document.body.appendChild(image);
+      popup.focus();
+      popup.print();
+    } finally {
+      renderer.destroy(true);
     }
-    popup.document.body.appendChild(image);
-    popup.focus();
-    popup.print();
   }
 
   public save() {
