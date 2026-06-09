@@ -60,40 +60,46 @@ export class Furniture extends Sprite {
     return this.id;
   }
 
-  private switchOrientation() {
-    // 0 neutral flip orizontal 2 flip vertical 3 ambele
-    switch (this.orientation) {
+  // Applies one orientation step (fromOrientation -> fromOrientation+1).
+  // The door y-offset uses different dimensions depending on caller:
+  // switchOrientation passes useWidthForDoorOffset=false (uses height);
+  // setOrientation passes true (uses width). height/width discrepancy
+  // preserved from upstream; see follow-up.
+  private applyStep(fromOrientation: number, useWidthForDoorOffset: boolean) {
+    const doorAxis = useWidthForDoorOffset ? this.width : this.height;
+    switch (fromOrientation) {
       case 0:
         this.anchor.x = 1;
         this.scale.x = -1 * this.scale.x;
         this.anchor.y = 0;
         this.scale.y = 1 * this.scale.y;
-        this.orientation += 1;
         break;
       case 1:
         this.anchor.y = 1;
         this.scale.y = -1 * this.scale.y;
-        this.orientation += 1;
         if (this.resourcePath == 'door') {
-          this.position.y -= this.height - INTERIOR_WALL_THICKNESS;
+          this.position.y -= doorAxis - INTERIOR_WALL_THICKNESS;
         }
         break;
       case 2:
         this.anchor.x = 0;
         this.scale.x = -this.scale.x;
-        this.orientation += 1;
         break;
       case 3:
         this.anchor.x = 0;
         this.scale.x = Math.abs(this.scale.x);
         this.anchor.y = 0;
         this.scale.y = Math.abs(this.scale.y);
-        this.orientation = 0;
         if (this.resourcePath == 'door') {
-          this.position.y += this.height - INTERIOR_WALL_THICKNESS;
+          this.position.y += doorAxis - INTERIOR_WALL_THICKNESS;
         }
         break;
     }
+  }
+
+  private switchOrientation() {
+    this.applyStep(this.orientation, false);
+    this.orientation = (this.orientation + 1) % 4;
   }
 
   private onRightDown(ev: InteractionEvent) {
@@ -103,33 +109,8 @@ export class Furniture extends Sprite {
     return;
   }
   private setOrientation(number: number) {
-    if (number > 0) {
-      this.anchor.x = 1;
-      this.scale.x = -1 * this.scale.x;
-      this.anchor.y = 0;
-      this.scale.y = 1 * this.scale.y;
-    }
-
-    if (number > 1) {
-      this.anchor.y = 1;
-      this.scale.y = -1 * this.scale.y;
-      if (this.resourcePath == 'door') {
-        this.position.y -= this.width - INTERIOR_WALL_THICKNESS;
-      }
-    }
-
-    if (number > 2) {
-      this.anchor.x = 0;
-      this.scale.x = -this.scale.x;
-    }
-    if (number > 3) {
-      this.anchor.x = 0;
-      this.scale.x = Math.abs(this.scale.x);
-      this.anchor.y = 0;
-      this.scale.y = Math.abs(this.scale.y);
-      if (this.resourcePath == 'door') {
-        this.position.y += this.width - INTERIOR_WALL_THICKNESS;
-      }
+    for (let i = 0; i < number; i++) {
+      this.applyStep(i, true);
     }
     this.orientation = number;
   }
