@@ -25,7 +25,7 @@ Axonometra is a fork of [mehanix/arcada](https://github.com/mehanix/arcada), ori
 - To signal a different long-term trajectory: Axonometra is maintained under the QANT umbrella as a browser-embeddable plan editor with a roadmap (axonometric / 3D walk-through views, healthcare and small-building presets) that diverges from upstream.
 - To match the public brand at [axonometra.com](https://axonometra.com).
 
-We do **not** plan to merge changes back upstream, nor to pull from upstream. The license (MIT) is preserved; attribution to the original author is maintained in `LICENSE` and in this README.
+We do **not** plan to merge changes back upstream, nor to pull from upstream. **License: MIT** (relicensed from upstream Apache-2.0; see `LICENSE` for upstream attribution). Attribution to the original author is maintained in `LICENSE` and in this README.
 
 If you're looking for the original Arcada — including its server (`arcada-backend`), the original demo at `arcada.nicoleta.cc`, and the documentation PDF — please visit the [upstream repo](https://github.com/mehanix/arcada).
 
@@ -48,4 +48,4 @@ npm start
 
 ## License
 
-[MIT](LICENSE) — inherited from upstream Arcada. See `LICENSE` for the full text.
+[MIT](LICENSE) — relicensed from upstream Arcada's Apache-2.0; original copyright attributed in `LICENSE`. See the file for the full text.
