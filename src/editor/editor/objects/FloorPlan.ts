@@ -3,7 +3,10 @@ import { FurnitureData } from '../../../stores/FurnitureStore';
 import { Wall } from './Walls/Wall';
 import { Floor } from './Floor';
 import { Serializer } from '../persistence/Serializer';
-import { FloorPlanSerializable } from '../persistence/FloorPlanSerializable';
+import {
+  safeParsePlan,
+  validatePlanShape
+} from '../persistence/FloorPlanSerializable';
 import { Action } from '../actions/Action';
 import { useStore } from '../../../stores/EditorStore';
 import { Point } from '../../../helpers/Point';
@@ -78,8 +81,45 @@ export class FloorPlan extends Container {
     return floorPlan;
   }
 
-  public load(planText: string) {
-    const plan: FloorPlanSerializable = JSON.parse(planText);
+  public load(planText: string | null) {
+    if (planText == null || planText === '') {
+      showNotification({
+        title: 'Load failed',
+        message: 'No plan data to load.',
+        color: 'red'
+      });
+      return;
+    }
+    let raw: unknown;
+    try {
+      raw = safeParsePlan(planText);
+    } catch {
+      showNotification({
+        title: 'Load failed',
+        message: 'Plan file is not valid JSON.',
+        color: 'red'
+      });
+      return;
+    }
+    const plan = validatePlanShape(raw);
+    if (!plan) {
+      showNotification({
+        title: 'Load failed',
+        message: 'Plan file is missing required fields.',
+        color: 'red'
+      });
+      return;
+    }
+    // Future schema migrations dispatch on plan.version here.
+    const version = (raw as { version?: number }).version ?? 1;
+    if (version !== 1) {
+      showNotification({
+        title: 'Load failed',
+        message: `Unsupported plan version: ${version}.`,
+        color: 'red'
+      });
+      return;
+    }
     this.reset();
     for (const floorData of plan.floors) {
       const floor = new Floor(floorData);

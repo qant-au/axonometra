@@ -93,7 +93,16 @@ export function WelcomeModal() {
           </Button>
           <Button
             onClick={() => {
-              FloorPlan.Instance.load(localStorage.getItem('autosave'));
+              const saved = localStorage.getItem('autosave');
+              if (saved == null) {
+                showNotification({
+                  title: 'No autosave found',
+                  message: 'There is no local autosave to load.',
+                  color: 'yellow'
+                });
+                return;
+              }
+              FloorPlan.Instance.load(saved);
               setOpened(false);
             }}
             leftIcon={<RotateClockwise />}
