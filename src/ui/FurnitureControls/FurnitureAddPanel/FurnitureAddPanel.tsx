@@ -22,14 +22,13 @@ export function FurnitureAddPanel() {
   const [_availableCategories, _setAvailableCategories] = useState<string[]>(
     []
   );
-  const { categories, currentFurnitureData, getCurrentFurnitureData } =
-    useFurnitureStore();
+  const { categories, currentFurnitureData } = useFurnitureStore();
   const [cards, setCards] = useState<ReactElement[]>([]);
 
   // when a category is selected by user, load its furniture elements from API
   useEffect(() => {
     if (category) {
-      getCurrentFurnitureData(category);
+      useFurnitureStore.getState().getCurrentFurnitureData(category);
     }
   }, [category]);
 

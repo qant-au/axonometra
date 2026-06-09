@@ -6,10 +6,8 @@ import { NotificationsProvider } from '@mantine/notifications';
 import { EmbedBridge } from './embed/EmbedBridge';
 
 function App() {
-  const { getCategories } = useFurnitureStore();
-
   useEffect(() => {
-    getCategories();
+    useFurnitureStore.getState().getCategories();
   }, []);
   return (
     <>
