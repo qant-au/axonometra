@@ -34,7 +34,6 @@ export class Furniture extends Sprite {
     this.cursor = 'pointer';
     if (attachedTo) {
       this.isAttached = true;
-      this.parent = attachedTo;
       this.attachedToLeft = attachedToLeft;
       this.attachedToRight = attachedToRight;
       this.xLocked = true;
