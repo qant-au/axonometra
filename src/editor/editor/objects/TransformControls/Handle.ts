@@ -1,8 +1,10 @@
 import { Graphics, InteractionEvent } from "pixi.js";
 import { isMobile } from "react-device-detect";
+import { WALL_THICKNESS } from "../../constants";
 import { Point } from "../../../../helpers/Point";
 import { viewportX, viewportY } from "../../../../helpers/ViewportCoordinates";
 import { Furniture } from "../Furniture";
+import { Wall } from "../Walls/Wall";
 import { TransformLayer } from "./TransformLayer";
 
 export enum HandleType {
@@ -183,7 +185,8 @@ export class Handle extends Graphics {
                   this.target.position.y = viewportY(this.targetStartPoint.y + delta.y);
                 } else {
                   let amount = (delta.x + delta.y) * 0.8;
-        
+                  const parentWall = this.target.parent as Wall;
+
                   //start of wall
                   if (this.localCoords.x + amount <= WALL_THICKNESS * 0.5) {
                     this.target.position.x = WALL_THICKNESS * 0.5;
@@ -191,10 +194,10 @@ export class Handle extends Graphics {
                   //end of wall
                   else if (
                     this.localCoords.x + amount >=
-                    this.target.parent.length - this.target.width - WALL_THICKNESS * 0.5 //parent wall length
+                    parentWall.length - this.target.width - WALL_THICKNESS * 0.5 //parent wall length
                   ) {
                     this.target.position.x =
-                      this.target.parent.length -
+                      parentWall.length -
                       this.target.width -
                       WALL_THICKNESS * 0.5;
                   }
