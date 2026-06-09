@@ -1,6 +1,8 @@
 import { test, expect } from '@playwright/test';
 
-test('axonometra loads, renders the welcome modal, and mounts a canvas', async ({ page }) => {
+test('axonometra loads, renders the welcome modal, and mounts a canvas', async ({
+  page
+}) => {
   const consoleErrors: string[] = [];
   page.on('console', (msg) => {
     if (msg.type() === 'error') consoleErrors.push(msg.text());
@@ -15,7 +17,7 @@ test('axonometra loads, renders the welcome modal, and mounts a canvas', async (
   // a notification *after* the modal is dismissed, so we anchor on a stable
   // modal-visible button instead.
   await expect(page.getByRole('button', { name: /new plan/i })).toBeVisible({
-    timeout: 5000,
+    timeout: 5000
   });
 
   await expect(page.locator('canvas').first()).toBeVisible({ timeout: 5000 });
@@ -25,7 +27,10 @@ test('axonometra loads, renders the welcome modal, and mounts a canvas', async (
   // ERR_CONNECTION_REFUSED until a real backend is wired up. Allow those;
   // fail on anything else.
   const unexpected = consoleErrors.filter(
-    (msg) => !/ERR_CONNECTION_REFUSED|Failed to load resource/.test(msg),
+    (msg) => !/ERR_CONNECTION_REFUSED|Failed to load resource/.test(msg)
   );
-  expect(unexpected, `unexpected console errors: ${unexpected.join('\n')}`).toEqual([]);
+  expect(
+    unexpected,
+    `unexpected console errors: ${unexpected.join('\n')}`
+  ).toEqual([]);
 });

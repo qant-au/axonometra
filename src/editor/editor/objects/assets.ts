@@ -3,4 +3,4 @@
 //     // {name: "sofa", url:"./sofa.svg"}
 // ]
 
-export {}
+export {};

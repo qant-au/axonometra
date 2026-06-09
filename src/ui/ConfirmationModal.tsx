@@ -1,16 +1,12 @@
 import { useState } from 'react';
 import { Modal, Button, Group } from '@mantine/core';
 
-function ConfirmationModal(message:string) {
+function ConfirmationModal(message: string) {
   const [opened, setOpened] = useState(false);
 
   return (
     <>
-      <Modal
-        opened={opened}
-        onClose={() => setOpened(false)}
-        title="Confirm"
-      >
+      <Modal opened={opened} onClose={() => setOpened(false)} title="Confirm">
         <p>{message}</p>
       </Modal>
 
