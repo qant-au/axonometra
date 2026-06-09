@@ -31,8 +31,7 @@ RUN npm ci
 # Rest of the source. Build context is shaped by .dockerignore.
 COPY . .
 
-# CRA-style build (Stage 3 switches this to `vite build` and DIST_DIR
-# below to `dist`).
+# Vite build → /app/dist (Stage 3 swapped from CRA's /app/build).
 RUN npm run build
 
 # nginx-unprivileged: runs as the `nginx` user (uid 101) and listens
@@ -41,7 +40,7 @@ RUN npm run build
 FROM nginxinc/nginx-unprivileged:1.30-alpine
 
 COPY --chown=nginx:nginx docker/nginx.conf /etc/nginx/conf.d/default.conf
-COPY --from=build --chown=nginx:nginx /app/build /usr/share/nginx/html
+COPY --from=build --chown=nginx:nginx /app/dist /usr/share/nginx/html
 
 EXPOSE 8080
 

@@ -8,8 +8,9 @@
 # testing
 /coverage
 
-# production
+# production (CRA legacy + Vite output)
 /build
+/dist
 
 # misc
 .DS_Store

@@ -4,7 +4,7 @@ import {
   Icon as TablerIcon,
   Armchair,
   BorderLeft,
-  ArrowBottomSquare,
+  ArrowDownSquare,
   DeviceFloppy,
   Upload,
   Ruler2,
@@ -223,7 +223,7 @@ export function ToolNavbar() {
               message: "Click and drag to measure areas",
             })
           }} />
-          <NavbarLink icon={ArrowBottomSquare} label="Snap to grid" onClick={() => {
+          <NavbarLink icon={ArrowDownSquare} label="Snap to grid" onClick={() => {
             setSnap(!snap);
             cleanNotifications();
             showNotification({
