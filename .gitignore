@@ -41,3 +41,6 @@ graphify-out/
 
 # Scout posture scans — session artefacts, regenerable
 scout-out/
+
+# Superpowers per-session staging — never committed
+.superpowers/
