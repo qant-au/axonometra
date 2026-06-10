@@ -38,3 +38,6 @@ graphify-out/
 # IntelliJ
 .idea/
 
+
+# Scout posture scans — session artefacts, regenerable
+scout-out/
