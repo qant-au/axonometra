@@ -44,7 +44,8 @@ prefix: axo
       Done 2026-06-09 — 23 tests (14 helpers, 9 stores). Closes F-09 expansion portion.
 - [x] GitHub Actions CI (lint + format + tsc + test + build) @priority(medium) @effort(2h) @id(axo-012)
       Done 2026-06-09 — closes F-11. Playwright-in-CI deferred (axo-017).
-- [ ] Tag v0.2.0 and push @priority(high) @effort(0.25h) @id(axo-013)
+- [x] Tag v0.2.0 and push @priority(high) @effort(0.25h) @id(axo-013)
+      Done 2026-06-09 — tag pushed to GitHub; package.json bumped to 0.2.0.
 
 ## Stage 5 — Breaking library bumps + responsiveness (post-v0.2.0)
 
@@ -66,10 +67,6 @@ prefix: axo
 
 - [ ] Extract FloorPlan model state into a Zustand store @priority(medium) @effort(8h) @id(axo-020)
       FloorPlan is currently a Pixi Container + model store + persistence + singleton — four
-      responsibilities in one class, and the root cause of the singleton-lifecycle work in code-review-2026-06-09 finding #5. Stage 6 splits these:
-        - new useFloorPlanStore (floors, currentFloor, furnitureId, version) — Zustand
-        - FloorPlan stays a Pixi Container, subscribes to the store
-        - Serializer reads/writes the store directly, drops the Floor[] traversal
-        - Removes the static .Instance + dispose() pair entirely
+      responsibilities in one class, and the root cause of the singleton-lifecycle work in code-review-2026-06-09 finding #5. Stage 6 splits these: - new useFloorPlanStore (floors, currentFloor, furnitureId, version) — Zustand - FloorPlan stays a Pixi Container, subscribes to the store - Serializer reads/writes the store directly, drops the Floor[] traversal - Removes the static .Instance + dispose() pair entirely
       Prereq: axo-008 (Pixi 8) so we're not refactoring against a deprecated API surface.
       Touches Floor.ts, FloorPlan.ts, Serializer.ts, every Action. See FLOORPLAN-REFACTOR.md.
