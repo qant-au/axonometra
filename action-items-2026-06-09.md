@@ -482,7 +482,7 @@ _None._ The review surfaced nine 🟠 High findings but no 🔴 Critical issues 
 - **What:** No action until demand exists.
 - **Refs:** Review #89 (Section 11c)
 
-### 85. Tighten `setterAction` / `setter` typing
+### ~~85. Tighten `setterAction` / `setter` typing~~
 - **What:** Type as `Dispatch<SetStateAction<number>>` (or document the `-1 = no active mode` sentinel).
 - **Where:** `src/ui/Layout/ToolNavbar.tsx:87, 217-219`
 - **Refs:** Review #90 (Section 11d)

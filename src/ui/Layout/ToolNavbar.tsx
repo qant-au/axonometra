@@ -1,4 +1,12 @@
-import { ChangeEvent, Suspense, lazy, useRef, useState } from 'react';
+import {
+  ChangeEvent,
+  Dispatch,
+  SetStateAction,
+  Suspense,
+  lazy,
+  useRef,
+  useState
+} from 'react';
 import {
   Navbar,
   Tooltip,
@@ -92,7 +100,7 @@ const modes = [
   { icon: Eraser, label: 'Erase', tool: Tool.Remove }
 ];
 
-function AddMenu({ setter }: { setter: (tool: number) => void }) {
+function AddMenu({ setter }: { setter: Dispatch<SetStateAction<number>> }) {
   const { classes } = useStyles();
   const { setTool } = useStore();
   const [drawerOpened, setDrawerOpened] = useState(false);
@@ -135,6 +143,7 @@ function AddMenu({ setter }: { setter: (tool: number) => void }) {
           icon={<Armchair size={18} />}
           onClick={() => {
             setDrawerOpened(true);
+            // -1 = no active toolbar tool (deselect while the drawer is open)
             setter(-1);
           }}
         >
@@ -226,16 +235,12 @@ export function ToolNavbar() {
     action.execute();
   };
 
-  const setterAction = (val: number) => {
-    setActive(val);
-  };
-
   return (
     <div style={{ position: 'absolute' }}>
       <Navbar height="100vh" width={{ base: 70 }} p="md">
         <Navbar.Section grow>
           <Group direction="column" align="center" spacing={0}>
-            <AddMenu setter={setterAction} />
+            <AddMenu setter={setActive} />
             {toolModes}
           </Group>
         </Navbar.Section>
