@@ -5,7 +5,7 @@ import {
   Select,
   SimpleGrid
 } from '@mantine/core';
-import { ReactElement, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { FurnitureItem } from './FurnitureItem';
 import { useFurnitureStore } from '../../../stores/FurnitureStore';
 import { showNotification } from '@mantine/notifications';
@@ -19,11 +19,7 @@ const useStyles = createStyles((theme) => ({
 export function FurnitureAddPanel() {
   const { classes } = useStyles();
   const [category, setCategory] = useState('');
-  const [_availableCategories, _setAvailableCategories] = useState<string[]>(
-    []
-  );
   const { categories, currentFurnitureData } = useFurnitureStore();
-  const [cards, setCards] = useState<ReactElement[]>([]);
 
   // when a category is selected by user, load its furniture elements from API
   useEffect(() => {
@@ -31,15 +27,6 @@ export function FurnitureAddPanel() {
       useFurnitureStore.getState().getCurrentFurnitureData(category);
     }
   }, [category]);
-
-  // when furniture data is loaded from API, create cards and display to user
-  useEffect(() => {
-    setCards(
-      currentFurnitureData.map((item) => (
-        <FurnitureItem data={item} key={item._id}></FurnitureItem>
-      ))
-    );
-  }, [currentFurnitureData]);
 
   // on first load, select default category
   useEffect(() => {
@@ -68,7 +55,9 @@ export function FurnitureAddPanel() {
       <Navbar.Section style={{ height: '100%' }} grow mx="-xs" px="xs">
         <ScrollArea style={{ width: '320', height: '90%' }}>
           <SimpleGrid style={{ padding: 5 }} cols={2}>
-            {cards}
+            {currentFurnitureData.map((item) => (
+              <FurnitureItem data={item} key={item._id}></FurnitureItem>
+            ))}
           </SimpleGrid>
         </ScrollArea>
       </Navbar.Section>

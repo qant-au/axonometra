@@ -327,7 +327,7 @@ _None._ The review surfaced nine 🟠 High findings but no 🔴 Critical issues 
 - **Where:** `src/editor/editor/objects/Furniture.ts:29`
 - **Refs:** Review #52 (Section 3a)
 
-### 52. Simplify `FurnitureAddPanel`
+### ~~52. Simplify `FurnitureAddPanel`~~
 - **What:** Delete `_availableCategories` pair. Replace `cards` state with an inline render expression.
 - **Where:** `src/ui/FurnitureControls/FurnitureAddPanel/FurnitureAddPanel.tsx:22, 25-26, 35-41`
 - **Refs:** Review #53 (Section 3b)
