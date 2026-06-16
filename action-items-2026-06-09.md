@@ -175,7 +175,7 @@ _None._ The review surfaced nine 🟠 High findings but no 🔴 Critical issues 
 - **Where:** `src/editor/editor/__tests__/` (new directory)
 - **Refs:** Review #30 (Section 4d)
 
-### 27. Add a critical-flow Playwright spec
+### ~~27. Add a critical-flow Playwright spec~~
 - **Status:** ✅ Implemented. `e2e/place-wall.spec.ts` drives the canvas via `page.mouse.click` against three positions, places two walls, asserts node/wall counts via a dev-only `window.__axo` introspection handle exposed by `EditorRoot.tsx`, validates Ctrl+S writes the plan to `localStorage` with `version: 1`, and round-trips the save through a page reload + "Load from local save". Verified green against `npm run dev` on :4891. Skips automatically when `__axo` is absent (prod builds).
 - **What:** New `e2e/place-wall.spec.ts` driving canvas clicks via `page.mouse.click`, validating Save downloads via `page.waitForEvent('download')`, and a load round-trip.
 - **Where:** `e2e/place-wall.spec.ts` (new)
@@ -373,7 +373,7 @@ _None._ The review surfaced nine 🟠 High findings but no 🔴 Critical issues 
 - **Where:** `src/ui/Layout/ToolNavbar.tsx:210`, `src/ui/WelcomeModal.tsx:25`
 - **Refs:** Review #62 (Section 4a)
 
-### 62. Switch `oncontextmenu` to `addEventListener`
+### ~~62. Switch `oncontextmenu` to `addEventListener`~~
 - **Where:** `src/editor/EditorRoot.tsx:33-35`
 - **Refs:** Review #63 (Section 4a)
 
@@ -381,7 +381,7 @@ _None._ The review surfaced nine 🟠 High findings but no 🔴 Critical issues 
 - **What:** No action now. Track during action item 41.
 - **Refs:** Review #64 (Section 4b). _Confidence: Low — TS does not currently complain._
 
-### 64. Initialise refs to `null` and use optional chaining
+### ~~64. Initialise refs to `null` and use optional chaining~~
 - **What:** `useRef<HTMLInputElement>(null)`; callsites `fileRef.current?.click()`.
 - **Where:** `src/ui/Layout/ToolNavbar.tsx:194, 329`, `src/ui/WelcomeModal.tsx:17, 87`
 - **Refs:** Review #65 (Section 4b)
@@ -436,7 +436,7 @@ _None._ The review surfaced nine 🟠 High findings but no 🔴 Critical issues 
 - **Where:** `.github/workflows/ci.yml`
 - **Refs:** Review #78 (Section 7)
 
-### 75. Reference `restart.sh` in README
+### ~~75. Reference `restart.sh` in README~~
 - **What:** One-paragraph mention under a "Local production preview" section.
 - **Where:** `README.md`
 - **Refs:** Review #80 (Section 7)
