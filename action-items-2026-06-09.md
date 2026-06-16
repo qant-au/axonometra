@@ -299,7 +299,7 @@ _None._ The review surfaced nine 🟠 High findings but no 🔴 Critical issues 
 - **Where:** `.env` (delete), `.gitignore`
 - **Refs:** Review #46 (Section 2c)
 
-### 46. Accept the residual `npm audit` advisories (dev-only)
+### ~~46. Accept the residual `npm audit` advisories (dev-only)~~
 - **What:** No action; document in `SECURITY.md` (action item 39) that production deploy is unaffected. Revisit on the next Vite/Vitest major bump.
 - **Refs:** Review #47 (Section 2d) (recurring — STAGE2-REVIEW.md F-07)
 
@@ -332,7 +332,7 @@ _None._ The review surfaced nine 🟠 High findings but no 🔴 Critical issues 
 - **Where:** `src/ui/FurnitureControls/FurnitureAddPanel/FurnitureAddPanel.tsx:22, 25-26, 35-41`
 - **Refs:** Review #53 (Section 3b)
 
-### 53. Document the source-map decision
+### ~~53. Document the source-map decision~~
 - **What:** Leave `build.sourcemap` unset (Vite default `false`) until error tracking is wired up; then switch to `'hidden'` for upload-to-Sentry-only.
 - **Refs:** Review #54 (Section 3c)
 
@@ -346,7 +346,7 @@ _None._ The review surfaced nine 🟠 High findings but no 🔴 Critical issues 
 - **Where:** `src/editor/editor/objects/FloorPlan.ts:20`, `src/editor/editor/actions/*Action.ts`
 - **Refs:** Review #56 (Section 3d)
 
-### 56. Decide on periodic autosave
+### ~~56. Decide on periodic autosave~~
 - **What:** Uncomment + tune the `setInterval(autosave, 60000)` line, or document that Ctrl+S is the only persistence path in README.
 - **Where:** `src/editor/editor/Main.ts:128`
 - **Refs:** Review #57 (Section 3d)
@@ -391,7 +391,7 @@ _None._ The review surfaced nine 🟠 High findings but no 🔴 Critical issues 
 - **Where:** `src/editor/editor/constants.ts:29-33`
 - **Refs:** Review #66 (Section 4c)
 
-### 66. Use Zustand selectors at call sites
+### ~~66. Use Zustand selectors at call sites~~
 - **What:** Refactor consumers from `const { ... } = useStore()` to `const x = useStore(s => s.x)`. Can defer to the Zustand 5 migration (action item 42).
 - **Where:** `src/App.tsx:8`, `src/ui/Layout/ToolNavbar.tsx:191-192`, etc.
 - **Refs:** Review #67 (Section 4c)
@@ -431,7 +431,7 @@ _None._ The review surfaced nine 🟠 High findings but no 🔴 Critical issues 
 - **Where:** `src/editor/editor/actions/SaveAction.ts`
 - **Refs:** Review #74 (Section 6). _Confidence: Low — opinion call, not a defect._
 
-### 74. Add `npm audit` to CI
+### ~~74. Add `npm audit` to CI~~
 - **What:** Optional step `npm audit --audit-level=high` with `continue-on-error: true`, or use Dependabot.
 - **Where:** `.github/workflows/ci.yml`
 - **Refs:** Review #78 (Section 7)
@@ -441,7 +441,7 @@ _None._ The review surfaced nine 🟠 High findings but no 🔴 Critical issues 
 - **Where:** `README.md`
 - **Refs:** Review #80 (Section 7)
 
-### 76. Reconsider welcome-modal Escape / outside-click behaviour
+### ~~76. Reconsider welcome-modal Escape / outside-click behaviour~~
 - **What:** Allow Escape / outside-click to dismiss, or add an explicit Close button. Pure UX call.
 - **Where:** `src/ui/WelcomeModal.tsx:51-52`
 - **Refs:** Review #81 (Section 8). _Confidence: Low — UX opinion._
