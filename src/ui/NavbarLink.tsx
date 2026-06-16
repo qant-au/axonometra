@@ -24,7 +24,7 @@ const useStyles = createStyles((theme) => ({
 
     // Visible keyboard-focus ring — these icon buttons are otherwise only
     // distinguishable on hover, which keyboard users never trigger.
-    '&:focusVisible': {
+    '&:focus-visible': {
       outline: `2px solid ${theme.colors[theme.primaryColor][6]}`,
       outlineOffset: 2
     }
