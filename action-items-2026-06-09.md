@@ -191,7 +191,7 @@ _None._ The review surfaced nine 🟠 High findings but no 🔴 Critical issues 
 
 ## 🟡 Medium — Testing, build & deployment
 
-### 29. Add Playwright to CI (TODO axo-017)
+### ~~29. Add Playwright to CI (TODO axo-017)~~
 - **What:** Per the existing TODO note: containerised via `restart.sh NO_WATCH=1`, once the rest of the CI workflow has had a green run.
 - **Where:** `.github/workflows/ci.yml`
 - **Refs:** Review #36 (Section 7) (recurring — TODO axo-017)
