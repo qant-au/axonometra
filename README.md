@@ -49,6 +49,13 @@ npm run dev
 
 Run `bash restart.sh NO_WATCH=1` for a containerised local preview, `npm run test` for unit tests, `npm run test:e2e` for the Playwright smoke spec.
 
+## Saving & loading
+
+- **Ctrl+S** saves the current plan to your browser's local storage.
+- The toolbar **Save** button downloads the plan as an `axonometra-plan-*.json` file.
+- Load a plan from the welcome dialog ("Load from disk" / "Load from local save") or the toolbar's **Load plan** button.
+- Saving is manual — there is no periodic autosave.
+
 ## Accessibility
 
 The editor canvas is currently **pointer-only**: walls, furniture, and handles are
