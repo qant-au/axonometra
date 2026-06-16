@@ -19,7 +19,8 @@ const useStyles = createStyles((theme) => ({
 export function FurnitureAddPanel() {
   const { classes } = useStyles();
   const [category, setCategory] = useState('');
-  const { categories, currentFurnitureData } = useFurnitureStore();
+  const categories = useFurnitureStore((s) => s.categories);
+  const currentFurnitureData = useFurnitureStore((s) => s.currentFurnitureData);
 
   // when a category is selected by user, load its furniture elements from API
   useEffect(() => {

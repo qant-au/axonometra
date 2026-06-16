@@ -102,11 +102,11 @@ const modes = [
 
 function AddMenu({ setter }: { setter: Dispatch<SetStateAction<number>> }) {
   const { classes } = useStyles();
-  const { setTool } = useStore();
+  const setTool = useStore((s) => s.setTool);
   const [drawerOpened, setDrawerOpened] = useState(false);
 
   const [_modalOpened, _setModalOpened] = useState(false);
-  const { getCategories } = useFurnitureStore();
+  const getCategories = useFurnitureStore((s) => s.getCategories);
 
   const addButton = (
     <UnstyledButton className={classes.link}>
@@ -207,8 +207,10 @@ function AddMenu({ setter }: { setter: Dispatch<SetStateAction<number>> }) {
 export function ToolNavbar() {
   const [active, setActive] = useState(0);
 
-  const { setTool, floor } = useStore();
-  const { setSnap, snap } = useStore();
+  const setTool = useStore((s) => s.setTool);
+  const floor = useStore((s) => s.floor);
+  const setSnap = useStore((s) => s.setSnap);
+  const snap = useStore((s) => s.snap);
 
   const fileRef = useRef<HTMLInputElement>(null);
   const { classes } = useStyles();
