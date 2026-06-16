@@ -20,6 +20,13 @@ const useStyles = createStyles((theme) => ({
         theme.colorScheme === 'dark'
           ? theme.colors.dark[5]
           : theme.colors.gray[0]
+    },
+
+    // Visible keyboard-focus ring — these icon buttons are otherwise only
+    // distinguishable on hover, which keyboard users never trigger.
+    '&:focusVisible': {
+      outline: `2px solid ${theme.colors[theme.primaryColor][6]}`,
+      outlineOffset: 2
     }
   },
 
@@ -53,6 +60,7 @@ export function NavbarLink({
     <Tooltip label={label} position="right" withArrow transitionDuration={0}>
       <UnstyledButton
         onClick={onClick}
+        aria-label={label}
         className={cx(classes.link, { [classes.active]: active })}
       >
         <Icon />

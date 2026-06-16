@@ -49,6 +49,14 @@ npm run dev
 
 Run `bash restart.sh NO_WATCH=1` for a containerised local preview, `npm run test` for unit tests, `npm run test:e2e` for the Playwright smoke spec.
 
+## Accessibility
+
+The editor canvas is currently **pointer-only**: walls, furniture, and handles are
+placed and manipulated with the mouse or touch, and there is no keyboard path for
+drawing on the canvas yet. Full canvas keyboard navigation is planned for a later
+stage. The surrounding UI chrome is keyboard-operable — toolbar buttons are reachable
+by Tab, expose accessible labels, and show a visible focus ring.
+
 ## License
 
 [MIT](LICENSE) — relicensed from upstream Arcada's Apache-2.0; original copyright attributed in `LICENSE`. See the file for the full text.
