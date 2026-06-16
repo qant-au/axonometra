@@ -50,8 +50,9 @@ When reporting, please include:
 - Vulnerabilities that require a privileged attacker on the same machine
   (e.g. access to the browser's IndexedDB / `localStorage`).
 - Vulnerabilities in development-only dependencies (`vite`, `vitest`,
-  ESLint, Playwright) that do not ship with the production build. We
-  track these via `npm audit` and patch on major bumps.
+  ESLint, Playwright) that do not ship with the production build — the
+  deployed static bundle is unaffected. We track these via `npm audit`
+  (also run in CI) and patch on major bumps.
 - Self-XSS via paste-into-DevTools or via a plan file the user authored
   themselves.
 
