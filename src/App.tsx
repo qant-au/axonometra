@@ -1,5 +1,4 @@
 import { useEffect } from 'react';
-import './App.css';
 import { PageLayout } from './ui/Layout/PageLayout';
 import { useFurnitureStore } from './stores/FurnitureStore';
 import { NotificationsProvider } from '@mantine/notifications';
