@@ -336,7 +336,7 @@ _None._ The review surfaced nine 🟠 High findings but no 🔴 Critical issues 
 - **What:** Leave `build.sourcemap` unset (Vite default `false`) until error tracking is wired up; then switch to `'hidden'` for upload-to-Sentry-only.
 - **Refs:** Review #54 (Section 3c)
 
-### 54. Update `public/manifest.json` from CRA defaults
+### ~~54. Update `public/manifest.json` from CRA defaults~~
 - **What:** Set `short_name` to `Axonometra`, `name` to `Axonometra Floor Planner`. Verify favicon and logo PNGs are not CRA defaults.
 - **Where:** `public/manifest.json`, `public/favicon.ico`, `public/logo*.png`
 - **Refs:** Review #55 (Section 3c)
