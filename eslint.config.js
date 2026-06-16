@@ -18,8 +18,9 @@ module.exports = tseslint.config(
       'graphify-out/**',
       '.idea/**',
       'docker/**',
-      '*.config.js',
-      '*.config.ts'
+      // Root tooling configs are Node files, not app code — kept out of the
+      // linted surface (`npm run lint` targets src/e2e). Covers js/cjs/mjs/ts/mts.
+      '*.config.{js,cjs,mjs,ts,mts}'
     ]
   },
   js.configs.recommended,

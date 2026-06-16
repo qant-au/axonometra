@@ -401,7 +401,7 @@ _None._ The review surfaced nine 🟠 High findings but no 🔴 Critical issues 
 - **Where:** `vitest.config.mts:8`
 - **Refs:** Review #68 (Section 4d)
 
-### 68. Reconsider the ESLint config-file ignore
+### ~~68. Reconsider the ESLint config-file ignore~~
 - **What:** Remove or tighten `*.config.js` / `*.config.ts` from the ignores array.
 - **Where:** `eslint.config.js:21-22`
 - **Refs:** Review #69 (Section 4f)
