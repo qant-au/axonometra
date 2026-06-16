@@ -39,12 +39,6 @@ export enum LabelAxis {
   Vertical
 }
 
-export enum ToolMode {
-  WallMode,
-  FurnitureMode,
-  ViewMode
-}
-
 export enum Tool {
   WallAdd,
   Edit,

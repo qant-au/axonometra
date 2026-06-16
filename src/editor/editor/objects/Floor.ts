@@ -113,12 +113,6 @@ export class Floor extends Container {
     return this.wallNodeSequence;
   }
 
-  public clearScreen() {
-    for (const child of this.children) {
-      child.visible = false;
-    }
-  }
-
   public addFurniture(
     obj: FurnitureData,
     id: number,

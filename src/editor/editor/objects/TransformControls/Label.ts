@@ -28,12 +28,8 @@ export class Label extends Container {
     this.addChild(this.text);
     this.pivot.set(this.width / 2, this.height / 2);
     this.zIndex = 1001;
-
-    this.on('toggleLabel', this.toggleLabel);
-    this.toggleLabel({});
   }
 
-  private toggleLabel(_ev: unknown) {}
   public update(sizeInPixels: number) {
     this.text.text = this.toMeter(sizeInPixels);
     this.textBkg.width = this.text.width;

@@ -355,16 +355,16 @@ _None._ The review surfaced nine 🟠 High findings but no 🔴 Critical issues 
 - **Where:** `src/editor/editor/objects/Furniture.ts:141`
 - **Refs:** Review #58 (Section 4a)
 
-### 58. Clean up commented-out code blocks
+### ~~58. Clean up commented-out code blocks~~
 - **What:** Delete the dead `src/editor/editor/objects/assets.ts`. Decide on the mobile gate (action item 36) and act on the commented block in `PageLayout.tsx:7-20`. Decide on autosave interval (action item 56). Translate or delete Romanian inline comments per action item 76.
 - **Where:** `src/editor/editor/objects/assets.ts` (delete), `src/ui/Layout/PageLayout.tsx:7-20`, `src/editor/editor/Main.ts:110-112, 128`
 - **Refs:** Review #59 (Section 4a)
 
-### 59. Delete `Floor.clearScreen`
+### ~~59. Delete `Floor.clearScreen`~~
 - **Where:** `src/editor/editor/objects/Floor.ts:112-116`
 - **Refs:** Review #60 (Section 4a)
 
-### 60. Delete `Label.toggleLabel` no-op and its subscription
+### ~~60. Delete `Label.toggleLabel` no-op and its subscription~~
 - **Where:** `src/editor/editor/objects/TransformControls/Label.ts:27-31`
 - **Refs:** Review #61 (Section 4a)
 
@@ -386,7 +386,7 @@ _None._ The review surfaced nine 🟠 High findings but no 🔴 Critical issues 
 - **Where:** `src/ui/Layout/ToolNavbar.tsx:194, 329`, `src/ui/WelcomeModal.tsx:17, 87`
 - **Refs:** Review #65 (Section 4b)
 
-### 65. Delete the duplicate `ToolMode` enum in `constants.ts`
+### ~~65. Delete the duplicate `ToolMode` enum in `constants.ts`~~
 - **What:** The `ToolMode` enum at `src/editor/editor/constants.ts:29-33` is unused and has its FurnitureMode/WallMode ordinals swapped relative to the store's. Delete it.
 - **Where:** `src/editor/editor/constants.ts:29-33`
 - **Refs:** Review #66 (Section 4c)
