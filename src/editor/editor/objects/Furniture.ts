@@ -118,7 +118,6 @@ export class Furniture extends Sprite {
     ev.stopPropagation();
     if (ev.data.button == 1) {
       this.zIndex++;
-      console.log(this.zIndex);
     }
     switch (useStore.getState().activeTool) {
       case Tool.Edit: {
