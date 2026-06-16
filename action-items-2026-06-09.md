@@ -416,7 +416,7 @@ _None._ The review surfaced nine 🟠 High findings but no 🔴 Critical issues 
 - **Where:** `.prettierignore` (new)
 - **Refs:** Review #71 (Section 4f)
 
-### 71. Header `STAGE2-REVIEW.md` as historical
+### ~~71. Header `STAGE2-REVIEW.md` as historical~~
 - **What:** Add a one-line header pointing to the resolution status and `code-review-2026-06-09.md` as the current review.
 - **Where:** `STAGE2-REVIEW.md`
 - **Refs:** Review #72 (Section 5)
@@ -454,9 +454,10 @@ _None._ The review surfaced nine 🟠 High findings but no 🔴 Critical issues 
 ### 78. Add `CODE_OF_CONDUCT.md`
 - **What:** Contributor Covenant 2.1 standard template; link from README.
 - **Where:** `CODE_OF_CONDUCT.md` (new)
+- **Status:** ⏳ Deferred to TODO `@id(axo-021)` (due 2026-08-16) — automated authoring of the standard template tripped the content filter; add manually.
 - **Refs:** Review #83 (Section 9)
 
-### 79. Add `.github/ISSUE_TEMPLATE/` and `PULL_REQUEST_TEMPLATE.md`
+### ~~79. Add `.github/ISSUE_TEMPLATE/` and `PULL_REQUEST_TEMPLATE.md`~~
 - **Where:** `.github/ISSUE_TEMPLATE/bug_report.md`, `.github/ISSUE_TEMPLATE/feature_request.md`, `.github/PULL_REQUEST_TEMPLATE.md` (all new)
 - **Refs:** Review #84 (Section 9)
 

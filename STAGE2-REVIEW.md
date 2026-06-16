@@ -1,3 +1,5 @@
+> **Historical document.** This Stage 2 review (2026-06-09, end of Stage 1) is kept for context. The current, authoritative review is [code-review-2026-06-09.md](./code-review-2026-06-09.md); remediation is tracked in [action-items-2026-06-09.md](./action-items-2026-06-09.md).
+
 # Stage 2 — Project Review
 
 **Date:** 2026-06-09

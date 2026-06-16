@@ -70,3 +70,8 @@ prefix: axo
       responsibilities in one class, and the root cause of the singleton-lifecycle work in code-review-2026-06-09 finding #5. Stage 6 splits these: - new useFloorPlanStore (floors, currentFloor, furnitureId, version) — Zustand - FloorPlan stays a Pixi Container, subscribes to the store - Serializer reads/writes the store directly, drops the Floor[] traversal - Removes the static .Instance + dispose() pair entirely
       Prereq: axo-008 (Pixi 8) so we're not refactoring against a deprecated API surface.
       Touches Floor.ts, FloorPlan.ts, Serializer.ts, every Action. See FLOORPLAN-REFACTOR.md.
+
+## OSS hygiene
+
+- [ ] Add CODE_OF_CONDUCT.md (Contributor Covenant 2.1) @priority(low) @effort(0.25h) @due(2026-08-16) @id(axo-021)
+      Action-items batch 2026-06-16 deferred this (#78): the standard template tripped the content filter during automated authoring. Add manually — Contributor Covenant 2.1 with a maintainer enforcement contact, then link it from README and strike #78 in action-items-2026-06-09.md.
