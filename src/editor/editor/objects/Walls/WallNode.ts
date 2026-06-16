@@ -6,7 +6,7 @@ import { DeleteWallNodeAction } from '../../actions/DeleteWallNodeAction';
 import { INodeSerializable } from '../../persistence/INodeSerializable';
 import { FloorPlan } from '../FloorPlan';
 import { viewportX, viewportY } from '../../../../helpers/ViewportCoordinates';
-import { isMobile } from 'react-device-detect';
+import { isMobile } from '../../../../helpers/isMobile';
 export class WallNode extends Graphics {
   private dragging!: boolean;
   private id: number;

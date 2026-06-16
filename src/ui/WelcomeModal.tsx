@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { ChangeEvent, useEffect, useRef, useState } from 'react';
 import {
   Modal,
   Button,
@@ -12,6 +12,7 @@ import { LoadAction } from '../editor/editor/actions/LoadAction';
 import AxonometraLogo from '../res/logo.png';
 import { FloorPlan } from '../editor/editor/objects/FloorPlan';
 import { showNotification } from '@mantine/notifications';
+import { readPlanFile } from '../helpers/readPlanFile';
 
 const useStyles = createStyles(() => ({
   padded: {
@@ -24,8 +25,8 @@ export function WelcomeModal() {
   const fileRef = useRef<HTMLInputElement>(null);
   const image = <Image src={AxonometraLogo} />;
 
-  const loadFromDisk = async (e: any) => {
-    const resultText = await e.target.files.item(0).text();
+  const loadFromDisk = async (e: ChangeEvent<HTMLInputElement>) => {
+    const resultText = await readPlanFile(e.target.files?.[0]);
 
     if (resultText) {
       const action = new LoadAction(resultText);
@@ -80,6 +81,7 @@ export function WelcomeModal() {
           <input
             ref={fileRef}
             onChange={loadFromDisk}
+            accept=".json,application/json,text/plain"
             multiple={false}
             type="file"
             hidden

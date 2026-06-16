@@ -5,8 +5,8 @@ vi.mock('pixi.js', async () => {
   return createPixiMock();
 });
 
-// WallNode reads isMobile from react-device-detect (Handle does too).
-vi.mock('react-device-detect', () => ({ isMobile: false }));
+// WallNode reads isMobile from the helper (Handle does too).
+vi.mock('../../../helpers/isMobile', () => ({ isMobile: false }));
 
 // Notifications surface from remove() when a connected node can't be deleted.
 const showNotification = vi.fn();

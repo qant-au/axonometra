@@ -1,4 +1,4 @@
-import { Suspense, lazy, useRef, useState } from 'react';
+import { ChangeEvent, Suspense, lazy, useRef, useState } from 'react';
 import {
   Navbar,
   Tooltip,
@@ -35,6 +35,7 @@ import { cleanNotifications, showNotification } from '@mantine/notifications';
 import { useStore } from '../../stores/EditorStore';
 import { ChangeFloorAction } from '../../editor/editor/actions/ChangeFloorAction';
 import { LoadAction } from '../../editor/editor/actions/LoadAction';
+import { readPlanFile } from '../../helpers/readPlanFile';
 import { SaveAction } from '../../editor/editor/actions/SaveAction';
 import { Tool } from '../../editor/editor/constants';
 import { PrintAction } from '../../editor/editor/actions/PrintAction';
@@ -216,9 +217,11 @@ export function ToolNavbar() {
     />
   ));
 
-  const handleChange = async (e: any) => {
-    const resultText = await e.target.files.item(0).text();
-
+  const handleChange = async (e: ChangeEvent<HTMLInputElement>) => {
+    const resultText = await readPlanFile(e.target.files?.[0]);
+    if (!resultText) {
+      return;
+    }
     const action = new LoadAction(resultText);
     action.execute();
   };
@@ -345,6 +348,7 @@ export function ToolNavbar() {
             <input
               ref={fileRef}
               onChange={handleChange}
+              accept=".json,application/json,text/plain"
               multiple={false}
               type="file"
               hidden

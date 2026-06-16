@@ -1,5 +1,5 @@
 import { Graphics, InteractionEvent } from 'pixi.js';
-import { isMobile } from 'react-device-detect';
+import { isMobile } from '../../../../helpers/isMobile';
 import { HANDLE_MOBILE_SCALE, WALL_THICKNESS } from '../../constants';
 import { Point } from '../../../../helpers/Point';
 import { viewportX, viewportY } from '../../../../helpers/ViewportCoordinates';

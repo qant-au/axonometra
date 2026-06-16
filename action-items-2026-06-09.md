@@ -289,7 +289,7 @@ _None._ The review surfaced nine 🟠 High findings but no 🔴 Critical issues 
 - **Where:** `src/App.tsx:2`, `src/App.css` (delete)
 - **Refs:** Review #44 (Section 1)
 
-### 44. Validate file inputs on size and MIME type
+### ~~44. Validate file inputs on size and MIME type~~
 - **What:** `accept=".json,application/json,text/plain"`, reject files > 5 MB before reading, toast on rejection.
 - **Where:** `src/ui/WelcomeModal.tsx:79-84`, `src/ui/Layout/ToolNavbar.tsx:333-339`
 - **Refs:** Review #45 (Section 2a)
@@ -303,7 +303,7 @@ _None._ The review surfaced nine 🟠 High findings but no 🔴 Critical issues 
 - **What:** No action; document in `SECURITY.md` (action item 39) that production deploy is unaffected. Revisit on the next Vite/Vitest major bump.
 - **Refs:** Review #47 (Section 2d) (recurring — STAGE2-REVIEW.md F-07)
 
-### 47. Pick one `isMobile` implementation
+### ~~47. Pick one `isMobile` implementation~~
 - **What:** Remove `react-device-detect` from `package.json`. Replace its three call sites with Pixi's `isMobile` or `window.matchMedia('(pointer: coarse)')`.
 - **Where:** `package.json:17`; `src/editor/editor/objects/Walls/WallNode.ts:9, 20`; `src/editor/editor/objects/TransformControls/Handle.ts:2, 64`; remove from `package.json`
 - **Refs:** Review #48 (Section 2d)
@@ -322,7 +322,7 @@ _None._ The review surfaced nine 🟠 High findings but no 🔴 Critical issues 
 - **What:** No action until code-splitting (action item 13) lands. Then consider a brotli-enabled nginx base image.
 - **Refs:** Review #51 (Section 2f)
 
-### 51. Add a fallback texture for failed furniture loads
+### ~~51. Add a fallback texture for failed furniture loads~~
 - **What:** Add an `onerror` handler that swaps in a grey rectangle texture matching `data.width × data.height`.
 - **Where:** `src/editor/editor/objects/Furniture.ts:29`
 - **Refs:** Review #52 (Section 3a)
@@ -368,7 +368,7 @@ _None._ The review surfaced nine 🟠 High findings but no 🔴 Critical issues 
 - **Where:** `src/editor/editor/objects/TransformControls/Label.ts:27-31`
 - **Refs:** Review #61 (Section 4a)
 
-### 61. Type the two `e: any` file-input handlers
+### ~~61. Type the two `e: any` file-input handlers~~
 - **What:** `(e: ChangeEvent<HTMLInputElement>)`. Use `e.target.files?.[0]?.text()` for defensive access.
 - **Where:** `src/ui/Layout/ToolNavbar.tsx:210`, `src/ui/WelcomeModal.tsx:25`
 - **Refs:** Review #62 (Section 4a)
