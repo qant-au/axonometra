@@ -406,7 +406,7 @@ _None._ The review surfaced nine 🟠 High findings but no 🔴 Critical issues 
 - **Where:** `eslint.config.js:21-22`
 - **Refs:** Review #69 (Section 4f)
 
-### 69. Add a pre-commit hook
+### ~~69. Add a pre-commit hook~~
 - **What:** `simple-git-hooks` + `lint-staged` running prettier + eslint on staged files.
 - **Where:** `package.json`, `.simple-git-hooks.json` (or similar) (new)
 - **Refs:** Review #70 (Section 4f)
