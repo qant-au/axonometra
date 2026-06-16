@@ -50,8 +50,8 @@ export function WelcomeModal() {
     <>
       <Modal
         className={classes.padded}
-        closeOnClickOutside={false}
-        closeOnEscape={false}
+        closeOnClickOutside={true}
+        closeOnEscape={true}
         opened={opened}
         withCloseButton={false}
         overlayColor={
