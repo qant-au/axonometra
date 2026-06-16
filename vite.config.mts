@@ -9,14 +9,21 @@ export default defineConfig({
     outDir: 'dist',
     rollupOptions: {
       output: {
-        manualChunks: {
-          pixi: ['pixi.js', 'pixi-viewport'],
-          mantine: [
-            '@mantine/core',
-            '@mantine/hooks',
-            '@mantine/notifications',
-            '@mantine/dropzone'
-          ]
+        // Function form: the array form leaves react/react-dom absorbed into
+        // the mantine chunk (and emits an empty `react` chunk), so match the
+        // vendor packages by resolved path instead.
+        manualChunks(id) {
+          if (!id.includes('node_modules')) return;
+          if (id.includes('/pixi.js/') || id.includes('/pixi-viewport/'))
+            return 'pixi';
+          if (id.includes('/@pixi/')) return 'pixi';
+          if (id.includes('/@mantine/')) return 'mantine';
+          if (
+            id.includes('/react/') ||
+            id.includes('/react-dom/') ||
+            id.includes('/scheduler/')
+          )
+            return 'react';
         }
       }
     }
