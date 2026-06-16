@@ -313,7 +313,7 @@ _None._ The review surfaced nine 🟠 High findings but no 🔴 Critical issues 
 - **Where:** `src/editor/editor/actions/SaveAction.ts:13-14`
 - **Refs:** Review #49 (Section 2e)
 
-### 49. Align Node version across Dockerfile, CI, and a new `.nvmrc`
+### ~~49. Align Node version across Dockerfile, CI, and a new `.nvmrc`~~
 - **What:** Pick Node 22 (current LTS). Update `Dockerfile:12`, `.github/workflows/ci.yml:21` (or use `node-version-file: .nvmrc`), add `.nvmrc` with `22`.
 - **Where:** `Dockerfile:12`, `.github/workflows/ci.yml:21`, `.nvmrc` (new)
 - **Refs:** Review #50, #76, #79 (Sections 2f, 6, 7)
@@ -396,7 +396,7 @@ _None._ The review surfaced nine 🟠 High findings but no 🔴 Critical issues 
 - **Where:** `src/App.tsx:8`, `src/ui/Layout/ToolNavbar.tsx:191-192`, etc.
 - **Refs:** Review #67 (Section 4c)
 
-### 67. Disable `globals: true` in `vitest.config.mts`
+### ~~67. Disable `globals: true` in `vitest.config.mts`~~
 - **What:** Existing tests already import explicitly; the global is unused.
 - **Where:** `vitest.config.mts:8`
 - **Refs:** Review #68 (Section 4d)
@@ -411,7 +411,7 @@ _None._ The review surfaced nine 🟠 High findings but no 🔴 Critical issues 
 - **Where:** `package.json`, `.simple-git-hooks.json` (or similar) (new)
 - **Refs:** Review #70 (Section 4f)
 
-### 70. Add `.prettierignore`
+### ~~70. Add `.prettierignore`~~
 - **What:** Add `code-review-*.md`, `action-items-*.md`, `STAGE*-REVIEW.md` to keep these working documents from breaking `format:check`.
 - **Where:** `.prettierignore` (new)
 - **Refs:** Review #71 (Section 4f)
