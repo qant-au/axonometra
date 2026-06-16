@@ -7,6 +7,9 @@ export default defineConfig({
   preview: { host: '0.0.0.0', port: 4891, strictPort: true },
   build: {
     outDir: 'dist',
+    // Source maps stay off until error tracking (e.g. Sentry) is wired up;
+    // switch to 'hidden' then so maps upload but aren't served. (#53)
+    sourcemap: false,
     rollupOptions: {
       output: {
         // Function form: the array form leaves react/react-dom absorbed into
