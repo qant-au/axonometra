@@ -291,11 +291,12 @@ export function ToolNavbar() {
               icon={ArrowDownSquare}
               label="Snap to grid"
               onClick={() => {
-                setSnap(!snap);
+                const next = !snap;
+                setSnap(next);
                 cleanNotifications();
                 showNotification({
-                  message: 'Snap to grid now ' + (snap ? 'Off' : 'On'),
-                  icon: snap ? <Table /> : <TableOff />
+                  message: 'Snap to grid now ' + (next ? 'On' : 'Off'),
+                  icon: next ? <Table /> : <TableOff />
                 });
               }}
             />

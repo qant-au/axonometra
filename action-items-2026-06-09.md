@@ -308,7 +308,7 @@ _None._ The review surfaced nine 🟠 High findings but no 🔴 Critical issues 
 - **Where:** `package.json:17`; `src/editor/editor/objects/Walls/WallNode.ts:9, 20`; `src/editor/editor/objects/TransformControls/Handle.ts:2, 64`; remove from `package.json`
 - **Refs:** Review #48 (Section 2d)
 
-### 48. Improve `SaveAction` filename and MIME
+### ~~48. Improve `SaveAction` filename and MIME~~
 - **What:** `type: 'application/json'`, filename `axonometra-plan-YYYY-MM-DD-HHmm.json`.
 - **Where:** `src/editor/editor/actions/SaveAction.ts:13-14`
 - **Refs:** Review #49 (Section 2e)
@@ -446,7 +446,7 @@ _None._ The review surfaced nine 🟠 High findings but no 🔴 Critical issues 
 - **Where:** `src/ui/WelcomeModal.tsx:51-52`
 - **Refs:** Review #81 (Section 8). _Confidence: Low — UX opinion._
 
-### 77. Fix the stale-closure snap toggle notification
+### ~~77. Fix the stale-closure snap toggle notification~~
 - **What:** Compute `const next = !snap;` once, use `next` for both `setSnap` and the message/icon ternary.
 - **Where:** `src/ui/Layout/ToolNavbar.tsx:284-290`
 - **Refs:** Review #82 (Section 8)
@@ -464,7 +464,7 @@ _None._ The review surfaced nine 🟠 High findings but no 🔴 Critical issues 
 - **What:** Manual check. Confirm the site exists, accurately reflects the project, and doesn't still say "arcada".
 - **Refs:** Review #85 (Section 9). _Confidence: Low — not verifiable from the codebase._
 
-### 81. Translate Romanian comments to English
+### ~~81. Translate Romanian comments to English~~
 - **What:** Chunk with other work in the affected files (e.g. axo-015 touches most of them). Don't do a dedicated translation pass.
 - **Where:** `src/editor/editor/objects/Furniture.ts:12,66,159`; `src/editor/editor/objects/TransformControls/Handle.ts:107,132-148`; `src/editor/editor/objects/Floor.ts:222`; `src/editor/editor/objects/Walls/Wall.ts:117`
 - **Refs:** Review #86 (Section 10)
@@ -486,7 +486,7 @@ _None._ The review surfaced nine 🟠 High findings but no 🔴 Critical issues 
 - **Where:** `src/ui/Layout/ToolNavbar.tsx:87, 217-219`
 - **Refs:** Review #90 (Section 11d)
 
-### 86. Consolidate snapping in `Pointer.update`
+### ~~86. Consolidate snapping in `Pointer.update`~~
 - **What:** Replace the inline `Math.trunc(worldX - (worldX % 10))` with a call to `snap()` from `ViewportCoordinates.ts`.
 - **Where:** `src/editor/editor/Pointer.ts:14-23`
 - **Refs:** Review #91 (Section 11d)

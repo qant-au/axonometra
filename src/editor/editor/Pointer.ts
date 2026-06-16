@@ -1,5 +1,5 @@
 import { Container, Graphics, InteractionEvent } from 'pixi.js';
-import { viewportX, viewportY } from '../../helpers/ViewportCoordinates';
+import { snap, viewportX, viewportY } from '../../helpers/ViewportCoordinates';
 import { useStore } from '../../stores/EditorStore';
 
 export class Pointer extends Container {
@@ -15,8 +15,8 @@ export class Pointer extends Container {
     let worldX = viewportX(ev.data.global.x);
     let worldY = viewportY(ev.data.global.y);
     if (useStore.getState().snap) {
-      worldX = Math.trunc(worldX - (worldX % 10));
-      worldY = Math.trunc(worldY - (worldY % 10));
+      worldX = snap(worldX);
+      worldY = snap(worldY);
     }
 
     this.position.set(worldX, worldY);

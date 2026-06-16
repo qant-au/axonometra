@@ -9,7 +9,7 @@ import { IFurnitureSerializable } from '../persistence/IFurnitureSerializable';
 import { TransformLayer } from './TransformControls/TransformLayer';
 
 export class Furniture extends Sprite {
-  private id: number; // fiecare mobila isi stie index-ul in plan. uuids?
+  private id: number; // each furniture piece knows its own index in the plan. uuids?
   // private dragging: boolean;
   public isAttached: boolean;
   public attachedToLeft?: number;
