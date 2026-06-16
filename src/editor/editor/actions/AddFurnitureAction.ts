@@ -35,6 +35,5 @@ export class AddFurnitureAction implements Action {
       this.attachedToLeft,
       this.attachedToRight
     );
-    this.receiver.actions.push(this);
   }
 }

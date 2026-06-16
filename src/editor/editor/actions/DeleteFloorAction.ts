@@ -10,7 +10,6 @@ export class DeleteFloorAction implements Action {
   }
 
   public execute(): void {
-    this.receiver.actions.push(this);
     this.receiver.removeFloor();
   }
 }

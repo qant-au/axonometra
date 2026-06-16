@@ -7,7 +7,6 @@ import {
   safeParsePlan,
   validatePlanShape
 } from '../persistence/FloorPlanSerializable';
-import { Action } from '../actions/Action';
 import { useStore } from '../../../stores/EditorStore';
 import { Point } from '../../../helpers/Point';
 import { showNotification } from '@mantine/notifications';
@@ -20,13 +19,11 @@ export class FloorPlan extends Container {
   private serializer: Serializer;
   public furnitureId = 0; // TODO uuid?
   public windowFurniture!: FurnitureData;
-  public actions: Action[];
 
   public currentFloor = 0;
   private constructor() {
     super();
     this.floors = [];
-    this.actions = [];
     this.floors.push(new Floor());
     this.addChild(this.floors[0]);
     this.serializer = new Serializer();
@@ -179,7 +176,6 @@ export class FloorPlan extends Container {
       floor.reset();
     }
     this.floors = [];
-    this.actions = [];
     this.currentFloor = 0;
     this.furnitureId = 0;
     FloorPlan.instance = undefined;

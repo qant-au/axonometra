@@ -341,7 +341,7 @@ _None._ The review surfaced nine 🟠 High findings but no 🔴 Critical issues 
 - **Where:** `public/manifest.json`, `public/favicon.ico`, `public/logo*.png`
 - **Refs:** Review #55 (Section 3c)
 
-### 55. Either implement undo/redo or stop pushing to `FloorPlan.actions`
+### ~~55. Either implement undo/redo or stop pushing to `FloorPlan.actions`~~
 - **What:** Until undo is real, delete the `this.receiver.actions.push(this)` calls. Or implement a bounded undo stack (cap 100).
 - **Where:** `src/editor/editor/objects/FloorPlan.ts:20`, `src/editor/editor/actions/*Action.ts`
 - **Refs:** Review #56 (Section 3d)

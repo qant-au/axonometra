@@ -15,7 +15,6 @@ export class AddWallAction implements Action {
   }
 
   public execute() {
-    this.receiver.actions.push(this);
     return this.receiver
       .getWallNodeSeq()
       .addWall(this.leftNode, this.rightNode);

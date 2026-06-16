@@ -42,6 +42,5 @@ export class AddNodeAction implements Action {
     }
     if (!node) return;
     AddWallManager.Instance.step(node);
-    this.receiver.actions.push(this);
   }
 }
