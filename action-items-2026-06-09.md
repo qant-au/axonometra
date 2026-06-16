@@ -14,54 +14,54 @@ _None._ The review surfaced nine 🟠 High findings but no 🔴 Critical issues 
 
 ## 🟠 High (do before next release)
 
-### 1. Rotate the GitHub PAT embedded in the local `.git/config` remote URL
+### ~~1. Rotate the GitHub PAT embedded in the local `.git/config` remote URL~~
 - **Why:** A fine-grained PAT is currently embedded in the local `origin` URL. It is not committed to the repo (verified: `git log -S "github_pat_"` is empty), but it is exposed to any tool that reads the local clone — CI runners, agents, log shippers, this review.
 - **What:** (1) Revoke the existing PAT on GitHub. (2) `git remote set-url origin https://github.com/qant-au/axonometra.git`. (3) Use `gh auth login` or the OS credential helper to supply the token at push time. Purely a local-machine action; nothing in the repository changes.
 - **Refs:** Review #3 (Section 2c)
 
-### 2. Validate and harden `FloorPlan.load` input
+### ~~2. Validate and harden `FloorPlan.load` input~~
 - **Why:** `JSON.parse(planText)` runs on raw user-supplied file contents (and on `localStorage.getItem('autosave')` which can be `null`) with no schema validation, no `__proto__` filter, and no try/catch. A null autosave on first load is a guaranteed crash from the welcome modal's "Load from local save" button. A malicious plan file can prototype-pollute the page.
 - **What:** (a) Wrap `JSON.parse` in try/catch and surface a Mantine error notification on failure. (b) Use a reviver to strip `__proto__` / `constructor` / `prototype` keys, or move to a real schema validator (zod / valibot) over `FloorPlanSerializable`. (c) Guard `WelcomeModal.tsx:96` against `null` from `localStorage.getItem('autosave')`. (d) Add a `version` field to `FloorPlanSerializable` (links to action item 19).
 - **Where:** `src/editor/editor/objects/FloorPlan.ts:81-92`, `src/ui/WelcomeModal.tsx:96`, `src/editor/editor/persistence/FloorPlanSerializable.ts`
 - **Refs:** Review #1 (Section 2a)
 
-### 3. Resolve the broken-by-design dependency on the upstream arcada-backend
+### ~~3. Resolve the broken-by-design dependency on the upstream arcada-backend~~
 - **Why:** Five fetch families (`categories`, `category/:id`, `wall/window`, `wall/door`, `2d/:imagePath`) target an Express server that this fork does not ship. Furniture, doors, and windows do not work out of the box. The Playwright smoke test allowlists the connection-refused errors to pass.
 - **What:** Pick one path: (a) inline a static furniture/door/window manifest as JSON in `src/res/` and replace the fetch layer with imports; (b) publish a minimal companion backend in a sister repo or `backend/`; (c) delete the network layer and ship a hardcoded list of door/window types with furniture deferred. (a) is the lowest cost. Whichever you pick, update README to match (links to action item 9).
 - **Where:** `src/api/api-client.tsx`, `src/stores/FurnitureStore.tsx`, `src/editor/editor/objects/Walls/Wall.ts:189,202`, `src/editor/editor/objects/Furniture.ts:29`, `src/ui/FurnitureControls/FurnitureAddPanel/FurnitureItem.tsx:22`
 - **Refs:** Review #9 (Section 11a)
 
-### 4. Document the upstream-backend gap in README
+### ~~4. Document the upstream-backend gap in README~~
 - **Why:** Tactical version of action item 3 — until the backend gap is closed, contributors cloning the repo see a broken app and have no idea why.
 - **What:** Add a paragraph to README under "Status" or a new "Known limitations" section explaining that furniture/door/window placement requires the upstream `arcada-backend` Express server at `http://localhost:4133/`, that this server is not included, and pointing at the TODO that tracks the fix.
 - **Where:** `README.md`
 - **Refs:** Review #8 (Section 5)
 
-### 5. Decide and implement the embedding story (or walk back the README claim)
+### ~~5. Decide and implement the embedding story (or walk back the README claim)~~
 - **Why:** README pitches Axonometra as a "browser-embeddable plan editor". The code has zero `postMessage` calls, no URL-parameter loader, no embedding API. The nginx config actively blocks cross-origin iframes (`X-Frame-Options: SAMEORIGIN`). The product positioning is materially ahead of the implementation.
 - **What:** Either (a) implement a minimum embedding surface — `postMessage({type:'axo:load', plan})` and `postMessage({type:'axo:request-save'})` reply, optional URL parameter for read-only render, CSP `frame-ancestors` allowlist — plus a new `EMBEDDING.md`; or (b) remove the embeddability language from README/site until the work is scheduled.
 - **Where:** new `src/embed/` module (if implementing), `docker/nginx.conf`, `README.md`, new `EMBEDDING.md`
 - **Refs:** Review #2 (Section 2b)
 
-### 6. Stop redrawing every wall on every `mousemove`
+### ~~6. Stop redrawing every wall on every `mousemove`~~
 - **Why:** `WallNodeSequence` subscribes to its own `mousemove` and calls `drawWalls()` — full clear + redraw + label update for every wall on every pointer move, in every tool mode, including View. Already-mutating paths (`addNode`, `addWall`, `removeWall`, `WallNode.setPosition`) call `drawWalls()` explicitly, so the subscription is redundant in mutating paths and wasteful in non-mutating paths.
 - **What:** Delete `this.on('mousemove', this.drawWalls);` at line 20 of `WallNodeSequence.ts`. Verify the existing mutating callers still trigger redraws.
 - **Where:** `src/editor/editor/objects/Walls/WallNodeSequence.ts:20`
 - **Refs:** Review #4 (Section 3a)
 
-### 7. Fix singleton + global-handler lifecycle around `EditorRoot` unmount
+### ~~7. Fix singleton + global-handler lifecycle around `EditorRoot` unmount~~
 - **Why:** `app.destroy(true, true)` on unmount tears down the Pixi scene, but the module-level singletons (`FloorPlan.Instance`, `TransformLayer.Instance`, `AddWallManager.Instance`, the static `WallNodeSequence.wallNodeId`, the exported `let main: Main`, the static `Main.viewportPluginManager`/`Main.app`) still reference the destroyed scene. The `document.onkeydown = ...` assignment in `Main.ts` is never removed and is a property assignment rather than a listener, so re-mounting overwrites whatever was there. React 18 StrictMode double-mount, HMR, and any conditional rendering of `<EditorRoot/>` (including embedded use cases) hit this.
 - **What:** (1) Convert `let main: Main` export to a context/store value, set in effect and torn down in cleanup. (2) Add `dispose()` methods to the singletons that reset their internal state and the static counter. (3) Replace `document.onkeydown = handler` with `addEventListener('keydown', handler)` + `removeEventListener` paired with the effect cleanup. (4) Replace `app.view.oncontextmenu = ...` with `addEventListener('contextmenu', ...)` in the same pattern (links to action item 53).
 - **Where:** `src/editor/EditorRoot.tsx`, `src/editor/editor/Main.ts:124-140`, `src/editor/editor/objects/FloorPlan.ts`, `src/editor/editor/objects/TransformControls/TransformLayer.ts`, `src/editor/editor/actions/AddWallManager.ts`, `src/editor/editor/objects/Walls/WallNodeSequence.ts:11`
 - **Refs:** Review #5 (Section 3a)
 
-### 8. Guard `HelpDialog` against `Tool.FurnitureAdd`
+### ~~8. Guard `HelpDialog` against `Tool.FurnitureAdd`~~
 - **Why:** `HelpDialog` populates `helpBody` for seven of the eight `Tool` enum members but not `Tool.FurnitureAdd`. Render reads `helpBody[activeTool].title` — if `activeTool` ever takes that value, the page crashes. Currently no code path sets it, but the value is reachable from external state mutation, future code, or a malicious plan file.
 - **What:** Either (a) populate `helpBody[Tool.FurnitureAdd]` with a sensible fallback, (b) delete `Tool.FurnitureAdd` from the enum if truly dead (search `grep -rn "Tool.FurnitureAdd[^WD]"`), or (c) guard the render: `const body = helpBody[activeTool]; if (!body) return null;`.
 - **Where:** `src/ui/HelpDialog.tsx:35-156`, `src/editor/editor/constants.ts:36-44`
 - **Refs:** Review #6 (Section 4a)
 
-### 9. Complete `strictNullChecks: true` (axo-015)
+### ~~9. Complete `strictNullChecks: true` (axo-015)~~
 - **Why:** This is the largest hole in the type system. Several findings in this review (HelpDialog null index, WallNodeSequence.remove map.get crash, LoadAction parsing null, `useRef` nullability) are direct consequences. Stage 5 has it scoped.
 - **What:** Per the existing TODO `axo-015` note: ~56 sites where Pixi parent chains are passed around without null guards. Real refactor, not mechanical.
 - **Where:** `tsconfig.json:9` flip to `true`, then walk the resulting compile errors.
@@ -71,19 +71,19 @@ _None._ The review surfaced nine 🟠 High findings but no 🔴 Critical issues 
 
 ## 🟡 Medium — Security hardening
 
-### 10. Add a Content-Security-Policy header to nginx config
+### ~~10. Add a Content-Security-Policy header to nginx config~~
 - **Status:** ✅ Implemented in `docker/nginx.conf:47,57,65` (header repeated in default / asset / index.html locations). `connect-src` is `'self'` only — the upstream backend dependency was resolved by inlining a static catalog (action item 3).
 - **What:** Add `default-src 'self'; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline'; script-src 'self'; connect-src 'self' http://localhost:4133; frame-ancestors 'self';` (or the allowlist that matches the eventual embedding story). Mantine 4 + Emotion requires `'unsafe-inline'` for styles.
 - **Where:** `docker/nginx.conf:38-42` (and the same block repeated in the asset / index.html locations)
 - **Refs:** Review #12 (Section 2b)
 
-### 11. Replace `X-Frame-Options: SAMEORIGIN` with CSP `frame-ancestors`
+### ~~11. Replace `X-Frame-Options: SAMEORIGIN` with CSP `frame-ancestors`~~
 - **Status:** ✅ Implemented. `X-Frame-Options` is removed from `docker/nginx.conf` and `frame-ancestors 'self'` is set inside the CSP at lines 47, 57, 65. Allowlist additions go in the same header.
 - **What:** Once CSP is in (action 10), drop the legacy `X-Frame-Options` and set `frame-ancestors` to the actual allowlist of embedder origins.
 - **Where:** `docker/nginx.conf:41, 51, 59`
 - **Refs:** Review #13 (Section 2b)
 
-### 12. Validate `data.imagePath` before interpolating into URLs
+### ~~12. Validate `data.imagePath` before interpolating into URLs~~
 - **What:** Allowlist alphanumerics + `.`, `_`, `-`. Reject `:` and `//`. Apply on `Texture.from(...)` and the React `<Image src>` path.
 - **Where:** `src/editor/editor/objects/Furniture.ts:29`, `src/ui/FurnitureControls/FurnitureAddPanel/FurnitureItem.tsx:22`
 - **Refs:** Review #11 (Section 2a)
@@ -92,43 +92,43 @@ _None._ The review surfaced nine 🟠 High findings but no 🔴 Critical issues 
 
 ## 🟡 Medium — Performance
 
-### 13. Configure code-splitting in `vite.config.mts`
+### ~~13. Configure code-splitting in `vite.config.mts`~~
 - **What:** Add `build.rollupOptions.output.manualChunks = { pixi: ['pixi.js','pixi-viewport'], mantine: ['@mantine/core','@mantine/hooks','@mantine/notifications','@mantine/dropzone'], react: ['react','react-dom'] }`. Add `React.lazy()` boundaries around `FurnitureAddPanel` and `HelpDialog` with a `<Suspense>` fallback.
 - **Where:** `vite.config.mts`, `src/ui/Layout/ToolNavbar.tsx` (drawer's FurnitureAddPanel), `src/ui/Layout/ToolNavbar.tsx` and/or `src/ui/HelpDialog.tsx`
 - **Refs:** Review #23 (Section 3c)
 
-### 14. Move help GIFs out of the JS bundle
+### ~~14. Move help GIFs out of the JS bundle~~
 - **What:** Move `src/res/*.gif` to `public/help/*.gif` and reference them via plain URL strings in `HelpDialog`. Long-term: convert the 478 KB `edit-furniture.gif` to WebM / MP4.
 - **Where:** `src/res/*.gif` → `public/help/*.gif`; `src/ui/HelpDialog.tsx:19-25`
 - **Refs:** Review #24 (Section 3c)
 
-### 15. Stop reinstantiating `autoDetectRenderer` per print and null-check the popup
+### ~~15. Stop reinstantiating `autoDetectRenderer` per print and null-check the popup~~
 - **What:** In `FloorPlan.print()`: set explicit width/height matching plan bounds, call `renderer.destroy(true)` after extracting, null-check `window.open()` result and surface a notification on popup-blocker. Consider switching to canvas-blob + `<a download>` to eliminate the popup dependency.
 - **Where:** `src/editor/editor/objects/FloorPlan.ts:63-74`
 - **Refs:** Review #17 (Section 3a)
 
-### 16. Remove the no-op `this.parent = attachedTo` assignment
+### ~~16. Remove the no-op `this.parent = attachedTo` assignment~~
 - **What:** Delete line 36 of `Furniture.ts`. The follow-up `addChild` calls in `Floor.ts:54, 136` set the parent correctly.
 - **Where:** `src/editor/editor/objects/Furniture.ts:36`
 - **Refs:** Review #18 (Section 3a)
 
-### 17. Drop `useStore()` / `useStyles()` no-op subscriptions in `EditorRoot`
+### ~~17. Drop `useStore()` / `useStyles()` no-op subscriptions in `EditorRoot`~~
 - **Status:** ✅ Implemented. The singleton-lifecycle rewrite (commit `6d2b310`) replaced `EditorRoot.tsx`; the no-op subscriptions and the misleading comment are gone.
 - **What:** Delete the `useStore();` call at line 20 and the `useStyles();` call (`useStyles`'s `inactive` class is never read). Remove the misleading comment about "side-effect subscriptions".
 - **Where:** `src/editor/EditorRoot.tsx:9-13, 20`
 - **Refs:** Review #20 (Section 3b)
 
-### 18. Hoist `createStyles` out of the `WelcomeModal` component body
+### ~~18. Hoist `createStyles` out of the `WelcomeModal` component body~~
 - **What:** Move `const useStyles = createStyles(...)` to module scope, matching every other component file.
 - **Where:** `src/ui/WelcomeModal.tsx:19-23`
 - **Refs:** Review #21 (Section 3b)
 
-### 19. Address the two `react-hooks/exhaustive-deps` warnings
+### ~~19. Address the two `react-hooks/exhaustive-deps` warnings~~
 - **What:** Either move the Zustand action calls inside the effect to `useStore.getState().X(...)` (avoiding the dep), or comment why the suppression is safe with an explicit eslint-disable.
 - **Where:** `src/App.tsx:12`, `src/ui/FurnitureControls/FurnitureAddPanel/FurnitureAddPanel.tsx:32`
 - **Refs:** Review #22 (Section 3b)
 
-### 20. Audit `useDefineForClassFields` interaction with Pixi during v8 migration
+### ~~20. Audit `useDefineForClassFields` interaction with Pixi during v8 migration~~
 - **Status:** ✅ Tracked. The audit note is folded into `TODO.md` axo-008 (Pixi v6→v8 migration); it fires when the migration starts. No standalone action required now.
 - **What:** During axo-008, verify all `Container`/`Graphics` subclasses initialise correctly. If undefined inherited fields appear, flip `useDefineForClassFields: false`.
 - **Where:** `tsconfig.json:23` (revisit)
@@ -138,38 +138,38 @@ _None._ The review surfaced nine 🟠 High findings but no 🔴 Critical issues 
 
 ## 🟡 Medium — Code health & TypeScript
 
-### 21. Stop exporting `main: Main` as a mutable module-level variable
+### ~~21. Stop exporting `main: Main` as a mutable module-level variable~~
 - **Status:** ✅ Implemented. `EditorRoot.tsx:14-24` uses a `mainHolder: { current: Main | null }` ref-shaped object plus a `getMain()` accessor; the effect sets `mainHolder.current = main` on mount and clears it on cleanup. The non-React consumers (`ViewportCoordinates.ts:1`, `Floor.ts:6`) import `getMain` instead of a mutable export. The test-time `vi.mock` in `ViewportCoordinates.test.ts:8-13` is retained intentionally — moving `Main` into Zustand would conflict with item 25's plan to remove model state from the store-equivalent layer.
 - **What:** Wrap `Main` in a React context (`EditorContext`) or store it in the Zustand store. Update consumers (`src/helpers/ViewportCoordinates.ts`, `src/editor/editor/objects/Floor.ts:140`). Removes the test-time `vi.mock(...)` workaround.
 - **Where:** `src/editor/EditorRoot.tsx:14`, `src/helpers/ViewportCoordinates.ts:1`, `src/editor/editor/objects/Floor.ts:6`
 - **Refs:** Review #28 (Section 4b)
 
-### 22. Pull magic numbers into named constants
+### ~~22. Pull magic numbers into named constants~~
 - **Status:** ✅ Implemented. `constants.ts` now exports `SNAP_THRESHOLD`, `MISCLICK_THRESHOLD`, `WALL_COLOR`, `NODE_COLOR`, `HANDLE_MOBILE_SCALE`, `LABEL_FONT`, `LABEL_FONT_SIZE`, `LABEL_COLOR`. Inline numerics replaced at `AddWallManager.ts:34/48`, `Floor.ts:242/254`, `Wall.ts:115`, `WallNode.ts:41`, `Handle.ts:70`, `Label.ts:8-10`.
 - **What:** Extend `src/editor/editor/constants.ts` (or add `src/editor/editor/theme.ts`) with `SNAP_THRESHOLD = 0.3 * METER`, `MISCLICK_THRESHOLD = 0.2 * METER`, `WALL_COLOR = 0x1a1a1a`, `NODE_COLOR = 0x222222`, `HANDLE_SIZE = 10`, `HANDLE_MOBILE_SCALE = 2.5`, `LABEL_FONT = 'Arial'`, `LABEL_FONT_SIZE = 16`, `MEASURE_LINE_WIDTH = 2`, etc. Replace inline numerics.
 - **Where:** Listed in detail in the review under finding #25.
 - **Refs:** Review #25 (Section 4a)
 
-### 23. Refactor `Furniture.switchOrientation` and `setOrientation` to share logic
+### ~~23. Refactor `Furniture.switchOrientation` and `setOrientation` to share logic~~
 - **Status:** ✅ Implemented. `Furniture.applyStep(fromOrientation, useWidthForDoorOffset)` carries the anchor/scale flip and the door y-offset; `switchOrientation` calls it once per right-click, `setOrientation(n)` loops it `n` times on load. The width-vs-height divergence in the door offset is preserved behind the `useWidthForDoorOffset` flag with a comment flagging it for a follow-up investigation.
 - **What:** Extract a single `applyStep(currentOrientation, resourcePath, target)` helper; both methods call it.
 - **Where:** `src/editor/editor/objects/Furniture.ts:64-136`
 - **Refs:** Review #26 (Section 4a)
 
-### 24. Guard `WallNodeSequence.remove` against missing map entries
+### ~~24. Guard `WallNodeSequence.remove` against missing map entries~~
 - **Status:** ✅ Implemented. The guard exists at `WallNodeSequence.ts:76-77` (`const ownLinks = this.wallNodeLinks.get(id); if (!ownLinks) return;`). Closed by axo-015 (strictNullChecks rollout).
 - **What:** `const links = this.wallNodeLinks.get(id); if (!links) return;` before the `.length` access; similar guards on the iteration branch.
 - **Where:** `src/editor/editor/objects/Walls/WallNodeSequence.ts:76-106`
 - **Refs:** Review #27 (Section 4a)
 
-### 25. Plan the `FloorPlan` refactor (Stage 6+ scoping)
+### ~~25. Plan the `FloorPlan` refactor (Stage 6+ scoping)~~
 - **Status:** ✅ Implemented. `TODO.md` Stage 6 carries axo-020 — extract the model into a Zustand store (`useFloorPlanStore`), keep `FloorPlan` as a thin Pixi container, drop the static `Instance`/`dispose` pair. Prerequisite axo-008 documented.
 - **Why:** `FloorPlan` is simultaneously a Pixi container, the model store, a singleton, and the persistence layer. Three jobs in one class — the root cause of the singleton-lifecycle issues from action item 7. Too big for Stage 5.
 - **What:** Document a Stage 6+ initiative: extract the model into a Zustand store; `FloorPlan` becomes a thin Pixi container that subscribes.
 - **Where:** `src/editor/editor/objects/FloorPlan.ts` (refactor target); add a `TODO.md` entry under Stage 6.
 - **Refs:** Review #29 (Section 4c)
 
-### 26. Add unit-test coverage for the editor engine
+### ~~26. Add unit-test coverage for the editor engine~~
 - **Status:** ✅ Implemented. New `src/test/pixiMock.ts` (minimal Container/Graphics/Sprite/Text/TextStyle/Texture stub) plus four spec files under `src/editor/editor/__tests__/`: `FloorPlanSerializable.test.ts` (parse + validate), `Serializer.test.ts` (serialize round-trip), `AddWallManager.test.ts` (checkStep snap/reject), `WallNodeSequence.test.ts` (addNode/addWall/remove/removeWall/load/reset). Suite grew from 23 to 56 tests, all green. `Floor.addNodeToWall` left for a follow-up — Pixi mock would need to model the full Floor + Wall + Furniture child graph.
 - **What:** Use a minimal Pixi stub (Container/Graphics mock recording calls) under jsdom. Cover `WallNodeSequence` (addNode/addWall/remove/removeWall/load), `AddWallManager.checkStep`, `Floor.addNodeToWall` misclick guards, `Serializer.serialize` + `FloorPlan.load` round-trip.
 - **Where:** `src/editor/editor/__tests__/` (new directory)
@@ -181,7 +181,7 @@ _None._ The review surfaced nine 🟠 High findings but no 🔴 Critical issues 
 - **Where:** `e2e/place-wall.spec.ts` (new)
 - **Refs:** Review #31 (Section 4d)
 
-### 28. Create `.env.example`
+### ~~28. Create `.env.example`~~
 - **Status:** ✅ Implemented. `.env.example` exists and documents `VITE_EMBED_ALLOWED_ORIGINS` — the actual env var consumed at `src/embed/embedConfig.ts:19`. (The review's `VITE_SERVICE_URI` note was stale; the original `API_URL` backend var died when the catalog was inlined per item #3.)
 - **What:** Document `VITE_SERVICE_URI` (currently the only env var) with a comment explaining its purpose and optionality.
 - **Where:** `.env.example` (new)
@@ -200,22 +200,22 @@ _None._ The review surfaced nine 🟠 High findings but no 🔴 Critical issues 
 
 ## 🟡 Medium — Documentation
 
-### 30. Update README to reflect post-Stage-4 reality
+### ~~30. Update README to reflect post-Stage-4 reality~~
 - **What:** Rewrite Status (v0.2.0 — Stage 4 complete; Stage 5 in progress), Tech stack (drop "migrating to Vite"; say "Vite + Vitest"), and Quick start (`npm install && npm run dev`). Reference `restart.sh` and `npm run test:e2e`.
 - **Where:** `README.md:14-16, 38, 42-47`
 - **Refs:** Review #10 (Section 1)
 
-### 31. Add `CONTRIBUTING.md`
+### ~~31. Add `CONTRIBUTING.md`~~
 - **What:** Dev setup, lint/format expectations, commit conventions (Conventional Commits), PR process, question channels. ~50 lines.
 - **Where:** `CONTRIBUTING.md` (new)
 - **Refs:** Review #33 (Section 5)
 
-### 32. Document the plan file format
+### ~~32. Document the plan file format~~
 - **What:** Create `PLAN-FORMAT.md` with the JSON schema, annotated example, and version notes. Or add a `$schema` field pointing at a JSON Schema file in `src/editor/editor/persistence/`.
 - **Where:** `PLAN-FORMAT.md` (new), `src/editor/editor/persistence/FloorPlanSerializable.ts`
 - **Refs:** Review #34 (Section 5)
 
-### 33. Document the embedding contract (or remove the README claim)
+### ~~33. Document the embedding contract (or remove the README claim)~~
 - **What:** Tied to action item 5. If you implement embedding, document it in `EMBEDDING.md` with an example HTML page that iframes Axonometra and round-trips a plan.
 - **Where:** `EMBEDDING.md` (new) or `README.md` walkback
 - **Refs:** Review #35 (Section 5)
@@ -224,12 +224,12 @@ _None._ The review surfaced nine 🟠 High findings but no 🔴 Critical issues 
 
 ## 🟡 Medium — Accessibility
 
-### 34. Add keyboard accessibility — document the limitation and improve navbar focus
+### ~~34. Add keyboard accessibility — document the limitation and improve navbar focus~~
 - **What:** Document the canvas-is-pointer-only limitation under a README "Accessibility" section. Verify Mantine `UnstyledButton` shows a visible focus ring; add a custom focus style if not. Long term, plan a Stage 6+ keyboard-navigation feature for the canvas.
 - **Where:** `README.md`, possibly `src/ui/NavbarLink.tsx`
 - **Refs:** Review #37 (Section 8)
 
-### 35. Add `aria-label` to icon-only navbar buttons
+### ~~35. Add `aria-label` to icon-only navbar buttons~~
 - **What:** Add `aria-label={label}` to the `UnstyledButton` in `NavbarLink.tsx`. One-line fix.
 - **Where:** `src/ui/NavbarLink.tsx:53-60`
 - **Refs:** Review #38 (Section 8)
@@ -243,17 +243,17 @@ _None._ The review surfaced nine 🟠 High findings but no 🔴 Critical issues 
 
 ## 🟡 Medium — OSS hygiene
 
-### 37. Bump `package.json` version to `0.2.0` and close axo-013
+### ~~37. Bump `package.json` version to `0.2.0` and close axo-013~~
 - **What:** `npm version 0.2.0 --no-git-tag-version` (the git tag already exists). Mark `axo-013` complete in `TODO.md`.
 - **Where:** `package.json:3`, `TODO.md` (axo-013)
 - **Refs:** Review #40 (Section 9)
 
-### 38. Add `CHANGELOG.md`
+### ~~38. Add `CHANGELOG.md`~~
 - **What:** Adopt Keep-a-Changelog format. Retroactively document v0.1.0 (rename + Vite + container + smoke) and v0.2.0 (lint/format/CI/strict TS/unit tests).
 - **Where:** `CHANGELOG.md` (new)
 - **Refs:** Review #41 (Section 9)
 
-### 39. Add `SECURITY.md`
+### ~~39. Add `SECURITY.md`~~
 - **What:** Supported versions, reporting channel (email or GitHub private vulnerability reporting), expected response time, in-scope (SPA bundle) / out-of-scope (upstream arcada-backend).
 - **Where:** `SECURITY.md` (new)
 - **Refs:** Review #42 (Section 9)
@@ -262,7 +262,7 @@ _None._ The review surfaced nine 🟠 High findings but no 🔴 Critical issues 
 
 ## 🟡 Medium — Schema versioning
 
-### 40. Add a `version: 1` field to `FloorPlanSerializable`
+### ~~40. Add a `version: 1` field to `FloorPlanSerializable`~~
 - **What:** Add `version: 1` to the class. `FloorPlan.load` reads the version, defaults to 1 if missing, and routes to per-version migration functions (none today; the structure for future migrations).
 - **Where:** `src/editor/editor/persistence/FloorPlanSerializable.ts:3-11`, `src/editor/editor/objects/FloorPlan.ts:81-92`
 - **Refs:** Review #43 (Section 11b)
@@ -285,7 +285,7 @@ _None._ The review surfaced nine 🟠 High findings but no 🔴 Critical issues 
 
 ## 🟢 Low (do when convenient)
 
-### 43. Delete `src/App.css` and its import
+### ~~43. Delete `src/App.css` and its import~~
 - **Where:** `src/App.tsx:2`, `src/App.css` (delete)
 - **Refs:** Review #44 (Section 1)
 
@@ -294,7 +294,7 @@ _None._ The review surfaced nine 🟠 High findings but no 🔴 Critical issues 
 - **Where:** `src/ui/WelcomeModal.tsx:79-84`, `src/ui/Layout/ToolNavbar.tsx:333-339`
 - **Refs:** Review #45 (Section 2a)
 
-### 45. Delete committed `.env` and add to `.gitignore`
+### ~~45. Delete committed `.env` and add to `.gitignore`~~
 - **What:** `git rm .env`, add `.env` (bare) to `.gitignore`. Recreate as `.env.example` (action item 28).
 - **Where:** `.env` (delete), `.gitignore`
 - **Refs:** Review #46 (Section 2c)
@@ -351,7 +351,7 @@ _None._ The review surfaced nine 🟠 High findings but no 🔴 Critical issues 
 - **Where:** `src/editor/editor/Main.ts:128`
 - **Refs:** Review #57 (Section 3d)
 
-### 57. Delete the `console.log(this.zIndex)` debug line
+### ~~57. Delete the `console.log(this.zIndex)` debug line~~
 - **Where:** `src/editor/editor/objects/Furniture.ts:141`
 - **Refs:** Review #58 (Section 4a)
 
@@ -491,7 +491,7 @@ _None._ The review surfaced nine 🟠 High findings but no 🔴 Critical issues 
 - **Where:** `src/editor/editor/Pointer.ts:14-23`
 - **Refs:** Review #91 (Section 11d)
 
-### 87. Auto-start the test server in `playwright.config.ts`
+### ~~87. Auto-start the test server in `playwright.config.ts`~~
 - **What:** Add a `webServer` block that runs `bash restart.sh NO_WATCH=1` (or `npm run dev`) when the baseURL isn't responding.
 - **Where:** `playwright.config.ts`
 - **Refs:** Review #92 (Section 11e)
