@@ -135,6 +135,16 @@ export function HelpDialog() {
       </>
     )
   };
+
+  // Defensive guard: helpBody only has entries for the eight Tool members.
+  // If activeTool ever falls outside that set (external state mutation, a
+  // malicious plan file, future code), bail rather than crash on an
+  // undefined index access.
+  const body = helpBody[activeTool];
+  if (!body) {
+    return null;
+  }
+
   return (
     <>
       <Group position="center">
@@ -154,8 +164,8 @@ export function HelpDialog() {
         position={{ top: 20, right: 20 }}
       >
         <Text size="sm" style={{ marginBottom: 10 }} weight={500}>
-          <b>{helpBody[activeTool].title}</b>
-          {helpBody[activeTool].body}
+          <b>{body.title}</b>
+          {body.body}
         </Text>
       </Dialog>
     </>
