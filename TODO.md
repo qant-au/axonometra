@@ -55,8 +55,9 @@ prefix: axo
 - [x] Enable strictNullChecks @priority(medium) @effort(4h) @id(axo-015)
       ~56 sites where Pixi parent chains are passed around without null guards. Real refactor, not mechanical.
       Done 2026-06-09 — 51 errors across 13 files, walked through in three buckets (useRef nullability, class-field widening, Map.get guards). Also closes #24 (WallNodeSequence.remove guard), #64 (useRef init + optional chaining), #15 (popup null-check). Closes finding #7 in code-review-2026-06-09.
-- [ ] Mantine 4 → 7 + Zustand 3 → 5 @priority(medium) @effort(4h) @id(axo-016)
+- [x] Mantine 4 → 9 + Zustand 3 → 5 @priority(medium) @effort(4h) @id(axo-016)
       Breaking UI/store API changes. UI surface is small (~7 components).
+      Done 2026-06-17 — Zustand 3→5 (named `create`, curried typing), tabler-icons-react → @tabler/icons-react (#72), Mantine 4→9. Mantine 9 needs React 19, so react/react-dom bumped 18→19. createStyles → CSS modules + light-dark(); dropped unused @mantine/dropzone. lint/56 tests/build/e2e green. Closes #42, #72 in action-items-2026-06-09.
 - [x] WelcomeModal desktop-only gate review @priority(low) @effort(1h) @id(axo-014)
       Captures F-21.
       Descoped 2026-06-17 — mobile/touch UX is not on the roadmap; closes action item #36.
