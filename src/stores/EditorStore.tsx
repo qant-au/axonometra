@@ -1,5 +1,5 @@
 /** handling current tool state, mainly */
-import create from 'zustand';
+import { create } from 'zustand';
 import { AddWallManager } from '../editor/editor/actions/AddWallManager';
 import { Tool } from '../editor/editor/constants';
 
@@ -20,7 +20,7 @@ export interface EditorStore {
   setSnap: (snap: boolean) => void;
 }
 
-export const useStore = create<EditorStore>((set) => ({
+export const useStore = create<EditorStore>()((set) => ({
   mode: ToolMode.FurnitureMode,
   activeTool: Tool.View,
   floor: 0,
