@@ -33,6 +33,13 @@ async function waitForEditorReady(page: Page) {
 
 async function dismissWelcome(page: Page) {
   await page.getByRole('button', { name: /new plan/i }).click();
+  // The modal closes via a Mantine transition that leaves the dialog and its
+  // full-screen overlay in the DOM for a beat. Canvas clicks fired before the
+  // overlay detaches land on the modal, not the Pixi viewport (0 nodes placed).
+  // Wait for the modal to be gone before any canvas interaction.
+  await expect(page.getByRole('button', { name: /new plan/i })).toHaveCount(0, {
+    timeout: 3000
+  });
 }
 
 async function selectWallTool(page: Page) {
