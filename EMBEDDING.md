@@ -42,10 +42,10 @@ Host page:
 
 ## URL parameters
 
-| Param        | Values | Meaning                                                            |
-| ------------ | ------ | ------------------------------------------------------------------ |
-| `embed`      | `1`    | Enables the postMessage bridge. Hides the welcome modal.           |
-| `readonly`   | `1`    | Hides the toolbar — the user can pan/zoom but can't edit.          |
+| Param      | Values | Meaning                                                   |
+| ---------- | ------ | --------------------------------------------------------- |
+| `embed`    | `1`    | Enables the postMessage bridge. Hides the welcome modal.  |
+| `readonly` | `1`    | Hides the toolbar — the user can pan/zoom but can't edit. |
 
 Both default to off. Both can be combined.
 
@@ -55,18 +55,18 @@ All messages are objects with a `type: 'axo:...'` discriminator. Anything that d
 
 ### Inbound (host → Axonometra)
 
-| `type`              | Payload                          | Effect                                                                                                |
-| ------------------- | -------------------------------- | ----------------------------------------------------------------------------------------------------- |
-| `axo:load`          | `{ plan: string \| object }`     | Loads `plan` (passed through `FloorPlan.load`). Object form is JSON-stringified. Invalid plans toast. |
-| `axo:request-save`  | none                             | Triggers `axo:save` reply to `event.source` with the current plan as a JSON string.                   |
-| `axo:ready?`        | none                             | Triggers `axo:ready` reply to `event.source`.                                                         |
+| `type`             | Payload                      | Effect                                                                                                |
+| ------------------ | ---------------------------- | ----------------------------------------------------------------------------------------------------- |
+| `axo:load`         | `{ plan: string \| object }` | Loads `plan` (passed through `FloorPlan.load`). Object form is JSON-stringified. Invalid plans toast. |
+| `axo:request-save` | none                         | Triggers `axo:save` reply to `event.source` with the current plan as a JSON string.                   |
+| `axo:ready?`       | none                         | Triggers `axo:ready` reply to `event.source`.                                                         |
 
 ### Outbound (Axonometra → host)
 
-| `type`        | Payload                | When                                                              |
-| ------------- | ---------------------- | ----------------------------------------------------------------- |
-| `axo:ready`   | none                   | Once on mount (broadcast to `window.parent` with `*`), and in reply to `axo:ready?`. |
-| `axo:save`    | `{ plan: string }`     | In reply to `axo:request-save`. `plan` is a JSON-string snapshot. |
+| `type`      | Payload            | When                                                                                 |
+| ----------- | ------------------ | ------------------------------------------------------------------------------------ |
+| `axo:ready` | none               | Once on mount (broadcast to `window.parent` with `*`), and in reply to `axo:ready?`. |
+| `axo:save`  | `{ plan: string }` | In reply to `axo:request-save`. `plan` is a JSON-string snapshot.                    |
 
 ## Origin allowlist
 

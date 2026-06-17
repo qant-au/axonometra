@@ -272,7 +272,8 @@ _None._ The review surfaced nine 🟠 High findings but no 🔴 Critical issues 
 
 ## 🟡 Medium — Dependency upgrades (Stage 5 queued)
 
-### 41. Pixi.js 6 → 8 migration (TODO axo-008)
+### ~~41. Pixi.js 6 → 8 migration (TODO axo-008)~~
+- **Status:** ✅ Done. Laddered 6→7→8: pixi.js `^6.3.0` → `^8.19.0`, pixi-viewport `^4.34.4` → `^6.0.3` (via `5.0.2` at the v7 rung). Federated-events rewrite, Graphics `rect()/.fill()/.stroke()` overhaul, async `Application.init` + `app.canvas`, `Assets` preload (replaces `Loader`/lazy `Texture.from`), `renderer.extract` print, `Text({text,style})`, `TextureSource` fallback. Folded in #20 (`useDefineForClassFields` audit — kept `true`, no undefined inherited fields) and #63 (`noImplicitOverride` — resolved the v8 `Container.label`/`setSize` collisions by renaming). axo-017 closed alongside (Playwright e2e made blocking after the place-wall flake fix). Released as v0.3.0.
 - **What:** Per the existing TODO note: ladder via v7. Bump `pixi-viewport` in lockstep. Stage 4 test net + CI cover regressions; expand Playwright coverage first (action item 27).
 - **Where:** `package.json:14-15`; engine code (most of `src/editor/editor/`)
 - **Refs:** Review #14 (Section 2d) (recurring — STAGE2-REVIEW.md F-04). See also: TODO.md — `@id(axo-008)`.

@@ -49,9 +49,9 @@ prefix: axo
 
 ## Stage 5 — Breaking library bumps + responsiveness (post-v0.2.0)
 
-- [ ] Pixi.js v6 → v8 migration (ladder via v7) @priority(medium) @effort(8h) @id(axo-008)
+- [x] Pixi.js v6 → v8 migration (ladder via v7) @priority(medium) @effort(8h) @id(axo-008)
       Captures F-04. Stage 4 test net + CI cover regressions.
-      During migration: verify all Container/Graphics subclasses initialise correctly under useDefineForClassFields: true (tsconfig.json:23). Pixi v8 changes the base-class field init order; if undefined inherited fields appear, flip the flag to false. Tracks action-items #20.
+      Done 2026-06-17 — laddered 6→7→8. pixi.js ^6.3.0 → ^8.19.0, pixi-viewport ^4.34.4 → ^6.0.3 (5.0.2 at the v7 rung; v7 needed the @pixi/\* sub-deps, dropped at v8). Federated events, Graphics rect()/.fill()/.stroke(), async Application.init + app.canvas, Assets preload (pattern + catalog) replacing Loader/lazy Texture.from, renderer.extract print via a rendererHolder, Text({text,style}), TextureSource fallback. useDefineForClassFields kept true (#20 audit: no undefined inherited fields). noImplicitOverride (#63) resolved by renaming the v8 Container.label/setSize collisions (Wall.lengthLabel, WallNode.setNodeSize). Released v0.3.0. Closes #41.
 - [x] Enable strictNullChecks @priority(medium) @effort(4h) @id(axo-015)
       ~56 sites where Pixi parent chains are passed around without null guards. Real refactor, not mechanical.
       Done 2026-06-09 — 51 errors across 13 files, walked through in three buckets (useRef nullability, class-field widening, Map.get guards). Also closes #24 (WallNodeSequence.remove guard), #64 (useRef init + optional chaining), #15 (popup null-check). Closes finding #7 in code-review-2026-06-09.
@@ -60,9 +60,11 @@ prefix: axo
 - [x] WelcomeModal desktop-only gate review @priority(low) @effort(1h) @id(axo-014)
       Captures F-21.
       Descoped 2026-06-17 — mobile/touch UX is not on the roadmap; closes action item #36.
-- [ ] Add Playwright smoke step to GitHub Actions @priority(low) @effort(1h) @id(axo-017)
+- [x] Add Playwright smoke step to GitHub Actions @priority(low) @effort(1h) @id(axo-017)
       Containerised, once the rest of the CI workflow has had a green run.
-- [ ] Tag v0.3.0 @priority(medium) @effort(0.25h) @id(axo-018)
+      Done 2026-06-17 — the place-wall spec was flaky (clicked the canvas before the WelcomeModal overlay detached → 0 nodes); dismissWelcome now waits for the modal to detach. With it green, removed continue-on-error from the CI E2E step so it's blocking. Done as part of axo-008.
+- [x] Tag v0.3.0 @priority(medium) @effort(0.25h) @id(axo-018)
+      Done 2026-06-17 — tagged after the Pixi 8 migration (axo-008) landed; package.json bumped to 0.3.0.
 
 ## Stage 6 — Architecture refactor (post-v0.3.0)
 
