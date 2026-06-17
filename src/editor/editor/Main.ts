@@ -1,5 +1,12 @@
 import { IViewportOptions, Viewport } from 'pixi-viewport';
-import { FederatedPointerEvent, isMobile, Point, TilingSprite } from 'pixi.js';
+import {
+  Assets,
+  FederatedPointerEvent,
+  isMobile,
+  Point,
+  TilingSprite
+} from 'pixi.js';
+import { getCatalogImageUrls } from '../../res/catalog';
 import { FloorPlan } from './objects/FloorPlan';
 import { TransformLayer } from './objects/TransformControls/TransformLayer';
 import { useStore } from '../../stores/EditorStore';
@@ -20,11 +27,14 @@ export class Main extends Viewport {
   constructor(options: IViewportOptions) {
     super(options);
 
-    // Build the scene on a microtask so EditorRoot has added this viewport to
-    // the stage (and called app.start()) first — clamp()/the plugins read the
-    // viewport's world transform. Replaces the removed-in-v7 Loader.shared
-    // ready callback; TilingSprite.from lazy-loads the pattern in setup().
-    queueMicrotask(() => this.setup());
+    // v8 Texture.from/TilingSprite.from only resolve a URL once it's been
+    // loaded through Assets, so preload the background pattern and every
+    // catalog image, then build the scene. The load also defers setup() until
+    // after EditorRoot has added this viewport to the stage (clamp() reads the
+    // viewport's world transform). Replaces the removed-in-v7 Loader.shared.
+    Assets.load(['./pattern.svg', ...getCatalogImageUrls()]).then(() =>
+      this.setup()
+    );
     this.preview = new Preview();
     this.addChild(this.preview.getReference());
     this.cursor = 'none';

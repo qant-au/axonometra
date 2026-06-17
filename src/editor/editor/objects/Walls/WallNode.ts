@@ -16,15 +16,14 @@ export class WallNode extends Graphics {
     this.eventMode = 'static';
     this.id = nodeId;
 
-    //  this.drawCircle(0,0,INTERIOR_WALL_THICKNESS / 2)
+    //  this.circle(0,0,INTERIOR_WALL_THICKNESS / 2)
     if (isMobile) {
-      this.setSize(INTERIOR_WALL_THICKNESS * 2);
+      this.setNodeSize(INTERIOR_WALL_THICKNESS * 2);
     } else {
-      this.setSize(INTERIOR_WALL_THICKNESS);
+      this.setNodeSize(INTERIOR_WALL_THICKNESS);
     }
 
     this.position.set(x, y);
-    this.endFill();
     this.zIndex = 999;
     this.on('pointerdown', this.onMouseDown);
     this.on('pointermove', this.onMouseMove);
@@ -36,10 +35,10 @@ export class WallNode extends Graphics {
     return this.id;
   }
 
-  public setSize(size: number) {
+  // Not `setSize`: v8's Container has a built-in setSize(width, height).
+  public setNodeSize(size: number) {
     this.clear();
-    this.beginFill(NODE_COLOR);
-    this.drawRect(0, 0, size, size);
+    this.rect(0, 0, size, size).fill(NODE_COLOR);
     this.pivot.set(size / 2, size / 2);
   }
   private onMouseDown(ev: FederatedPointerEvent) {

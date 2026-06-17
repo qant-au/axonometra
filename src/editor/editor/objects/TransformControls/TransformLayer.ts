@@ -167,7 +167,9 @@ export class TransformLayer extends Container {
     const y = viewportY(globals.y - this.borderOffset, false);
     const w = target.width + 2 * this.borderOffset;
     const h = target.height + 2 * this.borderOffset;
-    this.border.lineStyle(3, 0, 1, 0, true).drawRect(0, 0, w, h);
+    this.border
+      .rect(0, 0, w, h)
+      .stroke({ width: 3, color: 0x000000, alpha: 1, alignment: 0 });
 
     this.border.position.x = x;
     this.border.position.y = y;
@@ -180,7 +182,7 @@ export class TransformLayer extends Container {
     if (!target.isAttached) {
       return target.rotation;
     }
-    return target.parent.rotation;
+    return target.parent?.rotation ?? 0;
   }
 
   public deselect() {

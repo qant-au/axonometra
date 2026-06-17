@@ -91,7 +91,7 @@ export class Floor extends Container {
 
   public setLabelVisibility(value = true) {
     for (const wall of this.wallNodeSequence.getWalls()) {
-      wall.label.visible = value;
+      wall.lengthLabel.visible = value;
     }
   }
   public getFurniture() {
@@ -178,14 +178,13 @@ export class Floor extends Container {
     const furniture = this.furnitureArray.get(id);
     if (!furniture) return;
     if (furniture.isAttached) {
-      furniture.parent.removeChild(furniture);
+      furniture.parent?.removeChild(furniture);
     } else {
       this.removeChild(furniture);
     }
     furniture.destroy({
       children: true,
-      texture: false,
-      baseTexture: false
+      texture: false
     });
     this.furnitureArray.delete(id);
   }

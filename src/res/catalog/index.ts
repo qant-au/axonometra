@@ -33,3 +33,10 @@ export function resolveCatalogImage(imagePath: string): string {
   if (!SAFE_IMAGE_PATH.test(imagePath)) return placeholder;
   return images[`./images/${imagePath}.svg`] ?? placeholder;
 }
+
+// Every bundled catalog image URL. Pixi 8's Texture.from(url) only returns a
+// usable texture once the URL has been loaded through Assets, so the editor
+// preloads these before furniture can be placed.
+export function getCatalogImageUrls(): string[] {
+  return Object.values(images);
+}

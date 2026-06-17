@@ -1,4 +1,4 @@
-import { autoDetectRenderer, Container, IRendererOptionsAuto } from 'pixi.js';
+import { Container } from 'pixi.js';
 import { FurnitureData } from '../../../stores/FurnitureStore';
 import { Wall } from './Walls/Wall';
 import { Floor } from './Floor';
@@ -10,6 +10,7 @@ import {
 import { useStore } from '../../../stores/EditorStore';
 import { Point } from '../../../helpers/Point';
 import { showNotification } from '@mantine/notifications';
+import { rendererHolder } from '../../EditorRoot';
 
 export class FloorPlan extends Container {
   private static instance: FloorPlan | undefined;
@@ -61,20 +62,18 @@ export class FloorPlan extends Container {
   }
 
   public print() {
-    const bounds = this.getBounds();
-    const opts: Partial<IRendererOptionsAuto> = {
-      preserveDrawingBuffer: true,
-      width: Math.max(1, Math.ceil(bounds.width)),
-      height: Math.max(1, Math.ceil(bounds.height))
-    };
-
-    const renderer = autoDetectRenderer(opts);
-    let canvas: HTMLCanvasElement;
-    try {
-      canvas = renderer.plugins.extract.canvas(this);
-    } finally {
-      renderer.destroy(true);
+    // v8: extract via the live app renderer (a separate renderer can't read
+    // this scene's GPU resources). extract.canvas sizes itself to the bounds.
+    const renderer = rendererHolder.current;
+    if (!renderer) {
+      showNotification({
+        title: 'Export failed',
+        message: 'Editor is not ready.',
+        color: 'red'
+      });
+      return;
     }
+    const canvas = renderer.extract.canvas(this) as HTMLCanvasElement;
     canvas.toBlob((blob) => {
       if (!blob) {
         showNotification({

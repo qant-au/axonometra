@@ -31,9 +31,9 @@ export class Preview {
     const newY = viewportY(ev.global.y);
     this.preview
       .clear()
-      .lineStyle(2, 0x1f1f1f)
       .moveTo(this.startPoint.x, this.startPoint.y)
-      .lineTo(newX, newY);
+      .lineTo(newX, newY)
+      .stroke({ width: 2, color: 0x1f1f1f });
 
     let length = euclideanDistance(
       this.startPoint.x,

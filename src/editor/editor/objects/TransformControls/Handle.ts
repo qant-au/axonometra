@@ -63,16 +63,18 @@ export class Handle extends Graphics {
     if (handleConfig.target) {
       this.target = handleConfig.target;
     }
-    this.beginFill(this.color).lineStyle(1, this.color);
-
     if (isMobile) {
       this.size = this.size * HANDLE_MOBILE_SCALE;
     }
     if (this.type == HandleType.Rotate) {
-      this.drawCircle(0, 0, this.size / 1.5).endFill();
+      this.circle(0, 0, this.size / 1.5)
+        .fill(this.color)
+        .stroke({ width: 1, color: this.color });
       this.pivot.set(this.size / 3, this.size / 3);
     } else {
-      this.drawRect(0, 0, this.size, this.size).endFill();
+      this.rect(0, 0, this.size, this.size)
+        .fill(this.color)
+        .stroke({ width: 1, color: this.color });
       this.pivot.set(0.5);
     }
 
@@ -188,7 +190,7 @@ export class Handle extends Graphics {
           this.target.position.y = viewportY(this.targetStartPoint.y + delta.y);
         } else {
           const amount = (delta.x + delta.y) * 0.8;
-          const parentWall = this.target.parent as Wall;
+          const parentWall = this.target.parent as unknown as Wall;
 
           //start of wall
           if (this.localCoords.x + amount <= WALL_THICKNESS * 0.5) {

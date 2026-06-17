@@ -21,7 +21,7 @@ export class Label extends Container {
     if (!sizeInPixels) {
       sizeInPixels = 0;
     }
-    this.text = new Text('', this.textStyle);
+    this.text = new Text({ text: '', style: this.textStyle });
     this.update(sizeInPixels);
 
     this.addChild(this.textBkg);

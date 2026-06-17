@@ -22,7 +22,8 @@ export class Wall extends Graphics {
   leftNode: WallNode;
   rightNode: WallNode;
   length!: number;
-  label: Label;
+  // Not `label`: v8's Container has a built-in `label: string` property.
+  lengthLabel: Label;
 
   x1!: number;
   x2!: number;
@@ -48,9 +49,9 @@ export class Wall extends Graphics {
     this.startLeftNode = { x: 0, y: 0 };
     this.startRightNode = { x: 0, y: 0 };
     this.setLineCoords();
-    this.label = new Label(0);
+    this.lengthLabel = new Label(0);
 
-    this.addChild(this.label);
+    this.addChild(this.lengthLabel);
     this.thickness = INTERIOR_WALL_THICKNESS;
     this.pivot.set(0, INTERIOR_WALL_THICKNESS / 2);
     this.zIndex = 100;
@@ -72,8 +73,8 @@ export class Wall extends Graphics {
       this.thickness = INTERIOR_WALL_THICKNESS;
     }
     this.pivot.set(0, this.thickness / 2);
-    this.leftNode.setSize(this.thickness);
-    this.rightNode.setSize(this.thickness);
+    this.leftNode.setNodeSize(this.thickness);
+    this.rightNode.setNodeSize(this.thickness);
     this.drawLine();
   }
 
@@ -117,26 +118,27 @@ export class Wall extends Graphics {
   public drawLine() {
     this.clear();
     [this.x1, this.y1, this.x2, this.y2] = this.setLineCoords();
-    this.lineStyle(1, WALL_COLOR);
 
     let theta = Math.atan2(this.y2 - this.y1, this.x2 - this.x1); // aflu unghiul sa pot roti
     theta *= 180 / Math.PI; // rads to degs, range (-180, 180]
     if (theta < 0) theta = 360 + theta; // range [0, 360)
     this.length = euclideanDistance(this.x1, this.x2, this.y1, this.y2);
 
-    this.beginFill().drawRect(0, 0, this.length, this.thickness).endFill();
+    this.rect(0, 0, this.length, this.thickness)
+      .fill(0x000000)
+      .stroke({ width: 1, color: WALL_COLOR });
     this.position.set(this.x1, this.y1);
     this.angle = theta;
 
     this.leftNode.angle = theta;
     this.rightNode.angle = theta;
 
-    this.label.update(this.length - WALL_THICKNESS);
-    this.label.position.x = this.width / 2;
-    this.label.angle = 360 - theta;
+    this.lengthLabel.update(this.length - WALL_THICKNESS);
+    this.lengthLabel.position.x = this.width / 2;
+    this.lengthLabel.angle = 360 - theta;
 
-    this.label.position.y = 25;
-    this.label.zIndex = 998;
+    this.lengthLabel.position.y = 25;
+    this.lengthLabel.zIndex = 998;
   }
 
   private onRightDown(ev: FederatedPointerEvent) {

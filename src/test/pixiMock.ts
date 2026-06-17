@@ -80,22 +80,26 @@ class ContainerMock extends EventEmitterMock {
 
 class GraphicsMock extends ContainerMock {
   anchor = new PointMock();
+  // v8 builder surface: chainable, return this.
   clear() {
     return this;
   }
-  beginFill(_color?: number) {
+  rect(_x: number, _y: number, _w: number, _h: number) {
     return this;
   }
-  endFill() {
+  circle(_x: number, _y: number, _r: number) {
     return this;
   }
-  lineStyle(_w?: number, _c?: number) {
+  fill(_style?: unknown) {
     return this;
   }
-  drawRect(_x: number, _y: number, _w: number, _h: number) {
+  stroke(_style?: unknown) {
     return this;
   }
-  drawCircle(_x: number, _y: number, _r: number) {
+  moveTo(_x: number, _y: number) {
+    return this;
+  }
+  lineTo(_x: number, _y: number) {
     return this;
   }
 }
@@ -115,8 +119,9 @@ class TextMock {
   height = 16;
   visible = true;
   position = new PointMock();
-  constructor(text: string, _style?: unknown) {
-    this.text = text;
+  // v8 shape: new Text({ text, style }). Tolerate the legacy string form too.
+  constructor(opts?: { text?: string; style?: unknown } | string) {
+    this.text = typeof opts === 'string' ? opts : (opts?.text ?? '');
   }
 }
 

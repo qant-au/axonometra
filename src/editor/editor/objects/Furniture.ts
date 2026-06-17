@@ -26,18 +26,17 @@ export class Furniture extends Sprite {
     attachedToRight?: number,
     orientation = 0
   ) {
+    // Catalog images are preloaded via Assets in Main, so Texture.from resolves
+    // them from cache. Guard against an unresolved id and fall back to a grey
+    // placeholder sized to the furniture footprint if the source errors.
     const texture = Texture.from(resolveCatalogImage(data.imagePath));
-    super(texture);
-    // Fall back to a grey placeholder sized to the furniture footprint if the
-    // catalog image fails to load (e.g. missing/unavailable asset).
-    if (!texture.baseTexture.valid) {
-      texture.baseTexture.once('error', () => {
-        this.texture = Texture.WHITE;
-        this.tint = 0xcccccc;
-        this.width = data.width * METER;
-        this.height = data.height * METER;
-      });
-    }
+    super(texture ?? Texture.WHITE);
+    texture?.source.once('error', () => {
+      this.texture = Texture.WHITE;
+      this.tint = 0xcccccc;
+      this.width = data.width * METER;
+      this.height = data.height * METER;
+    });
     this.resourcePath = data.imagePath;
     this.id = id;
     this.orientation = 0;

@@ -7,7 +7,10 @@ export class Pointer extends Container {
   constructor() {
     super();
     this.graphic = new Graphics();
-    this.graphic.lineStyle(1).beginFill(0x0).drawCircle(0, 0, 2);
+    this.graphic
+      .circle(0, 0, 2)
+      .fill(0x000000)
+      .stroke({ width: 1, color: 0x000000 });
     this.addChild(this.graphic);
   }
 
