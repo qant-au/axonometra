@@ -379,7 +379,8 @@ _None._ The review surfaced nine 🟠 High findings but no 🔴 Critical issues 
 - **Where:** `src/editor/EditorRoot.tsx:33-35`
 - **Refs:** Review #63 (Section 4a)
 
-### 63. Watch for `noImplicitOverride` interactions during Pixi v8 upgrade
+### ~~63. Watch for `noImplicitOverride` interactions during Pixi v8 upgrade~~
+- **Status:** ✅ Rolled into #41 (Pixi v8 / axo-008) — tracked there, no standalone work.
 - **What:** No action now. Track during action item 41.
 - **Refs:** Review #64 (Section 4b). _Confidence: Low — TS does not currently complain._
 
@@ -423,7 +424,8 @@ _None._ The review surfaced nine 🟠 High findings but no 🔴 Critical issues 
 - **Where:** `STAGE2-REVIEW.md`
 - **Refs:** Review #72 (Section 5)
 
-### 72. Migrate `tabler-icons-react` → `@tabler/icons-react`
+### ~~72. Migrate `tabler-icons-react` → `@tabler/icons-react`~~
+- **Status:** ✅ Rolled into #42 (Mantine/Zustand / axo-016) — tracked there, no standalone work.
 - **What:** Bundle into action item 42 (Mantine bump).
 - **Where:** `package.json:19`, all imports under `src/ui/`
 - **Refs:** Review #73 (Section 6)
