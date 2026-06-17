@@ -57,8 +57,9 @@ prefix: axo
       Done 2026-06-09 — 51 errors across 13 files, walked through in three buckets (useRef nullability, class-field widening, Map.get guards). Also closes #24 (WallNodeSequence.remove guard), #64 (useRef init + optional chaining), #15 (popup null-check). Closes finding #7 in code-review-2026-06-09.
 - [ ] Mantine 4 → 7 + Zustand 3 → 5 @priority(medium) @effort(4h) @id(axo-016)
       Breaking UI/store API changes. UI surface is small (~7 components).
-- [ ] WelcomeModal desktop-only gate review @priority(low) @effort(1h) @id(axo-014)
+- [x] WelcomeModal desktop-only gate review @priority(low) @effort(1h) @id(axo-014)
       Captures F-21.
+      Descoped 2026-06-17 — mobile/touch UX is not on the roadmap; closes action item #36.
 - [ ] Add Playwright smoke step to GitHub Actions @priority(low) @effort(1h) @id(axo-017)
       Containerised, once the rest of the CI workflow has had a green run.
 - [ ] Tag v0.3.0 @priority(medium) @effort(0.25h) @id(axo-018)

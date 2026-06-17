@@ -234,7 +234,8 @@ _None._ The review surfaced nine 🟠 High findings but no 🔴 Critical issues 
 - **Where:** `src/ui/NavbarLink.tsx:53-60`
 - **Refs:** Review #38 (Section 8)
 
-### 36. Decide on the mobile/touch UX (axo-014)
+### ~~36. Decide on the mobile/touch UX (axo-014)~~
+- **Status:** ✅ Closed — descoped. Mobile/touch UX is not on the roadmap; `axo-014` cancelled.
 - **What:** Per the existing TODO note — pointer/touch handling pass in the Pixi layer; remove or restore the `WelcomeModal` desktop-only gate based on that decision.
 - **Where:** `src/ui/PageLayout.tsx:7-20`, `src/editor/editor/objects/Walls/WallNode.ts:20-24`, `src/editor/editor/objects/TransformControls/Handle.ts:64-66`
 - **Refs:** Review #39 (Section 8) (recurring — first seen STAGE2-REVIEW.md F-21). See also: TODO.md — `@id(axo-014)`.
@@ -318,7 +319,8 @@ _None._ The review surfaced nine 🟠 High findings but no 🔴 Critical issues 
 - **Where:** `Dockerfile:12`, `.github/workflows/ci.yml:21`, `.nvmrc` (new)
 - **Refs:** Review #50, #76, #79 (Sections 2f, 6, 7)
 
-### 50. Defer brotli compression decision
+### ~~50. Defer brotli compression decision~~
+- **Status:** ✅ Decided — defer. Code-splitting (#13) has landed, but brotli remains an optional infra step (brotli-enabled nginx image); revisit only if bundle size warrants. Not blocking.
 - **What:** No action until code-splitting (action item 13) lands. Then consider a brotli-enabled nginx base image.
 - **Refs:** Review #51 (Section 2f)
 
@@ -426,7 +428,8 @@ _None._ The review surfaced nine 🟠 High findings but no 🔴 Critical issues 
 - **Where:** `package.json:19`, all imports under `src/ui/`
 - **Refs:** Review #73 (Section 6)
 
-### 73. Consider `showSaveFilePicker` as an enhancement
+### ~~73. Consider `showSaveFilePicker` as an enhancement~~
+- **Status:** ✅ Decided — defer. Optional enhancement, not a defect; the `file-saver` download path is sufficient for now.
 - **What:** Optional. Feature-detect and use the native File System Access API where available; fall back to `file-saver`.
 - **Where:** `src/editor/editor/actions/SaveAction.ts`
 - **Refs:** Review #74 (Section 6). _Confidence: Low — opinion call, not a defect._
@@ -451,7 +454,7 @@ _None._ The review surfaced nine 🟠 High findings but no 🔴 Critical issues 
 - **Where:** `src/ui/Layout/ToolNavbar.tsx:284-290`
 - **Refs:** Review #82 (Section 8)
 
-### 78. Add `CODE_OF_CONDUCT.md`
+### ~~78. Add `CODE_OF_CONDUCT.md`~~
 - **What:** Contributor Covenant 2.1 standard template; link from README.
 - **Where:** `CODE_OF_CONDUCT.md` (new)
 - **Status:** ⏳ Deferred to TODO `@id(axo-021)` (due 2026-08-16) — automated authoring of the standard template tripped the content filter; add manually.
@@ -461,7 +464,8 @@ _None._ The review surfaced nine 🟠 High findings but no 🔴 Critical issues 
 - **Where:** `.github/ISSUE_TEMPLATE/bug_report.md`, `.github/ISSUE_TEMPLATE/feature_request.md`, `.github/PULL_REQUEST_TEMPLATE.md` (all new)
 - **Refs:** Review #84 (Section 9)
 
-### 80. Verify the public-facing site at axonometra.com
+### ~~80. Verify the public-facing site at axonometra.com~~
+- **Status:** ✅ Verified 2026-06-17 — axonometra.com is live, describes the 2D browser floor planner ("An open-source floor planner — in development"), and contains no "arcada" references.
 - **What:** Manual check. Confirm the site exists, accurately reflects the project, and doesn't still say "arcada".
 - **Refs:** Review #85 (Section 9). _Confidence: Low — not verifiable from the codebase._
 
@@ -470,15 +474,17 @@ _None._ The review surfaced nine 🟠 High findings but no 🔴 Critical issues 
 - **Where:** `src/editor/editor/objects/Furniture.ts:12,66,159`; `src/editor/editor/objects/TransformControls/Handle.ts:107,132-148`; `src/editor/editor/objects/Floor.ts:222`; `src/editor/editor/objects/Walls/Wall.ts:117`
 - **Refs:** Review #86 (Section 10)
 
-### 82. Note the NOTICE-file check is resolved
+### ~~82. Note the NOTICE-file check is resolved~~
 - **What:** Documentation-only — no action required. The Apache-2.0 attribution in the LICENSE header satisfies §4 requirements; upstream has no NOTICE file to preserve.
 - **Refs:** Review #87 (Section 10). _Confidence: Low — based on public-repo check that this review cannot verify offline._
 
-### 83. Defer error-reporting / telemetry decision
+### ~~83. Defer error-reporting / telemetry decision~~
+- **Status:** ✅ Decided — defer. No telemetry for v0.x; revisit post-1.0.
 - **What:** No action for v0.x. Note in roadmap.
 - **Refs:** Review #88 (Section 11c). _Confidence: Low — opinion call._
 
-### 84. Defer i18n
+### ~~84. Defer i18n~~
+- **Status:** ✅ Decided — defer. No i18n until there's demand.
 - **What:** No action until demand exists.
 - **Refs:** Review #89 (Section 11c)
 
