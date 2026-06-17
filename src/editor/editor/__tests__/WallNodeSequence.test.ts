@@ -10,7 +10,9 @@ vi.mock('../../../helpers/isMobile', () => ({ isMobile: false }));
 
 // Notifications surface from remove() when a connected node can't be deleted.
 const showNotification = vi.fn();
-vi.mock('@mantine/notifications', () => ({ showNotification }));
+vi.mock('@mantine/notifications', () => ({
+  notifications: { show: showNotification }
+}));
 
 // Wall constructor reaches into the api-client + store + actions; we
 // stub enough for `addWall` to construct without exploding. The tests

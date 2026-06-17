@@ -7,7 +7,7 @@ import { FloorPlan } from './editor/objects/FloorPlan';
 import { TransformLayer } from './editor/objects/TransformControls/TransformLayer';
 import { AddWallManager } from './editor/actions/AddWallManager';
 import { useStore } from '../stores/EditorStore';
-import { showNotification } from '@mantine/notifications';
+import { notifications } from '@mantine/notifications';
 import { createElement } from 'react';
 import { IconDeviceFloppy } from '@tabler/icons-react';
 
@@ -46,7 +46,7 @@ export function EditorRoot() {
         e.preventDefault();
         const data = FloorPlan.Instance.save();
         localStorage.setItem('autosave', data);
-        showNotification({
+        notifications.show({
           message: 'Saved to Local Storage!',
           color: 'green',
           icon: createElement(IconDeviceFloppy)

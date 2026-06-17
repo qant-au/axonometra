@@ -28,7 +28,7 @@ export function FurnitureItem(item: IFurnitureData) {
       </Card.Section>
       <Card.Section>
         <Center>
-          <Text align={'center'} weight={500}>
+          <Text ta="center" fw={500}>
             {data.name}
           </Text>
         </Center>

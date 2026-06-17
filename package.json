@@ -6,17 +6,15 @@
     "node": ">=20"
   },
   "dependencies": {
-    "@mantine/core": "^4.1.1",
-    "@mantine/dropzone": "^4.1.1",
-    "@mantine/hooks": "^4.1.1",
-    "@mantine/notifications": "^4.2.11",
+    "@mantine/core": "^9.3.2",
+    "@mantine/hooks": "^9.3.2",
+    "@mantine/notifications": "^9.3.2",
     "@tabler/icons-react": "^3.44.0",
     "file-saver": "^2.0.5",
     "pixi-viewport": "^6.0.3",
     "pixi.js": "^8.19.0",
-    "react": "^18.0.0",
-    "react-dom": "^18.0.0",
-    "tabler-icons-react": "^1.43.0",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7",
     "zustand": "^5.0.14"
   },
   "scripts": {
@@ -50,8 +48,8 @@
     "@testing-library/react": "^16.0.0",
     "@types/file-saver": "^2.0.5",
     "@types/node": "^20.11.0",
-    "@types/react": "^18.3.0",
-    "@types/react-dom": "^18.3.0",
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^5.0.0",
     "@vitest/ui": "^2.1.0",
     "eslint": "^9.39.4",

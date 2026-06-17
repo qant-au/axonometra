@@ -8,15 +8,15 @@ import {
   useState
 } from 'react';
 import {
-  Navbar,
+  Box,
   Tooltip,
   UnstyledButton,
-  createStyles,
-  Group,
+  Stack,
   Menu,
   Divider,
   Drawer
 } from '@mantine/core';
+import classes from './ToolNavbar.module.css';
 import {
   IconArmchair,
   IconBorderLeft,
@@ -39,7 +39,7 @@ import {
   IconTableOff,
   IconTag
 } from '@tabler/icons-react';
-import { cleanNotifications, showNotification } from '@mantine/notifications';
+import { notifications } from '@mantine/notifications';
 import { useStore } from '../../stores/EditorStore';
 import { ChangeFloorAction } from '../../editor/editor/actions/ChangeFloorAction';
 import { LoadAction } from '../../editor/editor/actions/LoadAction';
@@ -61,39 +61,6 @@ const HelpDialog = lazy(() =>
 import { DeleteFloorAction } from '../../editor/editor/actions/DeleteFloorAction';
 import { useFurnitureStore } from '../../stores/FurnitureStore';
 
-const useStyles = createStyles((theme) => ({
-  link: {
-    width: 40,
-    height: 40,
-    borderRadius: theme.radius.md,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    color:
-      theme.colorScheme === 'dark'
-        ? theme.colors.dark[0]
-        : theme.colors.gray[7],
-
-    '&:hover': {
-      backgroundColor:
-        theme.colorScheme === 'dark'
-          ? theme.colors.dark[5]
-          : theme.colors.gray[0]
-    }
-  },
-
-  active: {
-    '&, &:hover': {
-      backgroundColor:
-        theme.colorScheme === 'dark'
-          ? theme.fn.rgba(theme.colors[theme.primaryColor][9], 0.25)
-          : theme.colors[theme.primaryColor][0],
-      color:
-        theme.colors[theme.primaryColor][theme.colorScheme === 'dark' ? 4 : 7]
-    }
-  }
-}));
-
 const modes = [
   { icon: IconEye, label: 'View', tool: Tool.View },
   { icon: IconPencil, label: 'Edit', tool: Tool.Edit },
@@ -101,7 +68,6 @@ const modes = [
 ];
 
 function AddMenu({ setter }: { setter: Dispatch<SetStateAction<number>> }) {
-  const { classes } = useStyles();
   const setTool = useStore((s) => s.setTool);
   const [drawerOpened, setDrawerOpened] = useState(false);
 
@@ -126,79 +92,76 @@ function AddMenu({ setter }: { setter: Dispatch<SetStateAction<number>> }) {
         title="Add furniture"
         padding="xl"
         size="lg"
-        overlayOpacity={0}
+        overlayProps={{ backgroundOpacity: 0 }}
       >
         <Suspense fallback={null}>
           <FurnitureAddPanel />
         </Suspense>
       </Drawer>
-      <Menu
-        control={addButton}
-        position="right"
-        gutter={22}
-        trigger="hover"
-        delay={500}
-      >
-        <Menu.Item
-          icon={<IconArmchair size={18} />}
-          onClick={() => {
-            setDrawerOpened(true);
-            // -1 = no active toolbar tool (deselect while the drawer is open)
-            setter(-1);
-          }}
-        >
-          Add furniture
-        </Menu.Item>
-        <Divider />
-        <Menu.Item
-          icon={<IconBorderLeft size={18} />}
-          onClick={() => {
-            setter(-1);
-            setTool(Tool.WallAdd);
-            cleanNotifications();
-            showNotification({
-              title: '✏️ Wall drawing mode',
-              message:
-                'Click to draw walls. Double click on wall node to end sequence.',
-              color: 'blue'
-            });
-          }}
-        >
-          Draw wall
-        </Menu.Item>
-        <Menu.Item
-          icon={<IconWindow size={18} />}
-          onClick={() => {
-            setTool(Tool.FurnitureAddWindow);
-            setter(-1);
-            cleanNotifications();
+      <Menu position="right" offset={22} trigger="hover" closeDelay={500}>
+        <Menu.Target>{addButton}</Menu.Target>
+        <Menu.Dropdown>
+          <Menu.Item
+            leftSection={<IconArmchair size={18} />}
+            onClick={() => {
+              setDrawerOpened(true);
+              // -1 = no active toolbar tool (deselect while the drawer is open)
+              setter(-1);
+            }}
+          >
+            Add furniture
+          </Menu.Item>
+          <Divider />
+          <Menu.Item
+            leftSection={<IconBorderLeft size={18} />}
+            onClick={() => {
+              setter(-1);
+              setTool(Tool.WallAdd);
+              notifications.clean();
+              notifications.show({
+                title: '✏️ Wall drawing mode',
+                message:
+                  'Click to draw walls. Double click on wall node to end sequence.',
+                color: 'blue'
+              });
+            }}
+          >
+            Draw wall
+          </Menu.Item>
+          <Menu.Item
+            leftSection={<IconWindow size={18} />}
+            onClick={() => {
+              setTool(Tool.FurnitureAddWindow);
+              setter(-1);
+              notifications.clean();
 
-            showNotification({
-              title: '🪟 Add window',
-              message: 'Click on wall to add window',
-              color: 'blue'
-            });
-          }}
-        >
-          Add window
-        </Menu.Item>
-        <Menu.Item
-          icon={<IconDoor size={18} />}
-          onClick={() => {
-            setTool(Tool.FurnitureAddDoor);
-            setter(-1);
-            cleanNotifications();
+              notifications.show({
+                title: '🪟 Add window',
+                message: 'Click on wall to add window',
+                color: 'blue'
+              });
+            }}
+          >
+            Add window
+          </Menu.Item>
+          <Menu.Item
+            leftSection={<IconDoor size={18} />}
+            onClick={() => {
+              setTool(Tool.FurnitureAddDoor);
+              setter(-1);
+              notifications.clean();
 
-            showNotification({
-              title: '🚪 Add door',
-              message:
-                'Click on wall to add door. Right click to change orientation',
-              color: 'blue'
-            });
-          }}
-        >
-          Add door
-        </Menu.Item>
+              notifications.show({
+                title: '🚪 Add door',
+                message:
+                  'Click on wall to add door. Right click to change orientation',
+                color: 'blue'
+              });
+            }}
+          >
+            Add door
+          </Menu.Item>
+        </Menu.Dropdown>
       </Menu>
     </>
   );
@@ -213,7 +176,6 @@ export function ToolNavbar() {
   const snap = useStore((s) => s.snap);
 
   const fileRef = useRef<HTMLInputElement>(null);
-  const { classes } = useStyles();
 
   const toolModes = modes.map((link, index) => (
     <NavbarLink
@@ -239,20 +201,20 @@ export function ToolNavbar() {
 
   return (
     <div style={{ position: 'absolute' }}>
-      <Navbar height="100vh" width={{ base: 70 }} p="md">
-        <Navbar.Section grow>
-          <Group direction="column" align="center" spacing={0}>
+      <Box className={classes.navbar}>
+        <Box className={classes.sectionGrow}>
+          <Stack align="center" gap={0}>
             <AddMenu setter={setActive} />
             {toolModes}
-          </Group>
-        </Navbar.Section>
-        <Navbar.Section grow>
-          <Group direction="column" align="center" spacing={0}>
+          </Stack>
+        </Box>
+        <Box className={classes.sectionGrow}>
+          <Stack align="center" gap={0}>
             <Tooltip
               label={'Current floor'}
               position="right"
               withArrow
-              transitionDuration={0}
+              transitionProps={{ duration: 0 }}
             >
               <div className={classes.link}>{floor}</div>
             </Tooltip>
@@ -281,17 +243,17 @@ export function ToolNavbar() {
                 action.execute();
               }}
             />
-          </Group>
-        </Navbar.Section>
-        <Navbar.Section grow>
-          <Group direction="column" align="center" spacing={0}>
+          </Stack>
+        </Box>
+        <Box className={classes.sectionGrow}>
+          <Stack align="center" gap={0}>
             <NavbarLink
               icon={IconRuler2}
               label="Measure tool"
               onClick={() => {
                 setTool(Tool.Measure);
-                cleanNotifications();
-                showNotification({
+                notifications.clean();
+                notifications.show({
                   title: '📐 Measure tool',
                   message: 'Click and drag to measure areas'
                 });
@@ -303,8 +265,8 @@ export function ToolNavbar() {
               onClick={() => {
                 const next = !snap;
                 setSnap(next);
-                cleanNotifications();
-                showNotification({
+                notifications.clean();
+                notifications.show({
                   message: 'Snap to grid now ' + (next ? 'On' : 'Off'),
                   icon: next ? <IconTable /> : <IconTableOff />
                 });
@@ -316,8 +278,8 @@ export function ToolNavbar() {
               onClick={() => {
                 const action = new ToggleLabelAction();
                 action.execute();
-                cleanNotifications();
-                showNotification({
+                notifications.clean();
+                notifications.show({
                   message: 'Toggled size labels',
                   icon: <IconTag />
                 });
@@ -326,10 +288,10 @@ export function ToolNavbar() {
             <Suspense fallback={null}>
               <HelpDialog />
             </Suspense>
-          </Group>
-        </Navbar.Section>
-        <Navbar.Section>
-          <Group direction="column" align="center" spacing={0}>
+          </Stack>
+        </Box>
+        <Box className={classes.section}>
+          <Stack align="center" gap={0}>
             <NavbarLink
               icon={IconPrinter}
               label="Print"
@@ -360,9 +322,9 @@ export function ToolNavbar() {
               type="file"
               hidden
             />
-          </Group>
-        </Navbar.Section>
-      </Navbar>
+          </Stack>
+        </Box>
+      </Box>
     </div>
   );
 }

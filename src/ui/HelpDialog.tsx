@@ -55,11 +55,11 @@ export function HelpDialog() {
     body: (
       <>
         <Image src={helpDelete}></Image>
-        <Group spacing="xs">
+        <Group gap="xs">
           <IconClick /> <IconArrowNarrowRight /> <IconTrash />{' '}
           <p> Click on object to remove from plan</p>
         </Group>
-        <Group noWrap={true}>
+        <Group wrap="nowrap">
           <IconVector /> <p>Wall nodes may only be removed if disconnected</p>
         </Group>
       </>
@@ -70,12 +70,12 @@ export function HelpDialog() {
     body: (
       <>
         <Image src={helpEditFurniture}></Image>
-        <Group spacing="xs">
+        <Group gap="xs">
           <IconClick /> <IconArrowNarrowRight /> <IconEdit />{' '}
           <p> Click on furniture to enable edit controls</p>
         </Group>
         <Image src={helpEditWall}></Image>
-        <Group noWrap={true}>
+        <Group wrap="nowrap">
           <IconVector /> <p>Click and drag wall nodes to edit walls</p>
         </Group>
       </>
@@ -86,13 +86,13 @@ export function HelpDialog() {
     body: (
       <>
         <Image src={helpAddWall}></Image>
-        <Group noWrap={true}>
+        <Group wrap="nowrap">
           <IconClick /> <p>Click to add connected wall chain</p>
         </Group>
-        <Group noWrap={true}>
+        <Group wrap="nowrap">
           <IconMultiplier2x /> <p>Double click on wall node to end chain</p>
         </Group>
-        <Group noWrap={true}>
+        <Group wrap="nowrap">
           <IconGitFork /> <p>Click on existing walls to connect</p>
         </Group>
       </>
@@ -104,7 +104,7 @@ export function HelpDialog() {
     body: (
       <>
         <Image src={helpAddWindow}></Image>
-        <Group noWrap={true}>
+        <Group wrap="nowrap">
           <IconClick /> <p>Click on wall to add window</p>
         </Group>
       </>
@@ -115,10 +115,10 @@ export function HelpDialog() {
     body: (
       <>
         <Image src={helpAddDoor}></Image>
-        <Group noWrap={true}>
+        <Group wrap="nowrap">
           <IconClick /> <p>Click on wall to add door</p>
         </Group>
-        <Group noWrap={true}>
+        <Group wrap="nowrap">
           <IconLayoutAlignMiddle />{' '}
           <p>Middle click to change door orientation</p>
         </Group>
@@ -130,7 +130,7 @@ export function HelpDialog() {
     body: (
       <>
         <Image src={helpMeasure}></Image>
-        <Group noWrap={true}>
+        <Group wrap="nowrap">
           <IconClick /> <p>Click and drag to measure distances</p>
         </Group>
       </>
@@ -148,7 +148,7 @@ export function HelpDialog() {
 
   return (
     <>
-      <Group position="center">
+      <Group justify="center">
         <NavbarLink
           onClick={() => setOpened((o) => !o)}
           icon={IconHelp}
@@ -164,7 +164,7 @@ export function HelpDialog() {
         radius="md"
         position={{ top: 20, right: 20 }}
       >
-        <Text size="sm" style={{ marginBottom: 10 }} weight={500}>
+        <Text size="sm" style={{ marginBottom: 10 }} fw={500} component="div">
           <b>{body.title}</b>
           {body.body}
         </Text>
