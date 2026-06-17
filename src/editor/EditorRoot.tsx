@@ -36,22 +36,26 @@ export function EditorRoot() {
       resizeTo: window
     });
 
+    // v7 types app.view as the abstract ICanvas; at runtime it is the
+    // HTMLCanvasElement we passed in. Step B switches to app.canvas.
+    const view = app.view as unknown as HTMLCanvasElement;
+
     const handleContextMenu = (e: Event) => {
       e.preventDefault();
     };
-    app.view.addEventListener('contextmenu', handleContextMenu);
+    view.addEventListener('contextmenu', handleContextMenu);
 
     const viewportSettings: IViewportOptions = {
       screenWidth: app.screen.width,
       screenHeight: app.screen.height,
       worldWidth: 50 * METER,
       worldHeight: 50 * METER,
-      interaction: app.renderer.plugins.interaction
+      events: app.renderer.events
     };
     const main = new Main(viewportSettings);
     mainHolder.current = main;
 
-    ref.current!.appendChild(app.view);
+    ref.current!.appendChild(view);
     app.start();
     app.stage.addChild(main);
 
@@ -82,7 +86,7 @@ export function EditorRoot() {
 
     return () => {
       document.removeEventListener('keydown', handleKeydown);
-      app.view.removeEventListener('contextmenu', handleContextMenu);
+      view.removeEventListener('contextmenu', handleContextMenu);
       // Dispose singletons before app.destroy so their static .instance
       // refs reset; a remount then builds fresh objects against the
       // new Application.

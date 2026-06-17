@@ -1,4 +1,4 @@
-import { Graphics, InteractionEvent } from 'pixi.js';
+import { Graphics, FederatedPointerEvent } from 'pixi.js';
 import { INTERIOR_WALL_THICKNESS, NODE_COLOR, Tool } from '../../constants';
 import { useStore } from '../../../../stores/EditorStore';
 import { AddWallManager } from '../../actions/AddWallManager';
@@ -13,7 +13,7 @@ export class WallNode extends Graphics {
 
   constructor(x: number, y: number, nodeId: number) {
     super();
-    this.interactive = true;
+    this.eventMode = 'static';
     this.id = nodeId;
 
     //  this.drawCircle(0,0,INTERIOR_WALL_THICKNESS / 2)
@@ -42,7 +42,7 @@ export class WallNode extends Graphics {
     this.drawRect(0, 0, size, size);
     this.pivot.set(size / 2, size / 2);
   }
-  private onMouseDown(ev: InteractionEvent) {
+  private onMouseDown(ev: FederatedPointerEvent) {
     ev.stopPropagation();
     switch (useStore.getState().activeTool) {
       case Tool.Edit:
@@ -58,11 +58,11 @@ export class WallNode extends Graphics {
         break;
     }
   }
-  private onMouseMove(ev: InteractionEvent) {
+  private onMouseMove(ev: FederatedPointerEvent) {
     if (!this.dragging) {
       return;
     }
-    const currentPoint = { x: ev.data.global.x, y: ev.data.global.y };
+    const currentPoint = { x: ev.global.x, y: ev.global.y };
 
     this.x = viewportX(currentPoint.x);
     this.y = viewportY(currentPoint.y);

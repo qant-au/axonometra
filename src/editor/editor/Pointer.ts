@@ -1,4 +1,4 @@
-import { Container, Graphics, InteractionEvent } from 'pixi.js';
+import { Container, Graphics, FederatedPointerEvent } from 'pixi.js';
 import { snap, viewportX, viewportY } from '../../helpers/ViewportCoordinates';
 import { useStore } from '../../stores/EditorStore';
 
@@ -11,9 +11,9 @@ export class Pointer extends Container {
     this.addChild(this.graphic);
   }
 
-  public update(ev: InteractionEvent) {
-    let worldX = viewportX(ev.data.global.x);
-    let worldY = viewportY(ev.data.global.y);
+  public update(ev: FederatedPointerEvent) {
+    let worldX = viewportX(ev.global.x);
+    let worldY = viewportY(ev.global.y);
     if (useStore.getState().snap) {
       worldX = snap(worldX);
       worldY = snap(worldY);

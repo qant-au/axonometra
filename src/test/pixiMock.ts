@@ -43,8 +43,7 @@ class ContainerMock extends EventEmitterMock {
   children: ContainerMock[] = [];
   parent: ContainerMock | null = null;
   sortableChildren = false;
-  interactive = false;
-  buttonMode = false;
+  eventMode = 'auto';
   visible = true;
   zIndex = 0;
   cursor = 'default';
@@ -148,7 +147,6 @@ export function createPixiMock() {
     Texture: TextureMock,
     TilingSprite: TilingSpriteMock,
     Point: PointMock,
-    Loader: { shared: { onComplete: { once: vi.fn() }, load: vi.fn() } },
     Application: vi.fn(),
     autoDetectRenderer: vi.fn(),
     isMobile: false

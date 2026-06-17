@@ -1,11 +1,5 @@
 import { IViewportOptions, Viewport } from 'pixi-viewport';
-import {
-  InteractionEvent,
-  isMobile,
-  Loader,
-  Point,
-  TilingSprite
-} from 'pixi.js';
+import { FederatedPointerEvent, isMobile, Point, TilingSprite } from 'pixi.js';
 import { FloorPlan } from './objects/FloorPlan';
 import { TransformLayer } from './objects/TransformControls/TransformLayer';
 import { useStore } from '../../stores/EditorStore';
@@ -26,16 +20,22 @@ export class Main extends Viewport {
   constructor(options: IViewportOptions) {
     super(options);
 
-    // connect the events
-    Loader.shared.onComplete.once(this.setup, this);
-    // Start loading!
-    Loader.shared.load();
+    // Build the scene on a microtask so EditorRoot has added this viewport to
+    // the stage (and called app.start()) first — clamp()/the plugins read the
+    // viewport's world transform. Replaces the removed-in-v7 Loader.shared
+    // ready callback; TilingSprite.from lazy-loads the pattern in setup().
+    queueMicrotask(() => this.setup());
     this.preview = new Preview();
     this.addChild(this.preview.getReference());
     this.cursor = 'none';
   }
 
   private setup() {
+    // React StrictMode (dev) mounts EditorRoot twice; the first viewport is
+    // destroyed before this deferred callback runs. Bail out rather than wire
+    // plugins onto a torn-down viewport (whose transform is now null) — v7's
+    // clamp plugin reads viewport.x and would throw.
+    if (this.destroyed) return;
     this.drag({ mouseButtons: 'right' })
       .clamp({ direction: 'all' })
       .pinch()
@@ -63,12 +63,12 @@ export class Main extends Viewport {
     this.on('pointermove', this.updatePreview);
     this.on('pointerup', this.updateEnd);
   }
-  private updatePreview(ev: InteractionEvent) {
+  private updatePreview(ev: FederatedPointerEvent) {
     this.addWallManager.updatePreview(ev);
     this.preview.updatePreview(ev);
     this.pointer.update(ev);
   }
-  private updateEnd(_ev: InteractionEvent) {
+  private updateEnd(_ev: FederatedPointerEvent) {
     switch (useStore.getState().activeTool) {
       case Tool.Measure:
         this.preview.set(undefined);
@@ -84,17 +84,17 @@ export class Main extends Viewport {
         break;
     }
   }
-  private checkTools(ev: InteractionEvent) {
+  private checkTools(ev: FederatedPointerEvent) {
     ev.stopPropagation();
-    if (ev.data.button == 2 || ev.data.button == 2) {
+    if (ev.button == 2 || ev.button == 2) {
       return;
     }
     const point = { x: 0, y: 0 };
     switch (useStore.getState().activeTool) {
       case Tool.WallAdd: {
         this.pause = true;
-        point.x = viewportX(ev.data.global.x);
-        point.y = viewportY(ev.data.global.y);
+        point.x = viewportX(ev.global.x);
+        point.y = viewportY(ev.global.y);
         const action = new AddNodeAction(undefined, point);
         action.execute();
         break;
@@ -106,8 +106,8 @@ export class Main extends Viewport {
         break;
       case Tool.Measure:
         this.pause = true;
-        point.x = viewportX(ev.data.global.x);
-        point.y = viewportY(ev.data.global.y);
+        point.x = viewportX(ev.global.x);
+        point.y = viewportY(ev.global.y);
         this.preview.set(point);
         break;
     }

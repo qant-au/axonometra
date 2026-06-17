@@ -1,4 +1,4 @@
-import { InteractionEvent } from 'pixi.js';
+import { FederatedPointerEvent } from 'pixi.js';
 import { euclideanDistance } from '../../../helpers/EuclideanDistance';
 import { Point } from '../../../helpers/Point';
 
@@ -76,7 +76,7 @@ export class AddWallManager {
     // this.sizeLabel.visible = false;
   }
 
-  public updatePreview(ev: InteractionEvent) {
+  public updatePreview(ev: FederatedPointerEvent) {
     this.preview.updatePreview(ev, true);
   }
   public unset() {

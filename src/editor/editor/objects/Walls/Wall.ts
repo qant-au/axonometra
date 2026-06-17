@@ -1,4 +1,4 @@
-import { Graphics, InteractionEvent } from 'pixi.js';
+import { Graphics, FederatedPointerEvent } from 'pixi.js';
 import { getDoor, getWindow } from '../../../../api/api-client';
 import { euclideanDistance } from '../../../../helpers/EuclideanDistance';
 import { Point } from '../../../../helpers/Point';
@@ -40,7 +40,7 @@ export class Wall extends Graphics {
     super();
     this.sortableChildren = true;
 
-    this.interactive = true;
+    this.eventMode = 'static';
     this.leftNode = leftNode;
     this.rightNode = rightNode;
     this.dragging = false;
@@ -139,17 +139,17 @@ export class Wall extends Graphics {
     this.label.zIndex = 998;
   }
 
-  private onRightDown(ev: InteractionEvent) {
+  private onRightDown(ev: FederatedPointerEvent) {
     ev.stopPropagation();
     this.setIsExterior(!this.isExteriorWall);
     return;
   }
 
-  private onMouseMove(ev: InteractionEvent) {
+  private onMouseMove(ev: FederatedPointerEvent) {
     if (!this.dragging) {
       return;
     }
-    const currentPoint = ev.data.global;
+    const currentPoint = ev.global;
     const delta = {
       x: currentPoint.x - this.mouseStartPoint.x,
       y: currentPoint.y - this.mouseStartPoint.y
@@ -165,19 +165,19 @@ export class Wall extends Graphics {
     );
   }
 
-  private onMouseUp(_ev: InteractionEvent) {
+  private onMouseUp(_ev: FederatedPointerEvent) {
     this.dragging = false;
     return;
   }
 
-  private onMouseDown(ev: InteractionEvent) {
+  private onMouseDown(ev: FederatedPointerEvent) {
     ev.stopPropagation();
 
     const coords = {
-      x: viewportX(ev.data.global.x),
-      y: viewportY(ev.data.global.y)
+      x: viewportX(ev.global.x),
+      y: viewportY(ev.global.y)
     };
-    const localCoords = ev.data.getLocalPosition(this);
+    const localCoords = ev.getLocalPosition(this);
 
     const state = useStore.getState();
 
@@ -218,8 +218,8 @@ export class Wall extends Graphics {
 
     if (state.activeTool == Tool.Edit && !this.dragging) {
       this.dragging = true;
-      this.mouseStartPoint.x = viewportX(ev.data.global.x);
-      this.mouseStartPoint.y = viewportY(ev.data.global.y);
+      this.mouseStartPoint.x = viewportX(ev.global.x);
+      this.mouseStartPoint.y = viewportY(ev.global.y);
       this.startLeftNode.x = this.leftNode.position.x;
       this.startLeftNode.y = this.leftNode.position.y;
 

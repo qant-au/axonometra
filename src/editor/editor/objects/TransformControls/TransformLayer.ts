@@ -116,7 +116,7 @@ export class TransformLayer extends Container {
     this.draw();
 
     this.visible = true;
-    this.interactive = true;
+    this.eventMode = 'static';
   }
 
   private draw() {
@@ -186,7 +186,7 @@ export class TransformLayer extends Container {
   public deselect() {
     this.target = null;
     this.visible = false;
-    this.interactive = false;
+    this.eventMode = 'auto';
   }
 
   public dispose() {

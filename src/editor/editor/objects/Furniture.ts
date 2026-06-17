@@ -1,4 +1,4 @@
-import { Graphics, InteractionEvent, Sprite, Texture } from 'pixi.js';
+import { Graphics, FederatedPointerEvent, Sprite, Texture } from 'pixi.js';
 import { resolveCatalogImage } from '../../../api/api-client';
 import { FurnitureData } from '../../../stores/FurnitureStore';
 import { useStore } from '../../../stores/EditorStore';
@@ -54,7 +54,7 @@ export class Furniture extends Sprite {
     if (data.zIndex) {
       this.zIndex = data.zIndex;
     }
-    this.interactive = true;
+    this.eventMode = 'static';
     // this.dragging = false;
     this.width = data.width * METER;
     this.height = data.height * METER;
@@ -112,7 +112,7 @@ export class Furniture extends Sprite {
     this.orientation = (this.orientation + 1) % 4;
   }
 
-  private onRightDown(ev: InteractionEvent) {
+  private onRightDown(ev: FederatedPointerEvent) {
     ev.stopPropagation();
     this.switchOrientation();
 
@@ -124,9 +124,9 @@ export class Furniture extends Sprite {
     }
     this.orientation = number;
   }
-  private onMouseDown(ev: InteractionEvent) {
+  private onMouseDown(ev: FederatedPointerEvent) {
     ev.stopPropagation();
-    if (ev.data.button == 1) {
+    if (ev.button == 1) {
       this.zIndex++;
     }
     switch (useStore.getState().activeTool) {

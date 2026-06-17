@@ -1,4 +1,4 @@
-import { Graphics, InteractionEvent } from 'pixi.js';
+import { Graphics, FederatedPointerEvent } from 'pixi.js';
 import { isMobile } from '../../../../helpers/isMobile';
 import { HANDLE_MOBILE_SCALE, WALL_THICKNESS } from '../../constants';
 import { Point } from '../../../../helpers/Point';
@@ -42,7 +42,7 @@ export class Handle extends Graphics {
   localCoords: { x: number; y: number };
   constructor(handleConfig: IHandleConfig) {
     super();
-    this.interactive = true;
+    this.eventMode = 'static';
     if (handleConfig.color) {
       this.color = handleConfig.color;
     }
@@ -63,7 +63,6 @@ export class Handle extends Graphics {
     if (handleConfig.target) {
       this.target = handleConfig.target;
     }
-    this.buttonMode = true;
     this.beginFill(this.color).lineStyle(1, this.color);
 
     if (isMobile) {
@@ -104,12 +103,12 @@ export class Handle extends Graphics {
     this.on('pointermove', this.onMouseMove);
   }
 
-  private onMouseDown(ev: InteractionEvent) {
+  private onMouseDown(ev: FederatedPointerEvent) {
     if (TransformLayer.dragging) {
       return;
     }
-    this.mouseStartPoint.x = ev.data.global.x;
-    this.mouseStartPoint.y = ev.data.global.y; // unde se afla target la mousedown
+    this.mouseStartPoint.x = ev.global.x;
+    this.mouseStartPoint.y = ev.global.y; // unde se afla target la mousedown
     this.targetStartPoint = this.target.getGlobalPosition();
     this.targetStartCenterPoint.x =
       this.targetStartPoint.x + this.target.width / 2;
@@ -124,19 +123,19 @@ export class Handle extends Graphics {
     ev.stopPropagation();
   }
 
-  private onMouseUp(ev: InteractionEvent) {
+  private onMouseUp(ev: FederatedPointerEvent) {
     TransformLayer.dragging = false;
     this.active = false;
     ev.stopPropagation();
   }
 
-  private onMouseMove(ev: InteractionEvent) {
+  private onMouseMove(ev: FederatedPointerEvent) {
     if (!this.active || !TransformLayer.dragging) {
       return;
     }
     // unde se afla mouse-ul acum
-    this.mouseEndPoint.x = ev.data.global.x;
-    this.mouseEndPoint.y = ev.data.global.y;
+    this.mouseEndPoint.x = ev.global.x;
+    this.mouseEndPoint.y = ev.global.y;
     // distanta de la obiect la punctul de start (unde a dat click utilizatorul)
     const startDistance = this.getDistance(
       this.mouseStartPoint,

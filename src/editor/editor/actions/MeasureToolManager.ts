@@ -1,4 +1,4 @@
-import { Graphics, InteractionEvent } from 'pixi.js';
+import { Graphics, FederatedPointerEvent } from 'pixi.js';
 import { euclideanDistance } from '../../../helpers/EuclideanDistance';
 import { Point } from '../../../helpers/Point';
 import { viewportX, viewportY } from '../../../helpers/ViewportCoordinates';
@@ -23,12 +23,12 @@ export class Preview {
     this.sizeLabel.visible = false;
   }
 
-  public updatePreview(ev: InteractionEvent, isWall = false) {
+  public updatePreview(ev: FederatedPointerEvent, isWall = false) {
     if (this.startPoint === undefined) {
       return;
     }
-    const newX = viewportX(ev.data.global.x);
-    const newY = viewportY(ev.data.global.y);
+    const newX = viewportX(ev.global.x);
+    const newY = viewportY(ev.global.y);
     this.preview
       .clear()
       .lineStyle(2, 0x1f1f1f)

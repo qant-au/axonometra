@@ -62,7 +62,7 @@ export class FloorPlan extends Container {
 
   public print() {
     const bounds = this.getBounds();
-    const opts: IRendererOptionsAuto = {
+    const opts: Partial<IRendererOptionsAuto> = {
       preserveDrawingBuffer: true,
       width: Math.max(1, Math.ceil(bounds.width)),
       height: Math.max(1, Math.ceil(bounds.height))
