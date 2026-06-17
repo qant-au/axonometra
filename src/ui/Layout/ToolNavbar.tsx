@@ -18,27 +18,27 @@ import {
   Drawer
 } from '@mantine/core';
 import {
-  Armchair,
-  BorderLeft,
-  ArrowDownSquare,
-  DeviceFloppy,
-  Upload,
-  Ruler2,
-  StairsUp,
-  StairsDown,
-  Eye,
-  Pencil,
-  Eraser,
-  Window,
-  Door,
-  Plus,
-  SquareX,
-  Dimensions,
-  Printer,
-  Table,
-  TableOff,
-  Tag
-} from 'tabler-icons-react';
+  IconArmchair,
+  IconBorderLeft,
+  IconArrowDownSquare,
+  IconDeviceFloppy,
+  IconUpload,
+  IconRuler2,
+  IconStairsUp,
+  IconStairsDown,
+  IconEye,
+  IconPencil,
+  IconEraser,
+  IconWindow,
+  IconDoor,
+  IconPlus,
+  IconSquareX,
+  IconDimensions,
+  IconPrinter,
+  IconTable,
+  IconTableOff,
+  IconTag
+} from '@tabler/icons-react';
 import { cleanNotifications, showNotification } from '@mantine/notifications';
 import { useStore } from '../../stores/EditorStore';
 import { ChangeFloorAction } from '../../editor/editor/actions/ChangeFloorAction';
@@ -95,9 +95,9 @@ const useStyles = createStyles((theme) => ({
 }));
 
 const modes = [
-  { icon: Eye, label: 'View', tool: Tool.View },
-  { icon: Pencil, label: 'Edit', tool: Tool.Edit },
-  { icon: Eraser, label: 'Erase', tool: Tool.Remove }
+  { icon: IconEye, label: 'View', tool: Tool.View },
+  { icon: IconPencil, label: 'Edit', tool: Tool.Edit },
+  { icon: IconEraser, label: 'Erase', tool: Tool.Remove }
 ];
 
 function AddMenu({ setter }: { setter: Dispatch<SetStateAction<number>> }) {
@@ -110,7 +110,7 @@ function AddMenu({ setter }: { setter: Dispatch<SetStateAction<number>> }) {
 
   const addButton = (
     <UnstyledButton className={classes.link}>
-      <Plus />
+      <IconPlus />
     </UnstyledButton>
   );
 
@@ -140,7 +140,7 @@ function AddMenu({ setter }: { setter: Dispatch<SetStateAction<number>> }) {
         delay={500}
       >
         <Menu.Item
-          icon={<Armchair size={18} />}
+          icon={<IconArmchair size={18} />}
           onClick={() => {
             setDrawerOpened(true);
             // -1 = no active toolbar tool (deselect while the drawer is open)
@@ -151,7 +151,7 @@ function AddMenu({ setter }: { setter: Dispatch<SetStateAction<number>> }) {
         </Menu.Item>
         <Divider />
         <Menu.Item
-          icon={<BorderLeft size={18} />}
+          icon={<IconBorderLeft size={18} />}
           onClick={() => {
             setter(-1);
             setTool(Tool.WallAdd);
@@ -167,7 +167,7 @@ function AddMenu({ setter }: { setter: Dispatch<SetStateAction<number>> }) {
           Draw wall
         </Menu.Item>
         <Menu.Item
-          icon={<Window size={18} />}
+          icon={<IconWindow size={18} />}
           onClick={() => {
             setTool(Tool.FurnitureAddWindow);
             setter(-1);
@@ -183,7 +183,7 @@ function AddMenu({ setter }: { setter: Dispatch<SetStateAction<number>> }) {
           Add window
         </Menu.Item>
         <Menu.Item
-          icon={<Door size={18} />}
+          icon={<IconDoor size={18} />}
           onClick={() => {
             setTool(Tool.FurnitureAddDoor);
             setter(-1);
@@ -258,7 +258,7 @@ export function ToolNavbar() {
             </Tooltip>
 
             <NavbarLink
-              icon={StairsUp}
+              icon={IconStairsUp}
               label="Go to next floor"
               onClick={() => {
                 const action = new ChangeFloorAction(1);
@@ -266,7 +266,7 @@ export function ToolNavbar() {
               }}
             />
             <NavbarLink
-              icon={StairsDown}
+              icon={IconStairsDown}
               label="Go to previous floor"
               onClick={() => {
                 const action = new ChangeFloorAction(-1);
@@ -274,7 +274,7 @@ export function ToolNavbar() {
               }}
             />
             <NavbarLink
-              icon={SquareX}
+              icon={IconSquareX}
               label="Delete floor"
               onClick={() => {
                 const action = new DeleteFloorAction();
@@ -286,7 +286,7 @@ export function ToolNavbar() {
         <Navbar.Section grow>
           <Group direction="column" align="center" spacing={0}>
             <NavbarLink
-              icon={Ruler2}
+              icon={IconRuler2}
               label="Measure tool"
               onClick={() => {
                 setTool(Tool.Measure);
@@ -298,7 +298,7 @@ export function ToolNavbar() {
               }}
             />
             <NavbarLink
-              icon={ArrowDownSquare}
+              icon={IconArrowDownSquare}
               label="Snap to grid"
               onClick={() => {
                 const next = !snap;
@@ -306,12 +306,12 @@ export function ToolNavbar() {
                 cleanNotifications();
                 showNotification({
                   message: 'Snap to grid now ' + (next ? 'On' : 'Off'),
-                  icon: next ? <Table /> : <TableOff />
+                  icon: next ? <IconTable /> : <IconTableOff />
                 });
               }}
             />
             <NavbarLink
-              icon={Dimensions}
+              icon={IconDimensions}
               label="Toggle size labels"
               onClick={() => {
                 const action = new ToggleLabelAction();
@@ -319,7 +319,7 @@ export function ToolNavbar() {
                 cleanNotifications();
                 showNotification({
                   message: 'Toggled size labels',
-                  icon: <Tag />
+                  icon: <IconTag />
                 });
               }}
             />
@@ -331,7 +331,7 @@ export function ToolNavbar() {
         <Navbar.Section>
           <Group direction="column" align="center" spacing={0}>
             <NavbarLink
-              icon={Printer}
+              icon={IconPrinter}
               label="Print"
               onClick={() => {
                 const action = new PrintAction();
@@ -339,7 +339,7 @@ export function ToolNavbar() {
               }}
             />
             <NavbarLink
-              icon={DeviceFloppy}
+              icon={IconDeviceFloppy}
               label="Save plan"
               onClick={() => {
                 const action = new SaveAction();
@@ -349,7 +349,7 @@ export function ToolNavbar() {
 
             <NavbarLink
               onClick={() => fileRef.current?.click()}
-              icon={Upload}
+              icon={IconUpload}
               label="Load plan"
             />
             <input

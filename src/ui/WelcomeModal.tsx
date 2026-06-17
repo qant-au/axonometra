@@ -7,7 +7,11 @@ import {
   createStyles,
   Stack
 } from '@mantine/core';
-import { Database, Plus, RotateClockwise } from 'tabler-icons-react';
+import {
+  IconDatabase,
+  IconPlus,
+  IconRotateClockwise
+} from '@tabler/icons-react';
 import { LoadAction } from '../editor/editor/actions/LoadAction';
 import AxonometraLogo from '../res/logo.png';
 import { FloorPlan } from '../editor/editor/objects/FloorPlan';
@@ -73,7 +77,7 @@ export function WelcomeModal() {
               setOpened(false);
               showNotification(notification);
             }}
-            leftIcon={<Plus />}
+            leftIcon={<IconPlus />}
             variant="white"
           >
             New plan
@@ -90,7 +94,7 @@ export function WelcomeModal() {
             onClick={() => {
               fileRef.current?.click();
             }}
-            leftIcon={<Database />}
+            leftIcon={<IconDatabase />}
             variant="white"
           >
             Load from disk
@@ -109,7 +113,7 @@ export function WelcomeModal() {
               FloorPlan.Instance.load(saved);
               setOpened(false);
             }}
-            leftIcon={<RotateClockwise />}
+            leftIcon={<IconRotateClockwise />}
             variant="white"
           >
             Load from local save

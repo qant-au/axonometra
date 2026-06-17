@@ -9,7 +9,7 @@ import { AddWallManager } from './editor/actions/AddWallManager';
 import { useStore } from '../stores/EditorStore';
 import { showNotification } from '@mantine/notifications';
 import { createElement } from 'react';
-import { DeviceFloppy } from 'tabler-icons-react';
+import { IconDeviceFloppy } from '@tabler/icons-react';
 
 // Holder for the active Main instance. Non-React Pixi consumers
 // (ViewportCoordinates, Floor) read mainHolder.current via getMain()
@@ -49,7 +49,7 @@ export function EditorRoot() {
         showNotification({
           message: 'Saved to Local Storage!',
           color: 'green',
-          icon: createElement(DeviceFloppy)
+          icon: createElement(IconDeviceFloppy)
         });
       }
     };

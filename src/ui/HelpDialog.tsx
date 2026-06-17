@@ -3,17 +3,17 @@ import { Dialog, Group, Text } from '@mantine/core';
 import { useStore } from '../stores/EditorStore';
 import { NavbarLink } from './NavbarLink';
 import {
-  ArrowNarrowRight,
-  Click,
-  Edit,
-  GitFork,
-  Help,
-  LayoutAlignMiddle,
-  Multiplier2x,
-  Trash,
-  Vector,
-  ZoomIn
-} from 'tabler-icons-react';
+  IconArrowNarrowRight,
+  IconClick,
+  IconEdit,
+  IconGitFork,
+  IconHelp,
+  IconLayoutAlignMiddle,
+  IconMultiplier2x,
+  IconTrash,
+  IconVector,
+  IconZoomIn
+} from '@tabler/icons-react';
 import { Tool } from '../editor/editor/constants';
 import { Image } from '@mantine/core';
 
@@ -41,10 +41,10 @@ export function HelpDialog() {
     body: (
       <>
         <Group>
-          <Click /> <p>Right click and drag to move around the map </p>
+          <IconClick /> <p>Right click and drag to move around the map </p>
         </Group>
         <Group>
-          <ZoomIn /> <p>Use scroll wheel to zoom in or out</p>
+          <IconZoomIn /> <p>Use scroll wheel to zoom in or out</p>
         </Group>
       </>
     )
@@ -56,11 +56,11 @@ export function HelpDialog() {
       <>
         <Image src={helpDelete}></Image>
         <Group spacing="xs">
-          <Click /> <ArrowNarrowRight /> <Trash />{' '}
+          <IconClick /> <IconArrowNarrowRight /> <IconTrash />{' '}
           <p> Click on object to remove from plan</p>
         </Group>
         <Group noWrap={true}>
-          <Vector /> <p>Wall nodes may only be removed if disconnected</p>
+          <IconVector /> <p>Wall nodes may only be removed if disconnected</p>
         </Group>
       </>
     )
@@ -71,12 +71,12 @@ export function HelpDialog() {
       <>
         <Image src={helpEditFurniture}></Image>
         <Group spacing="xs">
-          <Click /> <ArrowNarrowRight /> <Edit />{' '}
+          <IconClick /> <IconArrowNarrowRight /> <IconEdit />{' '}
           <p> Click on furniture to enable edit controls</p>
         </Group>
         <Image src={helpEditWall}></Image>
         <Group noWrap={true}>
-          <Vector /> <p>Click and drag wall nodes to edit walls</p>
+          <IconVector /> <p>Click and drag wall nodes to edit walls</p>
         </Group>
       </>
     )
@@ -87,13 +87,13 @@ export function HelpDialog() {
       <>
         <Image src={helpAddWall}></Image>
         <Group noWrap={true}>
-          <Click /> <p>Click to add connected wall chain</p>
+          <IconClick /> <p>Click to add connected wall chain</p>
         </Group>
         <Group noWrap={true}>
-          <Multiplier2x /> <p>Double click on wall node to end chain</p>
+          <IconMultiplier2x /> <p>Double click on wall node to end chain</p>
         </Group>
         <Group noWrap={true}>
-          <GitFork /> <p>Click on existing walls to connect</p>
+          <IconGitFork /> <p>Click on existing walls to connect</p>
         </Group>
       </>
     )
@@ -105,7 +105,7 @@ export function HelpDialog() {
       <>
         <Image src={helpAddWindow}></Image>
         <Group noWrap={true}>
-          <Click /> <p>Click on wall to add window</p>
+          <IconClick /> <p>Click on wall to add window</p>
         </Group>
       </>
     )
@@ -116,10 +116,11 @@ export function HelpDialog() {
       <>
         <Image src={helpAddDoor}></Image>
         <Group noWrap={true}>
-          <Click /> <p>Click on wall to add door</p>
+          <IconClick /> <p>Click on wall to add door</p>
         </Group>
         <Group noWrap={true}>
-          <LayoutAlignMiddle /> <p>Middle click to change door orientation</p>
+          <IconLayoutAlignMiddle />{' '}
+          <p>Middle click to change door orientation</p>
         </Group>
       </>
     )
@@ -130,7 +131,7 @@ export function HelpDialog() {
       <>
         <Image src={helpMeasure}></Image>
         <Group noWrap={true}>
-          <Click /> <p>Click and drag to measure distances</p>
+          <IconClick /> <p>Click and drag to measure distances</p>
         </Group>
       </>
     )
@@ -150,7 +151,7 @@ export function HelpDialog() {
       <Group position="center">
         <NavbarLink
           onClick={() => setOpened((o) => !o)}
-          icon={Help}
+          icon={IconHelp}
           label="Help"
         />
       </Group>

@@ -10,6 +10,7 @@
     "@mantine/dropzone": "^4.1.1",
     "@mantine/hooks": "^4.1.1",
     "@mantine/notifications": "^4.2.11",
+    "@tabler/icons-react": "^3.44.0",
     "file-saver": "^2.0.5",
     "pixi-viewport": "^6.0.3",
     "pixi.js": "^8.19.0",

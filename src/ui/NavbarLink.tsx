@@ -1,4 +1,4 @@
-import { Icon as TablerIcon } from 'tabler-icons-react';
+import { type Icon as TablerIcon } from '@tabler/icons-react';
 
 import { createStyles, Tooltip, UnstyledButton } from '@mantine/core';
 
