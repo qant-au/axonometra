@@ -1,4 +1,4 @@
-import { showNotification } from '@mantine/notifications';
+import { notifications } from '@mantine/notifications';
 
 const MAX_BYTES = 5 * 1024 * 1024;
 // Browsers frequently report an empty MIME type for `.json` files, so the
@@ -19,7 +19,7 @@ export async function readPlanFile(
   const nameOk = /\.(json|txt)$/i.test(file.name);
   const typeOk = ALLOWED_TYPES.includes(file.type);
   if (!nameOk && !typeOk) {
-    showNotification({
+    notifications.show({
       title: 'Unsupported file',
       message: 'Please choose a .json plan file.',
       color: 'red'
@@ -27,7 +27,7 @@ export async function readPlanFile(
     return null;
   }
   if (file.size > MAX_BYTES) {
-    showNotification({
+    notifications.show({
       title: 'File too large',
       message: 'Plan files must be smaller than 5 MB.',
       color: 'red'

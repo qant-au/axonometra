@@ -1,46 +1,7 @@
-import { Icon as TablerIcon } from 'tabler-icons-react';
+import { type Icon as TablerIcon } from '@tabler/icons-react';
 
-import { createStyles, Tooltip, UnstyledButton } from '@mantine/core';
-
-const useStyles = createStyles((theme) => ({
-  link: {
-    width: 40,
-    height: 40,
-    borderRadius: theme.radius.md,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    color:
-      theme.colorScheme === 'dark'
-        ? theme.colors.dark[0]
-        : theme.colors.gray[7],
-
-    '&:hover': {
-      backgroundColor:
-        theme.colorScheme === 'dark'
-          ? theme.colors.dark[5]
-          : theme.colors.gray[0]
-    },
-
-    // Visible keyboard-focus ring — these icon buttons are otherwise only
-    // distinguishable on hover, which keyboard users never trigger.
-    '&:focus-visible': {
-      outline: `2px solid ${theme.colors[theme.primaryColor][6]}`,
-      outlineOffset: 2
-    }
-  },
-
-  active: {
-    '&, &:hover': {
-      backgroundColor:
-        theme.colorScheme === 'dark'
-          ? theme.fn.rgba(theme.colors[theme.primaryColor][9], 0.25)
-          : theme.colors[theme.primaryColor][0],
-      color:
-        theme.colors[theme.primaryColor][theme.colorScheme === 'dark' ? 4 : 7]
-    }
-  }
-}));
+import { Tooltip, UnstyledButton } from '@mantine/core';
+import classes from './NavbarLink.module.css';
 
 interface NavbarLinkProps {
   icon: TablerIcon;
@@ -55,13 +16,17 @@ export function NavbarLink({
   active,
   onClick
 }: NavbarLinkProps) {
-  const { classes, cx } = useStyles();
   return (
-    <Tooltip label={label} position="right" withArrow transitionDuration={0}>
+    <Tooltip
+      label={label}
+      position="right"
+      withArrow
+      transitionProps={{ duration: 0 }}
+    >
       <UnstyledButton
         onClick={onClick}
         aria-label={label}
-        className={cx(classes.link, { [classes.active]: active })}
+        className={`${classes.link}${active ? ` ${classes.active}` : ''}`}
       >
         <Icon />
       </UnstyledButton>

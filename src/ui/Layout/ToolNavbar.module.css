@@ -1,0 +1,32 @@
+.navbar {
+  height: 100vh;
+  width: 70px;
+  padding: var(--mantine-spacing-md);
+  display: flex;
+  flex-direction: column;
+}
+
+.section {
+  flex-grow: 0;
+}
+
+.sectionGrow {
+  flex-grow: 1;
+}
+
+.link {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--mantine-radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: light-dark(var(--mantine-color-gray-7), var(--mantine-color-dark-0));
+}
+
+.link:hover {
+  background-color: light-dark(
+    var(--mantine-color-gray-0),
+    var(--mantine-color-dark-5)
+  );
+}

@@ -1,4 +1,4 @@
-import { showNotification } from '@mantine/notifications';
+import { notifications } from '@mantine/notifications';
 import { Container } from 'pixi.js';
 import { INodeSerializable } from '../../persistence/INodeSerializable';
 import { Wall } from './Wall';
@@ -99,7 +99,7 @@ export class WallNodeSequence extends Container {
       // remove links containing node TODO if implementing undo. remember these
       // this.wallNodeLinks[id].length = 0;
     } else {
-      showNotification({
+      notifications.show({
         title: 'Not permitted',
         color: 'red',
         message:

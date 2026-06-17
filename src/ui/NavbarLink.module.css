@@ -1,0 +1,35 @@
+.link {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--mantine-radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: light-dark(var(--mantine-color-gray-7), var(--mantine-color-dark-0));
+}
+
+.link:hover {
+  background-color: light-dark(
+    var(--mantine-color-gray-0),
+    var(--mantine-color-dark-5)
+  );
+}
+
+/* Visible keyboard-focus ring — these icon buttons are otherwise only
+   distinguishable on hover, which keyboard users never trigger. */
+.link:focus-visible {
+  outline: 2px solid var(--mantine-primary-color-6);
+  outline-offset: 2px;
+}
+
+.active,
+.active:hover {
+  background-color: light-dark(
+    var(--mantine-primary-color-light),
+    color-mix(in srgb, var(--mantine-primary-color-9) 25%, transparent)
+  );
+  color: light-dark(
+    var(--mantine-primary-color-7),
+    var(--mantine-primary-color-4)
+  );
+}

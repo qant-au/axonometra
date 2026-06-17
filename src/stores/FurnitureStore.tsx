@@ -1,4 +1,4 @@
-import create from 'zustand';
+import { create } from 'zustand';
 import { getCategoriesRequest, getCategoryInfo } from '../api/api-client';
 
 export interface Category {
@@ -24,7 +24,7 @@ export interface FurnitureStore {
   getCurrentFurnitureData: (categoryId: string) => void;
 }
 
-export const useFurnitureStore = create<FurnitureStore>((set) => ({
+export const useFurnitureStore = create<FurnitureStore>()((set) => ({
   categories: [],
   currentFurnitureData: [],
   getCategories: async () => {

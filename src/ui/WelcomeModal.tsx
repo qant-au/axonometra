@@ -1,24 +1,15 @@
 import { ChangeEvent, useEffect, useRef, useState } from 'react';
+import { Modal, Button, Image, Stack } from '@mantine/core';
 import {
-  Modal,
-  Button,
-  useMantineTheme,
-  Image,
-  createStyles,
-  Stack
-} from '@mantine/core';
-import { Database, Plus, RotateClockwise } from 'tabler-icons-react';
+  IconDatabase,
+  IconPlus,
+  IconRotateClockwise
+} from '@tabler/icons-react';
 import { LoadAction } from '../editor/editor/actions/LoadAction';
 import AxonometraLogo from '../res/logo.png';
 import { FloorPlan } from '../editor/editor/objects/FloorPlan';
-import { showNotification } from '@mantine/notifications';
+import { notifications } from '@mantine/notifications';
 import { readPlanFile } from '../helpers/readPlanFile';
-
-const useStyles = createStyles(() => ({
-  padded: {
-    padding: '4px'
-  }
-}));
 
 export function WelcomeModal() {
   const [opened, setOpened] = useState(false);
@@ -35,8 +26,6 @@ export function WelcomeModal() {
     }
   };
 
-  const theme = useMantineTheme();
-  const { classes } = useStyles();
   useEffect(() => {
     setOpened(true);
   }, []);
@@ -49,31 +38,30 @@ export function WelcomeModal() {
   return (
     <>
       <Modal
-        className={classes.padded}
+        style={{ padding: 4 }}
         closeOnClickOutside={true}
         closeOnEscape={true}
         opened={opened}
         withCloseButton={false}
-        overlayColor={
-          theme.colorScheme === 'dark'
-            ? theme.colors.dark[9]
-            : theme.colors.gray[2]
-        }
-        overlayOpacity={0.55}
+        overlayProps={{
+          backgroundOpacity: 0.55,
+          color:
+            'light-dark(var(--mantine-color-gray-2), var(--mantine-color-dark-9))'
+        }}
         centered
         onClose={() => {
           setOpened(false);
-          showNotification(notification);
+          notifications.show(notification);
         }}
       >
-        <Stack spacing="xs">
+        <Stack gap="xs">
           {image}
           <Button
             onClick={() => {
               setOpened(false);
-              showNotification(notification);
+              notifications.show(notification);
             }}
-            leftIcon={<Plus />}
+            leftSection={<IconPlus />}
             variant="white"
           >
             New plan
@@ -90,7 +78,7 @@ export function WelcomeModal() {
             onClick={() => {
               fileRef.current?.click();
             }}
-            leftIcon={<Database />}
+            leftSection={<IconDatabase />}
             variant="white"
           >
             Load from disk
@@ -99,7 +87,7 @@ export function WelcomeModal() {
             onClick={() => {
               const saved = localStorage.getItem('autosave');
               if (saved == null) {
-                showNotification({
+                notifications.show({
                   title: 'No autosave found',
                   message: 'There is no local autosave to load.',
                   color: 'yellow'
@@ -109,7 +97,7 @@ export function WelcomeModal() {
               FloorPlan.Instance.load(saved);
               setOpened(false);
             }}
-            leftIcon={<RotateClockwise />}
+            leftSection={<IconRotateClockwise />}
             variant="white"
           >
             Load from local save

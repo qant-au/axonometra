@@ -9,7 +9,7 @@ import {
 } from '../persistence/FloorPlanSerializable';
 import { useStore } from '../../../stores/EditorStore';
 import { Point } from '../../../helpers/Point';
-import { showNotification } from '@mantine/notifications';
+import { notifications } from '@mantine/notifications';
 import { rendererHolder } from '../../EditorRoot';
 
 export class FloorPlan extends Container {
@@ -66,7 +66,7 @@ export class FloorPlan extends Container {
     // this scene's GPU resources). extract.canvas sizes itself to the bounds.
     const renderer = rendererHolder.current;
     if (!renderer) {
-      showNotification({
+      notifications.show({
         title: 'Export failed',
         message: 'Editor is not ready.',
         color: 'red'
@@ -76,7 +76,7 @@ export class FloorPlan extends Container {
     const canvas = renderer.extract.canvas(this) as HTMLCanvasElement;
     canvas.toBlob((blob) => {
       if (!blob) {
-        showNotification({
+        notifications.show({
           title: 'Export failed',
           message: 'Could not generate plan image.',
           color: 'red'
@@ -102,7 +102,7 @@ export class FloorPlan extends Container {
 
   public load(planText: string | null) {
     if (planText == null || planText === '') {
-      showNotification({
+      notifications.show({
         title: 'Load failed',
         message: 'No plan data to load.',
         color: 'red'
@@ -113,7 +113,7 @@ export class FloorPlan extends Container {
     try {
       raw = safeParsePlan(planText);
     } catch {
-      showNotification({
+      notifications.show({
         title: 'Load failed',
         message: 'Plan file is not valid JSON.',
         color: 'red'
@@ -122,7 +122,7 @@ export class FloorPlan extends Container {
     }
     const plan = validatePlanShape(raw);
     if (!plan) {
-      showNotification({
+      notifications.show({
         title: 'Load failed',
         message: 'Plan file is missing required fields.',
         color: 'red'
@@ -132,7 +132,7 @@ export class FloorPlan extends Container {
     // Future schema migrations dispatch on plan.version here.
     const version = (raw as { version?: number }).version ?? 1;
     if (version !== 1) {
-      showNotification({
+      notifications.show({
         title: 'Load failed',
         message: `Unsupported plan version: ${version}.`,
         color: 'red'
@@ -153,7 +153,7 @@ export class FloorPlan extends Container {
   // removes current floor
   public removeFloor() {
     if (this.floors.length < 2) {
-      showNotification({
+      notifications.show({
         title: 'Floor removal not permitted',
         message:
           'This floor is the only floor in the plan. You cannot have a plan with no floors. Create a new floor before deleting.',

@@ -278,7 +278,8 @@ _None._ The review surfaced nine 🟠 High findings but no 🔴 Critical issues 
 - **Where:** `package.json:14-15`; engine code (most of `src/editor/editor/`)
 - **Refs:** Review #14 (Section 2d) (recurring — STAGE2-REVIEW.md F-04). See also: TODO.md — `@id(axo-008)`.
 
-### 42. Mantine 4 → 9 + Zustand 3 → 5 (TODO axo-016)
+### ~~42. Mantine 4 → 9 + Zustand 3 → 5 (TODO axo-016)~~
+- **Status:** ✅ Done — Zustand 3→5 (named `create`, curried typing), `@tabler/icons-react` swap (#72), and Mantine 4→9. Mantine 9 required React 18→19, so react/react-dom were bumped too. `createStyles` rewritten to CSS modules + `light-dark()`; `@mantine/dropzone` (unused) dropped. lint/56 unit tests/build/e2e all green.
 - **What:** Per the existing TODO note: breaking UI/store API changes. UI surface is small (~7 components). Migrate `createStyles` calls. Switch Zustand imports to named.
 - **Where:** `package.json:9-12, 20`; `src/ui/**`, `src/stores/**`, `src/editor/EditorRoot.tsx:6-13`
 - **Refs:** Review #15, #16 (Section 2d). See also: TODO.md — `@id(axo-016)`.
