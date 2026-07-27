@@ -69,11 +69,12 @@ prefix: axo
 
 ## Stage 6 — Architecture refactor (post-v0.3.0)
 
-- [ ] Extract FloorPlan model state into a Zustand store @priority(medium) @effort(8h) @id(axo-020)
+- [x] Extract FloorPlan model state into a Zustand store @priority(medium) @effort(8h) @id(axo-020)
       FloorPlan is currently a Pixi Container + model store + persistence + singleton — four
       responsibilities in one class, and the root cause of the singleton-lifecycle work in code-review-2026-06-09 finding #5. Stage 6 splits these: - new useFloorPlanStore (floors, currentFloor, furnitureId, version) — Zustand - FloorPlan stays a Pixi Container, subscribes to the store - Serializer reads/writes the store directly, drops the Floor[] traversal - Removes the static .Instance + dispose() pair entirely
       Prereq: axo-008 (Pixi 8) so we're not refactoring against a deprecated API surface.
       Touches Floor.ts, FloorPlan.ts, Serializer.ts, every Action. See FLOORPLAN-REFACTOR.md.
+      shipped in d6471f9 — useFloorPlanStore owns the model, FloorPlan is view-only, static Instance/dispose() removed; 67 unit + 4 e2e green
 
 ## OSS hygiene
 
