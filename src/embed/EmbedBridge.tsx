@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { FloorPlan } from '../editor/editor/objects/FloorPlan';
+import { serializer } from '../editor/editor/persistence/Serializer';
 import { embedConfig, originAllowed } from './embedConfig';
 
 type AxoInbound =
@@ -32,11 +32,11 @@ export function EmbedBridge(): null {
       switch (event.data.type) {
         case 'axo:load': {
           const planText = normalisePlanInput(event.data.plan);
-          if (planText != null) FloorPlan.Instance.load(planText);
+          if (planText != null) serializer.load(planText);
           break;
         }
         case 'axo:request-save': {
-          const planText = FloorPlan.Instance.save();
+          const planText = serializer.serialize();
           source?.postMessage(
             { type: 'axo:save', plan: planText },
             event.origin

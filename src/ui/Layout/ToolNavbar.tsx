@@ -41,6 +41,7 @@ import {
 } from '@tabler/icons-react';
 import { notifications } from '@mantine/notifications';
 import { useStore } from '../../stores/EditorStore';
+import { useFloorPlanStore } from '../../stores/FloorPlanStore';
 import { ChangeFloorAction } from '../../editor/editor/actions/ChangeFloorAction';
 import { LoadAction } from '../../editor/editor/actions/LoadAction';
 import { readPlanFile } from '../../helpers/readPlanFile';
@@ -171,7 +172,7 @@ export function ToolNavbar() {
   const [active, setActive] = useState(0);
 
   const setTool = useStore((s) => s.setTool);
-  const floor = useStore((s) => s.floor);
+  const floor = useFloorPlanStore((s) => s.currentFloor);
   const setSnap = useStore((s) => s.setSnap);
   const snap = useStore((s) => s.snap);
 

@@ -1,5 +1,5 @@
 import saveAs from 'file-saver';
-import { FloorPlan } from '../objects/FloorPlan';
+import { serializer } from '../persistence/Serializer';
 import { Action } from './Action';
 
 function timestamp() {
@@ -12,13 +12,8 @@ function timestamp() {
 }
 
 export class SaveAction implements Action {
-  private receiver: FloorPlan;
-  constructor() {
-    this.receiver = FloorPlan.Instance;
-  }
-
   public execute() {
-    const data = this.receiver.save();
+    const data = serializer.serialize();
     const blob = new Blob([data], { type: 'application/json;charset=utf-8' });
     saveAs(blob, `axonometra-plan-${timestamp()}.json`);
   }

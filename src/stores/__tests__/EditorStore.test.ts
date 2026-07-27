@@ -18,22 +18,16 @@ describe('EditorStore', () => {
     resetTools.mockClear();
   });
 
-  it('starts in FurnitureMode on floor 0 with snap on and View tool', () => {
+  it('starts in FurnitureMode with snap on and View tool', () => {
     const s = useStore.getState();
     expect(s.mode).toBe(ToolMode.FurnitureMode);
     expect(s.activeTool).toBe(Tool.View);
-    expect(s.floor).toBe(0);
     expect(s.snap).toBe(true);
   });
 
   it('setMode updates the mode', () => {
     useStore.getState().setMode(ToolMode.WallMode);
     expect(useStore.getState().mode).toBe(ToolMode.WallMode);
-  });
-
-  it('setFloor updates the floor', () => {
-    useStore.getState().setFloor(3);
-    expect(useStore.getState().floor).toBe(3);
   });
 
   it('setTool updates activeTool and resets AddWallManager', () => {

@@ -1,17 +1,15 @@
-import { FloorPlan } from '../objects/FloorPlan';
+import { useFloorPlanStore } from '../../../stores/FloorPlanStore';
 import { Action } from './Action';
 
-// Action for removing furniture piece from FloorPlan.
+// Action for removing a furniture piece from the active floor.
 export class DeleteFurnitureAction implements Action {
   private id: number;
-  private receiver: FloorPlan;
 
   constructor(id: number) {
     this.id = id;
-    this.receiver = FloorPlan.Instance;
   }
 
   public execute() {
-    this.receiver.removeFurniture(this.id);
+    useFloorPlanStore.getState().removeFurniture(this.id);
   }
 }

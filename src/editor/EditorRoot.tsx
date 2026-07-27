@@ -7,6 +7,8 @@ import { FloorPlan } from './editor/objects/FloorPlan';
 import { TransformLayer } from './editor/objects/TransformControls/TransformLayer';
 import { AddWallManager } from './editor/actions/AddWallManager';
 import { useStore } from '../stores/EditorStore';
+import { useFloorPlanStore } from '../stores/FloorPlanStore';
+import { serializer } from './editor/persistence/Serializer';
 import { notifications } from '@mantine/notifications';
 import { createElement } from 'react';
 import { IconDeviceFloppy } from '@tabler/icons-react';
@@ -21,11 +23,23 @@ export const mainHolder: { current: Main | null } = { current: null };
 // live app renderer — a separate renderer can't read the scene's GPU resources.
 export const rendererHolder: { current: Renderer | null } = { current: null };
 
+// Holder for the active FloorPlan view. The plan *model* lives in
+// useFloorPlanStore and needs no holder; this is only for the handful of
+// consumers that need the display object itself (Main, print()).
+export const floorPlanHolder: { current: FloorPlan | null } = { current: null };
+
 export function getMain(): Main {
   if (!mainHolder.current) {
     throw new Error('EditorRoot is not mounted');
   }
   return mainHolder.current;
+}
+
+export function getFloorPlan(): FloorPlan {
+  if (!floorPlanHolder.current) {
+    throw new Error('EditorRoot is not mounted');
+  }
+  return floorPlanHolder.current;
 }
 
 export function EditorRoot() {
@@ -44,7 +58,7 @@ export function EditorRoot() {
     const handleKeydown = (e: KeyboardEvent) => {
       if (e.code === 'KeyS' && e.ctrlKey) {
         e.preventDefault();
-        const data = FloorPlan.Instance.save();
+        const data = serializer.serialize();
         localStorage.setItem('autosave', data);
         notifications.show({
           message: 'Saved to Local Storage!',
@@ -82,6 +96,7 @@ export function EditorRoot() {
           worldHeight: 50 * METER,
           events: created.renderer.events
         };
+        floorPlanHolder.current = new FloorPlan();
         const main = new Main(viewportSettings);
         mainHolder.current = main;
 
@@ -95,7 +110,7 @@ export function EditorRoot() {
         if (import.meta.env.DEV) {
           (window as unknown as { __axo: unknown }).__axo = {
             getMain,
-            getFloorPlan: () => FloorPlan.Instance,
+            getPlan: () => useFloorPlanStore.getState(),
             getStore: () => useStore.getState()
           };
         }
@@ -107,12 +122,15 @@ export function EditorRoot() {
       cancelled = true;
       document.removeEventListener('keydown', handleKeydown);
       if (view) view.removeEventListener('contextmenu', handleContextMenu);
-      // Dispose singletons before app.destroy so their static .instance
-      // refs reset; a remount then builds fresh objects against the
-      // new Application.
-      FloorPlan.Instance.dispose();
+      // Drop the plan model and dispose the remaining singletons before
+      // app.destroy so their static .instance refs reset; a remount then
+      // builds fresh objects against the new Application. The FloorPlan
+      // container is not destroyed here — app.destroy cascades to it, and
+      // that cascade is what runs its store unsubscribe.
+      useFloorPlanStore.getState().reset();
       TransformLayer.Instance.dispose();
       AddWallManager.Instance.dispose();
+      floorPlanHolder.current = null;
       mainHolder.current = null;
       rendererHolder.current = null;
       if (import.meta.env.DEV) {

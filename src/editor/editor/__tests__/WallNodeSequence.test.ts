@@ -24,8 +24,8 @@ vi.mock('../../../api/api-client', () => ({
 vi.mock('../../../stores/EditorStore', () => ({
   useStore: { getState: () => ({ activeTool: 0, snap: false }) }
 }));
-vi.mock('../objects/FloorPlan', () => ({
-  FloorPlan: { Instance: { redrawWalls: vi.fn() } }
+vi.mock('../../../stores/FloorPlanStore', () => ({
+  useFloorPlanStore: { getState: () => ({ redrawWalls: vi.fn() }) }
 }));
 vi.mock('../../EditorRoot', () => ({
   getMain: () => ({

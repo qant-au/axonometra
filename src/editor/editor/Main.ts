@@ -8,6 +8,7 @@ import {
 } from 'pixi.js';
 import { getCatalogImageUrls } from '../../res/catalog';
 import { FloorPlan } from './objects/FloorPlan';
+import { getFloorPlan } from '../EditorRoot';
 import { TransformLayer } from './objects/TransformControls/TransformLayer';
 import { useStore } from '../../stores/EditorStore';
 import { AddNodeAction } from './actions/AddNodeAction';
@@ -58,7 +59,7 @@ export class Main extends Viewport {
     this.center = new Point(this.worldWidth / 2, this.worldHeight / 2);
     this.addChild(this.bkgPattern);
 
-    this.floorPlan = FloorPlan.Instance;
+    this.floorPlan = getFloorPlan();
     this.addChild(this.floorPlan);
 
     this.transformLayer = TransformLayer.Instance;

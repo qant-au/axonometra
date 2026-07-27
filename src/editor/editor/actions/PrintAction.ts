@@ -1,13 +1,10 @@
-import { FloorPlan } from '../objects/FloorPlan';
+import { getFloorPlan } from '../../EditorRoot';
 import { Action } from './Action';
 
+// print() needs the live display object, so this is the one action that still
+// reaches for the FloorPlan container rather than the store.
 export class PrintAction implements Action {
-  private receiver: FloorPlan;
-  constructor() {
-    this.receiver = FloorPlan.Instance;
-  }
-
   public execute() {
-    this.receiver.print();
+    getFloorPlan().print();
   }
 }

@@ -7,7 +7,7 @@ import {
 } from '@tabler/icons-react';
 import { LoadAction } from '../editor/editor/actions/LoadAction';
 import AxonometraLogo from '../res/logo.png';
-import { FloorPlan } from '../editor/editor/objects/FloorPlan';
+import { serializer } from '../editor/editor/persistence/Serializer';
 import { notifications } from '@mantine/notifications';
 import { readPlanFile } from '../helpers/readPlanFile';
 
@@ -94,7 +94,7 @@ export function WelcomeModal() {
                 });
                 return;
               }
-              FloorPlan.Instance.load(saved);
+              serializer.load(saved);
               setOpened(false);
             }}
             leftSection={<IconRotateClockwise />}

@@ -1,13 +1,15 @@
 # FloorPlan refactor — Stage 6 design
 
-Tracking: `TODO.md` `@id(axo-020)`. Triggered by code-review-2026-06-09 finding #29 and action item 25. Prereq: `axo-008` (Pixi v8 migration) — refactoring against Pixi 6 wastes work.
+Tracking: `TODO.md` `@id(axo-020)`. Triggered by code-review-2026-06-09 finding 4c.1 and action item 25. Prereq: `axo-008` (Pixi v8 migration) — refactoring against Pixi 6 wastes work.
+
+> **Shipped 2026-07-27.** See "What actually shipped" at the foot of this document — the delivered design differs from the target sketched below in one significant way, and that section is the accurate record.
 
 ## Why
 
-`src/editor/editor/objects/FloorPlan.ts` is currently doing four jobs:
+`src/editor/editor/objects/FloorPlan.ts` was doing four jobs:
 
 1. **Pixi Container** — extends `Container`, holds `Floor[]` children, hands them to the scene graph.
-2. **Model store** — owns `floors`, `currentFloor`, `furnitureId`, `visibleLabels`, `actions[]` (the dead undo queue).
+2. **Model store** — owns `floors`, `currentFloor`, `furnitureId`, `visibleLabels`.
 3. **Persistence** — `save()` / `load()` / `print()` serialize and deserialize the same model state.
 4. **Singleton** — `static instance`, lazily constructed by `Instance` getter, manually torn down by `dispose()`.
 
@@ -97,6 +99,52 @@ Steps 2 and 3 are the risky cut-overs. If a regression is spotted post-merge, re
 
 ## Out of scope for axo-020
 
-- `TransformLayer` / `AddWallManager` singletons. Same pattern, separate IDs (`axo-021`, `axo-022`).
-- Undo/redo. The `actions: Action[]` field disappears as part of step 3 — undo is a separate feature.
+- `TransformLayer` / `AddWallManager` singletons. Same pattern, separate IDs to be allocated.
+- Undo/redo. A separate feature.
 - Multi-floor UX. Not changing the user-facing model.
+
+---
+
+## What actually shipped (2026-07-27)
+
+The one deliberate deviation from the target above: **`floors` in the store holds the
+`Floor` containers, not plain data.**
+
+Pure-data floors were not achievable. Wall and furniture geometry lives inside live Pixi
+objects (`WallNodeSequence`, `Wall`, `WallNode`, `Furniture`) whose transforms are mutated
+in place by the drag handlers, with no write-back path to a model. Converting them means
+rewriting the whole interaction layer — several times this task's budget, and the change
+would land on the one flow the e2e suite covers. So the store owns `Floor[]` as opaque
+model references: `FloorPlan` no longer owns any state, which is what the singleton
+removal actually required.
+
+Delivered:
+
+- **`src/stores/FloorPlanStore.ts`** — `useFloorPlanStore` owns `version`, `floors`,
+  `currentFloor`, `furnitureId`, `visibleLabels`, plus `changeFloor` / `removeFloor` /
+  `toggleLabels` / `setPlan` / `reset` and the eleven active-floor operations that used
+  to be `FloorPlan`'s delegation methods. Floors are created lazily by `getCurrentFloor()`
+  rather than in the store initialiser, which runs at import time.
+- **`FloorPlan`** — a view. It subscribes to the store, keeps the active floor as its only
+  child, unsubscribes in `destroy()`, and retains `print()` (the one operation that needs a
+  live display object). No `static Instance`, no `dispose()`. The dead `windowFurniture`
+  field is gone.
+- **`Serializer`** — `serialize()` takes no arguments and reads the store; `load()` parses,
+  validates, notifies, and writes back via `setPlan`. It is now the whole persistence
+  surface, so `save`/`load` no longer depend on the editor being mounted.
+- **Instance ownership** — `EditorRoot` exports `floorPlanHolder` + `getFloorPlan()`,
+  matching the existing `mainHolder` / `rendererHolder` pattern. Cleanup calls
+  `useFloorPlanStore.getState().reset()`; the container itself is destroyed by
+  `app.destroy(true, true)`, and that cascade runs the unsubscribe.
+- **Duplicate state removed** — `EditorStore.floor` / `setFloor` were a mirror written by
+  `FloorPlan`'s `CurrentFloor` setter. Deleted; `ToolNavbar` reads
+  `useFloorPlanStore((s) => s.currentFloor)`.
+- **Bugs fixed in passing** — `reset()` now detaches the old `Floor` containers instead of
+  orphaning them; `changeFloor(-1)` on the ground floor is refused rather than assigning
+  `floors[-1]`; `dispose()`/`reset()` collapsed into one action. (The static
+  `WallNodeSequence.wallNodeId` counter needed no change — `Floor.reset()` already zeroes
+  it via `WallNodeSequence.reset()`.)
+
+Not done as separate steps: the doc's five-step dual-write migration was unnecessary once
+`floors` stayed as `Floor[]`, because there is no second representation to keep in sync.
+The change landed as one sequence of commits with the suite green at each.

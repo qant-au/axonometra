@@ -3,7 +3,7 @@ import { euclideanDistance } from '../../../helpers/EuclideanDistance';
 import { Point } from '../../../helpers/Point';
 
 import { SNAP_THRESHOLD } from '../constants';
-import { FloorPlan } from '../objects/FloorPlan';
+import { useFloorPlanStore } from '../../../stores/FloorPlanStore';
 
 import { TransformLayer } from '../objects/TransformControls/TransformLayer';
 import { WallNode } from '../objects/Walls/WallNode';
@@ -26,10 +26,10 @@ export class AddWallManager {
   // checks if step is valid
   public checkStep(coords: Point) {
     if (this.previousNode == undefined) {
-      for (const [
-        _id,
-        node
-      ] of FloorPlan.Instance.getWallNodeSeq().getWallNodes()) {
+      for (const [_id, node] of useFloorPlanStore
+        .getState()
+        .getWallNodeSeq()
+        .getWallNodes()) {
         if (
           euclideanDistance(coords.x, node.x, coords.y, node.y) < SNAP_THRESHOLD
         ) {

@@ -56,12 +56,12 @@ async function getWallNodeCount(page: Page): Promise<number> {
   return page.evaluate(() => {
     const w = window as unknown as {
       __axo: {
-        getFloorPlan: () => {
+        getPlan: () => {
           getWallNodeSeq: () => { getWallNodes: () => Map<number, unknown> };
         };
       };
     };
-    return w.__axo.getFloorPlan().getWallNodeSeq().getWallNodes().size;
+    return w.__axo.getPlan().getWallNodeSeq().getWallNodes().size;
   });
 }
 
@@ -69,12 +69,12 @@ async function getWallCount(page: Page): Promise<number> {
   return page.evaluate(() => {
     const w = window as unknown as {
       __axo: {
-        getFloorPlan: () => {
+        getPlan: () => {
           getWallNodeSeq: () => { getWalls: () => unknown[] };
         };
       };
     };
-    return w.__axo.getFloorPlan().getWallNodeSeq().getWalls().length;
+    return w.__axo.getPlan().getWallNodeSeq().getWalls().length;
   });
 }
 
@@ -168,12 +168,12 @@ test.describe('place-wall critical flow', () => {
     await expect(page.locator('canvas').first()).toBeVisible();
 
     // Wait for the load to finish (the welcome modal closes synchronously
-    // but FloorPlan.load runs on the next tick).
+    // but the plan load runs on the next tick).
     await page.waitForFunction(
       (expected: number) => {
         const w = window as unknown as {
           __axo?: {
-            getFloorPlan: () => {
+            getPlan: () => {
               getWallNodeSeq: () => {
                 getWallNodes: () => Map<number, unknown>;
               };
@@ -182,8 +182,7 @@ test.describe('place-wall critical flow', () => {
         };
         if (!w.__axo) return false;
         return (
-          w.__axo.getFloorPlan().getWallNodeSeq().getWallNodes().size ===
-          expected
+          w.__axo.getPlan().getWallNodeSeq().getWallNodes().size === expected
         );
       },
       savedNodeCount,

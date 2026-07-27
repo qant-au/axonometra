@@ -1,6 +1,6 @@
 import { Point } from '../../../helpers/Point';
 import { FurnitureData } from '../../../stores/FurnitureStore';
-import { FloorPlan } from '../objects/FloorPlan';
+import { useFloorPlanStore } from '../../../stores/FloorPlanStore';
 import { Wall } from '../objects/Walls/Wall';
 import { Action } from './Action';
 
@@ -10,7 +10,6 @@ export class AddFurnitureAction implements Action {
   coords?: Point;
   attachedToLeft?: number;
   attachedToRight?: number;
-  private receiver: FloorPlan;
 
   constructor(
     obj: FurnitureData,
@@ -24,16 +23,17 @@ export class AddFurnitureAction implements Action {
     this.coords = coords;
     this.attachedToLeft = attachedToLeft;
     this.attachedToRight = attachedToRight;
-    this.receiver = FloorPlan.Instance;
   }
 
   public execute() {
-    this.receiver.addFurniture(
-      this.obj,
-      this.attachedTo,
-      this.coords,
-      this.attachedToLeft,
-      this.attachedToRight
-    );
+    useFloorPlanStore
+      .getState()
+      .addFurniture(
+        this.obj,
+        this.attachedTo,
+        this.coords,
+        this.attachedToLeft,
+        this.attachedToRight
+      );
   }
 }

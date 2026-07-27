@@ -1,21 +1,20 @@
-import { FloorPlan } from '../objects/FloorPlan';
+import { useFloorPlanStore } from '../../../stores/FloorPlanStore';
 import { WallNode } from '../objects/Walls/WallNode';
 import { Action } from './Action';
 
-// Add wall between two nodes of FloorPlan
+// Add wall between two nodes of the active floor
 export class AddWallAction implements Action {
   private leftNode: number;
   private rightNode: number;
-  private receiver: FloorPlan;
 
   constructor(left: WallNode, right: WallNode) {
     this.leftNode = left.getId();
     this.rightNode = right.getId();
-    this.receiver = FloorPlan.Instance;
   }
 
   public execute() {
-    return this.receiver
+    return useFloorPlanStore
+      .getState()
       .getWallNodeSeq()
       .addWall(this.leftNode, this.rightNode);
   }

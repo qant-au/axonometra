@@ -4,7 +4,7 @@ import { useStore } from '../../../../stores/EditorStore';
 import { AddWallManager } from '../../actions/AddWallManager';
 import { DeleteWallNodeAction } from '../../actions/DeleteWallNodeAction';
 import { INodeSerializable } from '../../persistence/INodeSerializable';
-import { FloorPlan } from '../FloorPlan';
+import { useFloorPlanStore } from '../../../../stores/FloorPlanStore';
 import { viewportX, viewportY } from '../../../../helpers/ViewportCoordinates';
 import { isMobile } from '../../../../helpers/isMobile';
 export class WallNode extends Graphics {
@@ -66,13 +66,13 @@ export class WallNode extends Graphics {
     this.x = viewportX(currentPoint.x);
     this.y = viewportY(currentPoint.y);
 
-    FloorPlan.Instance.redrawWalls();
+    useFloorPlanStore.getState().redrawWalls();
   }
 
   public setPosition(x: number, y: number) {
     this.x = viewportX(x);
     this.y = viewportY(y);
-    FloorPlan.Instance.redrawWalls();
+    useFloorPlanStore.getState().redrawWalls();
   }
 
   private onMouseUp() {

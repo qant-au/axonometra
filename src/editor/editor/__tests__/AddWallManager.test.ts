@@ -8,16 +8,16 @@ vi.mock('pixi.js', async () => {
   return createPixiMock();
 });
 
-// FloorPlan.Instance is what checkStep iterates. We stub the singleton so
-// checkStep sees a deterministic node map.
+// The floor plan store is what checkStep iterates. We stub it so checkStep
+// sees a deterministic node map.
 const wallNodes = new Map<number, { x: number; y: number }>();
-vi.mock('../objects/FloorPlan', () => ({
-  FloorPlan: {
-    Instance: {
+vi.mock('../../../stores/FloorPlanStore', () => ({
+  useFloorPlanStore: {
+    getState: () => ({
       getWallNodeSeq: () => ({
         getWallNodes: () => wallNodes
       })
-    }
+    })
   }
 }));
 
