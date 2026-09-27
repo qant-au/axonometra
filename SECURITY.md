@@ -7,8 +7,8 @@ Only the latest tagged release on `main` receives security fixes.
 
 | Version | Supported          |
 | ------- | ------------------ |
-| 0.2.x   | :white_check_mark: |
-| < 0.2   | :x:                |
+| 0.3.x   | :white_check_mark: |
+| < 0.3   | :x:                |
 
 ## Reporting a vulnerability
 
@@ -20,8 +20,8 @@ Use GitHub's private vulnerability reporting:
 
 We aim to acknowledge reports within **7 days** and to ship a fix or
 mitigation within **30 days** of a confirmed issue. If you do not hear
-back, please escalate via the email listed on
-[axonometra.com](https://axonometra.com).
+back, please escalate via the maintainer contact form at
+<https://adamburgess.me/contact> (linked from [axonometra.com](https://axonometra.com)).
 
 When reporting, please include:
 

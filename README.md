@@ -64,6 +64,10 @@ drawing on the canvas yet. Full canvas keyboard navigation is planned for a late
 stage. The surrounding UI chrome is keyboard-operable — toolbar buttons are reachable
 by Tab, expose accessible labels, and show a visible focus ring.
 
+## Contributing
+
+See [`CONTRIBUTING.md`](CONTRIBUTING.md) for setup and conventions. Everyone taking part is expected to follow the [Code of Conduct](CODE_OF_CONDUCT.md). Report security issues privately as described in [`SECURITY.md`](SECURITY.md).
+
 ## License
 
 Dual-licensed, `MIT AND Apache-2.0`. Code that originated in upstream Arcada remains under the [Apache License 2.0](LICENSE-APACHE), reproduced verbatim with its copyright notice. Axonometra's modifications and new contributions are under the [MIT License](LICENSE). See [`LICENSE`](LICENSE) for how the two apply.

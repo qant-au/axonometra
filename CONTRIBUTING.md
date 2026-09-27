@@ -5,7 +5,7 @@ pre-1.0 development; expect breaking changes between minor versions.
 
 ## Ground rules
 
-- Be civil. See [`CODE_OF_CONDUCT.md`](./CODE_OF_CONDUCT.md) if present.
+- Be civil. See [`CODE_OF_CONDUCT.md`](./CODE_OF_CONDUCT.md).
 - Security issues go to private vulnerability reporting, not public
   issues — see [`SECURITY.md`](./SECURITY.md).
 - Substantial work should start as a GitHub Discussion or Issue so we
@@ -112,5 +112,5 @@ narrative.
 
 ## Questions
 
-Open a GitHub Discussion. For private questions, see the contact on
-[axonometra.com](https://axonometra.com).
+Open a GitHub Discussion. For private questions, use the maintainer contact
+form at <https://adamburgess.me/contact>.
