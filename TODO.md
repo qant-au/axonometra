@@ -78,5 +78,6 @@ prefix: axo
 
 ## OSS hygiene
 
-- [ ] Add CODE_OF_CONDUCT.md (Contributor Covenant 2.1) @priority(low) @effort(0.25h) @due(2026-10-11) @id(axo-021)
+- [x] Add CODE_OF_CONDUCT.md (Contributor Covenant 2.1) @priority(low) @effort(0.25h) @due(2026-10-11) @id(axo-021)
       Action-items batch 2026-06-16 deferred this (#78): the standard template tripped the content filter during automated authoring. Add manually — Contributor Covenant 2.1 with a maintainer enforcement contact, then link it from README and strike #78 in action-items-2026-06-09.md.
+      shipped in ec9e697 - Contributor Covenant 2.1, contact https://adamburgess.me/contact, linked from README + CONTRIBUTING
