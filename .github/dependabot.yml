@@ -1,0 +1,55 @@
+# Dependabot VERSION updates. Security updates are enabled in the repo
+# settings and need no config file; version updates do.
+#
+# Mirrors the qant fleet config (brands/*/.github/dependabot.yml) minus the
+# GitHub Packages registry: this repo has no @qant-au/* dependencies.
+version: 2
+
+updates:
+  - package-ecosystem: npm
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: monday
+      time: "07:00"
+      timezone: Australia/Perth
+    open-pull-requests-limit: 3
+    commit-message:
+      prefix: "build(deps)"
+      prefix-development: "build(deps-dev)"
+    ignore:
+      # This repo runs Node 22 (.nvmrc, CI, Dockerfile). @types/node tracks the
+      # RUNTIME major, not the newest published types. Capped, not frozen.
+      - dependency-name: "@types/node"
+        versions: [">=23"]
+      # TypeScript and ESLint majors are toolchain decisions taken deliberately,
+      # in step with the rest of the fleet, never per-repo by a bot.
+      - dependency-name: "typescript"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "eslint"
+        update-types: ["version-update:semver-major"]
+    groups:
+      npm-minor-and-patch:
+        patterns: ["*"]
+        update-types: ["minor", "patch"]
+      # Split across PRs, a react major leaves the types on the old major and
+      # npm exits ERESOLVE. Grouped, they resolve together.
+      react:
+        patterns:
+          - "react"
+          - "react-dom"
+          - "@types/react"
+          - "@types/react-dom"
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: monday
+      time: "07:00"
+      timezone: Australia/Perth
+    open-pull-requests-limit: 3
+    commit-message:
+      prefix: "build(deps)"
+    groups:
+      github-actions:
+        patterns: ["*"]
