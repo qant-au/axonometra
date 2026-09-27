@@ -29,14 +29,15 @@ export class Serializer {
     return JSON.stringify(floorPlanSerializable);
   }
 
-  public load(planText: string | null): void {
+  /** Returns true when the plan was loaded; failures are toasted here. */
+  public load(planText: string | null): boolean {
     if (planText == null || planText === '') {
       notifications.show({
         title: 'Load failed',
         message: 'No plan data to load.',
         color: 'red'
       });
-      return;
+      return false;
     }
     let raw: unknown;
     try {
@@ -47,7 +48,7 @@ export class Serializer {
         message: 'Plan file is not valid JSON.',
         color: 'red'
       });
-      return;
+      return false;
     }
     const plan = validatePlanShape(raw);
     if (!plan) {
@@ -56,7 +57,7 @@ export class Serializer {
         message: 'Plan file is missing required fields.',
         color: 'red'
       });
-      return;
+      return false;
     }
     // Future schema migrations dispatch on plan.version here.
     const version = (raw as { version?: number }).version ?? 1;
@@ -66,12 +67,13 @@ export class Serializer {
         message: `Unsupported plan version: ${version}.`,
         color: 'red'
       });
-      return;
+      return false;
     }
     useFloorPlanStore.getState().setPlan(plan);
     // A loaded plan is a different document; undo must not step back into
     // the one it replaced.
     useHistoryStore.getState().clear();
+    return true;
   }
 }
 

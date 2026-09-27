@@ -1,53 +1,29 @@
 import { useEffect } from 'react';
+import { notifications } from '@mantine/notifications';
 import { serializer } from '../editor/editor/persistence/Serializer';
 import { embedConfig, originAllowed } from './embedConfig';
-
-type AxoInbound =
-  | { type: 'axo:load'; plan: unknown }
-  | { type: 'axo:request-save' }
-  | { type: 'axo:ready?' };
-
-function isAxoInbound(data: unknown): data is AxoInbound {
-  if (typeof data !== 'object' || data === null) return false;
-  const type = (data as { type?: unknown }).type;
-  return typeof type === 'string' && type.startsWith('axo:');
-}
-
-function normalisePlanInput(plan: unknown): string | null {
-  if (typeof plan === 'string') return plan;
-  if (plan && typeof plan === 'object') return JSON.stringify(plan);
-  return null;
-}
+import { createInboundHandler, isAxoInbound } from './inbound';
 
 // React component (rendered as null) that wires window.postMessage <->
-// FloorPlan when ?embed=1 is set. Removed on unmount.
+// the floor plan when ?embed=1 is set. Removed on unmount. The protocol
+// itself lives in inbound.ts.
 export function EmbedBridge(): null {
   useEffect(() => {
     if (!embedConfig.embedded) return undefined;
+
+    const handle = createInboundHandler({
+      publicKeys: embedConfig.planPublicKeys,
+      load: (planText) => serializer.load(planText),
+      serialize: () => serializer.serialize(),
+      notify: (message) =>
+        notifications.show({ title: 'Plan refused', message, color: 'red' })
+    });
 
     const handler = (event: MessageEvent) => {
       if (!originAllowed(event.origin)) return;
       if (!isAxoInbound(event.data)) return;
       const source = event.source as Window | null;
-      switch (event.data.type) {
-        case 'axo:load': {
-          const planText = normalisePlanInput(event.data.plan);
-          if (planText != null) serializer.load(planText);
-          break;
-        }
-        case 'axo:request-save': {
-          const planText = serializer.serialize();
-          source?.postMessage(
-            { type: 'axo:save', plan: planText },
-            event.origin
-          );
-          break;
-        }
-        case 'axo:ready?': {
-          source?.postMessage({ type: 'axo:ready' }, event.origin);
-          break;
-        }
-      }
+      void handle(event.data, (out) => source?.postMessage(out, event.origin));
     };
     window.addEventListener('message', handler);
 

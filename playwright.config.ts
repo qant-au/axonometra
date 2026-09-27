@@ -1,4 +1,5 @@
 import { defineConfig, devices } from '@playwright/test';
+import { generateKeyPairSync } from 'node:crypto';
 
 /**
  * Playwright config for Axonometra.
@@ -15,6 +16,27 @@ import { defineConfig, devices } from '@playwright/test';
  */
 const baseURL = process.env.PLAYWRIGHT_BASE_URL ?? 'http://localhost:4891';
 
+// Signed embedding (e2e/embed-signed.spec.ts): a throwaway P-256 key pair
+// per run, so no key is ever committed. The dev server gets the public key
+// and the fake host origin; the specs sign with the private key, which
+// reaches the workers through the environment. Only ?embed=1 pages are
+// affected. A dev server reused from outside this run will not have the
+// key, so run that spec against the server Playwright starts.
+// 127.0.0.1 and localhost are different origins; both are local, which
+// Chrome's Private Network Access rules require for the host to frame it.
+export const EMBED_HOST_ORIGIN = 'http://127.0.0.1:4891';
+if (!process.env.AXO_E2E_PLAN_PRIVATE_KEY) {
+  const { publicKey, privateKey } = generateKeyPairSync('ec', {
+    namedCurve: 'P-256'
+  });
+  process.env.AXO_E2E_PLAN_PUBLIC_KEY = publicKey
+    .export({ type: 'spki', format: 'der' })
+    .toString('base64');
+  process.env.AXO_E2E_PLAN_PRIVATE_KEY = privateKey
+    .export({ type: 'pkcs8', format: 'pem' })
+    .toString();
+}
+
 export default defineConfig({
   testDir: './e2e',
   fullyParallel: true,
@@ -30,6 +52,10 @@ export default defineConfig({
         command: 'npm run dev',
         url: 'http://localhost:4891',
         reuseExistingServer: !process.env.CI,
+        env: {
+          VITE_EMBED_ALLOWED_ORIGINS: EMBED_HOST_ORIGIN,
+          VITE_EMBED_PLAN_PUBLIC_KEYS: process.env.AXO_E2E_PLAN_PUBLIC_KEY ?? ''
+        },
         timeout: 120_000
       },
   use: {

@@ -1,3 +1,5 @@
+import { parsePublicKeys } from './planSignature';
+
 // URL-parameter and env-var driven embed configuration. Read once on
 // module import; the host iframe URL doesn't change at runtime.
 //
@@ -8,6 +10,10 @@
 // Origin allowlist comes from VITE_EMBED_ALLOWED_ORIGINS (comma-
 // separated). Unset means deny all postMessage senders. Use '*' to
 // accept any origin (development only — logged as a warning).
+//
+// VITE_EMBED_PLAN_PUBLIC_KEYS (comma-separated base64 SPKI or PEM, ECDSA
+// P-256) switches on signed loads: every axo:load must then carry a valid
+// signature from one of these keys. See planSignature.ts and EMBEDDING.md.
 
 function readBooleanParam(name: string): boolean {
   if (typeof window === 'undefined') return false;
@@ -27,7 +33,10 @@ function readAllowedOrigins(): string[] {
 export const embedConfig = {
   embedded: readBooleanParam('embed'),
   readonly: readBooleanParam('readonly'),
-  allowedOrigins: readAllowedOrigins()
+  allowedOrigins: readAllowedOrigins(),
+  planPublicKeys: parsePublicKeys(
+    import.meta.env.VITE_EMBED_PLAN_PUBLIC_KEYS as string | undefined
+  )
 };
 
 export function originAllowed(origin: string): boolean {
