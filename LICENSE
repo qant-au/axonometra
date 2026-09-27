@@ -1,14 +1,20 @@
 Axonometra is a fork of mehanix/arcada (https://github.com/mehanix/arcada),
-which is licensed under the Apache License, Version 2.0. The original
-arcada copyright is retained:
+which is licensed under the Apache License, Version 2.0. This repository is
+therefore covered by two licences:
 
-    Copyright 2022 Nicoleta Mehanix
+  * Code originating in arcada remains under the Apache License, Version 2.0.
+    The full licence text, including the upstream copyright notice
+    ("Copyright 2023 Nicoleta Ciausu"), is reproduced verbatim in
+    LICENSE-APACHE, as Apache 2.0 section 4(a) requires for any
+    redistribution. Upstream ships no NOTICE file. Files carried over from
+    arcada have been modified in Axonometra (section 4(b)); the git history
+    records each change.
 
-This fork (axonometra) is relicensed under the MIT License below. The
-relicensing is permitted under Apache 2.0 §4 provided the upstream
-copyright and notice are preserved, which the paragraph above does.
-The original upstream Apache 2.0 LICENSE text is available in the
-upstream repository.
+  * Modifications and new contributions made in Axonometra are licensed
+    under the MIT License below (Apache 2.0 section 4 permits different
+    terms for your own modifications).
+
+SPDX-License-Identifier: MIT AND Apache-2.0
 
 ------------------------------------------------------------------------
 

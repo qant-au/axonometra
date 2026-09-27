@@ -9,11 +9,11 @@ Built for healthcare facility layouts, small-building design (sheds, bunkers, AD
 ![React](https://img.shields.io/badge/react-%2320232a.svg?logo=react&logoColor=%2361DAFB)
 ![Pixi.JS](https://img.shields.io/badge/Pixi.JS-EF2D5E)
 ![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white)
-![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
+![License: MIT AND Apache-2.0](https://img.shields.io/badge/License-MIT%20AND%20Apache--2.0-yellow.svg)
 
 ## Status
 
-v0.2.0 in flight — Stage 4 (lint, strict TS, unit tests, CI) is complete; Stage 5 (Pixi 8, Mantine 7, Zustand 5, full strictNullChecks) is in progress. Expect breaking changes until v1.0.0.
+v0.3.0 — Stages 4 and 5 are complete (lint, strict TS, unit and e2e tests in CI; Pixi 8, Mantine 9, Zustand 5, React 19). Expect breaking changes until v1.0.0.
 
 Furniture, doors, and windows ship from a small built-in catalog under `src/res/catalog/`. Extend it by editing the JSON manifests and dropping SVGs into `src/res/catalog/images/`. The upstream `arcada-backend` Express server is **not** required.
 
@@ -27,7 +27,7 @@ Axonometra is a fork of [mehanix/arcada](https://github.com/mehanix/arcada), ori
 - To signal a different long-term trajectory: Axonometra is maintained under the QANT umbrella as a browser-embeddable plan editor (see [EMBEDDING.md](./EMBEDDING.md)) with a roadmap (axonometric / 3D walk-through views, healthcare and small-building presets) that diverges from upstream.
 - To match the public brand at [axonometra.com](https://axonometra.com).
 
-We do **not** plan to merge changes back upstream, nor to pull from upstream. **License: MIT** (relicensed from upstream Apache-2.0; see `LICENSE` for upstream attribution). Attribution to the original author is maintained in `LICENSE` and in this README.
+We do **not** plan to merge changes back upstream, nor to pull from upstream. **License: MIT AND Apache-2.0.** Code carried over from upstream stays under Apache-2.0 (full text in [`LICENSE-APACHE`](LICENSE-APACHE)); Axonometra's own changes and additions are MIT. Attribution to the original author is maintained in `LICENSE` and in this README.
 
 If you're looking for the original Arcada — including its server (`arcada-backend`), the original demo at `arcada.nicoleta.cc`, and the documentation PDF — please visit the [upstream repo](https://github.com/mehanix/arcada).
 
@@ -66,4 +66,4 @@ by Tab, expose accessible labels, and show a visible focus ring.
 
 ## License
 
-[MIT](LICENSE) — relicensed from upstream Arcada's Apache-2.0; original copyright attributed in `LICENSE`. See the file for the full text.
+Dual-licensed, `MIT AND Apache-2.0`. Code that originated in upstream Arcada remains under the [Apache License 2.0](LICENSE-APACHE), reproduced verbatim with its copyright notice. Axonometra's modifications and new contributions are under the [MIT License](LICENSE). See [`LICENSE`](LICENSE) for how the two apply.

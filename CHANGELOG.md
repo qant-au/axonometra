@@ -9,6 +9,10 @@ Expect breaking changes between minor versions until v1.0.0.
 
 ## [Unreleased]
 
+### Fixed
+
+- Licensing: the repository is `MIT AND Apache-2.0`, not MIT alone. Code carried over from upstream arcada stays under Apache-2.0, whose full text now ships verbatim in `LICENSE-APACHE` as section 4(a) requires; `LICENSE`, the README and `package.json` now say so.
+
 ## [0.2.0] — 2026-06-09
 
 Stage 4 (quality foundation) plus the in-flight Stage 5 work that landed before
