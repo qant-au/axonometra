@@ -1,4 +1,4 @@
-import { ChangeEvent, useEffect, useRef, useState } from 'react';
+import { ChangeEvent, useRef, useState } from 'react';
 import { Modal, Button, Image, Stack } from '@mantine/core';
 import {
   IconDatabase,
@@ -12,7 +12,7 @@ import { notifications } from '@mantine/notifications';
 import { readPlanFile } from '../helpers/readPlanFile';
 
 export function WelcomeModal() {
-  const [opened, setOpened] = useState(false);
+  const [opened, setOpened] = useState(true);
   const fileRef = useRef<HTMLInputElement>(null);
   const image = <Image src={AxonometraLogo} />;
 
@@ -25,10 +25,6 @@ export function WelcomeModal() {
       setOpened(false);
     }
   };
-
-  useEffect(() => {
-    setOpened(true);
-  }, []);
 
   const notification = {
     title: 'Welcome to Axonometra! 🎉',

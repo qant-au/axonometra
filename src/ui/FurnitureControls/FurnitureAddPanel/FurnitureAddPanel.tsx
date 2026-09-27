@@ -5,8 +5,10 @@ import { useFurnitureStore } from '../../../stores/FurnitureStore';
 import { notifications } from '@mantine/notifications';
 
 export function FurnitureAddPanel() {
-  const [category, setCategory] = useState('');
   const categories = useFurnitureStore((s) => s.categories);
+  // The user's pick, falling back to the first category until they choose.
+  const [pickedCategory, setCategory] = useState('');
+  const category = pickedCategory || categories[0]?._id || '';
   const currentFurnitureData = useFurnitureStore((s) => s.currentFurnitureData);
 
   // when a category is selected by user, load its furniture elements from API
@@ -16,11 +18,8 @@ export function FurnitureAddPanel() {
     }
   }, [category]);
 
-  // on first load, select default category
   useEffect(() => {
-    if (categories && categories[0] && categories[0]._id) {
-      setCategory(categories[0]._id);
-    } else {
+    if (!categories[0]?._id) {
       notifications.show({
         message: 'Check your internet connection',
         color: 'green'
