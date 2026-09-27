@@ -11,6 +11,7 @@ Expect breaking changes between minor versions until v1.0.0.
 
 ### Added
 
+- Keyboard editing on the canvas. The canvas is a focusable `role="application"` with instructions for screen readers; arrow keys move a grid cursor (Shift for 1 m), Enter/Space applies the active tool, Edit mode picks up and moves wall points, walls and furniture, and Escape cancels or ends wall drawing. Every action, including a refused one, is announced in a live region, and each keyboard edit is one undo step. See `src/editor/editor/KeyboardCursor.ts`.
 - Undo and redo: Ctrl/Cmd+Z, Ctrl/Cmd+Shift+Z or Ctrl+Y, and toolbar buttons. History is whole-plan snapshots taken through the Serializer, because the model lives inside Pixi objects that the drag handlers mutate in place. Each canvas pointer gesture or toolbar edit is one step, nothing is recorded when the plan did not change, and loading a plan clears the history. See `src/editor/editor/history.ts`.
 
 ### Changed

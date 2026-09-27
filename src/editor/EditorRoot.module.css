@@ -1,0 +1,19 @@
+/* The canvas wrapper takes keyboard focus (see KeyboardCursor). Inset the
+   ring so it stays visible against the page edges the canvas fills. */
+.canvas:focus-visible {
+  outline: 3px solid var(--mantine-primary-color-6);
+  outline-offset: -3px;
+}
+
+/* Read by screen readers, not shown. */
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}

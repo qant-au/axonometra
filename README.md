@@ -64,11 +64,25 @@ Run `bash restart.sh NO_WATCH=1` for a containerised local preview, `npm run tes
 
 ## Accessibility
 
-The editor canvas is currently **pointer-only**: walls, furniture, and handles are
-placed and manipulated with the mouse or touch, and there is no keyboard path for
-drawing on the canvas yet. Full canvas keyboard navigation is planned for a later
-stage. The surrounding UI chrome is keyboard-operable — toolbar buttons are reachable
-by Tab, expose accessible labels, and show a visible focus ring.
+The toolbar is keyboard-operable: buttons are reachable by Tab, expose accessible
+labels, and show a visible focus ring.
+
+The canvas can be edited from the keyboard too. Tab to it (it is announced as the
+"Floor plan" application) and a cursor appears on the plan:
+
+| Key                         | Does                                                                                                             |
+| --------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| Arrow keys                  | Move the cursor 10 cm (one grid cell)                                                                            |
+| Shift + arrow keys          | Move the cursor 1 m                                                                                              |
+| Enter or Space              | Use the selected tool at the cursor: place a wall point, delete what is there, or add a door or window to a wall |
+| Enter or Space in Edit mode | Pick up the wall point, wall or piece of furniture under the cursor; arrows move it, Enter puts it down          |
+| Escape                      | Cancel a move, or end wall drawing                                                                               |
+| Ctrl/Cmd + Z                | Undo (see Undo & redo)                                                                                           |
+
+Every action is announced through a polite live region, including refusals
+such as deleting a wall point that still has walls attached. Doors and windows
+move with their wall and cannot be picked up on their own. Resizing and rotating
+furniture still needs the pointer.
 
 ## Contributing
 

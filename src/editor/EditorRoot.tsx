@@ -20,6 +20,8 @@ import {
   undo
 } from './editor/history';
 import { embedConfig } from '../embed/embedConfig';
+import { KeyboardCursor } from './editor/KeyboardCursor';
+import classes from './EditorRoot.module.css';
 
 // Holder for the active Main instance. Non-React Pixi consumers
 // (ViewportCoordinates, Floor) read mainHolder.current via getMain()
@@ -52,6 +54,7 @@ export function getFloorPlan(): FloorPlan {
 
 export function EditorRoot() {
   const ref = useRef<HTMLDivElement>(null);
+  const liveRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     // v8 Application.init is async. React StrictMode mounts this effect twice;
     // `cancelled` lets a teardown that fires before init resolves throw away
@@ -60,6 +63,18 @@ export function EditorRoot() {
     let app: Application | null = null;
     let view: HTMLCanvasElement | null = null;
     const wrapper = ref.current;
+    const live = liveRef.current;
+    const keyboardCursor = new KeyboardCursor((message) => {
+      if (live) live.textContent = message;
+    }, embedConfig.readonly);
+    const handleCanvasKeydown = (e: KeyboardEvent) => {
+      if (!mainHolder.current) return;
+      if (keyboardCursor.handleKey(e)) e.preventDefault();
+    };
+    const handleCanvasFocus = () => {
+      if (mainHolder.current) keyboardCursor.focus();
+    };
+    const handleCanvasBlur = () => keyboardCursor.blur();
 
     const handleContextMenu = (e: Event) => {
       e.preventDefault();
@@ -135,6 +150,9 @@ export function EditorRoot() {
         // on the wrapper so this runs before Pixi (whose handlers stop
         // propagation); pointerup lands on window wherever the drag ends.
         wrapper?.addEventListener('pointerdown', beginGesture, true);
+        wrapper?.addEventListener('keydown', handleCanvasKeydown);
+        wrapper?.addEventListener('focus', handleCanvasFocus);
+        wrapper?.addEventListener('blur', handleCanvasBlur);
         window.addEventListener('pointerup', endGesture);
         window.addEventListener('pointercancel', endGesture);
         created.start();
@@ -158,6 +176,10 @@ export function EditorRoot() {
       cancelled = true;
       document.removeEventListener('keydown', handleKeydown);
       wrapper?.removeEventListener('pointerdown', beginGesture, true);
+      wrapper?.removeEventListener('keydown', handleCanvasKeydown);
+      wrapper?.removeEventListener('focus', handleCanvasFocus);
+      wrapper?.removeEventListener('blur', handleCanvasBlur);
+      keyboardCursor.blur();
       window.removeEventListener('pointerup', endGesture);
       window.removeEventListener('pointercancel', endGesture);
       resetHistory();
@@ -180,5 +202,24 @@ export function EditorRoot() {
     };
   }, []);
 
-  return <div ref={ref} />;
+  return (
+    <>
+      <div
+        ref={ref}
+        className={classes.canvas}
+        tabIndex={0}
+        role="application"
+        aria-label="Floor plan"
+        aria-describedby="axo-canvas-help"
+      />
+      <p id="axo-canvas-help" className={classes.srOnly}>
+        Arrow keys move the cursor by 10 centimetres, or 1 metre with Shift.
+        Enter or Space uses the selected tool at the cursor. In Edit mode, Enter
+        picks up a wall point, wall or piece of furniture; move it with the
+        arrow keys and press Enter to put it down or Escape to cancel. Escape
+        also ends wall drawing. Control Z undoes.
+      </p>
+      <div ref={liveRef} className={classes.srOnly} aria-live="polite" />
+    </>
+  );
 }
