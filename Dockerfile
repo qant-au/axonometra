@@ -1,13 +1,10 @@
 # syntax=docker/dockerfile:1.7
 #
-# Standalone Axonometra SPA image. Builds the React app and serves
-# the static bundle from nginx-unprivileged on port 8080. Host port
+# Standalone Axonometra SPA image. A Node 22 stage runs the Vite build
+# (`tsc --noEmit && vite build` → /app/dist); the runtime stage serves
+# that static bundle from nginx-unprivileged on port 8080. Host port
 # mapping is managed by `restart.sh` (defaults to 4890 — see the
 # reserved 4890-4899 range for this project).
-#
-# TRANSITIONAL: Stage 2 ships this CRA-flavoured Dockerfile so the
-# audit can establish a baseline. Stage 3 will swap CRA for Vite and
-# update the build script + output dir (build/ → dist/).
 
 FROM node:22.22-alpine AS build
 
@@ -31,7 +28,7 @@ RUN npm ci
 # Rest of the source. Build context is shaped by .dockerignore.
 COPY . .
 
-# Vite build → /app/dist (Stage 3 swapped from CRA's /app/build).
+# Vite build → /app/dist.
 RUN npm run build
 
 # nginx-unprivileged: runs as the `nginx` user (uid 101) and listens
