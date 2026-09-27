@@ -9,9 +9,54 @@ Expect breaking changes between minor versions until v1.0.0.
 
 ## [Unreleased]
 
+### Changed
+
+- UI stack: Mantine 4 → 9, which requires React 18 → 19. `createStyles` replaced by CSS modules with `light-dark()`; unused `@mantine/dropzone` dropped.
+- State: Zustand 3 → 5 (named `create`, curried typing); `tabler-icons-react` → `@tabler/icons-react`.
+- Architecture: the floor-plan model moved out of the `FloorPlan` Pixi container into a `useFloorPlanStore` Zustand store. `FloorPlan` is now view-only, the `Serializer` reads and writes the store directly, and the static `FloorPlan.Instance` / `dispose()` pair is gone. See `FLOORPLAN-REFACTOR.md`.
+- Toolchain: Vite 6 → 8, Vitest 2 → 5, `@vitejs/plugin-react` 5 → 6, `@types/node` 20 → 22 to match the Node 22 runtime. `engines.node` is now `>=22.12`.
+- CI: the `npm audit` step is a blocking gate on the production tree at high and above, and CI also runs weekly. Dependabot alerts, security updates and version updates are enabled.
+
 ### Fixed
 
 - Licensing: the repository is `MIT AND Apache-2.0`, not MIT alone. Code carried over from upstream arcada stays under Apache-2.0, whose full text now ships verbatim in `LICENSE-APACHE` as section 4(a) requires; `LICENSE`, the README and `package.json` now say so.
+
+### Security
+
+- All npm advisories cleared (`npm audit` reports 0). This includes `@xmldom/xmldom` 0.8.13 → 0.8.15, which ships in the production bundle via `pixi.js`, and the Vitest UI / Vite dev-server advisories.
+
+## [0.3.0] — 2026-06-17
+
+Pixi 8 migration and the 2026-06-16 action-items batch.
+
+### Added
+
+- Playwright e2e runs in CI and is blocking. The `place-wall` spec waits for the WelcomeModal overlay to detach before drawing, which was the source of its flakiness.
+- `simple-git-hooks` + `lint-staged` pre-commit hook (ESLint and Prettier on staged files).
+- Non-blocking `npm audit` step in CI.
+- Issue and pull-request templates.
+- README sections on saving and loading, and on accessibility.
+- File-input validation when loading a plan; fallback texture for furniture images that fail to load.
+
+### Changed
+
+- Pixi.js 6 → 8, laddered through 7: federated events, `Graphics` `rect()`/`.fill()`/`.stroke()`, async `Application.init`, `Assets` preloading in place of `Loader`, and `Text({ text, style })`. `pixi-viewport` 4 → 6. `Wall.label` and `WallNode.setSize` were renamed (`lengthLabel`, `setNodeSize`) to avoid colliding with Pixi 8's `Container` members.
+- WelcomeModal can be dismissed with Escape or an outside click.
+- Components read the Zustand stores through selectors.
+- React and react-dom split into their own vendor chunk.
+- Node 22 in CI and `.nvmrc`; Vitest globals turned off.
+- `manifest.json` uses the Axonometra name.
+
+### Fixed
+
+- Snap-toggle notification text, double snapping on pointer moves, and the default save filename.
+- `HelpDialog` no longer breaks on an out-of-range active tool.
+- Navbar focus ring uses a valid `:focus-visible` selector; navbar buttons have `aria-label`s.
+
+### Removed
+
+- Dead code: the never-read `FloorPlan.actions` undo stack, `assets.ts`, `Floor.clearScreen`, `Label.toggleLabel`, a duplicate `ToolMode` enum, `src/App.css` and a debug `console.log`.
+- `react-device-detect` dependency, replaced by a dependency-free `matchMedia` check.
 
 ## [0.2.0] — 2026-06-09
 
@@ -83,6 +128,7 @@ Initial Axonometra release after the fork from
 - Upstream-only assets and the thesis PDF.
 - Unused dependencies; moved `@types/*` to `devDependencies`.
 
-[Unreleased]: https://github.com/qant-au/axonometra/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/qant-au/axonometra/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/qant-au/axonometra/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/qant-au/axonometra/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/qant-au/axonometra/releases/tag/v0.1.0
