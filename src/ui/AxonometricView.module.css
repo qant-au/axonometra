@@ -1,0 +1,28 @@
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--mantine-spacing-md);
+  height: calc(100dvh - 60px);
+}
+
+.controls {
+  flex: none;
+}
+
+.drawing {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  background: light-dark(#fafaf8, var(--mantine-color-dark-7));
+}
+
+.drawing polygon {
+  stroke: #5f5a50;
+  stroke-width: 1;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+
+.empty {
+  margin-top: 20vh;
+}

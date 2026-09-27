@@ -39,7 +39,8 @@ import {
   IconTableOff,
   IconTag,
   IconArrowBackUp,
-  IconArrowForwardUp
+  IconArrowForwardUp,
+  IconCube
 } from '@tabler/icons-react';
 import { notifications } from '@mantine/notifications';
 import { useStore } from '../../stores/EditorStore';
@@ -62,6 +63,9 @@ const FurnitureAddPanel = lazy(() =>
 );
 const HelpDialog = lazy(() =>
   import('../HelpDialog').then((m) => ({ default: m.HelpDialog }))
+);
+const AxonometricView = lazy(() =>
+  import('../AxonometricView').then((m) => ({ default: m.AxonometricView }))
 );
 import { DeleteFloorAction } from '../../editor/editor/actions/DeleteFloorAction';
 import { useFurnitureStore } from '../../stores/FurnitureStore';
@@ -178,6 +182,7 @@ export function ToolNavbar() {
   const setTool = useStore((s) => s.setTool);
   const floor = useFloorPlanStore((s) => s.currentFloor);
   const canUndo = useHistoryStore((s) => s.past.length > 0);
+  const [axonometricOpen, setAxonometricOpen] = useState(false);
   const canRedo = useHistoryStore((s) => s.future.length > 0);
   const setSnap = useStore((s) => s.setSnap);
   const snap = useStore((s) => s.snap);
@@ -304,6 +309,19 @@ export function ToolNavbar() {
                 });
               }}
             />
+            <NavbarLink
+              icon={IconCube}
+              label="Axonometric view"
+              onClick={() => setAxonometricOpen(true)}
+            />
+            {axonometricOpen && (
+              <Suspense fallback={null}>
+                <AxonometricView
+                  opened
+                  onClose={() => setAxonometricOpen(false)}
+                />
+              </Suspense>
+            )}
             <Suspense fallback={null}>
               <HelpDialog />
             </Suspense>
