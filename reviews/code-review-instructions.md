@@ -1,6 +1,6 @@
 # Axonometra Comprehensive Code Review
 
-You are performing a deep, comprehensive code review of the Axonometra project at /Users/adam/Projects/axonometra/. Axonometra is an open-source, browser-embeddable 2D floor planner built as a single-page React + TypeScript application on Pixi.js, with Zustand for state and Mantine for UI. It is a fork of [mehanix/arcada](https://github.com/mehanix/arcada) (originally Apache-2.0), now relicensed MIT and maintained under the QANT umbrella. There is no backend, no auth layer, no database, and no server-side code in this repository — the entire app runs in the browser. Build is Vite; tests are Vitest (unit) and Playwright (e2e); deploy artefact is a multi-stage Docker image serving the static build via nginx.
+You are performing a deep, comprehensive code review of the Axonometra project at /Users/adam/Projects/axonometra/. Axonometra is an open-source, browser-embeddable 2D floor planner built as a single-page React + TypeScript application on Pixi.js, with Zustand for state and Mantine for UI. It is a fork of [mehanix/arcada](https://github.com/mehanix/arcada) and is licensed `MIT AND Apache-2.0` (upstream-originated code stays Apache-2.0, Axonometra's own changes are MIT); it is maintained under the QANT umbrella. There is no backend, no auth layer, no database, and no server-side code in this repository — the entire app runs in the browser. Build is Vite; tests are Vitest (unit) and Playwright (e2e); deploy artefact is a multi-stage Docker image serving the static build via nginx.
 
 You are running as Claude Opus. Token budget is not a concern. Accuracy and completeness are the only constraints. Do not summarise or truncate. Report everything you find.
 
@@ -8,10 +8,10 @@ You are running as Claude Opus. Token budget is not a concern. Accuracy and comp
 
 ## Output Instructions
 
-Save your complete review output as **two separate files** in the project root:
+Save your complete review output as **two separate files** in `reviews/`:
 
-1. `/Users/adam/Projects/axonometra/code-review-YYYY-MM-DD.md` — the full review (see Output Format below)
-2. `/Users/adam/Projects/axonometra/action-items-YYYY-MM-DD.md` — the distilled action items list (see Action Items Format below)
+1. `/Users/adam/Projects/axonometra/reviews/code-review-YYYY-MM-DD.md` — the full review (see Output Format below)
+2. `/Users/adam/Projects/axonometra/reviews/action-items-YYYY-MM-DD.md` — the distilled action items list (see Action Items Format below)
 
 replacing YYYY-MM-DD with today's date (use the `date +%Y-%m-%d` command to confirm).
 
@@ -19,11 +19,13 @@ Save the review file first, then derive the action items file from it. Both file
 
 **Do not stage, add, or commit either file to git.** Both filenames (`code-review-*.md`, `action-items-*.md`) and this `code-review-instructions.md` file itself are intended as local-only working documents — the maintainer will commit them manually if and when they choose. Do not run `git add` on them.
 
-BEFORE beginning the review, check whether any files matching the pattern `code-review-*.md` exist in the project root:
+BEFORE beginning the review, check whether any files matching the pattern `code-review-*.md` exist in `reviews/` or `reviews/history/`:
 
-ls /Users/adam/Projects/axonometra/code-review-*.md 2>/dev/null
+ls /Users/adam/Projects/axonometra/reviews/code-review-*.md /Users/adam/Projects/axonometra/reviews/history/code-review-*.md 2>/dev/null
 
-Also check for the most recent staged audit document — `STAGE2-REVIEW.md` — and any later stage review files (`STAGE3-REVIEW.md`, etc.) if present. Read each one. When a current finding was already identified in a prior review or stage document, mark it as:
+`reviews/` holds only this file and the current cycle's review + action-items pair. When you write a new pair, move the previous pair into `reviews/history/` (`git mv` if they are tracked).
+
+Also check for the most recent staged audit document — `reviews/history/STAGE2-REVIEW.md` — and any later stage review files (`STAGE3-REVIEW.md`, etc.) if present. Read each one. When a current finding was already identified in a prior review or stage document, mark it as:
 
 Status: Recurring (previously identified — code-review-YYYY-MM-DD.md) — or — Status: Recurring (previously identified — STAGE2-REVIEW.md F-NN)
 
@@ -53,8 +55,8 @@ Axonometra is a single repository. The relevant top-level structure is:
 - `vite.config.mts`, `vitest.config.mts`, `playwright.config.ts`, `eslint.config.js`, `tsconfig.json` — tooling configuration
 - `graphify-out/` — graphify knowledge graph index (regenerated; not committed)
 - `TODO.md` — outstanding tasks tracked via the unified `@id(...)` TODO format (prefix `axo`)
-- `STAGE2-REVIEW.md` — prior audit document (Stage 2 findings F-01 through F-21)
-- `README.md`, `LICENSE` — project docs and attribution (MIT, with upstream Apache-2.0 attribution)
+- `reviews/history/STAGE2-REVIEW.md` — prior audit document (Stage 2 findings F-01 through F-21)
+- `README.md`, `LICENSE`, `LICENSE-APACHE` — project docs and attribution (`MIT AND Apache-2.0`)
 
 Treat the `editor/` Pixi engine as Tier 1 for scrutiny: it is the bulk of the code, the most performance-sensitive, and the most likely source of subtle bugs or memory issues. UI shell and store code is Tier 2. Tooling, scripts, and Docker config are Tier 3.
 

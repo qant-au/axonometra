@@ -23,7 +23,7 @@ coverage
 .origin
 LICENSE
 README.md
-STAGE2-REVIEW.md
+reviews/
 STAGE2-baseline.png
 TODO.md
 restart.sh

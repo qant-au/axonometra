@@ -106,9 +106,11 @@ narrative.
 - [`PLAN-FORMAT.md`](./PLAN-FORMAT.md) — persisted plan file format.
 - [`CHANGELOG.md`](./CHANGELOG.md) — Keep-a-Changelog log of releases.
 - `TODO.md` — roadmap; tasks use stable `@id(axo-XXX)` identifiers.
-- `STAGE*-REVIEW.md`, `code-review-*.md`, `action-items-*.md` —
-  historical reviews and their derived action items. Don't modify these
-  except to record resolution status on the items themselves.
+- [`reviews/`](./reviews/) — the code-review prompt
+  (`code-review-instructions.md`) and the current review cycle.
+  `reviews/history/` holds superseded reviews (`STAGE*-REVIEW.md`,
+  `code-review-*.md`, `action-items-*.md`). Don't modify these except to
+  record resolution status on the items themselves.
 
 ## Questions
 

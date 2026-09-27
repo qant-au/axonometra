@@ -1,6 +1,6 @@
 # FloorPlan refactor — Stage 6 design
 
-Tracking: `TODO.md` `@id(axo-020)`. Triggered by code-review-2026-06-09 finding 4c.1 and action item 25. Prereq: `axo-008` (Pixi v8 migration) — refactoring against Pixi 6 wastes work.
+Tracking: `TODO.md` `@id(axo-020)`. Triggered by [code-review-2026-06-09](reviews/history/code-review-2026-06-09.md) finding 4c.1 and action item 25. Prereq: `axo-008` (Pixi v8 migration) — refactoring against Pixi 6 wastes work.
 
 > **Shipped 2026-07-27.** See "What actually shipped" at the foot of this document — the delivered design differs from the target sketched below in one significant way, and that section is the accurate record.
 
