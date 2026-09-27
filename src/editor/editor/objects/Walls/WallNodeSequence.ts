@@ -96,7 +96,8 @@ export class WallNodeSequence extends Container {
         this.wallNodes.delete(id);
       }
 
-      // remove links containing node TODO if implementing undo. remember these
+      // Undo restores whole-plan snapshots (editor/history.ts), so the
+      // removed links need not be remembered here.
       // this.wallNodeLinks[id].length = 0;
     } else {
       notifications.show({

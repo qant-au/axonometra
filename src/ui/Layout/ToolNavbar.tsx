@@ -37,7 +37,9 @@ import {
   IconPrinter,
   IconTable,
   IconTableOff,
-  IconTag
+  IconTag,
+  IconArrowBackUp,
+  IconArrowForwardUp
 } from '@tabler/icons-react';
 import { notifications } from '@mantine/notifications';
 import { useStore } from '../../stores/EditorStore';
@@ -48,6 +50,8 @@ import { readPlanFile } from '../../helpers/readPlanFile';
 import { SaveAction } from '../../editor/editor/actions/SaveAction';
 import { Tool } from '../../editor/editor/constants';
 import { PrintAction } from '../../editor/editor/actions/PrintAction';
+import { useHistoryStore } from '../../stores/HistoryStore';
+import { redo, undo } from '../../editor/editor/history';
 import { ToggleLabelAction } from '../../editor/editor/actions/ToggleLabelAction';
 import { NavbarLink } from '../NavbarLink';
 
@@ -173,6 +177,8 @@ export function ToolNavbar() {
 
   const setTool = useStore((s) => s.setTool);
   const floor = useFloorPlanStore((s) => s.currentFloor);
+  const canUndo = useHistoryStore((s) => s.past.length > 0);
+  const canRedo = useHistoryStore((s) => s.future.length > 0);
   const setSnap = useStore((s) => s.setSnap);
   const snap = useStore((s) => s.snap);
 
@@ -248,6 +254,18 @@ export function ToolNavbar() {
         </Box>
         <Box className={classes.sectionGrow}>
           <Stack align="center" gap={0}>
+            <NavbarLink
+              icon={IconArrowBackUp}
+              label="Undo"
+              disabled={!canUndo}
+              onClick={undo}
+            />
+            <NavbarLink
+              icon={IconArrowForwardUp}
+              label="Redo"
+              disabled={!canRedo}
+              onClick={redo}
+            />
             <NavbarLink
               icon={IconRuler2}
               label="Measure tool"

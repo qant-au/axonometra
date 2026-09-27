@@ -1,5 +1,6 @@
 import { useFloorPlanStore } from '../../../stores/FloorPlanStore';
 import { Action } from './Action';
+import { transact } from '../history';
 
 export class ChangeFloorAction implements Action {
   private by: number;
@@ -8,6 +9,7 @@ export class ChangeFloorAction implements Action {
   }
 
   public execute() {
-    useFloorPlanStore.getState().changeFloor(this.by);
+    // Going up past the top floor creates one, which is an edit.
+    transact(() => useFloorPlanStore.getState().changeFloor(this.by));
   }
 }

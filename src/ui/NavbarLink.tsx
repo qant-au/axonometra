@@ -7,6 +7,7 @@ interface NavbarLinkProps {
   icon: TablerIcon;
   label?: string;
   active?: boolean;
+  disabled?: boolean;
   onClick?(): void;
 }
 
@@ -14,6 +15,7 @@ export function NavbarLink({
   icon: Icon,
   label,
   active,
+  disabled,
   onClick
 }: NavbarLinkProps) {
   return (
@@ -25,6 +27,7 @@ export function NavbarLink({
     >
       <UnstyledButton
         onClick={onClick}
+        disabled={disabled}
         aria-label={label}
         className={`${classes.link}${active ? ` ${classes.active}` : ''}`}
       >

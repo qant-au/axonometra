@@ -33,3 +33,11 @@
     var(--mantine-primary-color-4)
   );
 }
+
+/* Undo/Redo with nothing to step through. */
+.link:disabled,
+.link:disabled:hover {
+  opacity: 0.35;
+  cursor: default;
+  background-color: transparent;
+}

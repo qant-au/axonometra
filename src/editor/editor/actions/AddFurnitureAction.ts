@@ -3,6 +3,7 @@ import { FurnitureData } from '../../../stores/FurnitureStore';
 import { useFloorPlanStore } from '../../../stores/FloorPlanStore';
 import { Wall } from '../objects/Walls/Wall';
 import { Action } from './Action';
+import { transact } from '../history';
 
 export class AddFurnitureAction implements Action {
   obj: FurnitureData;
@@ -25,15 +26,19 @@ export class AddFurnitureAction implements Action {
     this.attachedToRight = attachedToRight;
   }
 
+  // Doors and windows are added after an async catalog lookup, which can
+  // resolve after the canvas gesture has closed, so this records itself.
   public execute() {
-    useFloorPlanStore
-      .getState()
-      .addFurniture(
-        this.obj,
-        this.attachedTo,
-        this.coords,
-        this.attachedToLeft,
-        this.attachedToRight
-      );
+    transact(() =>
+      useFloorPlanStore
+        .getState()
+        .addFurniture(
+          this.obj,
+          this.attachedTo,
+          this.coords,
+          this.attachedToLeft,
+          this.attachedToRight
+        )
+    );
   }
 }

@@ -1,5 +1,6 @@
 import { notifications } from '@mantine/notifications';
 import { useFloorPlanStore } from '../../../stores/FloorPlanStore';
+import { useHistoryStore } from '../../../stores/HistoryStore';
 import {
   FloorPlanSerializable,
   safeParsePlan,
@@ -68,6 +69,9 @@ export class Serializer {
       return;
     }
     useFloorPlanStore.getState().setPlan(plan);
+    // A loaded plan is a different document; undo must not step back into
+    // the one it replaced.
+    useHistoryStore.getState().clear();
   }
 }
 

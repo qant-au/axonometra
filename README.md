@@ -56,6 +56,12 @@ Run `bash restart.sh NO_WATCH=1` for a containerised local preview, `npm run tes
 - Load a plan from the welcome dialog ("Load from disk" / "Load from local save") or the toolbar's **Load plan** button.
 - Saving is manual — there is no periodic autosave.
 
+## Undo & redo
+
+- **Ctrl+Z** (Cmd+Z on macOS) undoes the last edit; **Ctrl+Shift+Z** or **Ctrl+Y** redoes it. The toolbar has **Undo** and **Redo** buttons too.
+- One step is one canvas click or drag (a wall segment, a moved node, a placed or resized piece of furniture), or one toolbar edit (adding or deleting a floor, adding furniture from the drawer).
+- History holds the last 100 steps and is cleared when a plan is loaded.
+
 ## Accessibility
 
 The editor canvas is currently **pointer-only**: walls, furniture, and handles are

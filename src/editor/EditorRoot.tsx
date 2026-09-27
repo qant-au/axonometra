@@ -12,6 +12,14 @@ import { serializer } from './editor/persistence/Serializer';
 import { notifications } from '@mantine/notifications';
 import { createElement } from 'react';
 import { IconDeviceFloppy } from '@tabler/icons-react';
+import {
+  beginGesture,
+  endGesture,
+  redo,
+  resetHistory,
+  undo
+} from './editor/history';
+import { embedConfig } from '../embed/embedConfig';
 
 // Holder for the active Main instance. Non-React Pixi consumers
 // (ViewportCoordinates, Floor) read mainHolder.current via getMain()
@@ -51,11 +59,33 @@ export function EditorRoot() {
     let cancelled = false;
     let app: Application | null = null;
     let view: HTMLCanvasElement | null = null;
+    const wrapper = ref.current;
 
     const handleContextMenu = (e: Event) => {
       e.preventDefault();
     };
     const handleKeydown = (e: KeyboardEvent) => {
+      const mod = e.ctrlKey || e.metaKey;
+      const target = e.target as HTMLElement | null;
+      const typing =
+        target?.isContentEditable ||
+        target?.tagName === 'INPUT' ||
+        target?.tagName === 'TEXTAREA';
+      // Ctrl/Cmd+Z undoes; Ctrl/Cmd+Shift+Z and Ctrl+Y redo. Text fields keep
+      // their own undo, and a read-only embed has nothing to undo.
+      if (mod && !typing && !embedConfig.readonly) {
+        if (e.code === 'KeyZ') {
+          e.preventDefault();
+          if (e.shiftKey) redo();
+          else undo();
+          return;
+        }
+        if (e.code === 'KeyY') {
+          e.preventDefault();
+          redo();
+          return;
+        }
+      }
       if (e.code === 'KeyS' && e.ctrlKey) {
         e.preventDefault();
         const data = serializer.serialize();
@@ -101,6 +131,12 @@ export function EditorRoot() {
         mainHolder.current = main;
 
         ref.current!.appendChild(view);
+        // Every canvas pointer gesture is at most one undo step. Capture phase
+        // on the wrapper so this runs before Pixi (whose handlers stop
+        // propagation); pointerup lands on window wherever the drag ends.
+        wrapper?.addEventListener('pointerdown', beginGesture, true);
+        window.addEventListener('pointerup', endGesture);
+        window.addEventListener('pointercancel', endGesture);
         created.start();
         created.stage.addChild(main);
 
@@ -121,6 +157,10 @@ export function EditorRoot() {
     return () => {
       cancelled = true;
       document.removeEventListener('keydown', handleKeydown);
+      wrapper?.removeEventListener('pointerdown', beginGesture, true);
+      window.removeEventListener('pointerup', endGesture);
+      window.removeEventListener('pointercancel', endGesture);
+      resetHistory();
       if (view) view.removeEventListener('contextmenu', handleContextMenu);
       // Drop the plan model and dispose the remaining singletons before
       // app.destroy so their static .instance refs reset; a remount then

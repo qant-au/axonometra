@@ -9,6 +9,10 @@ Expect breaking changes between minor versions until v1.0.0.
 
 ## [Unreleased]
 
+### Added
+
+- Undo and redo: Ctrl/Cmd+Z, Ctrl/Cmd+Shift+Z or Ctrl+Y, and toolbar buttons. History is whole-plan snapshots taken through the Serializer, because the model lives inside Pixi objects that the drag handlers mutate in place. Each canvas pointer gesture or toolbar edit is one step, nothing is recorded when the plan did not change, and loading a plan clears the history. See `src/editor/editor/history.ts`.
+
 ### Changed
 
 - UI stack: Mantine 4 → 9, which requires React 18 → 19. `createStyles` replaced by CSS modules with `light-dark()`; unused `@mantine/dropzone` dropped.

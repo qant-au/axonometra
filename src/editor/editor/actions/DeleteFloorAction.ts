@@ -1,9 +1,9 @@
 import { useFloorPlanStore } from '../../../stores/FloorPlanStore';
-
 import { Action } from './Action';
+import { transact } from '../history';
 
 export class DeleteFloorAction implements Action {
   public execute(): void {
-    useFloorPlanStore.getState().removeFloor();
+    transact(() => useFloorPlanStore.getState().removeFloor());
   }
 }
