@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" role="img" aria-label="Axonometra">
+  <rect width="120" height="120" fill="#F4EFE7"/>
+  <g fill="none" stroke="#0E2A47" stroke-width="6" stroke-linecap="square" stroke-linejoin="miter">
+    <polyline points="20,96 60,16 100,96"/>
+    <line x1="38" y1="60" x2="82" y2="60"/>
+    <line x1="60" y1="16" x2="60" y2="96"/>
+  </g>
+  <polyline points="20,96 60,108 100,96" fill="none" stroke="#0E2A47" stroke-width="6" stroke-linecap="square" stroke-linejoin="miter" opacity="0.45"/>
+</svg>

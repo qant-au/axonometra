@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 200" role="img" aria-label="Axonometra wordmark + mark">
+  <g transform="translate(40,40)">
+    <g fill="none" stroke="#0E2A47" stroke-width="6" stroke-linecap="square" stroke-linejoin="miter">
+      <polyline points="20,96 60,16 100,96"/>
+      <line x1="38" y1="60" x2="82" y2="60"/>
+      <line x1="60" y1="16" x2="60" y2="96"/>
+    </g>
+    <polyline points="20,96 60,108 100,96" fill="none" stroke="#0E2A47" stroke-width="6" stroke-linecap="square" stroke-linejoin="miter" opacity="0.45"/>
+  </g>
+  <text x="200" y="120" fill="#0E2A47"
+        font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif"
+        font-size="44" font-weight="500" letter-spacing="14"
+        text-anchor="start">AXONOMETRA</text>
+</svg>

@@ -6,7 +6,7 @@ import {
   IconRotateClockwise
 } from '@tabler/icons-react';
 import { LoadAction } from '../editor/editor/actions/LoadAction';
-import AxonometraLogo from '../res/logo.png';
+import AxonometraLogo from '../res/axonometra-logo.svg';
 import { serializer } from '../editor/editor/persistence/Serializer';
 import { notifications } from '@mantine/notifications';
 import { readPlanFile } from '../helpers/readPlanFile';
@@ -14,7 +14,7 @@ import { readPlanFile } from '../helpers/readPlanFile';
 export function WelcomeModal() {
   const [opened, setOpened] = useState(true);
   const fileRef = useRef<HTMLInputElement>(null);
-  const image = <Image src={AxonometraLogo} />;
+  const image = <Image src={AxonometraLogo} alt="Axonometra" />;
 
   const loadFromDisk = async (e: ChangeEvent<HTMLInputElement>) => {
     const resultText = await readPlanFile(e.target.files?.[0]);
