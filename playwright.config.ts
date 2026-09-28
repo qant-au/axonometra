@@ -45,19 +45,30 @@ export default defineConfig({
   workers: process.env.CI ? 1 : undefined,
   reporter: process.env.CI ? [['list'], ['html', { open: 'never' }]] : 'list',
   outputDir: 'playwright-out/test-results',
-  // Only auto-start the dev server when no external base URL is supplied.
+  // Only auto-start servers when no external base URL is supplied: the dev
+  // server for the main suite, and the production build under the
+  // container's CSP (vite preview, 4892) for the production project.
   webServer: process.env.PLAYWRIGHT_BASE_URL
     ? undefined
-    : {
-        command: 'npm run dev',
-        url: 'http://localhost:4891',
-        reuseExistingServer: !process.env.CI,
-        env: {
-          VITE_EMBED_ALLOWED_ORIGINS: EMBED_HOST_ORIGIN,
-          VITE_EMBED_PLAN_PUBLIC_KEYS: process.env.AXO_E2E_PLAN_PUBLIC_KEY ?? ''
+    : [
+        {
+          command: 'npm run dev',
+          url: 'http://localhost:4891',
+          reuseExistingServer: !process.env.CI,
+          env: {
+            VITE_EMBED_ALLOWED_ORIGINS: EMBED_HOST_ORIGIN,
+            VITE_EMBED_PLAN_PUBLIC_KEYS:
+              process.env.AXO_E2E_PLAN_PUBLIC_KEY ?? ''
+          },
+          timeout: 120_000
         },
-        timeout: 120_000
-      },
+        {
+          command: 'npm run build && npx vite preview',
+          url: 'http://localhost:4892',
+          reuseExistingServer: !process.env.CI,
+          timeout: 180_000
+        }
+      ],
   use: {
     baseURL,
     trace: 'on-first-retry',
@@ -67,7 +78,18 @@ export default defineConfig({
   projects: [
     {
       name: 'chromium',
+      testIgnore: /\.prod\.spec\.ts$/,
       use: { ...devices['Desktop Chrome'] }
+    },
+    {
+      // The production bundle as the container serves it, CSP included.
+      // Specs here use the UI only: window.__axo does not exist in a build.
+      name: 'production',
+      testMatch: /\.prod\.spec\.ts$/,
+      use: {
+        ...devices['Desktop Chrome'],
+        baseURL: process.env.PLAYWRIGHT_BASE_URL ?? 'http://localhost:4892'
+      }
     }
   ]
 });

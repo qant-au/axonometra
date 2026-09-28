@@ -1,4 +1,8 @@
 import { useRef, useEffect } from 'react';
+// Pixi 8 compiles shaders and uniform uploads with new Function() unless
+// this module is loaded first. The container's CSP has no 'unsafe-eval'
+// (docker/nginx.conf), so without it the canvas never starts there.
+import 'pixi.js/unsafe-eval';
 import { Application, Renderer } from 'pixi.js';
 import { Main } from './editor/Main';
 import { IViewportOptions } from 'pixi-viewport';

@@ -34,9 +34,12 @@ export class Main extends Viewport {
     // scene. The load also defers setup() until after EditorRoot has added
     // this viewport to the stage (clamp() reads the viewport's world
     // transform). Replaces the removed-in-v7 Loader.shared.
-    Assets.load(['./pattern.svg', ...getPreloadImageUrls()]).then(() =>
-      this.setup()
-    );
+    // A failed image must not leave the editor half-built: setup() wires the
+    // tools, so it runs whether or not every preload arrived. A missing icon
+    // shows as a placeholder instead.
+    Assets.load(['./pattern.svg', ...getPreloadImageUrls()])
+      .catch((error: unknown) => console.error('Preload failed:', error))
+      .finally(() => this.setup());
     this.preview = new Preview();
     this.addChild(this.preview.getReference());
     this.cursor = 'none';
