@@ -342,3 +342,82 @@ test('the selection box follows the item while it is resized', async ({
   // The width handle sits on the item's new right edge, not its old one.
   expect(Math.abs(after.x - box.right)).toBeLessThan(8);
 });
+
+const sofaSize = (page: Page) =>
+  page.evaluate(() => {
+    const f = [
+      ...(
+        window as unknown as {
+          __axo: {
+            getPlan: () => {
+              getFurniture: () => Map<
+                number,
+                { width: number; height: number }
+              >;
+            };
+          };
+        }
+      ).__axo
+        .getPlan()
+        .getFurniture()
+        .values()
+    ][0];
+    return { w: f.width, h: f.height };
+  });
+
+test('resize handles move the edge by the drag distance', async ({ page }) => {
+  await selectedSofa(page);
+  const before = await sofaSize(page);
+  const depth = (await handles(page)).find((h) => h.cursor === 'ns-resize')!;
+  await page.mouse.move(depth.x, depth.y);
+  await page.mouse.down();
+  await page.mouse.move(depth.x, depth.y + 40, { steps: 10 });
+  await page.mouse.up();
+  const after = await sofaSize(page);
+  // At 100% zoom a screen pixel is a plan unit (1 cm).
+  expect(after.h - before.h).toBeCloseTo(40, -1);
+  expect(after.w).toBeCloseTo(before.w, 0);
+});
+
+test('clicking back into the plan does not move the view', async ({ page }) => {
+  await start(page);
+  await page.getByRole('button', { name: 'Add', exact: true }).hover();
+  await page.getByRole('menuitem', { name: 'Add furniture' }).click();
+  await page.getByRole('dialog').getByAltText('Sofa, 3-seat').click();
+  await page.keyboard.press('Escape');
+  // Focus the plan with the mouse, then leave it and pan well away.
+  await page.getByRole('button', { name: 'Edit' }).click();
+  await page.mouse.click(300, 650);
+  await page.getByRole('button', { name: 'View', exact: true }).click();
+  await drag(page, [900, 600], [300, 250]);
+  await page.getByRole('button', { name: 'Edit' }).click();
+  // Clicking back in used to scroll the view to the keyboard cursor.
+  const before = await axo(page);
+  await page.mouse.click(700, 300);
+  const after = await axo(page);
+  expect([after.main.x, after.main.y]).toEqual([before.main.x, before.main.y]);
+});
+
+test('in View, a drag that starts on a wall pans', async ({ page }) => {
+  await start(page);
+  await drawWall(page, 500, 800, 400);
+  await page.getByRole('button', { name: 'View', exact: true }).click();
+  const before = await axo(page);
+  await drag(page, [650, 400], [500, 300]);
+  const after = await axo(page);
+  expect(after.main.x - before.main.x).toBeCloseTo(-150, -1);
+});
+
+test('in View, a drag that starts on furniture pans', async ({ page }) => {
+  await start(page);
+  await page.getByRole('button', { name: 'Add', exact: true }).hover();
+  await page.getByRole('menuitem', { name: 'Add furniture' }).click();
+  await page.getByRole('dialog').getByAltText('Sofa, 3-seat').click();
+  await page.keyboard.press('Escape');
+  await page.getByRole('button', { name: 'View', exact: true }).click();
+  const before = await axo(page);
+  const s = await sofa(page);
+  await drag(page, [s.cx, s.cy], [s.cx - 150, s.cy - 100]);
+  const after = await axo(page);
+  expect(after.main.x - before.main.x).toBeCloseTo(-150, -1);
+});

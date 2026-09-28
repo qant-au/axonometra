@@ -145,6 +145,8 @@ export class Furniture extends Sprite {
     this.orientation = number;
   }
   private onMouseDown(ev: FederatedPointerEvent) {
+    // In View the press belongs to the viewport, so a drag pans from anywhere.
+    if (useStore.getState().activeTool === Tool.View) return;
     ev.stopPropagation();
     if (ev.button == 1) {
       this.zIndex++;

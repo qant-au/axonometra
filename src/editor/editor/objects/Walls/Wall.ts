@@ -180,6 +180,8 @@ export class Wall extends Graphics {
   }
 
   private onMouseDown(ev: FederatedPointerEvent) {
+    // In View the press belongs to the viewport, so a drag pans from anywhere.
+    if (useStore.getState().activeTool === Tool.View) return;
     ev.stopPropagation();
     // Right-click is onRightDown's (exterior toggle); a right press must not
     // also split the wall, erase it or start a drag.

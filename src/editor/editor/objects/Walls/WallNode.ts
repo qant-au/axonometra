@@ -42,6 +42,8 @@ export class WallNode extends Graphics {
     this.pivot.set(size / 2, size / 2);
   }
   private onMouseDown(ev: FederatedPointerEvent) {
+    // In View the press belongs to the viewport, so a drag pans from anywhere.
+    if (useStore.getState().activeTool === Tool.View) return;
     ev.stopPropagation();
     if (ev.button !== 0) return;
     switch (useStore.getState().activeTool) {
