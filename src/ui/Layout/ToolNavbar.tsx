@@ -40,7 +40,8 @@ import {
   IconTag,
   IconArrowBackUp,
   IconArrowForwardUp,
-  IconCube
+  IconCube,
+  IconView360
 } from '@tabler/icons-react';
 import { notifications } from '@mantine/notifications';
 import { useStore } from '../../stores/EditorStore';
@@ -66,6 +67,10 @@ const HelpDialog = lazy(() =>
 );
 const AxonometricView = lazy(() =>
   import('../AxonometricView').then((m) => ({ default: m.AxonometricView }))
+);
+// three.js is only downloaded when the 3D view is first opened.
+const ThreeDView = lazy(() =>
+  import('../ThreeDView').then((m) => ({ default: m.ThreeDView }))
 );
 import { DeleteFloorAction } from '../../editor/editor/actions/DeleteFloorAction';
 import { useFurnitureStore } from '../../stores/FurnitureStore';
@@ -183,6 +188,7 @@ export function ToolNavbar() {
   const floor = useFloorPlanStore((s) => s.currentFloor);
   const canUndo = useHistoryStore((s) => s.past.length > 0);
   const [axonometricOpen, setAxonometricOpen] = useState(false);
+  const [threeDOpen, setThreeDOpen] = useState(false);
   const canRedo = useHistoryStore((s) => s.future.length > 0);
   const setSnap = useStore((s) => s.setSnap);
   const snap = useStore((s) => s.snap);
@@ -320,6 +326,16 @@ export function ToolNavbar() {
                   opened
                   onClose={() => setAxonometricOpen(false)}
                 />
+              </Suspense>
+            )}
+            <NavbarLink
+              icon={IconView360}
+              label="3D view"
+              onClick={() => setThreeDOpen(true)}
+            />
+            {threeDOpen && (
+              <Suspense fallback={null}>
+                <ThreeDView opened onClose={() => setThreeDOpen(false)} />
               </Suspense>
             )}
             <Suspense fallback={null}>

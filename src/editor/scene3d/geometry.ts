@@ -39,7 +39,8 @@ export interface FloorInput {
   slabThickness: number;
 }
 
-export type PrismKind = 'wall' | 'sill' | 'lintel' | 'floor' | 'ceiling';
+export type PrismKind =
+  'wall' | 'sill' | 'lintel' | 'floor' | 'ceiling' | 'furniture';
 
 export interface Prism {
   kind: PrismKind;

@@ -2,7 +2,7 @@ import saveAs from 'file-saver';
 import { serializer } from '../persistence/Serializer';
 import { Action } from './Action';
 
-function timestamp() {
+export function timestamp() {
   const d = new Date();
   const pad = (n: number) => String(n).padStart(2, '0');
   return (

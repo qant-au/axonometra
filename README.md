@@ -1,6 +1,6 @@
 # Axonometra
 
-An open-source 2D floor planner for the browser. Walls, doors, windows, fixtures, furniture, multiple floors, accurate-to-scale measurement, and an axonometric view of the result — with a 3D walk-through view on the roadmap.
+An open-source 2D floor planner for the browser. Walls, doors, windows, fixtures, furniture, multiple floors, accurate-to-scale measurement, an axonometric view, and a 3D view you can turn, zoom and save as an image — with a first-person walk-through on the roadmap.
 
 Built for healthcare facility layouts, small-building design (sheds, bunkers, ADUs), and any place a fast, embeddable plan editor is wanted (see [EMBEDDING.md](./EMBEDDING.md) for the iframe + postMessage contract).
 
@@ -55,6 +55,10 @@ Run `bash restart.sh NO_WATCH=1` for a containerised local preview, `npm run tes
 - The toolbar **Save** button downloads the plan as an `axonometra-plan-*.json` file.
 - Load a plan from the welcome dialog ("Load from disk" / "Load from local save") or the toolbar's **Load plan** button.
 - Saving is manual — there is no periodic autosave.
+
+## 3D view
+
+The toolbar's **3D view** button shows the plan as a 3D model: walls with their door and window openings, a floor and ceiling for each room, and furniture as boxes at its real height. Drag to turn it, right-drag or use the arrow keys to move, and scroll to zoom; the buttons do the same from the keyboard. **Cut away walls** (on by default) cuts the walls off at 1.2 m so you can see into the rooms, **All floors** stacks every floor, and **Save image** downloads a PNG of the view. It needs WebGL, and three.js is only downloaded the first time it is opened. The geometry lives in `src/editor/scene3d/`; see [3D-PLAN.md](./3D-PLAN.md) for what comes next.
 
 ## Undo & redo
 

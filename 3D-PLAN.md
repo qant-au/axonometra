@@ -136,6 +136,10 @@ Each phase ships on its own and is demoable.
 3. **3D orbit view** ("dollhouse"): lazy-loaded three.js, orbit/zoom/pan, show
    one floor or all floors stacked, cut-away of upper walls, footprint boxes for
    furniture, PNG export. **This is the version to launch the website with.**
+   _Done 2026-09-28:_ `src/ui/ThreeDView.tsx`, `scene3d/sceneModel.ts` and
+   `scene3d/threeScene.ts`. It uses `WebGLRenderer`, not `WebGPURenderer`:
+   the scene is a few merged meshes per floor, which WebGL2 draws easily, and
+   it keeps one renderer path to test. Revisit if phase 4 or 5 needs more.
 4. **Furniture models:** export each element's modelled parts from the
    element library into the vendored manifest, and build the 3D meshes from
    them in place of height boxes.
