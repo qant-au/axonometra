@@ -150,7 +150,9 @@ Each phase ships on its own and is demoable.
    middle of their 40 cm square. Items with no model keep the height box.
 5. **Walk-through:** first-person mode with collision, touch controls, the
    reduced-motion teleport mode, and storey changes.
-6. **glTF export**, and embedding messages for it (`axo:export`).
+6. **glTF export**, and embedding messages for it (`axo:export`). _Done
+   2026-09-28:_ `scene3d/exportGlb.ts` (three's GLTFExporter, no renderer
+   needed), a Save 3D model button, and `axo:export` / `axo:exported`.
 
 Rough size: phases 1 to 3 are the bulk of the engineering and are about the
 size of the axonometric view plus the keyboard work combined. Phase 4 is mostly

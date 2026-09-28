@@ -58,7 +58,7 @@ Run `bash restart.sh NO_WATCH=1` for a containerised local preview, `npm run tes
 
 ## 3D view
 
-The toolbar's **3D view** button shows the plan as a 3D model: walls with their door and window openings, a floor and ceiling for each room, and furniture drawn from each item's 3D model in the element library. Drag to turn it, right-drag or use the arrow keys to move, and scroll to zoom; the buttons do the same from the keyboard. **Cut away walls** (on by default) cuts the walls off at 1.2 m so you can see into the rooms, **All floors** stacks every floor, and **Save image** downloads a PNG of the view. It needs WebGL, and three.js is only downloaded the first time it is opened. The geometry lives in `src/editor/scene3d/`; see [3D-PLAN.md](./3D-PLAN.md) for what comes next.
+The toolbar's **3D view** button shows the plan as a 3D model: walls with their door and window openings, a floor and ceiling for each room, and furniture drawn from each item's 3D model in the element library. Drag to turn it, right-drag or use the arrow keys to move, and scroll to zoom; the buttons do the same from the keyboard. **Cut away walls** (on by default) cuts the walls off at 1.2 m so you can see into the rooms, **All floors** stacks every floor, **Save image** downloads a PNG of the view, and **Save 3D model** downloads the whole building (every floor, walls whole) as a `.glb` (glTF) file for Blender and other 3D tools. Embedding hosts can ask for the same file with `axo:export` (see [EMBEDDING.md](./EMBEDDING.md)). It needs WebGL, and three.js is only downloaded the first time it is opened. The geometry lives in `src/editor/scene3d/`; see [3D-PLAN.md](./3D-PLAN.md) for what comes next.
 
 ## Undo & redo
 

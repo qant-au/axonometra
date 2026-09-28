@@ -46,7 +46,10 @@ export interface BuiltScene {
 }
 
 /** One merged mesh and one outline per kind, so a floor costs a few draw calls. */
-export function buildGroup(prisms: Prism[]): BuiltScene {
+export function buildGroup(
+  prisms: Prism[],
+  { edges = true }: { edges?: boolean } = {}
+): BuiltScene {
   const group = new Group();
   const owned: { dispose: () => void }[] = [];
   // Grouped by kind and colour: each group is one merged mesh.
@@ -79,11 +82,16 @@ export function buildGroup(prisms: Prism[]): BuiltScene {
     });
     const mesh = new Mesh(merged, material);
     mesh.name = kind;
-    const edges = new EdgesGeometry(merged, EDGE_ANGLE);
-    const lines = new LineSegments(edges, edgeMaterial);
-    lines.name = `${kind}-edges`;
-    group.add(mesh, lines);
-    owned.push(merged, material, edges);
+    group.add(mesh);
+    owned.push(merged, material);
+    // The drawn outlines are for the screen; an exported model leaves them out.
+    if (edges) {
+      const outline = new EdgesGeometry(merged, EDGE_ANGLE);
+      const lines = new LineSegments(outline, edgeMaterial);
+      lines.name = `${kind}-edges`;
+      group.add(lines);
+      owned.push(outline);
+    }
   }
   return {
     group,

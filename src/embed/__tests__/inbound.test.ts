@@ -27,6 +27,7 @@ function setup(publicKeys: string[], loadResult = true) {
     publicKeys,
     load: vi.fn(() => loadResult),
     serialize: vi.fn(() => 'CURRENT'),
+    exportGlb: vi.fn(async () => new ArrayBuffer(4)),
     notify: vi.fn(),
     now: () => NOW_MS
   };
@@ -153,5 +154,47 @@ describe('signed mode', () => {
     });
     await Promise.all([first, second]);
     expect(deps.load).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('axo:export', () => {
+  it('replies with the plan as a glb, and the session', async () => {
+    const { deps, replies, send } = setup([]);
+    await send({ type: 'axo:load', plan: PLAN, session: 's' });
+    await send({ type: 'axo:export', format: 'glb' });
+    expect(deps.exportGlb).toHaveBeenCalledWith('CURRENT');
+    expect(replies[1]).toEqual({
+      type: 'axo:exported',
+      format: 'glb',
+      data: new ArrayBuffer(4),
+      session: 's'
+    });
+  });
+
+  it('defaults to glb', async () => {
+    const { replies, send } = setup([]);
+    await send({ type: 'axo:export' });
+    expect(replies[0]).toMatchObject({ type: 'axo:exported', format: 'glb' });
+  });
+
+  it('refuses another format without toasting the person editing', async () => {
+    const { deps, replies, send } = setup([]);
+    await send({ type: 'axo:export', format: 'obj' });
+    expect(deps.exportGlb).not.toHaveBeenCalled();
+    expect(deps.notify).not.toHaveBeenCalled();
+    expect(replies[0]).toMatchObject({
+      type: 'axo:error',
+      code: 'unsupported-format'
+    });
+  });
+
+  it('reports an export that throws', async () => {
+    const { deps, replies, send } = setup([]);
+    deps.exportGlb.mockRejectedValueOnce(new Error('boom'));
+    await send({ type: 'axo:export' });
+    expect(replies[0]).toMatchObject({
+      type: 'axo:error',
+      code: 'export-failed'
+    });
   });
 });

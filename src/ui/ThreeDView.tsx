@@ -34,6 +34,7 @@ import type { FloorPlanSerializable } from '../editor/editor/persistence/FloorPl
 import { serializer } from '../editor/editor/persistence/Serializer';
 import { sceneModel } from '../editor/scene3d/sceneModel';
 import { buildGroup } from '../editor/scene3d/threeScene';
+import { exportGlb } from '../editor/scene3d/exportGlb';
 import { getItemHeights } from '../res/catalog';
 import { getItemModel } from '../res/catalog/models';
 import { useFloorPlanStore } from '../stores/FloorPlanStore';
@@ -204,6 +205,14 @@ export function ThreeDView({ opened, onClose }: Props) {
       if (blob) saveAs(blob, `axonometra-3d-${timestamp()}.png`);
     }, 'image/png');
   };
+  // The whole building, every floor and walls whole, whatever is on screen.
+  const saveModel = async () => {
+    const data = await exportGlb(JSON.stringify(plan));
+    saveAs(
+      new Blob([data], { type: 'model/gltf-binary' }),
+      `axonometra-3d-${timestamp()}.glb`
+    );
+  };
 
   const label = `3D view of ${
     allFloors ? `all ${plan.floors.length} floors` : `floor ${current}`
@@ -260,6 +269,14 @@ export function ThreeDView({ opened, onClose }: Props) {
             disabled={empty || noWebGl}
           >
             Save image
+          </Button>
+          <Button
+            variant="default"
+            leftSection={<IconDownload size={18} />}
+            onClick={() => void saveModel()}
+            disabled={empty}
+          >
+            Save 3D model
           </Button>
         </Group>
       </Group>

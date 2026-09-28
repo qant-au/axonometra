@@ -15,6 +15,9 @@ export function EmbedBridge(): null {
       publicKeys: embedConfig.planPublicKeys,
       load: (planText) => serializer.load(planText),
       serialize: () => serializer.serialize(),
+      // three.js only downloads when a host first asks for a model.
+      exportGlb: async (planText) =>
+        (await import('../editor/scene3d/exportGlb')).exportGlb(planText),
       notify: (message) =>
         notifications.show({ title: 'Plan refused', message, color: 'red' })
     });

@@ -14,15 +14,21 @@ export type AxoInbound =
       session?: unknown;
     }
   | { type: 'axo:request-save' }
+  | { type: 'axo:export'; format?: unknown }
   | { type: 'axo:ready?' };
 
 export type AxoErrorCode =
-  Exclude<VerifyResult, 'ok'> | 'unsigned-object-plan' | 'invalid-plan';
+  | Exclude<VerifyResult, 'ok'>
+  | 'unsigned-object-plan'
+  | 'invalid-plan'
+  | 'unsupported-format'
+  | 'export-failed';
 
 export type AxoOutbound =
   | { type: 'axo:ready' }
   | { type: 'axo:loaded'; session?: string }
   | { type: 'axo:save'; plan: string; session?: string }
+  | { type: 'axo:exported'; format: 'glb'; data: ArrayBuffer; session?: string }
   | { type: 'axo:error'; code: AxoErrorCode; message: string };
 
 export function isAxoInbound(data: unknown): data is AxoInbound {
@@ -38,7 +44,9 @@ const MESSAGES: Record<AxoErrorCode, string> = {
   'bad-signature': 'The plan signature is not valid for this plan.',
   'unsigned-object-plan':
     'Signed plans must be sent as the exact JSON string that was signed.',
-  'invalid-plan': 'The plan could not be read.'
+  'invalid-plan': 'The plan could not be read.',
+  'unsupported-format': 'The only export format is "glb".',
+  'export-failed': 'The 3D model could not be exported.'
 };
 
 export interface InboundDeps {
@@ -46,6 +54,8 @@ export interface InboundDeps {
   /** Load the plan text; returns false if the plan itself was rejected. */
   load: (planText: string) => boolean;
   serialize: () => string;
+  /** The plan text as a glTF binary. Loaded lazily: it brings in three.js. */
+  exportGlb: (planText: string) => Promise<ArrayBuffer>;
   /** Tell the person using the editor that a plan was refused. */
   notify: (message: string) => void;
   now?: () => number;
@@ -70,6 +80,22 @@ export function createInboundHandler(deps: InboundDeps) {
       case 'axo:request-save':
         reply({ type: 'axo:save', plan: deps.serialize(), session });
         return;
+
+      case 'axo:export': {
+        // An export is the host's request, so a failure goes back to the host
+        // only; the person using the editor has nothing to act on.
+        const fail = (code: AxoErrorCode) =>
+          reply({ type: 'axo:error', code, message: MESSAGES[code] });
+        if ((message.format ?? 'glb') !== 'glb')
+          return fail('unsupported-format');
+        try {
+          const data = await deps.exportGlb(deps.serialize());
+          reply({ type: 'axo:exported', format: 'glb', data, session });
+        } catch {
+          fail('export-failed');
+        }
+        return;
+      }
 
       case 'axo:load': {
         const ticket = ++latestLoad;

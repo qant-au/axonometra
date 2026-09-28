@@ -158,4 +158,46 @@ test.describe('signed embedding', () => {
     const after = await lastReply(page, 'axo:save');
     expect(JSON.parse(after.plan as string).floors[0].wallNodes.length).toBe(2);
   });
+
+  test('exports the loaded plan as a glb over axo:export', async ({
+    page,
+    baseURL
+  }) => {
+    const plan = await capturePlan(page, baseURL!);
+    await openHost(page, baseURL!);
+    const expires = Math.floor(Date.now() / 1000) + 300;
+    await send(page, {
+      type: 'axo:load',
+      plan,
+      expires,
+      session: 'sess-7',
+      signature: sign(plan, expires, 'sess-7')
+    });
+    await lastReply(page, 'axo:loaded');
+
+    await send(page, { type: 'axo:export', format: 'obj' });
+    expect(await lastReply(page, 'axo:error')).toMatchObject({
+      code: 'unsupported-format'
+    });
+
+    await send(page, { type: 'axo:export', format: 'glb' });
+    const exported = await lastReply(page, 'axo:exported');
+    expect(exported).toMatchObject({ format: 'glb', session: 'sess-7' });
+    // An ArrayBuffer does not survive the trip back to the test, so the host
+    // page reads the file header itself.
+    const header = await page.evaluate(() => {
+      const msg = (
+        window as unknown as {
+          received: { type: string; data?: ArrayBuffer }[];
+        }
+      ).received.find((m) => m.type === 'axo:exported')!;
+      const data = msg.data!;
+      return {
+        magic: new TextDecoder().decode(new Uint8Array(data, 0, 4)),
+        bytes: data.byteLength
+      };
+    });
+    expect(header.magic).toBe('glTF');
+    expect(header.bytes).toBeGreaterThan(1000);
+  });
 });

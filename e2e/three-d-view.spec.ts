@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { hasAxo } from './axo';
 
 // The 3D view: draw two walls, open it, check what it says it shows, flip its
 // options, and save a PNG. Uses the DEV-only window.__axo handle like
@@ -17,11 +18,10 @@ test('open the 3D view of a drawn plan and save an image', async ({
   await expect(page.getByRole('button', { name: /new plan/i })).toHaveCount(0, {
     timeout: 3000
   });
-  const hasAxo = await page.evaluate(
-    () =>
-      typeof (window as unknown as { __axo?: unknown }).__axo !== 'undefined'
+  test.skip(
+    !(await hasAxo(page)),
+    'window.__axo is only present in DEV builds'
   );
-  test.skip(!hasAxo, 'window.__axo is only present in DEV builds');
   await page.waitForFunction(
     () => !!(window as unknown as { __axo?: Axo }).__axo?.getMain().bkgPattern,
     undefined,
@@ -57,4 +57,13 @@ test('open the 3D view of a drawn plan and save an image', async ({
   await file.saveAs(path);
   const { statSync } = await import('node:fs');
   expect(statSync(path).size).toBeGreaterThan(5000);
+
+  const model = page.waitForEvent('download');
+  await page.getByRole('button', { name: 'Save 3D model' }).click();
+  const glb = await model;
+  expect(glb.suggestedFilename()).toMatch(/^axonometra-3d-.*\.glb$/);
+  const glbPath = testInfo.outputPath('3d.glb');
+  await glb.saveAs(glbPath);
+  const { readFileSync } = await import('node:fs');
+  expect(readFileSync(glbPath).subarray(0, 4).toString()).toBe('glTF');
 });
