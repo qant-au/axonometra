@@ -195,7 +195,9 @@
       "id": "tv-wall",
       "name": "Wall-mounted TV, 65\"",
       "group": "living",
-      "tags": ["av"],
+      "tags": [
+        "av"
+      ],
       "size": {
         "w": 145,
         "d": 10,
@@ -1520,7 +1522,9 @@
       "id": "rack-wall-600x450-6u",
       "name": "Wall-mount cabinet 6U, 600 × 450",
       "group": "comms",
-      "tags": ["network"],
+      "tags": [
+        "network"
+      ],
       "size": {
         "w": 60,
         "d": 45,
@@ -1536,7 +1540,9 @@
       "id": "rack-wall-600x450-9u",
       "name": "Wall-mount cabinet 9U, 600 × 450",
       "group": "comms",
-      "tags": ["network"],
+      "tags": [
+        "network"
+      ],
       "size": {
         "w": 60,
         "d": 45,
@@ -1552,7 +1558,9 @@
       "id": "rack-wall-600x450-12u",
       "name": "Wall-mount cabinet 12U, 600 × 450",
       "group": "comms",
-      "tags": ["network"],
+      "tags": [
+        "network"
+      ],
       "size": {
         "w": 60,
         "d": 45,
@@ -1568,7 +1576,9 @@
       "id": "rack-wall-600x450-15u",
       "name": "Wall-mount cabinet 15U, 600 × 450",
       "group": "comms",
-      "tags": ["network"],
+      "tags": [
+        "network"
+      ],
       "size": {
         "w": 60,
         "d": 45,
@@ -1584,7 +1594,9 @@
       "id": "rack-600x600-18u",
       "name": "Comms cabinet 18U, 600 × 600",
       "group": "comms",
-      "tags": ["network"],
+      "tags": [
+        "network"
+      ],
       "size": {
         "w": 60,
         "d": 60,
@@ -1599,7 +1611,9 @@
       "id": "rack-600x600-24u",
       "name": "Comms cabinet 24U, 600 × 600",
       "group": "comms",
-      "tags": ["network"],
+      "tags": [
+        "network"
+      ],
       "size": {
         "w": 60,
         "d": 60,
@@ -1614,7 +1628,9 @@
       "id": "rack-600x600-27u",
       "name": "Comms cabinet 27U, 600 × 600",
       "group": "comms",
-      "tags": ["network"],
+      "tags": [
+        "network"
+      ],
       "size": {
         "w": 60,
         "d": 60,
@@ -1629,7 +1645,9 @@
       "id": "rack-600x800-27u",
       "name": "Network cabinet 27U, 600 × 800",
       "group": "comms",
-      "tags": ["network"],
+      "tags": [
+        "network"
+      ],
       "size": {
         "w": 60,
         "d": 80,
@@ -1644,7 +1662,9 @@
       "id": "rack-600x800-32u",
       "name": "Network cabinet 32U, 600 × 800",
       "group": "comms",
-      "tags": ["network"],
+      "tags": [
+        "network"
+      ],
       "size": {
         "w": 60,
         "d": 80,
@@ -1659,7 +1679,9 @@
       "id": "rack-600x800-37u",
       "name": "Network cabinet 37U, 600 × 800",
       "group": "comms",
-      "tags": ["network"],
+      "tags": [
+        "network"
+      ],
       "size": {
         "w": 60,
         "d": 80,
@@ -1674,7 +1696,9 @@
       "id": "rack-600x800-42u",
       "name": "Network cabinet 42U, 600 × 800",
       "group": "comms",
-      "tags": ["network"],
+      "tags": [
+        "network"
+      ],
       "size": {
         "w": 60,
         "d": 80,
@@ -1689,7 +1713,9 @@
       "id": "rack-600x1000-42u",
       "name": "Server rack 42U, 600 × 1000",
       "group": "comms",
-      "tags": ["network"],
+      "tags": [
+        "network"
+      ],
       "size": {
         "w": 60,
         "d": 100,
@@ -1704,7 +1730,9 @@
       "id": "rack-600x1000-45u",
       "name": "Server rack 45U, 600 × 1000",
       "group": "comms",
-      "tags": ["network"],
+      "tags": [
+        "network"
+      ],
       "size": {
         "w": 60,
         "d": 100,
@@ -1719,7 +1747,9 @@
       "id": "rack-600x1100-42u",
       "name": "Server rack 42U, 600 × 1100",
       "group": "comms",
-      "tags": ["network"],
+      "tags": [
+        "network"
+      ],
       "size": {
         "w": 60,
         "d": 110,
@@ -1734,7 +1764,9 @@
       "id": "rack-600x1100-45u",
       "name": "Server rack 45U, 600 × 1100",
       "group": "comms",
-      "tags": ["network"],
+      "tags": [
+        "network"
+      ],
       "size": {
         "w": 60,
         "d": 110,
@@ -1749,7 +1781,9 @@
       "id": "rack-600x1200-42u",
       "name": "Server rack 42U, 600 × 1200",
       "group": "comms",
-      "tags": ["network"],
+      "tags": [
+        "network"
+      ],
       "size": {
         "w": 60,
         "d": 120,
@@ -1764,7 +1798,9 @@
       "id": "rack-600x1200-45u",
       "name": "Server rack 45U, 600 × 1200",
       "group": "comms",
-      "tags": ["network"],
+      "tags": [
+        "network"
+      ],
       "size": {
         "w": 60,
         "d": 120,
@@ -1779,7 +1815,9 @@
       "id": "rack-800x1000-42u",
       "name": "Server rack 42U, 800 × 1000",
       "group": "comms",
-      "tags": ["network"],
+      "tags": [
+        "network"
+      ],
       "size": {
         "w": 80,
         "d": 100,
@@ -1794,7 +1832,9 @@
       "id": "rack-800x1000-45u",
       "name": "Server rack 45U, 800 × 1000",
       "group": "comms",
-      "tags": ["network"],
+      "tags": [
+        "network"
+      ],
       "size": {
         "w": 80,
         "d": 100,
@@ -1809,7 +1849,9 @@
       "id": "rack-800x1100-42u",
       "name": "Server rack 42U, 800 × 1100",
       "group": "comms",
-      "tags": ["network"],
+      "tags": [
+        "network"
+      ],
       "size": {
         "w": 80,
         "d": 110,
@@ -1824,7 +1866,9 @@
       "id": "rack-800x1100-45u",
       "name": "Server rack 45U, 800 × 1100",
       "group": "comms",
-      "tags": ["network"],
+      "tags": [
+        "network"
+      ],
       "size": {
         "w": 80,
         "d": 110,
@@ -1839,7 +1883,9 @@
       "id": "rack-800x1200-42u",
       "name": "Server rack 42U, 800 × 1200",
       "group": "comms",
-      "tags": ["network"],
+      "tags": [
+        "network"
+      ],
       "size": {
         "w": 80,
         "d": 120,
@@ -1854,7 +1900,9 @@
       "id": "rack-800x1200-45u",
       "name": "Server rack 45U, 800 × 1200",
       "group": "comms",
-      "tags": ["network"],
+      "tags": [
+        "network"
+      ],
       "size": {
         "w": 80,
         "d": 120,
@@ -1869,7 +1917,9 @@
       "id": "rack-open-2post-24u",
       "name": "Open frame rack, 2-post 24U",
       "group": "comms",
-      "tags": ["network"],
+      "tags": [
+        "network"
+      ],
       "size": {
         "w": 53,
         "d": 40,
@@ -1884,7 +1934,9 @@
       "id": "rack-open-2post-42u",
       "name": "Open frame rack, 2-post 42U",
       "group": "comms",
-      "tags": ["network"],
+      "tags": [
+        "network"
+      ],
       "size": {
         "w": 53,
         "d": 40,
@@ -1899,7 +1951,9 @@
       "id": "rack-open-4post-42u",
       "name": "Open frame rack, 4-post 42U",
       "group": "comms",
-      "tags": ["network"],
+      "tags": [
+        "network"
+      ],
       "size": {
         "w": 60,
         "d": 100,
@@ -1914,7 +1968,9 @@
       "id": "split-ac-indoor",
       "name": "Split AC, wall unit",
       "group": "comms",
-      "tags": ["cooling"],
+      "tags": [
+        "cooling"
+      ],
       "size": {
         "w": 90,
         "d": 25,
@@ -1930,7 +1986,9 @@
       "id": "ups-tower",
       "name": "UPS, tower",
       "group": "comms",
-      "tags": ["power"],
+      "tags": [
+        "power"
+      ],
       "size": {
         "w": 20,
         "d": 45,
@@ -1945,7 +2003,9 @@
       "id": "ups-large",
       "name": "UPS, floor-standing",
       "group": "comms",
-      "tags": ["power"],
+      "tags": [
+        "power"
+      ],
       "size": {
         "w": 35,
         "d": 80,
@@ -1960,7 +2020,9 @@
       "id": "battery-cabinet",
       "name": "Battery cabinet",
       "group": "comms",
-      "tags": ["power"],
+      "tags": [
+        "power"
+      ],
       "size": {
         "w": 60,
         "d": 85,
@@ -1975,7 +2037,9 @@
       "id": "distribution-board",
       "name": "Distribution board",
       "group": "comms",
-      "tags": ["power"],
+      "tags": [
+        "power"
+      ],
       "size": {
         "w": 60,
         "d": 20,
@@ -1991,7 +2055,9 @@
       "id": "ats-panel",
       "name": "Transfer switch panel",
       "group": "comms",
-      "tags": ["power"],
+      "tags": [
+        "power"
+      ],
       "size": {
         "w": 60,
         "d": 25,
@@ -2007,7 +2073,9 @@
       "id": "generator",
       "name": "Standby generator",
       "group": "comms",
-      "tags": ["power"],
+      "tags": [
+        "power"
+      ],
       "size": {
         "w": 220,
         "d": 110,
@@ -2022,7 +2090,9 @@
       "id": "crac-unit",
       "name": "Precision air conditioner (CRAC)",
       "group": "comms",
-      "tags": ["cooling"],
+      "tags": [
+        "cooling"
+      ],
       "size": {
         "w": 100,
         "d": 90,
@@ -2037,7 +2107,9 @@
       "id": "in-row-cooler",
       "name": "In-row cooler",
       "group": "comms",
-      "tags": ["cooling"],
+      "tags": [
+        "cooling"
+      ],
       "size": {
         "w": 30,
         "d": 120,
@@ -2052,7 +2124,9 @@
       "id": "ac-ceiling-cassette",
       "name": "AC ceiling cassette",
       "group": "comms",
-      "tags": ["cooling"],
+      "tags": [
+        "cooling"
+      ],
       "size": {
         "w": 84,
         "d": 84,
@@ -2068,7 +2142,9 @@
       "id": "ac-condenser",
       "name": "AC outdoor unit",
       "group": "comms",
-      "tags": ["cooling"],
+      "tags": [
+        "cooling"
+      ],
       "size": {
         "w": 85,
         "d": 35,
@@ -2083,7 +2159,9 @@
       "id": "containment-door",
       "name": "Aisle containment door",
       "group": "comms",
-      "tags": ["cooling"],
+      "tags": [
+        "cooling"
+      ],
       "size": {
         "w": 120,
         "d": 10,
@@ -2098,7 +2176,9 @@
       "id": "raised-floor-tile",
       "name": "Perforated floor tile",
       "group": "comms",
-      "tags": ["cooling"],
+      "tags": [
+        "cooling"
+      ],
       "size": {
         "w": 60,
         "d": 60,
@@ -2113,7 +2193,9 @@
       "id": "fire-suppression",
       "name": "Gas suppression cylinder",
       "group": "comms",
-      "tags": ["fire"],
+      "tags": [
+        "fire"
+      ],
       "size": {
         "w": 40,
         "d": 40,
@@ -2128,7 +2210,9 @@
       "id": "cable-tray",
       "name": "Cable tray section, 1 m",
       "group": "comms",
-      "tags": ["network"],
+      "tags": [
+        "network"
+      ],
       "size": {
         "w": 100,
         "d": 30,
@@ -2144,7 +2228,9 @@
       "id": "ladder-rack",
       "name": "Ladder rack section, 1 m",
       "group": "comms",
-      "tags": ["network"],
+      "tags": [
+        "network"
+      ],
       "size": {
         "w": 100,
         "d": 45,
@@ -2160,7 +2246,9 @@
       "id": "odf-panel",
       "name": "Fibre termination cabinet",
       "group": "comms",
-      "tags": ["network"],
+      "tags": [
+        "network"
+      ],
       "size": {
         "w": 60,
         "d": 30,
@@ -2176,7 +2264,9 @@
       "id": "kvm-console",
       "name": "KVM console cart",
       "group": "comms",
-      "tags": ["network"],
+      "tags": [
+        "network"
+      ],
       "size": {
         "w": 60,
         "d": 70,
@@ -2191,7 +2281,9 @@
       "id": "wifi-ap",
       "name": "Wi-Fi access point",
       "group": "network",
-      "tags": ["network"],
+      "tags": [
+        "network"
+      ],
       "size": {
         "w": 22,
         "d": 22,
@@ -2208,7 +2300,9 @@
       "id": "network-switch",
       "name": "Network switch (desktop)",
       "group": "network",
-      "tags": ["network"],
+      "tags": [
+        "network"
+      ],
       "size": {
         "w": 44,
         "d": 30,
@@ -2223,7 +2317,9 @@
       "id": "router",
       "name": "Router",
       "group": "network",
-      "tags": ["network"],
+      "tags": [
+        "network"
+      ],
       "size": {
         "w": 30,
         "d": 20,
@@ -2238,7 +2334,9 @@
       "id": "modem-nbn",
       "name": "NBN connection box",
       "group": "network",
-      "tags": ["network"],
+      "tags": [
+        "network"
+      ],
       "size": {
         "w": 30,
         "d": 20,
@@ -2254,7 +2352,9 @@
       "id": "data-outlet",
       "name": "Data outlet",
       "group": "network",
-      "tags": ["network"],
+      "tags": [
+        "network"
+      ],
       "size": {
         "w": 7,
         "d": 1.5,
@@ -2271,7 +2371,10 @@
       "id": "floor-box",
       "name": "Floor box",
       "group": "network",
-      "tags": ["network", "power"],
+      "tags": [
+        "network",
+        "power"
+      ],
       "size": {
         "w": 40,
         "d": 40,
@@ -2286,7 +2389,9 @@
       "id": "projector",
       "name": "Ceiling projector",
       "group": "network",
-      "tags": ["av"],
+      "tags": [
+        "av"
+      ],
       "size": {
         "w": 35,
         "d": 30,
@@ -2303,7 +2408,9 @@
       "id": "projector-screen",
       "name": "Projector screen",
       "group": "network",
-      "tags": ["av"],
+      "tags": [
+        "av"
+      ],
       "size": {
         "w": 240,
         "d": 15,
@@ -2319,7 +2426,9 @@
       "id": "speaker-ceiling",
       "name": "Ceiling speaker",
       "group": "network",
-      "tags": ["av"],
+      "tags": [
+        "av"
+      ],
       "size": {
         "w": 21,
         "d": 21,
@@ -2336,7 +2445,9 @@
       "id": "video-bar",
       "name": "Video conferencing bar",
       "group": "network",
-      "tags": ["av"],
+      "tags": [
+        "av"
+      ],
       "size": {
         "w": 90,
         "d": 10,
@@ -2352,7 +2463,9 @@
       "id": "pc-tower",
       "name": "Desktop PC",
       "group": "network",
-      "tags": ["network"],
+      "tags": [
+        "network"
+      ],
       "size": {
         "w": 20,
         "d": 45,
@@ -2367,7 +2480,9 @@
       "id": "monitor",
       "name": "Monitor, 27\"",
       "group": "network",
-      "tags": ["network"],
+      "tags": [
+        "network"
+      ],
       "size": {
         "w": 62,
         "d": 20,
@@ -2382,7 +2497,9 @@
       "id": "laptop",
       "name": "Laptop",
       "group": "network",
-      "tags": ["network"],
+      "tags": [
+        "network"
+      ],
       "size": {
         "w": 34,
         "d": 24,
@@ -2397,7 +2514,9 @@
       "id": "ip-phone",
       "name": "Desk phone",
       "group": "network",
-      "tags": ["network"],
+      "tags": [
+        "network"
+      ],
       "size": {
         "w": 22,
         "d": 20,
@@ -2412,7 +2531,10 @@
       "id": "firewall",
       "name": "Firewall appliance (desktop)",
       "group": "network",
-      "tags": ["network", "security"],
+      "tags": [
+        "network",
+        "security"
+      ],
       "size": {
         "w": 30,
         "d": 20,
@@ -2427,7 +2549,9 @@
       "id": "server-tower",
       "name": "Tower server",
       "group": "network",
-      "tags": ["network"],
+      "tags": [
+        "network"
+      ],
       "size": {
         "w": 20,
         "d": 60,
@@ -2442,7 +2566,9 @@
       "id": "nas",
       "name": "Network storage (NAS)",
       "group": "network",
-      "tags": ["network"],
+      "tags": [
+        "network"
+      ],
       "size": {
         "w": 20,
         "d": 25,
@@ -2457,7 +2583,9 @@
       "id": "cctv-dome",
       "name": "CCTV dome camera",
       "group": "security",
-      "tags": ["security"],
+      "tags": [
+        "security"
+      ],
       "size": {
         "w": 14,
         "d": 14,
@@ -2474,7 +2602,9 @@
       "id": "cctv-bullet",
       "name": "CCTV bullet camera",
       "group": "security",
-      "tags": ["security"],
+      "tags": [
+        "security"
+      ],
       "size": {
         "w": 9,
         "d": 30,
@@ -2491,7 +2621,9 @@
       "id": "cctv-ptz",
       "name": "CCTV PTZ camera",
       "group": "security",
-      "tags": ["security"],
+      "tags": [
+        "security"
+      ],
       "size": {
         "w": 22,
         "d": 22,
@@ -2508,7 +2640,9 @@
       "id": "cctv-fisheye",
       "name": "CCTV 360° camera",
       "group": "security",
-      "tags": ["security"],
+      "tags": [
+        "security"
+      ],
       "size": {
         "w": 15,
         "d": 15,
@@ -2525,7 +2659,9 @@
       "id": "alarm-keypad",
       "name": "Alarm keypad",
       "group": "security",
-      "tags": ["security"],
+      "tags": [
+        "security"
+      ],
       "size": {
         "w": 18,
         "d": 3,
@@ -2542,7 +2678,9 @@
       "id": "pir-sensor",
       "name": "Motion detector (PIR)",
       "group": "security",
-      "tags": ["security"],
+      "tags": [
+        "security"
+      ],
       "size": {
         "w": 6,
         "d": 5,
@@ -2559,7 +2697,9 @@
       "id": "door-contact",
       "name": "Door contact",
       "group": "security",
-      "tags": ["security"],
+      "tags": [
+        "security"
+      ],
       "size": {
         "w": 7,
         "d": 1.5,
@@ -2576,7 +2716,9 @@
       "id": "glass-break",
       "name": "Glass-break detector",
       "group": "security",
-      "tags": ["security"],
+      "tags": [
+        "security"
+      ],
       "size": {
         "w": 9,
         "d": 2.5,
@@ -2593,7 +2735,9 @@
       "id": "siren-strobe",
       "name": "Siren and strobe",
       "group": "security",
-      "tags": ["security"],
+      "tags": [
+        "security"
+      ],
       "size": {
         "w": 20,
         "d": 9,
@@ -2610,7 +2754,9 @@
       "id": "card-reader",
       "name": "Access card reader",
       "group": "security",
-      "tags": ["security"],
+      "tags": [
+        "security"
+      ],
       "size": {
         "w": 5,
         "d": 2,
@@ -2627,7 +2773,9 @@
       "id": "exit-button",
       "name": "Request-to-exit button",
       "group": "security",
-      "tags": ["security"],
+      "tags": [
+        "security"
+      ],
       "size": {
         "w": 8,
         "d": 4,
@@ -2644,7 +2792,9 @@
       "id": "maglock",
       "name": "Magnetic door lock",
       "group": "security",
-      "tags": ["security"],
+      "tags": [
+        "security"
+      ],
       "size": {
         "w": 25,
         "d": 5,
@@ -2661,7 +2811,9 @@
       "id": "intercom",
       "name": "Video intercom",
       "group": "security",
-      "tags": ["security"],
+      "tags": [
+        "security"
+      ],
       "size": {
         "w": 12,
         "d": 3.5,
@@ -2678,7 +2830,10 @@
       "id": "nvr",
       "name": "Network video recorder",
       "group": "security",
-      "tags": ["security", "network"],
+      "tags": [
+        "security",
+        "network"
+      ],
       "size": {
         "w": 44,
         "d": 40,
@@ -2693,7 +2848,9 @@
       "id": "alarm-panel",
       "name": "Alarm control panel",
       "group": "security",
-      "tags": ["security"],
+      "tags": [
+        "security"
+      ],
       "size": {
         "w": 40,
         "d": 10,
@@ -2709,7 +2866,9 @@
       "id": "turnstile",
       "name": "Turnstile",
       "group": "security",
-      "tags": ["security"],
+      "tags": [
+        "security"
+      ],
       "size": {
         "w": 50,
         "d": 140,
@@ -2724,7 +2883,9 @@
       "id": "speed-gate",
       "name": "Speed gate lane",
       "group": "security",
-      "tags": ["security"],
+      "tags": [
+        "security"
+      ],
       "size": {
         "w": 120,
         "d": 150,
@@ -2739,7 +2900,9 @@
       "id": "safe",
       "name": "Safe",
       "group": "security",
-      "tags": ["security"],
+      "tags": [
+        "security"
+      ],
       "size": {
         "w": 50,
         "d": 50,
@@ -2754,7 +2917,9 @@
       "id": "key-cabinet",
       "name": "Key cabinet",
       "group": "security",
-      "tags": ["security"],
+      "tags": [
+        "security"
+      ],
       "size": {
         "w": 40,
         "d": 10,
@@ -2770,7 +2935,9 @@
       "id": "bollard",
       "name": "Bollard",
       "group": "security",
-      "tags": ["security"],
+      "tags": [
+        "security"
+      ],
       "size": {
         "w": 30,
         "d": 30,
@@ -2785,7 +2952,9 @@
       "id": "smoke-detector",
       "name": "Smoke detector",
       "group": "safety",
-      "tags": ["fire"],
+      "tags": [
+        "fire"
+      ],
       "size": {
         "w": 11,
         "d": 11,
@@ -2802,7 +2971,9 @@
       "id": "heat-detector",
       "name": "Heat detector",
       "group": "safety",
-      "tags": ["fire"],
+      "tags": [
+        "fire"
+      ],
       "size": {
         "w": 11,
         "d": 11,
@@ -2819,7 +2990,9 @@
       "id": "fire-extinguisher",
       "name": "Fire extinguisher",
       "group": "safety",
-      "tags": ["fire"],
+      "tags": [
+        "fire"
+      ],
       "size": {
         "w": 20,
         "d": 20,
@@ -2835,7 +3008,9 @@
       "id": "fire-blanket",
       "name": "Fire blanket",
       "group": "safety",
-      "tags": ["fire"],
+      "tags": [
+        "fire"
+      ],
       "size": {
         "w": 26,
         "d": 6,
@@ -2852,7 +3027,9 @@
       "id": "manual-call-point",
       "name": "Manual call point",
       "group": "safety",
-      "tags": ["fire"],
+      "tags": [
+        "fire"
+      ],
       "size": {
         "w": 9,
         "d": 6,
@@ -2869,7 +3046,9 @@
       "id": "exit-sign",
       "name": "Exit sign",
       "group": "safety",
-      "tags": ["fire"],
+      "tags": [
+        "fire"
+      ],
       "size": {
         "w": 35,
         "d": 5,
@@ -2886,7 +3065,9 @@
       "id": "emergency-light",
       "name": "Emergency light",
       "group": "safety",
-      "tags": ["fire"],
+      "tags": [
+        "fire"
+      ],
       "size": {
         "w": 30,
         "d": 9,
@@ -2935,7 +3116,9 @@
       "id": "hose-reel",
       "name": "Fire hose reel",
       "group": "safety",
-      "tags": ["fire"],
+      "tags": [
+        "fire"
+      ],
       "size": {
         "w": 80,
         "d": 30,
@@ -2951,7 +3134,9 @@
       "id": "fire-panel",
       "name": "Fire indicator panel",
       "group": "safety",
-      "tags": ["fire"],
+      "tags": [
+        "fire"
+      ],
       "size": {
         "w": 60,
         "d": 15,
@@ -3149,7 +3334,9 @@
       "id": "solar-inverter",
       "name": "Solar inverter",
       "group": "outdoor",
-      "tags": ["power"],
+      "tags": [
+        "power"
+      ],
       "size": {
         "w": 45,
         "d": 20,

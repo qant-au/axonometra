@@ -1,3 +1,5 @@
 code-review-*.md
 action-items-*.md
 STAGE*-REVIEW.md
+# Vendored from qant-au/elements by scripts/sync-elements.mjs; keep byte-identical.
+src/res/catalog/elements/
