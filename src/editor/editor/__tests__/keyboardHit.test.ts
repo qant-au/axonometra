@@ -3,6 +3,7 @@ import {
   describePoint,
   distanceToSegment,
   nodeAt,
+  resizeAboutMidpoint,
   wallAt
 } from '../keyboardHit';
 
@@ -62,5 +63,25 @@ describe('describePoint', () => {
     expect(describePoint({ x: 250, y: 1240 }, 100)).toBe(
       '2.50 m across, 12.40 m down'
     );
+  });
+});
+
+describe('resizeAboutMidpoint', () => {
+  it('stretches a segment about its midpoint', () => {
+    expect(resizeAboutMidpoint(a, b, 200)).toEqual([
+      { x: -50, y: 0 },
+      { x: 150, y: 0 }
+    ]);
+  });
+
+  it('keeps the direction of a diagonal segment', () => {
+    const [p, q] = resizeAboutMidpoint({ x: 0, y: 0 }, { x: 30, y: 40 }, 100);
+    expect(p.x).toBeCloseTo(-15);
+    expect(p.y).toBeCloseTo(-20);
+    expect(Math.hypot(q.x - p.x, q.y - p.y)).toBeCloseTo(100);
+  });
+
+  it('leaves a zero-length segment alone', () => {
+    expect(resizeAboutMidpoint(a, a, 50)).toEqual([a, a]);
   });
 });

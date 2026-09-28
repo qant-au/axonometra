@@ -65,3 +65,31 @@ export function wallAt<T extends WallLike>(
 export function describePoint(p: Point, meter: number): string {
   return `${(p.x / meter).toFixed(2)} m across, ${(p.y / meter).toFixed(2)} m down`;
 }
+
+/**
+ * The segment a–b stretched or shrunk to `length`, about its midpoint and
+ * along its current direction. A zero-length segment has no direction, so it
+ * is returned unchanged.
+ */
+export function resizeAboutMidpoint(
+  a: NodeLike,
+  b: NodeLike,
+  length: number
+): [NodeLike, NodeLike] {
+  const dx = b.x - a.x;
+  const dy = b.y - a.y;
+  const current = Math.hypot(dx, dy);
+  if (current === 0)
+    return [
+      { x: a.x, y: a.y },
+      { x: b.x, y: b.y }
+    ];
+  const mx = (a.x + b.x) / 2;
+  const my = (a.y + b.y) / 2;
+  const ux = ((dx / current) * length) / 2;
+  const uy = ((dy / current) * length) / 2;
+  return [
+    { x: mx - ux, y: my - uy },
+    { x: mx + ux, y: my + uy }
+  ];
+}

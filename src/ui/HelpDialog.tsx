@@ -10,6 +10,7 @@ import {
   IconHelp,
   IconLayoutAlignMiddle,
   IconMultiplier2x,
+  IconRuler,
   IconTrash,
   IconVector,
   IconZoomIn
@@ -77,6 +78,9 @@ export function HelpDialog() {
         <Image src={helpEditWall}></Image>
         <Group wrap="nowrap">
           <IconVector /> <p>Click and drag wall nodes to edit walls</p>
+        </Group>
+        <Group wrap="nowrap">
+          <IconRuler /> <p>Double-click a wall to type its length</p>
         </Group>
       </>
     )

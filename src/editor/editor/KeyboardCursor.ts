@@ -89,8 +89,24 @@ export class KeyboardCursor {
       case 'Escape':
         this.escape();
         return true;
+      case 'l':
+      case 'L':
+        if (!this.readonly) this.editLength();
+        return true;
     }
     return false;
+  }
+
+  /** In Edit mode, open the length dialog for the wall under the cursor. */
+  private editLength() {
+    const state = useStore.getState();
+    if (state.activeTool !== Tool.Edit || this.grab) return;
+    const wall = this.wallHere();
+    if (!wall) {
+      this.announce('No wall at the cursor.');
+      return;
+    }
+    state.setLengthEditWall(wall);
   }
 
   private move(dx: number, dy: number) {

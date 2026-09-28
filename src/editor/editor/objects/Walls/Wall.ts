@@ -63,6 +63,7 @@ export class Wall extends Graphics {
     this.on('pointermove', this.onMouseMove);
     this.on('pointerup', this.onMouseUp);
     this.on('pointerupoutside', this.onMouseUp);
+    this.on('click', this.onClick);
   }
 
   public setIsExterior(value: boolean) {
@@ -165,6 +166,14 @@ export class Wall extends Graphics {
       this.startRightNode.x + delta.x,
       this.startRightNode.y + delta.y
     );
+  }
+
+  // Double-click in Edit mode opens the dialog for typing the wall's length.
+  private onClick(ev: FederatedPointerEvent) {
+    const state = useStore.getState();
+    if (ev.detail !== 2 || state.activeTool !== Tool.Edit) return;
+    ev.stopPropagation();
+    state.setLengthEditWall(this);
   }
 
   private onMouseUp(_ev: FederatedPointerEvent) {

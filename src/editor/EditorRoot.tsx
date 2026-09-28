@@ -216,8 +216,9 @@ export function EditorRoot() {
         Arrow keys move the cursor by 10 centimetres, or 1 metre with Shift.
         Enter or Space uses the selected tool at the cursor. In Edit mode, Enter
         picks up a wall point, wall or piece of furniture; move it with the
-        arrow keys and press Enter to put it down or Escape to cancel. Escape
-        also ends wall drawing. Control Z undoes.
+        arrow keys and press Enter to put it down or Escape to cancel. In Edit
+        mode, L on a wall opens a box to type its length. Escape also ends wall
+        drawing. Control Z undoes.
       </p>
       <div ref={liveRef} className={classes.srOnly} aria-live="polite" />
     </>

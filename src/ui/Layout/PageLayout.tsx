@@ -1,6 +1,7 @@
 import { EditorRoot } from '../../editor/EditorRoot';
 import { WelcomeModal } from '../WelcomeModal';
 import { ToolNavbar } from './ToolNavbar';
+import { WallLengthDialog } from '../WallLengthDialog';
 import _AxonometraLogo from '../../res/logo.png';
 import { embedConfig } from '../../embed/embedConfig';
 
@@ -14,6 +15,7 @@ export function PageLayout() {
     <>
       {showWelcomeModal && <WelcomeModal />}
       {showToolbar && <ToolNavbar></ToolNavbar>}
+      {showToolbar && <WallLengthDialog />}
 
       <EditorRoot />
     </>
