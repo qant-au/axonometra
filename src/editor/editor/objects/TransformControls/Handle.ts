@@ -237,6 +237,9 @@ export class Handle extends Graphics {
         break;
       }
     }
+    // Redraw the box, handles and size labels round the item as it changes;
+    // otherwise they only caught up when the mouse next crossed furniture.
+    TransformLayer.Instance.update();
   }
 
   private getDistance(src: Point, dest: Point) {

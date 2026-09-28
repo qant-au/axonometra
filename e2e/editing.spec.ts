@@ -306,3 +306,39 @@ test('right-clicking a selected item turns it', async ({ page }) => {
   await page.mouse.click(before.cx, before.cy, { button: 'right' });
   expect((await sofa(page)).orientation).toBe((before.orientation + 1) % 4);
 });
+
+test('the selection box follows the item while it is resized', async ({
+  page
+}) => {
+  const before = await selectedSofa(page);
+  const width = (await handles(page)).find((h) => h.cursor === 'ew-resize')!;
+  await page.mouse.move(width.x, width.y);
+  await page.mouse.down();
+  await page.mouse.move(width.x + 60, width.y, { steps: 10 });
+  await page.mouse.up();
+  const box = await page.evaluate(() => {
+    const f = [
+      ...(
+        window as unknown as {
+          __axo: {
+            getPlan: () => {
+              getFurniture: () => Map<
+                number,
+                { getBounds: () => { x: number; width: number } }
+              >;
+            };
+          };
+        }
+      ).__axo
+        .getPlan()
+        .getFurniture()
+        .values()
+    ][0];
+    const b = f.getBounds();
+    return { right: b.x + b.width };
+  });
+  const after = (await handles(page)).find((h) => h.cursor === 'ew-resize')!;
+  expect(box.right).toBeGreaterThan(before.cx + 50);
+  // The width handle sits on the item's new right edge, not its old one.
+  expect(Math.abs(after.x - box.right)).toBeLessThan(8);
+});
