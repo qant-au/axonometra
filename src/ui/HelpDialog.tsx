@@ -1,5 +1,5 @@
-import { ReactNode, useState } from 'react';
-import { Dialog, Group, Text } from '@mantine/core';
+import { ReactNode, useEffect, useState } from 'react';
+import { CloseButton, Dialog, Group, Text } from '@mantine/core';
 import { useStore } from '../stores/EditorStore';
 import { NavbarLink } from './NavbarLink';
 import {
@@ -33,6 +33,17 @@ interface IHelpBody {
 
 export function HelpDialog() {
   const [opened, setOpened] = useState(false);
+  // Help is a non-modal panel, so Mantine does not close it on Escape.
+  useEffect(() => {
+    if (!opened) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setOpened(false);
+    };
+    // Capture phase: with the Help button focused, a Mantine handler on it
+    // stops Escape from bubbling to the window.
+    window.addEventListener('keydown', onKey, true);
+    return () => window.removeEventListener('keydown', onKey, true);
+  }, [opened]);
 
   const activeTool = useStore((s) => s.activeTool);
   const helpBody: IHelpBody[] = [];
@@ -162,12 +173,18 @@ export function HelpDialog() {
 
       <Dialog
         opened={opened}
-        withCloseButton
+        withCloseButton={false}
         onClose={() => setOpened(false)}
         size="lg"
         radius="md"
         position={{ top: 20, right: 20 }}
       >
+        {/* Dialog's own close button cannot be named, so this one replaces it. */}
+        <CloseButton
+          aria-label="Close"
+          onClick={() => setOpened(false)}
+          style={{ position: 'absolute', top: 10, right: 10 }}
+        />
         <Text size="sm" style={{ marginBottom: 10 }} fw={500} component="div">
           <b>{body.title}</b>
           {body.body}

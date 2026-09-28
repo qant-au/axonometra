@@ -12,7 +12,10 @@ async function openThreeD(page: Page) {
   const view = page.getByRole('img', { name: /^3D view of/ });
   await expect(view).toBeVisible({ timeout: 10_000 });
   const label = (await view.getAttribute('aria-label')) ?? '';
-  await page.getByRole('button', { name: 'Close' }).click();
+  await page
+    .getByRole('dialog', { name: '3D view' })
+    .getByRole('button', { name: 'Close' })
+    .click();
   return label;
 }
 

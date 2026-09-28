@@ -1,7 +1,13 @@
 import { useEffect } from 'react';
 import { PageLayout } from './ui/Layout/PageLayout';
 import { useFurnitureStore } from './stores/FurnitureStore';
-import { Drawer, MantineProvider, Modal, createTheme } from '@mantine/core';
+import {
+  Drawer,
+  MantineProvider,
+  Modal,
+  Notification,
+  createTheme
+} from '@mantine/core';
 import { Notifications } from '@mantine/notifications';
 import { EmbedBridge } from './embed/EmbedBridge';
 
@@ -13,6 +19,9 @@ const theme = createTheme({
       defaultProps: { closeButtonProps: { 'aria-label': 'Close' } }
     }),
     Drawer: Drawer.extend({
+      defaultProps: { closeButtonProps: { 'aria-label': 'Close' } }
+    }),
+    Notification: Notification.extend({
       defaultProps: { closeButtonProps: { 'aria-label': 'Close' } }
     })
   }
