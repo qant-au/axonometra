@@ -81,7 +81,8 @@ prefix: axo
 - [x] Add CODE_OF_CONDUCT.md (Contributor Covenant 2.1) @priority(low) @effort(0.25h) @due(2026-10-11) @id(axo-021)
       Action-items batch 2026-06-16 deferred this (#78): the standard template tripped the content filter during automated authoring. Add manually — Contributor Covenant 2.1 with a maintainer enforcement contact, then link it from README and strike #78 in action-items-2026-06-09.md.
       shipped in ec9e697 - Contributor Covenant 2.1, contact https://adamburgess.me/contact, linked from README + CONTRIBUTING
-- [ ] 3D phase 1: plan format v2 - save the exterior-wall flag (bug today), add wall height, floor elevation, door/window height and sill, furniture height; v1 plans load with today's constants; update PLAN-FORMAT.md and EMBEDDING.md (see 3D-PLAN.md) @priority(high) @due(2026-10-02) @id(axo-022)
+- [x] 3D phase 1: plan format v2 - save the exterior-wall flag (bug today), add wall height, floor elevation, door/window height and sill, furniture height; v1 plans load with today's constants; update PLAN-FORMAT.md and EMBEDDING.md (see 3D-PLAN.md) @priority(high) @due(2026-10-02) @id(axo-022)
+      shipped in e6a7d15 - plan format v2; typecheck, lint, 126 unit tests pass; not deployed
 - [ ] 3D phase 2: pure scene geometry - mitred wall joins, door/window openings as split boxes, room detection from the wall graph, floor/ceiling slabs; unit-tested, no renderer (see 3D-PLAN.md) @priority(high) @due(2026-10-09) @id(axo-023) @depends(axo-022)
 - [ ] 3D phase 3: 3D orbit view - lazy-loaded three.js, orbit/zoom/pan, one floor or stacked floors, upper-wall cut-away, catalogue items as height boxes, PNG export; the launch version (see 3D-PLAN.md) @priority(high) @due(2026-10-23) @id(axo-024) @depends(axo-023)
 - [ ] 3D phase 4: furniture models - render catalogue items from the elements library's 3D parts in the 3D view instead of height boxes (see 3D-PLAN.md) @due(2026-11-06) @id(axo-025) @depends(axo-024)
