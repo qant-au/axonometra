@@ -15,7 +15,7 @@ Built for healthcare facility layouts, small-building design (sheds, bunkers, AD
 
 v0.3.0 — Stages 4 and 5 are complete (lint, strict TS, unit and e2e tests in CI; Pixi 8, Mantine 9, Zustand 5, React 19). Expect breaking changes until v1.0.0.
 
-Furniture, doors, and windows ship from a small built-in catalog under `src/res/catalog/`. Extend it by editing the JSON manifests and dropping SVGs into `src/res/catalog/images/`. The upstream `arcada-backend` Express server is **not** required.
+Furniture and equipment (about 230 items in 12 groups: living, bedroom, dining, kitchen, bathroom, office, comms and server room, networking, security, fire and safety, outdoor, structure) come from the shared element library [qant-au/elements](https://github.com/qant-au/elements), which Axonometra shares with [Reticulyne](https://github.com/qant-au/reticulyne). Its generated icons and manifest are vendored into `src/res/catalog/elements/`; to change or add an item, edit it in that repo, build, and run `node scripts/sync-elements.mjs`. Doors and windows are still local (`src/res/catalog/wall-fittings.json`). The upstream `arcada-backend` Express server is **not** required.
 
 ## Relationship to Arcada
 

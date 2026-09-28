@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 400" width="200" height="800" preserveAspectRatio="none" stroke-linejoin="round" stroke-linecap="round">
+  <rect x="0" y="375" width="100" height="25" rx="0" fill="#f7f5f1" stroke="#8a857c" stroke-width="0.75"/>
+  <rect x="0" y="350" width="100" height="25" rx="0" fill="#f7f5f1" stroke="#8a857c" stroke-width="0.75"/>
+  <rect x="0" y="325" width="100" height="25" rx="0" fill="#f7f5f1" stroke="#8a857c" stroke-width="0.75"/>
+  <rect x="0" y="300" width="100" height="25" rx="0" fill="#f7f5f1" stroke="#8a857c" stroke-width="0.75"/>
+  <rect x="0" y="275" width="100" height="25" rx="0" fill="#f7f5f1" stroke="#8a857c" stroke-width="0.75"/>
+  <rect x="0" y="250" width="100" height="25" rx="0" fill="#f7f5f1" stroke="#8a857c" stroke-width="0.75"/>
+  <rect x="0" y="225" width="100" height="25" rx="0" fill="#f7f5f1" stroke="#8a857c" stroke-width="0.75"/>
+  <rect x="0" y="200" width="100" height="25" rx="0" fill="#f7f5f1" stroke="#8a857c" stroke-width="0.75"/>
+  <rect x="0" y="175" width="100" height="25" rx="0" fill="#f7f5f1" stroke="#8a857c" stroke-width="0.75"/>
+  <rect x="0" y="150" width="100" height="25" rx="0" fill="#f7f5f1" stroke="#8a857c" stroke-width="0.75"/>
+  <rect x="0" y="125" width="100" height="25" rx="0" fill="#f7f5f1" stroke="#8a857c" stroke-width="0.75"/>
+  <rect x="0" y="100" width="100" height="25" rx="0" fill="#f7f5f1" stroke="#8a857c" stroke-width="0.75"/>
+  <rect x="0" y="75" width="100" height="25" rx="0" fill="#f7f5f1" stroke="#8a857c" stroke-width="0.75"/>
+  <rect x="0" y="50" width="100" height="25" rx="0" fill="#f7f5f1" stroke="#8a857c" stroke-width="0.75"/>
+  <rect x="0" y="25" width="100" height="25" rx="0" fill="#f7f5f1" stroke="#8a857c" stroke-width="0.75"/>
+  <rect x="0.75" y="0.75" width="98.5" height="23.5" rx="0" fill="#f7f5f1" stroke="#2b2b2b" stroke-width="1.5"/>
+  <polygon points="0,0 100,0 100,400 0,400" fill="none" stroke="#2b2b2b" stroke-width="1.5"/>
+  <polyline points="0,222.5 45,214.5 50,222.5 55,206.5 60,214.5 100,206.5" fill="none" stroke="#2b2b2b" stroke-width="0.75"/>
+  <circle cx="50" cy="388" r="3" fill="#2b2b2b" stroke="#2b2b2b" stroke-width="0.75"/>
+  <polyline points="50,388 50,22" fill="none" stroke="#2b2b2b" stroke-width="0.75"/>
+  <polygon points="54.8,22 50,10 45.2,22" fill="#2b2b2b" stroke="#2b2b2b" stroke-width="0.75"/>
+</svg>

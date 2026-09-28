@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="800" height="800" preserveAspectRatio="none" stroke-linejoin="round" stroke-linecap="round">
+  <ellipse cx="200" cy="200" rx="20" ry="20" fill="#d9c3a3" stroke="#8a857c" stroke-width="0.75"/>
+  <ellipse cx="200" cy="200" rx="199.25" ry="199.25" fill="#a9c89a" stroke="#2b2b2b" stroke-width="1.5"/>
+  <polyline points="241.57,217.22 352.44,263.14" fill="none" stroke="#8a857c" stroke-width="0.75"/>
+  <polyline points="217.22,241.57 263.14,352.44" fill="none" stroke="#8a857c" stroke-width="0.75"/>
+  <polyline points="182.78,241.57 136.86,352.44" fill="none" stroke="#8a857c" stroke-width="0.75"/>
+  <polyline points="158.43,217.22 47.56,263.14" fill="none" stroke="#8a857c" stroke-width="0.75"/>
+  <polyline points="158.43,182.78 47.56,136.86" fill="none" stroke="#8a857c" stroke-width="0.75"/>
+  <polyline points="182.78,158.43 136.86,47.56" fill="none" stroke="#8a857c" stroke-width="0.75"/>
+  <polyline points="217.22,158.43 263.14,47.56" fill="none" stroke="#8a857c" stroke-width="0.75"/>
+  <polyline points="241.57,182.78 352.44,136.86" fill="none" stroke="#8a857c" stroke-width="0.75"/>
+  <circle cx="200" cy="200" r="180" fill="none" stroke="#8a857c" stroke-width="0.75" stroke-dasharray="10 8"/>
+  <circle cx="200" cy="200" r="16" fill="#d9c3a3" stroke="#8a857c" stroke-width="0.75"/>
+</svg>

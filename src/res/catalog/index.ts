@@ -1,21 +1,80 @@
-import categoriesData from './categories.json';
-import basicFurniture from './furniture/basic.json';
+// The built-in catalogue. Furniture and equipment come from the shared element
+// library (qant-au/elements), vendored into ./elements by
+// scripts/sync-elements.mjs; doors and windows are still local
+// (wall-fittings.json and ./images).
+import manifest from './elements/manifest.json';
 import wallFittings from './wall-fittings.json';
 import type { Category, FurnitureData } from '../../stores/FurnitureStore';
 
-const images = import.meta.glob('./images/*.svg', {
+interface ElementEntry {
+  id: string;
+  name: string;
+  group: string;
+  tags?: string[];
+  /** cm: width, depth, height of the real item */
+  size: { w: number; d: number; h: number };
+  /** cm above the floor, for wall and ceiling gear */
+  mount?: number;
+  /** cm: what the item occupies on the plan (a symbol's square for small devices) */
+  footprint: { w: number; d: number };
+  symbol?: boolean;
+}
+
+const elements = manifest.elements as ElementEntry[];
+
+const elementImages = import.meta.glob('./elements/plan/*.svg', {
   eager: true,
   query: '?url',
   import: 'default'
 }) as Record<string, string>;
 
+const localImages = import.meta.glob('./images/*.svg', {
+  eager: true,
+  query: '?url',
+  import: 'default'
+}) as Record<string, string>;
+
+function toFurniture(el: ElementEntry): FurnitureData {
+  return {
+    _id: el.id,
+    name: el.name,
+    width: el.footprint.w / 100,
+    height: el.footprint.d / 100,
+    imagePath: el.id,
+    category: el.group,
+    // Wall and ceiling gear draws over floor-standing furniture.
+    zIndex: el.mount ? 2 : 1,
+    heightM: el.size.h / 100,
+    ...(el.mount ? { mountM: el.mount / 100 } : {}),
+    ...(el.tags ? { tags: el.tags } : {})
+  };
+}
+
+const byGroup = new Map<string, FurnitureData[]>();
+for (const el of elements) {
+  const list = byGroup.get(el.group) ?? [];
+  list.push(toFurniture(el));
+  byGroup.set(el.group, list);
+}
+
 export function getCategories(): Category[] {
-  return categoriesData;
+  return manifest.groups
+    .filter((g) => byGroup.has(g.id))
+    .map((g) => ({ _id: g.id, name: g.name, visible: true }));
 }
 
 export function getFurnitureForCategory(categoryId: string): FurnitureData[] {
-  if (categoryId === 'basic') return basicFurniture;
-  return [];
+  return byGroup.get(categoryId) ?? [];
+}
+
+const byId = new Map(elements.map((el) => [el.id, el]));
+
+/** Real height and mount height in cm for a catalogue item, if it is one. */
+export function getItemHeights(
+  imagePath: string
+): { height: number; mount: number } | undefined {
+  const el = byId.get(imagePath);
+  return el && { height: el.size.h, mount: el.mount ?? 0 };
 }
 
 export function getWindowFitting(): FurnitureData {
@@ -29,14 +88,22 @@ export function getDoorFitting(): FurnitureData {
 const SAFE_IMAGE_PATH = /^[A-Za-z0-9._-]+$/;
 
 export function resolveCatalogImage(imagePath: string): string {
-  const placeholder = images['./images/placeholder.svg'];
+  const placeholder = localImages['./images/placeholder.svg'];
   if (!SAFE_IMAGE_PATH.test(imagePath)) return placeholder;
-  return images[`./images/${imagePath}.svg`] ?? placeholder;
+  return (
+    elementImages[`./elements/plan/${imagePath}.svg`] ??
+    localImages[`./images/${imagePath}.svg`] ??
+    placeholder
+  );
 }
 
-// Every bundled catalog image URL. Pixi 8's Texture.from(url) only returns a
-// usable texture once the URL has been loaded through Assets, so the editor
-// preloads these before furniture can be placed.
+// The few local images (doors, windows, placeholder) the editor preloads.
+// Element icons are loaded on first use instead; see Furniture.
+export function getPreloadImageUrls(): string[] {
+  return Object.values(localImages);
+}
+
+/** Every bundled catalogue image URL. */
 export function getCatalogImageUrls(): string[] {
-  return Object.values(images);
+  return [...Object.values(elementImages), ...Object.values(localImages)];
 }

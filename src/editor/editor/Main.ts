@@ -6,7 +6,7 @@ import {
   Point,
   TilingSprite
 } from 'pixi.js';
-import { getCatalogImageUrls } from '../../res/catalog';
+import { getPreloadImageUrls } from '../../res/catalog';
 import { FloorPlan } from './objects/FloorPlan';
 import { getFloorPlan } from '../EditorRoot';
 import { TransformLayer } from './objects/TransformControls/TransformLayer';
@@ -29,11 +29,12 @@ export class Main extends Viewport {
     super(options);
 
     // v8 Texture.from/TilingSprite.from only resolve a URL once it's been
-    // loaded through Assets, so preload the background pattern and every
-    // catalog image, then build the scene. The load also defers setup() until
-    // after EditorRoot has added this viewport to the stage (clamp() reads the
-    // viewport's world transform). Replaces the removed-in-v7 Loader.shared.
-    Assets.load(['./pattern.svg', ...getCatalogImageUrls()]).then(() =>
+    // loaded through Assets, so preload the background pattern and the
+    // door/window images (furniture icons load on first use), then build the
+    // scene. The load also defers setup() until after EditorRoot has added
+    // this viewport to the stage (clamp() reads the viewport's world
+    // transform). Replaces the removed-in-v7 Loader.shared.
+    Assets.load(['./pattern.svg', ...getPreloadImageUrls()]).then(() =>
       this.setup()
     );
     this.preview = new Preview();

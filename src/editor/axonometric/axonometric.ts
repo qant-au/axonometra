@@ -23,6 +23,9 @@ export interface SceneFurniture {
   width: number;
   height: number;
   rotation: number;
+  /** real height and height above the floor, in plan units; defaults apply when absent */
+  tall?: number;
+  mount?: number;
   /** set for doors and windows: the wall they sit in */
   wall?: SceneWall;
 }
@@ -48,11 +51,6 @@ export const STOREY_HEIGHT = 3.0 * METER;
 const SLAB = 0.1 * METER;
 const DOOR_HEIGHT = 2.1 * METER;
 const WINDOW_SILL = 0.9 * METER;
-const FURNITURE_HEIGHTS: Record<string, number> = {
-  bed: 0.55 * METER,
-  table: 0.75 * METER,
-  chair: 0.9 * METER
-};
 const DEFAULT_FURNITURE_HEIGHT = 0.7 * METER;
 
 const COS30 = Math.cos(Math.PI / 6);
@@ -309,8 +307,8 @@ export function projectScene(
         boxes.push(
           makeBox(
             furnitureFootprint(item).map(turn),
-            base,
-            base + (FURNITURE_HEIGHTS[item.kind] ?? DEFAULT_FURNITURE_HEIGHT),
+            base + (item.mount ?? 0),
+            base + (item.mount ?? 0) + (item.tall ?? DEFAULT_FURNITURE_HEIGHT),
             'furniture'
           )
         );

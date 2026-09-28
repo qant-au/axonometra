@@ -1,6 +1,7 @@
 // Reads the live floor plan into the plain data axonometric.ts projects.
 // Live floors rather than the serialized plan, because a wall's exterior
 // flag (and so its thickness) is not part of the saved format.
+import { getItemHeights } from '../../res/catalog';
 import { useFloorPlanStore } from '../../stores/FloorPlanStore';
 import type { Floor } from '../editor/objects/Floor';
 import type { Wall } from '../editor/objects/Walls/Wall';
@@ -12,6 +13,12 @@ function sceneWall(wall: Wall): SceneWall {
     b: { x: wall.rightNode.x, y: wall.rightNode.y },
     thickness: wall.thickness
   };
+}
+
+// Catalogue heights are in cm, which is also the plan unit (METER = 100).
+function heights(kind: string) {
+  const h = getItemHeights(kind);
+  return h ? { tall: h.height, mount: h.mount } : {};
 }
 
 export function sceneFromFloor(floor: Floor): SceneFloor {
@@ -32,6 +39,7 @@ export function sceneFromFloor(floor: Floor): SceneFloor {
       width: data.width,
       height: data.height,
       rotation: data.rotation,
+      ...heights(data.texturePath),
       wall: wall ? walls.get(wall) : undefined
     };
   });

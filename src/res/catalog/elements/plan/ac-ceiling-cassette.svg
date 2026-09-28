@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 84 84" width="168" height="168" preserveAspectRatio="none" stroke-linejoin="round" stroke-linecap="round">
+  <rect x="0.75" y="0.75" width="82.5" height="82.5" rx="3" fill="#f7f5f1" stroke="#2b2b2b" stroke-width="1.5"/>
+  <rect x="18" y="4" width="48" height="5" rx="2" fill="#e4dfd6" stroke="#8a857c" stroke-width="0.75"/>
+  <rect x="18" y="75" width="48" height="5" rx="2" fill="#e4dfd6" stroke="#8a857c" stroke-width="0.75"/>
+  <rect x="4" y="18" width="5" height="48" rx="2" fill="#e4dfd6" stroke="#8a857c" stroke-width="0.75"/>
+  <rect x="75" y="18" width="5" height="48" rx="2" fill="#e4dfd6" stroke="#8a857c" stroke-width="0.75"/>
+  <rect x="14" y="14" width="56" height="56" rx="0" fill="#e4dfd6" stroke="#8a857c" stroke-width="0.75"/>
+  <rect x="18" y="18" width="48" height="48" rx="0" fill="#f7f5f1" stroke="#8a857c" stroke-width="0.75"/>
+  <polyline points="22,26 62,26" fill="none" stroke="#8a857c" stroke-width="0.75"/>
+  <polyline points="22,34 62,34" fill="none" stroke="#8a857c" stroke-width="0.75"/>
+  <polyline points="22,42 62,42" fill="none" stroke="#8a857c" stroke-width="0.75"/>
+  <polyline points="22,50 62,50" fill="none" stroke="#8a857c" stroke-width="0.75"/>
+  <polyline points="22,58 62,58" fill="none" stroke="#8a857c" stroke-width="0.75"/>
+  <rect x="60" y="70.5" width="6" height="2.5" rx="1" fill="#2a9d8f" stroke="none" stroke-width="0.75"/>
+</svg>

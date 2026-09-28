@@ -15,6 +15,12 @@ export interface FurnitureData {
   imagePath: string;
   category?: string;
   zIndex?: number;
+  /** How tall the item is, in metres (`height` is its depth on the plan). */
+  heightM?: number;
+  /** Height of the item's base above the floor, in metres. */
+  mountM?: number;
+  /** Kinds of equipment: network, power, cooling, security, fire, av. */
+  tags?: string[];
 }
 
 export interface FurnitureStore {

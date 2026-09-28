@@ -1,4 +1,10 @@
-import { Graphics, FederatedPointerEvent, Sprite, Texture } from 'pixi.js';
+import {
+  Assets,
+  Graphics,
+  FederatedPointerEvent,
+  Sprite,
+  Texture
+} from 'pixi.js';
 import { resolveCatalogImage } from '../../../api/api-client';
 import { FurnitureData } from '../../../stores/FurnitureStore';
 import { useStore } from '../../../stores/EditorStore';
@@ -26,17 +32,27 @@ export class Furniture extends Sprite {
     attachedToRight?: number,
     orientation = 0
   ) {
-    // Catalog images are preloaded via Assets in Main, so Texture.from resolves
-    // them from cache. Guard against an unresolved id and fall back to a grey
-    // placeholder sized to the furniture footprint if the source errors.
-    const texture = Texture.from(resolveCatalogImage(data.imagePath));
-    super(texture ?? Texture.WHITE);
-    texture?.source.once('error', () => {
-      this.texture = Texture.WHITE;
-      this.tint = 0xcccccc;
-      this.width = data.width * METER;
-      this.height = data.height * METER;
-    });
+    // Catalogue images load on first use (a couple of hundred icons would be
+    // ~40 MB of textures if all were preloaded). Until an icon arrives the
+    // sprite is a blank of the right footprint; it keeps its size on the swap.
+    // A failed load leaves a grey placeholder.
+    const url = resolveCatalogImage(data.imagePath);
+    const cached = Assets.cache.has(url) ? Texture.from(url) : undefined;
+    super(cached ?? Texture.WHITE);
+    if (!cached) {
+      Assets.load<Texture>(url).then(
+        (texture) => {
+          if (this.destroyed) return;
+          const { width, height } = this;
+          this.texture = texture;
+          this.width = width;
+          this.height = height;
+        },
+        () => {
+          if (!this.destroyed) this.tint = 0xcccccc;
+        }
+      );
+    }
     this.resourcePath = data.imagePath;
     this.id = id;
     this.orientation = 0;

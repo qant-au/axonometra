@@ -136,7 +136,8 @@ back to a placeholder texture.
 
 ## Out of scope
 
-- The catalog manifest (`src/res/catalog/*.json`) — that ships with the
+- The catalog manifest (`src/res/catalog/elements/manifest.json` and
+  `src/res/catalog/wall-fittings.json`) — that ships with the
   build and is not part of the plan payload.
 - UI state (selected tool, snap mode, viewport position). The plan
   describes the model, not the editor session.

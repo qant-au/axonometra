@@ -1,0 +1,3432 @@
+{
+  "version": 1,
+  "groups": [
+    {
+      "id": "living",
+      "name": "Living"
+    },
+    {
+      "id": "bedroom",
+      "name": "Bedroom"
+    },
+    {
+      "id": "dining",
+      "name": "Dining"
+    },
+    {
+      "id": "kitchen",
+      "name": "Kitchen"
+    },
+    {
+      "id": "bathroom",
+      "name": "Bathroom and laundry"
+    },
+    {
+      "id": "office",
+      "name": "Office"
+    },
+    {
+      "id": "comms",
+      "name": "Comms and server room"
+    },
+    {
+      "id": "network",
+      "name": "Networking and AV"
+    },
+    {
+      "id": "security",
+      "name": "Security"
+    },
+    {
+      "id": "safety",
+      "name": "Fire and safety"
+    },
+    {
+      "id": "outdoor",
+      "name": "Outdoor and small buildings"
+    },
+    {
+      "id": "structure",
+      "name": "Structure"
+    }
+  ],
+  "elements": [
+    {
+      "id": "sofa-2",
+      "name": "Sofa, 2-seat",
+      "group": "living",
+      "size": {
+        "w": 160,
+        "d": 90,
+        "h": 85
+      },
+      "footprint": {
+        "w": 160,
+        "d": 90
+      }
+    },
+    {
+      "id": "sofa-3",
+      "name": "Sofa, 3-seat",
+      "group": "living",
+      "size": {
+        "w": 210,
+        "d": 90,
+        "h": 85
+      },
+      "footprint": {
+        "w": 210,
+        "d": 90
+      }
+    },
+    {
+      "id": "sofa-corner",
+      "name": "Corner sofa",
+      "group": "living",
+      "size": {
+        "w": 250,
+        "d": 250,
+        "h": 85
+      },
+      "footprint": {
+        "w": 250,
+        "d": 250
+      }
+    },
+    {
+      "id": "armchair",
+      "name": "Armchair",
+      "group": "living",
+      "size": {
+        "w": 85,
+        "d": 85,
+        "h": 85
+      },
+      "footprint": {
+        "w": 85,
+        "d": 85
+      }
+    },
+    {
+      "id": "recliner",
+      "name": "Recliner",
+      "group": "living",
+      "size": {
+        "w": 90,
+        "d": 95,
+        "h": 100
+      },
+      "footprint": {
+        "w": 90,
+        "d": 95
+      }
+    },
+    {
+      "id": "ottoman",
+      "name": "Ottoman",
+      "group": "living",
+      "size": {
+        "w": 60,
+        "d": 60,
+        "h": 45
+      },
+      "footprint": {
+        "w": 60,
+        "d": 60
+      }
+    },
+    {
+      "id": "coffee-table",
+      "name": "Coffee table",
+      "group": "living",
+      "size": {
+        "w": 110,
+        "d": 60,
+        "h": 45
+      },
+      "footprint": {
+        "w": 110,
+        "d": 60
+      }
+    },
+    {
+      "id": "coffee-table-round",
+      "name": "Round coffee table",
+      "group": "living",
+      "size": {
+        "w": 80,
+        "d": 80,
+        "h": 45
+      },
+      "footprint": {
+        "w": 80,
+        "d": 80
+      }
+    },
+    {
+      "id": "side-table",
+      "name": "Side table",
+      "group": "living",
+      "size": {
+        "w": 50,
+        "d": 50,
+        "h": 55
+      },
+      "footprint": {
+        "w": 50,
+        "d": 50
+      }
+    },
+    {
+      "id": "tv-unit",
+      "name": "TV unit",
+      "group": "living",
+      "size": {
+        "w": 180,
+        "d": 45,
+        "h": 50
+      },
+      "footprint": {
+        "w": 180,
+        "d": 45
+      }
+    },
+    {
+      "id": "tv-wall",
+      "name": "Wall-mounted TV, 65\"",
+      "group": "living",
+      "tags": ["av"],
+      "size": {
+        "w": 145,
+        "d": 10,
+        "h": 85
+      },
+      "mount": 110,
+      "footprint": {
+        "w": 145,
+        "d": 10
+      }
+    },
+    {
+      "id": "bookcase",
+      "name": "Bookcase",
+      "group": "living",
+      "size": {
+        "w": 90,
+        "d": 35,
+        "h": 200
+      },
+      "footprint": {
+        "w": 90,
+        "d": 35
+      }
+    },
+    {
+      "id": "display-cabinet",
+      "name": "Display cabinet",
+      "group": "living",
+      "size": {
+        "w": 100,
+        "d": 40,
+        "h": 190
+      },
+      "footprint": {
+        "w": 100,
+        "d": 40
+      }
+    },
+    {
+      "id": "floor-lamp",
+      "name": "Floor lamp",
+      "group": "living",
+      "size": {
+        "w": 40,
+        "d": 40,
+        "h": 170
+      },
+      "footprint": {
+        "w": 40,
+        "d": 40
+      }
+    },
+    {
+      "id": "rug-rect",
+      "name": "Rug",
+      "group": "living",
+      "size": {
+        "w": 200,
+        "d": 140,
+        "h": 1
+      },
+      "footprint": {
+        "w": 200,
+        "d": 140
+      }
+    },
+    {
+      "id": "rug-round",
+      "name": "Round rug",
+      "group": "living",
+      "size": {
+        "w": 160,
+        "d": 160,
+        "h": 1
+      },
+      "footprint": {
+        "w": 160,
+        "d": 160
+      }
+    },
+    {
+      "id": "piano-upright",
+      "name": "Upright piano",
+      "group": "living",
+      "size": {
+        "w": 150,
+        "d": 60,
+        "h": 125
+      },
+      "footprint": {
+        "w": 150,
+        "d": 60
+      }
+    },
+    {
+      "id": "plant-pot",
+      "name": "Indoor plant",
+      "group": "living",
+      "size": {
+        "w": 50,
+        "d": 50,
+        "h": 120
+      },
+      "footprint": {
+        "w": 50,
+        "d": 50
+      }
+    },
+    {
+      "id": "bed",
+      "name": "Bed, double",
+      "group": "bedroom",
+      "size": {
+        "w": 200,
+        "d": 150,
+        "h": 100
+      },
+      "footprint": {
+        "w": 200,
+        "d": 150
+      }
+    },
+    {
+      "id": "bed-single",
+      "name": "Bed, single",
+      "group": "bedroom",
+      "size": {
+        "w": 92,
+        "d": 188,
+        "h": 100
+      },
+      "footprint": {
+        "w": 92,
+        "d": 188
+      }
+    },
+    {
+      "id": "bed-king-single",
+      "name": "Bed, king single",
+      "group": "bedroom",
+      "size": {
+        "w": 107,
+        "d": 203,
+        "h": 100
+      },
+      "footprint": {
+        "w": 107,
+        "d": 203
+      }
+    },
+    {
+      "id": "bed-queen",
+      "name": "Bed, queen",
+      "group": "bedroom",
+      "size": {
+        "w": 153,
+        "d": 203,
+        "h": 100
+      },
+      "footprint": {
+        "w": 153,
+        "d": 203
+      }
+    },
+    {
+      "id": "bed-king",
+      "name": "Bed, king",
+      "group": "bedroom",
+      "size": {
+        "w": 183,
+        "d": 203,
+        "h": 100
+      },
+      "footprint": {
+        "w": 183,
+        "d": 203
+      }
+    },
+    {
+      "id": "bunk-bed",
+      "name": "Bunk bed",
+      "group": "bedroom",
+      "size": {
+        "w": 97,
+        "d": 200,
+        "h": 160
+      },
+      "footprint": {
+        "w": 97,
+        "d": 200
+      }
+    },
+    {
+      "id": "cot",
+      "name": "Cot",
+      "group": "bedroom",
+      "size": {
+        "w": 75,
+        "d": 135,
+        "h": 90
+      },
+      "footprint": {
+        "w": 75,
+        "d": 135
+      }
+    },
+    {
+      "id": "bedside-table",
+      "name": "Bedside table",
+      "group": "bedroom",
+      "size": {
+        "w": 45,
+        "d": 40,
+        "h": 55
+      },
+      "footprint": {
+        "w": 45,
+        "d": 40
+      }
+    },
+    {
+      "id": "chest-of-drawers",
+      "name": "Chest of drawers",
+      "group": "bedroom",
+      "size": {
+        "w": 90,
+        "d": 45,
+        "h": 100
+      },
+      "footprint": {
+        "w": 90,
+        "d": 45
+      }
+    },
+    {
+      "id": "dresser",
+      "name": "Dresser",
+      "group": "bedroom",
+      "size": {
+        "w": 140,
+        "d": 50,
+        "h": 80
+      },
+      "footprint": {
+        "w": 140,
+        "d": 50
+      }
+    },
+    {
+      "id": "wardrobe-2",
+      "name": "Wardrobe, 2-door",
+      "group": "bedroom",
+      "size": {
+        "w": 100,
+        "d": 60,
+        "h": 200
+      },
+      "footprint": {
+        "w": 100,
+        "d": 60
+      }
+    },
+    {
+      "id": "wardrobe-3",
+      "name": "Wardrobe, 3-door",
+      "group": "bedroom",
+      "size": {
+        "w": 150,
+        "d": 60,
+        "h": 200
+      },
+      "footprint": {
+        "w": 150,
+        "d": 60
+      }
+    },
+    {
+      "id": "wardrobe-sliding",
+      "name": "Built-in robe, sliding",
+      "group": "bedroom",
+      "size": {
+        "w": 240,
+        "d": 60,
+        "h": 240
+      },
+      "footprint": {
+        "w": 240,
+        "d": 60
+      }
+    },
+    {
+      "id": "dressing-table",
+      "name": "Dressing table",
+      "group": "bedroom",
+      "size": {
+        "w": 100,
+        "d": 45,
+        "h": 75
+      },
+      "footprint": {
+        "w": 100,
+        "d": 45
+      }
+    },
+    {
+      "id": "table",
+      "name": "Table",
+      "group": "dining",
+      "size": {
+        "w": 150,
+        "d": 90,
+        "h": 75
+      },
+      "footprint": {
+        "w": 150,
+        "d": 90
+      }
+    },
+    {
+      "id": "chair",
+      "name": "Chair",
+      "group": "dining",
+      "size": {
+        "w": 50,
+        "d": 50,
+        "h": 90
+      },
+      "footprint": {
+        "w": 50,
+        "d": 50
+      }
+    },
+    {
+      "id": "dining-table-4",
+      "name": "Dining table, 4-seat",
+      "group": "dining",
+      "size": {
+        "w": 120,
+        "d": 80,
+        "h": 75
+      },
+      "footprint": {
+        "w": 120,
+        "d": 80
+      }
+    },
+    {
+      "id": "dining-table-6",
+      "name": "Dining table, 6-seat",
+      "group": "dining",
+      "size": {
+        "w": 180,
+        "d": 90,
+        "h": 75
+      },
+      "footprint": {
+        "w": 180,
+        "d": 90
+      }
+    },
+    {
+      "id": "dining-table-8",
+      "name": "Dining table, 8-seat",
+      "group": "dining",
+      "size": {
+        "w": 240,
+        "d": 100,
+        "h": 75
+      },
+      "footprint": {
+        "w": 240,
+        "d": 100
+      }
+    },
+    {
+      "id": "dining-table-round",
+      "name": "Round dining table",
+      "group": "dining",
+      "size": {
+        "w": 110,
+        "d": 110,
+        "h": 75
+      },
+      "footprint": {
+        "w": 110,
+        "d": 110
+      }
+    },
+    {
+      "id": "bar-stool",
+      "name": "Bar stool",
+      "group": "dining",
+      "size": {
+        "w": 40,
+        "d": 40,
+        "h": 75
+      },
+      "footprint": {
+        "w": 40,
+        "d": 40
+      }
+    },
+    {
+      "id": "sideboard",
+      "name": "Sideboard",
+      "group": "dining",
+      "size": {
+        "w": 180,
+        "d": 45,
+        "h": 80
+      },
+      "footprint": {
+        "w": 180,
+        "d": 45
+      }
+    },
+    {
+      "id": "high-chair",
+      "name": "High chair",
+      "group": "dining",
+      "size": {
+        "w": 55,
+        "d": 70,
+        "h": 105
+      },
+      "footprint": {
+        "w": 55,
+        "d": 70
+      }
+    },
+    {
+      "id": "bench-seat",
+      "name": "Bench seat",
+      "group": "dining",
+      "size": {
+        "w": 150,
+        "d": 40,
+        "h": 45
+      },
+      "footprint": {
+        "w": 150,
+        "d": 40
+      }
+    },
+    {
+      "id": "base-cabinet-600",
+      "name": "Base cabinet 600",
+      "group": "kitchen",
+      "size": {
+        "w": 60,
+        "d": 60,
+        "h": 90
+      },
+      "footprint": {
+        "w": 60,
+        "d": 60
+      }
+    },
+    {
+      "id": "base-cabinet-900",
+      "name": "Base cabinet 900",
+      "group": "kitchen",
+      "size": {
+        "w": 90,
+        "d": 60,
+        "h": 90
+      },
+      "footprint": {
+        "w": 90,
+        "d": 60
+      }
+    },
+    {
+      "id": "corner-cabinet",
+      "name": "Corner base cabinet",
+      "group": "kitchen",
+      "size": {
+        "w": 90,
+        "d": 90,
+        "h": 90
+      },
+      "footprint": {
+        "w": 90,
+        "d": 90
+      }
+    },
+    {
+      "id": "wall-cabinet-600",
+      "name": "Wall cabinet 600",
+      "group": "kitchen",
+      "size": {
+        "w": 60,
+        "d": 35,
+        "h": 70
+      },
+      "mount": 145,
+      "footprint": {
+        "w": 60,
+        "d": 35
+      }
+    },
+    {
+      "id": "pantry",
+      "name": "Pantry cupboard",
+      "group": "kitchen",
+      "size": {
+        "w": 60,
+        "d": 60,
+        "h": 220
+      },
+      "footprint": {
+        "w": 60,
+        "d": 60
+      }
+    },
+    {
+      "id": "sink-single",
+      "name": "Sink, single bowl",
+      "group": "kitchen",
+      "size": {
+        "w": 60,
+        "d": 60,
+        "h": 90
+      },
+      "footprint": {
+        "w": 60,
+        "d": 60
+      }
+    },
+    {
+      "id": "sink-double",
+      "name": "Sink, double bowl",
+      "group": "kitchen",
+      "size": {
+        "w": 120,
+        "d": 60,
+        "h": 90
+      },
+      "footprint": {
+        "w": 120,
+        "d": 60
+      }
+    },
+    {
+      "id": "butler-sink",
+      "name": "Butler's sink",
+      "group": "kitchen",
+      "size": {
+        "w": 80,
+        "d": 60,
+        "h": 90
+      },
+      "footprint": {
+        "w": 80,
+        "d": 60
+      }
+    },
+    {
+      "id": "cooktop",
+      "name": "Cooktop, 4 burner",
+      "group": "kitchen",
+      "size": {
+        "w": 60,
+        "d": 60,
+        "h": 90
+      },
+      "footprint": {
+        "w": 60,
+        "d": 60
+      }
+    },
+    {
+      "id": "cooktop-5",
+      "name": "Cooktop, 5 burner",
+      "group": "kitchen",
+      "size": {
+        "w": 90,
+        "d": 60,
+        "h": 90
+      },
+      "footprint": {
+        "w": 90,
+        "d": 60
+      }
+    },
+    {
+      "id": "oven-freestanding",
+      "name": "Freestanding oven",
+      "group": "kitchen",
+      "size": {
+        "w": 60,
+        "d": 60,
+        "h": 90
+      },
+      "footprint": {
+        "w": 60,
+        "d": 60
+      }
+    },
+    {
+      "id": "wall-oven",
+      "name": "Wall oven tower",
+      "group": "kitchen",
+      "size": {
+        "w": 60,
+        "d": 60,
+        "h": 220
+      },
+      "footprint": {
+        "w": 60,
+        "d": 60
+      }
+    },
+    {
+      "id": "rangehood",
+      "name": "Rangehood",
+      "group": "kitchen",
+      "size": {
+        "w": 90,
+        "d": 50,
+        "h": 60
+      },
+      "mount": 160,
+      "footprint": {
+        "w": 90,
+        "d": 50
+      }
+    },
+    {
+      "id": "fridge",
+      "name": "Fridge",
+      "group": "kitchen",
+      "size": {
+        "w": 70,
+        "d": 70,
+        "h": 180
+      },
+      "footprint": {
+        "w": 70,
+        "d": 70
+      }
+    },
+    {
+      "id": "fridge-french",
+      "name": "Fridge, French door",
+      "group": "kitchen",
+      "size": {
+        "w": 90,
+        "d": 75,
+        "h": 180
+      },
+      "footprint": {
+        "w": 90,
+        "d": 75
+      }
+    },
+    {
+      "id": "dishwasher",
+      "name": "Dishwasher",
+      "group": "kitchen",
+      "size": {
+        "w": 60,
+        "d": 60,
+        "h": 85
+      },
+      "footprint": {
+        "w": 60,
+        "d": 60
+      }
+    },
+    {
+      "id": "microwave",
+      "name": "Microwave",
+      "group": "kitchen",
+      "size": {
+        "w": 50,
+        "d": 40,
+        "h": 30
+      },
+      "mount": 90,
+      "footprint": {
+        "w": 50,
+        "d": 40
+      }
+    },
+    {
+      "id": "island-bench",
+      "name": "Island bench",
+      "group": "kitchen",
+      "size": {
+        "w": 240,
+        "d": 100,
+        "h": 90
+      },
+      "footprint": {
+        "w": 240,
+        "d": 100
+      }
+    },
+    {
+      "id": "breakfast-bar",
+      "name": "Breakfast bar",
+      "group": "kitchen",
+      "size": {
+        "w": 180,
+        "d": 50,
+        "h": 105
+      },
+      "footprint": {
+        "w": 180,
+        "d": 50
+      }
+    },
+    {
+      "id": "kitchen-bin",
+      "name": "Kitchen bin",
+      "group": "kitchen",
+      "size": {
+        "w": 40,
+        "d": 35,
+        "h": 65
+      },
+      "footprint": {
+        "w": 40,
+        "d": 35
+      }
+    },
+    {
+      "id": "toilet",
+      "name": "Toilet",
+      "group": "bathroom",
+      "size": {
+        "w": 40,
+        "d": 70,
+        "h": 80
+      },
+      "footprint": {
+        "w": 40,
+        "d": 70
+      }
+    },
+    {
+      "id": "toilet-wall-hung",
+      "name": "Toilet, wall-hung",
+      "group": "bathroom",
+      "size": {
+        "w": 38,
+        "d": 55,
+        "h": 40
+      },
+      "footprint": {
+        "w": 38,
+        "d": 55
+      }
+    },
+    {
+      "id": "urinal",
+      "name": "Urinal",
+      "group": "bathroom",
+      "size": {
+        "w": 40,
+        "d": 35,
+        "h": 60
+      },
+      "mount": 50,
+      "footprint": {
+        "w": 40,
+        "d": 35
+      }
+    },
+    {
+      "id": "basin-vanity",
+      "name": "Vanity basin",
+      "group": "bathroom",
+      "size": {
+        "w": 75,
+        "d": 45,
+        "h": 85
+      },
+      "footprint": {
+        "w": 75,
+        "d": 45
+      }
+    },
+    {
+      "id": "basin-vanity-double",
+      "name": "Double vanity",
+      "group": "bathroom",
+      "size": {
+        "w": 150,
+        "d": 50,
+        "h": 85
+      },
+      "footprint": {
+        "w": 150,
+        "d": 50
+      }
+    },
+    {
+      "id": "basin-wall",
+      "name": "Wall basin",
+      "group": "bathroom",
+      "size": {
+        "w": 50,
+        "d": 40,
+        "h": 20
+      },
+      "mount": 80,
+      "footprint": {
+        "w": 50,
+        "d": 40
+      }
+    },
+    {
+      "id": "basin-pedestal",
+      "name": "Pedestal basin",
+      "group": "bathroom",
+      "size": {
+        "w": 55,
+        "d": 45,
+        "h": 85
+      },
+      "footprint": {
+        "w": 55,
+        "d": 45
+      }
+    },
+    {
+      "id": "bath",
+      "name": "Bath",
+      "group": "bathroom",
+      "size": {
+        "w": 170,
+        "d": 75,
+        "h": 55
+      },
+      "footprint": {
+        "w": 170,
+        "d": 75
+      }
+    },
+    {
+      "id": "bath-freestanding",
+      "name": "Freestanding bath",
+      "group": "bathroom",
+      "size": {
+        "w": 170,
+        "d": 80,
+        "h": 60
+      },
+      "footprint": {
+        "w": 170,
+        "d": 80
+      }
+    },
+    {
+      "id": "bath-corner",
+      "name": "Corner bath",
+      "group": "bathroom",
+      "size": {
+        "w": 140,
+        "d": 140,
+        "h": 55
+      },
+      "footprint": {
+        "w": 140,
+        "d": 140
+      }
+    },
+    {
+      "id": "shower-900",
+      "name": "Shower, 900 square",
+      "group": "bathroom",
+      "size": {
+        "w": 90,
+        "d": 90,
+        "h": 200
+      },
+      "footprint": {
+        "w": 90,
+        "d": 90
+      }
+    },
+    {
+      "id": "shower-rect",
+      "name": "Shower, 1200 × 900",
+      "group": "bathroom",
+      "size": {
+        "w": 120,
+        "d": 90,
+        "h": 200
+      },
+      "footprint": {
+        "w": 120,
+        "d": 90
+      }
+    },
+    {
+      "id": "shower-walk-in",
+      "name": "Walk-in shower",
+      "group": "bathroom",
+      "size": {
+        "w": 140,
+        "d": 90,
+        "h": 200
+      },
+      "footprint": {
+        "w": 140,
+        "d": 90
+      }
+    },
+    {
+      "id": "towel-rail",
+      "name": "Heated towel rail",
+      "group": "bathroom",
+      "size": {
+        "w": 60,
+        "d": 10,
+        "h": 90
+      },
+      "mount": 60,
+      "footprint": {
+        "w": 60,
+        "d": 10
+      }
+    },
+    {
+      "id": "washing-machine",
+      "name": "Washing machine",
+      "group": "bathroom",
+      "size": {
+        "w": 60,
+        "d": 60,
+        "h": 85
+      },
+      "footprint": {
+        "w": 60,
+        "d": 60
+      }
+    },
+    {
+      "id": "dryer",
+      "name": "Clothes dryer",
+      "group": "bathroom",
+      "size": {
+        "w": 60,
+        "d": 60,
+        "h": 85
+      },
+      "footprint": {
+        "w": 60,
+        "d": 60
+      }
+    },
+    {
+      "id": "laundry-tub",
+      "name": "Laundry tub",
+      "group": "bathroom",
+      "size": {
+        "w": 60,
+        "d": 50,
+        "h": 90
+      },
+      "footprint": {
+        "w": 60,
+        "d": 50
+      }
+    },
+    {
+      "id": "linen-cupboard",
+      "name": "Linen cupboard",
+      "group": "bathroom",
+      "size": {
+        "w": 60,
+        "d": 45,
+        "h": 200
+      },
+      "footprint": {
+        "w": 60,
+        "d": 45
+      }
+    },
+    {
+      "id": "desk",
+      "name": "Desk",
+      "group": "office",
+      "size": {
+        "w": 150,
+        "d": 75,
+        "h": 73
+      },
+      "footprint": {
+        "w": 150,
+        "d": 75
+      }
+    },
+    {
+      "id": "desk-small",
+      "name": "Desk, compact",
+      "group": "office",
+      "size": {
+        "w": 120,
+        "d": 60,
+        "h": 73
+      },
+      "footprint": {
+        "w": 120,
+        "d": 60
+      }
+    },
+    {
+      "id": "desk-l",
+      "name": "L-shaped desk",
+      "group": "office",
+      "size": {
+        "w": 160,
+        "d": 160,
+        "h": 73
+      },
+      "footprint": {
+        "w": 160,
+        "d": 160
+      }
+    },
+    {
+      "id": "desk-sit-stand",
+      "name": "Sit-stand desk",
+      "group": "office",
+      "size": {
+        "w": 160,
+        "d": 80,
+        "h": 73
+      },
+      "footprint": {
+        "w": 160,
+        "d": 80
+      }
+    },
+    {
+      "id": "workstation-pod-2",
+      "name": "Workstation pod, 2",
+      "group": "office",
+      "size": {
+        "w": 160,
+        "d": 150,
+        "h": 73
+      },
+      "footprint": {
+        "w": 160,
+        "d": 150
+      }
+    },
+    {
+      "id": "workstation-pod-4",
+      "name": "Workstation pod, 4",
+      "group": "office",
+      "size": {
+        "w": 320,
+        "d": 150,
+        "h": 120
+      },
+      "footprint": {
+        "w": 320,
+        "d": 150
+      }
+    },
+    {
+      "id": "office-chair",
+      "name": "Office chair",
+      "group": "office",
+      "size": {
+        "w": 65,
+        "d": 65,
+        "h": 110
+      },
+      "footprint": {
+        "w": 65,
+        "d": 65
+      }
+    },
+    {
+      "id": "visitor-chair",
+      "name": "Visitor chair",
+      "group": "office",
+      "size": {
+        "w": 55,
+        "d": 55,
+        "h": 85
+      },
+      "footprint": {
+        "w": 55,
+        "d": 55
+      }
+    },
+    {
+      "id": "meeting-table-4",
+      "name": "Meeting table, 4",
+      "group": "office",
+      "size": {
+        "w": 120,
+        "d": 120,
+        "h": 73
+      },
+      "footprint": {
+        "w": 120,
+        "d": 120
+      }
+    },
+    {
+      "id": "meeting-table-8",
+      "name": "Boardroom table, 8",
+      "group": "office",
+      "size": {
+        "w": 300,
+        "d": 120,
+        "h": 73
+      },
+      "footprint": {
+        "w": 300,
+        "d": 120
+      }
+    },
+    {
+      "id": "meeting-table-round",
+      "name": "Round meeting table",
+      "group": "office",
+      "size": {
+        "w": 100,
+        "d": 100,
+        "h": 73
+      },
+      "footprint": {
+        "w": 100,
+        "d": 100
+      }
+    },
+    {
+      "id": "reception-desk",
+      "name": "Reception desk",
+      "group": "office",
+      "size": {
+        "w": 240,
+        "d": 80,
+        "h": 110
+      },
+      "footprint": {
+        "w": 240,
+        "d": 80
+      }
+    },
+    {
+      "id": "filing-cabinet",
+      "name": "Filing cabinet, 4-drawer",
+      "group": "office",
+      "size": {
+        "w": 47,
+        "d": 62,
+        "h": 132
+      },
+      "footprint": {
+        "w": 47,
+        "d": 62
+      }
+    },
+    {
+      "id": "lateral-filer",
+      "name": "Lateral filer",
+      "group": "office",
+      "size": {
+        "w": 90,
+        "d": 45,
+        "h": 100
+      },
+      "footprint": {
+        "w": 90,
+        "d": 45
+      }
+    },
+    {
+      "id": "storage-cupboard",
+      "name": "Storage cupboard",
+      "group": "office",
+      "size": {
+        "w": 90,
+        "d": 45,
+        "h": 200
+      },
+      "footprint": {
+        "w": 90,
+        "d": 45
+      }
+    },
+    {
+      "id": "lockers",
+      "name": "Lockers, bank of 4",
+      "group": "office",
+      "size": {
+        "w": 120,
+        "d": 45,
+        "h": 180
+      },
+      "footprint": {
+        "w": 120,
+        "d": 45
+      }
+    },
+    {
+      "id": "mobile-pedestal",
+      "name": "Mobile pedestal",
+      "group": "office",
+      "size": {
+        "w": 40,
+        "d": 55,
+        "h": 60
+      },
+      "footprint": {
+        "w": 40,
+        "d": 55
+      }
+    },
+    {
+      "id": "printer-mfd",
+      "name": "Multifunction printer",
+      "group": "office",
+      "size": {
+        "w": 60,
+        "d": 65,
+        "h": 115
+      },
+      "footprint": {
+        "w": 60,
+        "d": 65
+      }
+    },
+    {
+      "id": "shredder",
+      "name": "Shredder",
+      "group": "office",
+      "size": {
+        "w": 40,
+        "d": 30,
+        "h": 65
+      },
+      "footprint": {
+        "w": 40,
+        "d": 30
+      }
+    },
+    {
+      "id": "whiteboard-mobile",
+      "name": "Mobile whiteboard",
+      "group": "office",
+      "size": {
+        "w": 180,
+        "d": 60,
+        "h": 190
+      },
+      "footprint": {
+        "w": 180,
+        "d": 60
+      }
+    },
+    {
+      "id": "display-screen",
+      "name": "Meeting room display",
+      "group": "office",
+      "size": {
+        "w": 170,
+        "d": 10,
+        "h": 100
+      },
+      "mount": 90,
+      "footprint": {
+        "w": 170,
+        "d": 10
+      }
+    },
+    {
+      "id": "phone-booth",
+      "name": "Phone booth",
+      "group": "office",
+      "size": {
+        "w": 100,
+        "d": 100,
+        "h": 220
+      },
+      "footprint": {
+        "w": 100,
+        "d": 100
+      }
+    },
+    {
+      "id": "lounge-chair",
+      "name": "Breakout lounge chair",
+      "group": "office",
+      "size": {
+        "w": 75,
+        "d": 75,
+        "h": 80
+      },
+      "footprint": {
+        "w": 75,
+        "d": 75
+      }
+    },
+    {
+      "id": "water-cooler",
+      "name": "Water cooler",
+      "group": "office",
+      "size": {
+        "w": 35,
+        "d": 35,
+        "h": 110
+      },
+      "footprint": {
+        "w": 35,
+        "d": 35
+      }
+    },
+    {
+      "id": "rack-wall-600x450-6u",
+      "name": "Wall-mount cabinet 6U, 600 × 450",
+      "group": "comms",
+      "tags": ["network"],
+      "size": {
+        "w": 60,
+        "d": 45,
+        "h": 40
+      },
+      "mount": 150,
+      "footprint": {
+        "w": 60,
+        "d": 45
+      }
+    },
+    {
+      "id": "rack-wall-600x450-9u",
+      "name": "Wall-mount cabinet 9U, 600 × 450",
+      "group": "comms",
+      "tags": ["network"],
+      "size": {
+        "w": 60,
+        "d": 45,
+        "h": 53
+      },
+      "mount": 150,
+      "footprint": {
+        "w": 60,
+        "d": 45
+      }
+    },
+    {
+      "id": "rack-wall-600x450-12u",
+      "name": "Wall-mount cabinet 12U, 600 × 450",
+      "group": "comms",
+      "tags": ["network"],
+      "size": {
+        "w": 60,
+        "d": 45,
+        "h": 66
+      },
+      "mount": 150,
+      "footprint": {
+        "w": 60,
+        "d": 45
+      }
+    },
+    {
+      "id": "rack-wall-600x450-15u",
+      "name": "Wall-mount cabinet 15U, 600 × 450",
+      "group": "comms",
+      "tags": ["network"],
+      "size": {
+        "w": 60,
+        "d": 45,
+        "h": 80
+      },
+      "mount": 150,
+      "footprint": {
+        "w": 60,
+        "d": 45
+      }
+    },
+    {
+      "id": "rack-600x600-18u",
+      "name": "Comms cabinet 18U, 600 × 600",
+      "group": "comms",
+      "tags": ["network"],
+      "size": {
+        "w": 60,
+        "d": 60,
+        "h": 93
+      },
+      "footprint": {
+        "w": 60,
+        "d": 60
+      }
+    },
+    {
+      "id": "rack-600x600-24u",
+      "name": "Comms cabinet 24U, 600 × 600",
+      "group": "comms",
+      "tags": ["network"],
+      "size": {
+        "w": 60,
+        "d": 60,
+        "h": 120
+      },
+      "footprint": {
+        "w": 60,
+        "d": 60
+      }
+    },
+    {
+      "id": "rack-600x600-27u",
+      "name": "Comms cabinet 27U, 600 × 600",
+      "group": "comms",
+      "tags": ["network"],
+      "size": {
+        "w": 60,
+        "d": 60,
+        "h": 133
+      },
+      "footprint": {
+        "w": 60,
+        "d": 60
+      }
+    },
+    {
+      "id": "rack-600x800-27u",
+      "name": "Network cabinet 27U, 600 × 800",
+      "group": "comms",
+      "tags": ["network"],
+      "size": {
+        "w": 60,
+        "d": 80,
+        "h": 133
+      },
+      "footprint": {
+        "w": 60,
+        "d": 80
+      }
+    },
+    {
+      "id": "rack-600x800-32u",
+      "name": "Network cabinet 32U, 600 × 800",
+      "group": "comms",
+      "tags": ["network"],
+      "size": {
+        "w": 60,
+        "d": 80,
+        "h": 155
+      },
+      "footprint": {
+        "w": 60,
+        "d": 80
+      }
+    },
+    {
+      "id": "rack-600x800-37u",
+      "name": "Network cabinet 37U, 600 × 800",
+      "group": "comms",
+      "tags": ["network"],
+      "size": {
+        "w": 60,
+        "d": 80,
+        "h": 177
+      },
+      "footprint": {
+        "w": 60,
+        "d": 80
+      }
+    },
+    {
+      "id": "rack-600x800-42u",
+      "name": "Network cabinet 42U, 600 × 800",
+      "group": "comms",
+      "tags": ["network"],
+      "size": {
+        "w": 60,
+        "d": 80,
+        "h": 200
+      },
+      "footprint": {
+        "w": 60,
+        "d": 80
+      }
+    },
+    {
+      "id": "rack-600x1000-42u",
+      "name": "Server rack 42U, 600 × 1000",
+      "group": "comms",
+      "tags": ["network"],
+      "size": {
+        "w": 60,
+        "d": 100,
+        "h": 200
+      },
+      "footprint": {
+        "w": 60,
+        "d": 100
+      }
+    },
+    {
+      "id": "rack-600x1000-45u",
+      "name": "Server rack 45U, 600 × 1000",
+      "group": "comms",
+      "tags": ["network"],
+      "size": {
+        "w": 60,
+        "d": 100,
+        "h": 213
+      },
+      "footprint": {
+        "w": 60,
+        "d": 100
+      }
+    },
+    {
+      "id": "rack-600x1100-42u",
+      "name": "Server rack 42U, 600 × 1100",
+      "group": "comms",
+      "tags": ["network"],
+      "size": {
+        "w": 60,
+        "d": 110,
+        "h": 200
+      },
+      "footprint": {
+        "w": 60,
+        "d": 110
+      }
+    },
+    {
+      "id": "rack-600x1100-45u",
+      "name": "Server rack 45U, 600 × 1100",
+      "group": "comms",
+      "tags": ["network"],
+      "size": {
+        "w": 60,
+        "d": 110,
+        "h": 213
+      },
+      "footprint": {
+        "w": 60,
+        "d": 110
+      }
+    },
+    {
+      "id": "rack-600x1200-42u",
+      "name": "Server rack 42U, 600 × 1200",
+      "group": "comms",
+      "tags": ["network"],
+      "size": {
+        "w": 60,
+        "d": 120,
+        "h": 200
+      },
+      "footprint": {
+        "w": 60,
+        "d": 120
+      }
+    },
+    {
+      "id": "rack-600x1200-45u",
+      "name": "Server rack 45U, 600 × 1200",
+      "group": "comms",
+      "tags": ["network"],
+      "size": {
+        "w": 60,
+        "d": 120,
+        "h": 213
+      },
+      "footprint": {
+        "w": 60,
+        "d": 120
+      }
+    },
+    {
+      "id": "rack-800x1000-42u",
+      "name": "Server rack 42U, 800 × 1000",
+      "group": "comms",
+      "tags": ["network"],
+      "size": {
+        "w": 80,
+        "d": 100,
+        "h": 200
+      },
+      "footprint": {
+        "w": 80,
+        "d": 100
+      }
+    },
+    {
+      "id": "rack-800x1000-45u",
+      "name": "Server rack 45U, 800 × 1000",
+      "group": "comms",
+      "tags": ["network"],
+      "size": {
+        "w": 80,
+        "d": 100,
+        "h": 213
+      },
+      "footprint": {
+        "w": 80,
+        "d": 100
+      }
+    },
+    {
+      "id": "rack-800x1100-42u",
+      "name": "Server rack 42U, 800 × 1100",
+      "group": "comms",
+      "tags": ["network"],
+      "size": {
+        "w": 80,
+        "d": 110,
+        "h": 200
+      },
+      "footprint": {
+        "w": 80,
+        "d": 110
+      }
+    },
+    {
+      "id": "rack-800x1100-45u",
+      "name": "Server rack 45U, 800 × 1100",
+      "group": "comms",
+      "tags": ["network"],
+      "size": {
+        "w": 80,
+        "d": 110,
+        "h": 213
+      },
+      "footprint": {
+        "w": 80,
+        "d": 110
+      }
+    },
+    {
+      "id": "rack-800x1200-42u",
+      "name": "Server rack 42U, 800 × 1200",
+      "group": "comms",
+      "tags": ["network"],
+      "size": {
+        "w": 80,
+        "d": 120,
+        "h": 200
+      },
+      "footprint": {
+        "w": 80,
+        "d": 120
+      }
+    },
+    {
+      "id": "rack-800x1200-45u",
+      "name": "Server rack 45U, 800 × 1200",
+      "group": "comms",
+      "tags": ["network"],
+      "size": {
+        "w": 80,
+        "d": 120,
+        "h": 213
+      },
+      "footprint": {
+        "w": 80,
+        "d": 120
+      }
+    },
+    {
+      "id": "rack-open-2post-24u",
+      "name": "Open frame rack, 2-post 24U",
+      "group": "comms",
+      "tags": ["network"],
+      "size": {
+        "w": 53,
+        "d": 40,
+        "h": 120
+      },
+      "footprint": {
+        "w": 53,
+        "d": 40
+      }
+    },
+    {
+      "id": "rack-open-2post-42u",
+      "name": "Open frame rack, 2-post 42U",
+      "group": "comms",
+      "tags": ["network"],
+      "size": {
+        "w": 53,
+        "d": 40,
+        "h": 200
+      },
+      "footprint": {
+        "w": 53,
+        "d": 40
+      }
+    },
+    {
+      "id": "rack-open-4post-42u",
+      "name": "Open frame rack, 4-post 42U",
+      "group": "comms",
+      "tags": ["network"],
+      "size": {
+        "w": 60,
+        "d": 100,
+        "h": 200
+      },
+      "footprint": {
+        "w": 60,
+        "d": 100
+      }
+    },
+    {
+      "id": "split-ac-indoor",
+      "name": "Split AC, wall unit",
+      "group": "comms",
+      "tags": ["cooling"],
+      "size": {
+        "w": 90,
+        "d": 25,
+        "h": 30
+      },
+      "mount": 210,
+      "footprint": {
+        "w": 90,
+        "d": 25
+      }
+    },
+    {
+      "id": "ups-tower",
+      "name": "UPS, tower",
+      "group": "comms",
+      "tags": ["power"],
+      "size": {
+        "w": 20,
+        "d": 45,
+        "h": 35
+      },
+      "footprint": {
+        "w": 20,
+        "d": 45
+      }
+    },
+    {
+      "id": "ups-large",
+      "name": "UPS, floor-standing",
+      "group": "comms",
+      "tags": ["power"],
+      "size": {
+        "w": 35,
+        "d": 80,
+        "h": 130
+      },
+      "footprint": {
+        "w": 35,
+        "d": 80
+      }
+    },
+    {
+      "id": "battery-cabinet",
+      "name": "Battery cabinet",
+      "group": "comms",
+      "tags": ["power"],
+      "size": {
+        "w": 60,
+        "d": 85,
+        "h": 200
+      },
+      "footprint": {
+        "w": 60,
+        "d": 85
+      }
+    },
+    {
+      "id": "distribution-board",
+      "name": "Distribution board",
+      "group": "comms",
+      "tags": ["power"],
+      "size": {
+        "w": 60,
+        "d": 20,
+        "h": 90
+      },
+      "mount": 110,
+      "footprint": {
+        "w": 60,
+        "d": 20
+      }
+    },
+    {
+      "id": "ats-panel",
+      "name": "Transfer switch panel",
+      "group": "comms",
+      "tags": ["power"],
+      "size": {
+        "w": 60,
+        "d": 25,
+        "h": 80
+      },
+      "mount": 110,
+      "footprint": {
+        "w": 60,
+        "d": 25
+      }
+    },
+    {
+      "id": "generator",
+      "name": "Standby generator",
+      "group": "comms",
+      "tags": ["power"],
+      "size": {
+        "w": 220,
+        "d": 110,
+        "h": 150
+      },
+      "footprint": {
+        "w": 220,
+        "d": 110
+      }
+    },
+    {
+      "id": "crac-unit",
+      "name": "Precision air conditioner (CRAC)",
+      "group": "comms",
+      "tags": ["cooling"],
+      "size": {
+        "w": 100,
+        "d": 90,
+        "h": 195
+      },
+      "footprint": {
+        "w": 100,
+        "d": 90
+      }
+    },
+    {
+      "id": "in-row-cooler",
+      "name": "In-row cooler",
+      "group": "comms",
+      "tags": ["cooling"],
+      "size": {
+        "w": 30,
+        "d": 120,
+        "h": 200
+      },
+      "footprint": {
+        "w": 30,
+        "d": 120
+      }
+    },
+    {
+      "id": "ac-ceiling-cassette",
+      "name": "AC ceiling cassette",
+      "group": "comms",
+      "tags": ["cooling"],
+      "size": {
+        "w": 84,
+        "d": 84,
+        "h": 25
+      },
+      "mount": 270,
+      "footprint": {
+        "w": 84,
+        "d": 84
+      }
+    },
+    {
+      "id": "ac-condenser",
+      "name": "AC outdoor unit",
+      "group": "comms",
+      "tags": ["cooling"],
+      "size": {
+        "w": 85,
+        "d": 35,
+        "h": 70
+      },
+      "footprint": {
+        "w": 85,
+        "d": 35
+      }
+    },
+    {
+      "id": "containment-door",
+      "name": "Aisle containment door",
+      "group": "comms",
+      "tags": ["cooling"],
+      "size": {
+        "w": 120,
+        "d": 10,
+        "h": 200
+      },
+      "footprint": {
+        "w": 120,
+        "d": 10
+      }
+    },
+    {
+      "id": "raised-floor-tile",
+      "name": "Perforated floor tile",
+      "group": "comms",
+      "tags": ["cooling"],
+      "size": {
+        "w": 60,
+        "d": 60,
+        "h": 1
+      },
+      "footprint": {
+        "w": 60,
+        "d": 60
+      }
+    },
+    {
+      "id": "fire-suppression",
+      "name": "Gas suppression cylinder",
+      "group": "comms",
+      "tags": ["fire"],
+      "size": {
+        "w": 40,
+        "d": 40,
+        "h": 170
+      },
+      "footprint": {
+        "w": 40,
+        "d": 40
+      }
+    },
+    {
+      "id": "cable-tray",
+      "name": "Cable tray section, 1 m",
+      "group": "comms",
+      "tags": ["network"],
+      "size": {
+        "w": 100,
+        "d": 30,
+        "h": 10
+      },
+      "mount": 250,
+      "footprint": {
+        "w": 100,
+        "d": 30
+      }
+    },
+    {
+      "id": "ladder-rack",
+      "name": "Ladder rack section, 1 m",
+      "group": "comms",
+      "tags": ["network"],
+      "size": {
+        "w": 100,
+        "d": 45,
+        "h": 5
+      },
+      "mount": 240,
+      "footprint": {
+        "w": 100,
+        "d": 45
+      }
+    },
+    {
+      "id": "odf-panel",
+      "name": "Fibre termination cabinet",
+      "group": "comms",
+      "tags": ["network"],
+      "size": {
+        "w": 60,
+        "d": 30,
+        "h": 60
+      },
+      "mount": 120,
+      "footprint": {
+        "w": 60,
+        "d": 30
+      }
+    },
+    {
+      "id": "kvm-console",
+      "name": "KVM console cart",
+      "group": "comms",
+      "tags": ["network"],
+      "size": {
+        "w": 60,
+        "d": 70,
+        "h": 110
+      },
+      "footprint": {
+        "w": 60,
+        "d": 70
+      }
+    },
+    {
+      "id": "wifi-ap",
+      "name": "Wi-Fi access point",
+      "group": "network",
+      "tags": ["network"],
+      "size": {
+        "w": 22,
+        "d": 22,
+        "h": 4
+      },
+      "mount": 270,
+      "footprint": {
+        "w": 40,
+        "d": 40
+      },
+      "symbol": true
+    },
+    {
+      "id": "network-switch",
+      "name": "Network switch (desktop)",
+      "group": "network",
+      "tags": ["network"],
+      "size": {
+        "w": 44,
+        "d": 30,
+        "h": 5
+      },
+      "footprint": {
+        "w": 44,
+        "d": 30
+      }
+    },
+    {
+      "id": "router",
+      "name": "Router",
+      "group": "network",
+      "tags": ["network"],
+      "size": {
+        "w": 30,
+        "d": 20,
+        "h": 5
+      },
+      "footprint": {
+        "w": 30,
+        "d": 20
+      }
+    },
+    {
+      "id": "modem-nbn",
+      "name": "NBN connection box",
+      "group": "network",
+      "tags": ["network"],
+      "size": {
+        "w": 30,
+        "d": 20,
+        "h": 10
+      },
+      "mount": 30,
+      "footprint": {
+        "w": 30,
+        "d": 20
+      }
+    },
+    {
+      "id": "data-outlet",
+      "name": "Data outlet",
+      "group": "network",
+      "tags": ["network"],
+      "size": {
+        "w": 7,
+        "d": 1.5,
+        "h": 11.5
+      },
+      "mount": 30,
+      "footprint": {
+        "w": 40,
+        "d": 40
+      },
+      "symbol": true
+    },
+    {
+      "id": "floor-box",
+      "name": "Floor box",
+      "group": "network",
+      "tags": ["network", "power"],
+      "size": {
+        "w": 40,
+        "d": 40,
+        "h": 10
+      },
+      "footprint": {
+        "w": 40,
+        "d": 40
+      }
+    },
+    {
+      "id": "projector",
+      "name": "Ceiling projector",
+      "group": "network",
+      "tags": ["av"],
+      "size": {
+        "w": 35,
+        "d": 30,
+        "h": 25
+      },
+      "mount": 270,
+      "footprint": {
+        "w": 40,
+        "d": 40
+      },
+      "symbol": true
+    },
+    {
+      "id": "projector-screen",
+      "name": "Projector screen",
+      "group": "network",
+      "tags": ["av"],
+      "size": {
+        "w": 240,
+        "d": 15,
+        "h": 180
+      },
+      "mount": 90,
+      "footprint": {
+        "w": 240,
+        "d": 15
+      }
+    },
+    {
+      "id": "speaker-ceiling",
+      "name": "Ceiling speaker",
+      "group": "network",
+      "tags": ["av"],
+      "size": {
+        "w": 21,
+        "d": 21,
+        "h": 12
+      },
+      "mount": 270,
+      "footprint": {
+        "w": 40,
+        "d": 40
+      },
+      "symbol": true
+    },
+    {
+      "id": "video-bar",
+      "name": "Video conferencing bar",
+      "group": "network",
+      "tags": ["av"],
+      "size": {
+        "w": 90,
+        "d": 10,
+        "h": 10
+      },
+      "mount": 150,
+      "footprint": {
+        "w": 90,
+        "d": 10
+      }
+    },
+    {
+      "id": "pc-tower",
+      "name": "Desktop PC",
+      "group": "network",
+      "tags": ["network"],
+      "size": {
+        "w": 20,
+        "d": 45,
+        "h": 45
+      },
+      "footprint": {
+        "w": 20,
+        "d": 45
+      }
+    },
+    {
+      "id": "monitor",
+      "name": "Monitor, 27\"",
+      "group": "network",
+      "tags": ["network"],
+      "size": {
+        "w": 62,
+        "d": 20,
+        "h": 45
+      },
+      "footprint": {
+        "w": 62,
+        "d": 20
+      }
+    },
+    {
+      "id": "laptop",
+      "name": "Laptop",
+      "group": "network",
+      "tags": ["network"],
+      "size": {
+        "w": 34,
+        "d": 24,
+        "h": 23
+      },
+      "footprint": {
+        "w": 34,
+        "d": 24
+      }
+    },
+    {
+      "id": "ip-phone",
+      "name": "Desk phone",
+      "group": "network",
+      "tags": ["network"],
+      "size": {
+        "w": 22,
+        "d": 20,
+        "h": 15
+      },
+      "footprint": {
+        "w": 22,
+        "d": 20
+      }
+    },
+    {
+      "id": "firewall",
+      "name": "Firewall appliance (desktop)",
+      "group": "network",
+      "tags": ["network", "security"],
+      "size": {
+        "w": 30,
+        "d": 20,
+        "h": 5
+      },
+      "footprint": {
+        "w": 30,
+        "d": 20
+      }
+    },
+    {
+      "id": "server-tower",
+      "name": "Tower server",
+      "group": "network",
+      "tags": ["network"],
+      "size": {
+        "w": 20,
+        "d": 60,
+        "h": 45
+      },
+      "footprint": {
+        "w": 20,
+        "d": 60
+      }
+    },
+    {
+      "id": "nas",
+      "name": "Network storage (NAS)",
+      "group": "network",
+      "tags": ["network"],
+      "size": {
+        "w": 20,
+        "d": 25,
+        "h": 25
+      },
+      "footprint": {
+        "w": 20,
+        "d": 25
+      }
+    },
+    {
+      "id": "cctv-dome",
+      "name": "CCTV dome camera",
+      "group": "security",
+      "tags": ["security"],
+      "size": {
+        "w": 14,
+        "d": 14,
+        "h": 10
+      },
+      "mount": 270,
+      "footprint": {
+        "w": 40,
+        "d": 40
+      },
+      "symbol": true
+    },
+    {
+      "id": "cctv-bullet",
+      "name": "CCTV bullet camera",
+      "group": "security",
+      "tags": ["security"],
+      "size": {
+        "w": 9,
+        "d": 30,
+        "h": 9
+      },
+      "mount": 250,
+      "footprint": {
+        "w": 40,
+        "d": 40
+      },
+      "symbol": true
+    },
+    {
+      "id": "cctv-ptz",
+      "name": "CCTV PTZ camera",
+      "group": "security",
+      "tags": ["security"],
+      "size": {
+        "w": 22,
+        "d": 22,
+        "h": 21
+      },
+      "mount": 300,
+      "footprint": {
+        "w": 40,
+        "d": 40
+      },
+      "symbol": true
+    },
+    {
+      "id": "cctv-fisheye",
+      "name": "CCTV 360° camera",
+      "group": "security",
+      "tags": ["security"],
+      "size": {
+        "w": 15,
+        "d": 15,
+        "h": 5
+      },
+      "mount": 270,
+      "footprint": {
+        "w": 40,
+        "d": 40
+      },
+      "symbol": true
+    },
+    {
+      "id": "alarm-keypad",
+      "name": "Alarm keypad",
+      "group": "security",
+      "tags": ["security"],
+      "size": {
+        "w": 18,
+        "d": 3,
+        "h": 12
+      },
+      "mount": 140,
+      "footprint": {
+        "w": 40,
+        "d": 40
+      },
+      "symbol": true
+    },
+    {
+      "id": "pir-sensor",
+      "name": "Motion detector (PIR)",
+      "group": "security",
+      "tags": ["security"],
+      "size": {
+        "w": 6,
+        "d": 5,
+        "h": 11
+      },
+      "mount": 240,
+      "footprint": {
+        "w": 40,
+        "d": 40
+      },
+      "symbol": true
+    },
+    {
+      "id": "door-contact",
+      "name": "Door contact",
+      "group": "security",
+      "tags": ["security"],
+      "size": {
+        "w": 7,
+        "d": 1.5,
+        "h": 1.5
+      },
+      "mount": 200,
+      "footprint": {
+        "w": 40,
+        "d": 40
+      },
+      "symbol": true
+    },
+    {
+      "id": "glass-break",
+      "name": "Glass-break detector",
+      "group": "security",
+      "tags": ["security"],
+      "size": {
+        "w": 9,
+        "d": 2.5,
+        "h": 9
+      },
+      "mount": 240,
+      "footprint": {
+        "w": 40,
+        "d": 40
+      },
+      "symbol": true
+    },
+    {
+      "id": "siren-strobe",
+      "name": "Siren and strobe",
+      "group": "security",
+      "tags": ["security"],
+      "size": {
+        "w": 20,
+        "d": 9,
+        "h": 25
+      },
+      "mount": 250,
+      "footprint": {
+        "w": 40,
+        "d": 40
+      },
+      "symbol": true
+    },
+    {
+      "id": "card-reader",
+      "name": "Access card reader",
+      "group": "security",
+      "tags": ["security"],
+      "size": {
+        "w": 5,
+        "d": 2,
+        "h": 15
+      },
+      "mount": 110,
+      "footprint": {
+        "w": 40,
+        "d": 40
+      },
+      "symbol": true
+    },
+    {
+      "id": "exit-button",
+      "name": "Request-to-exit button",
+      "group": "security",
+      "tags": ["security"],
+      "size": {
+        "w": 8,
+        "d": 4,
+        "h": 12
+      },
+      "mount": 110,
+      "footprint": {
+        "w": 40,
+        "d": 40
+      },
+      "symbol": true
+    },
+    {
+      "id": "maglock",
+      "name": "Magnetic door lock",
+      "group": "security",
+      "tags": ["security"],
+      "size": {
+        "w": 25,
+        "d": 5,
+        "h": 10
+      },
+      "mount": 200,
+      "footprint": {
+        "w": 40,
+        "d": 40
+      },
+      "symbol": true
+    },
+    {
+      "id": "intercom",
+      "name": "Video intercom",
+      "group": "security",
+      "tags": ["security"],
+      "size": {
+        "w": 12,
+        "d": 3.5,
+        "h": 25
+      },
+      "mount": 140,
+      "footprint": {
+        "w": 40,
+        "d": 40
+      },
+      "symbol": true
+    },
+    {
+      "id": "nvr",
+      "name": "Network video recorder",
+      "group": "security",
+      "tags": ["security", "network"],
+      "size": {
+        "w": 44,
+        "d": 40,
+        "h": 10
+      },
+      "footprint": {
+        "w": 44,
+        "d": 40
+      }
+    },
+    {
+      "id": "alarm-panel",
+      "name": "Alarm control panel",
+      "group": "security",
+      "tags": ["security"],
+      "size": {
+        "w": 40,
+        "d": 10,
+        "h": 40
+      },
+      "mount": 150,
+      "footprint": {
+        "w": 40,
+        "d": 10
+      }
+    },
+    {
+      "id": "turnstile",
+      "name": "Turnstile",
+      "group": "security",
+      "tags": ["security"],
+      "size": {
+        "w": 50,
+        "d": 140,
+        "h": 100
+      },
+      "footprint": {
+        "w": 50,
+        "d": 140
+      }
+    },
+    {
+      "id": "speed-gate",
+      "name": "Speed gate lane",
+      "group": "security",
+      "tags": ["security"],
+      "size": {
+        "w": 120,
+        "d": 150,
+        "h": 100
+      },
+      "footprint": {
+        "w": 120,
+        "d": 150
+      }
+    },
+    {
+      "id": "safe",
+      "name": "Safe",
+      "group": "security",
+      "tags": ["security"],
+      "size": {
+        "w": 50,
+        "d": 50,
+        "h": 70
+      },
+      "footprint": {
+        "w": 50,
+        "d": 50
+      }
+    },
+    {
+      "id": "key-cabinet",
+      "name": "Key cabinet",
+      "group": "security",
+      "tags": ["security"],
+      "size": {
+        "w": 40,
+        "d": 10,
+        "h": 50
+      },
+      "mount": 140,
+      "footprint": {
+        "w": 40,
+        "d": 10
+      }
+    },
+    {
+      "id": "bollard",
+      "name": "Bollard",
+      "group": "security",
+      "tags": ["security"],
+      "size": {
+        "w": 30,
+        "d": 30,
+        "h": 100
+      },
+      "footprint": {
+        "w": 30,
+        "d": 30
+      }
+    },
+    {
+      "id": "smoke-detector",
+      "name": "Smoke detector",
+      "group": "safety",
+      "tags": ["fire"],
+      "size": {
+        "w": 11,
+        "d": 11,
+        "h": 5
+      },
+      "mount": 270,
+      "footprint": {
+        "w": 40,
+        "d": 40
+      },
+      "symbol": true
+    },
+    {
+      "id": "heat-detector",
+      "name": "Heat detector",
+      "group": "safety",
+      "tags": ["fire"],
+      "size": {
+        "w": 11,
+        "d": 11,
+        "h": 5
+      },
+      "mount": 270,
+      "footprint": {
+        "w": 40,
+        "d": 40
+      },
+      "symbol": true
+    },
+    {
+      "id": "fire-extinguisher",
+      "name": "Fire extinguisher",
+      "group": "safety",
+      "tags": ["fire"],
+      "size": {
+        "w": 20,
+        "d": 20,
+        "h": 60
+      },
+      "footprint": {
+        "w": 40,
+        "d": 40
+      },
+      "symbol": true
+    },
+    {
+      "id": "fire-blanket",
+      "name": "Fire blanket",
+      "group": "safety",
+      "tags": ["fire"],
+      "size": {
+        "w": 26,
+        "d": 6,
+        "h": 30
+      },
+      "mount": 120,
+      "footprint": {
+        "w": 40,
+        "d": 40
+      },
+      "symbol": true
+    },
+    {
+      "id": "manual-call-point",
+      "name": "Manual call point",
+      "group": "safety",
+      "tags": ["fire"],
+      "size": {
+        "w": 9,
+        "d": 6,
+        "h": 9
+      },
+      "mount": 110,
+      "footprint": {
+        "w": 40,
+        "d": 40
+      },
+      "symbol": true
+    },
+    {
+      "id": "exit-sign",
+      "name": "Exit sign",
+      "group": "safety",
+      "tags": ["fire"],
+      "size": {
+        "w": 35,
+        "d": 5,
+        "h": 20
+      },
+      "mount": 220,
+      "footprint": {
+        "w": 40,
+        "d": 40
+      },
+      "symbol": true
+    },
+    {
+      "id": "emergency-light",
+      "name": "Emergency light",
+      "group": "safety",
+      "tags": ["fire"],
+      "size": {
+        "w": 30,
+        "d": 9,
+        "h": 5
+      },
+      "mount": 270,
+      "footprint": {
+        "w": 40,
+        "d": 40
+      },
+      "symbol": true
+    },
+    {
+      "id": "first-aid",
+      "name": "First aid kit",
+      "group": "safety",
+      "size": {
+        "w": 30,
+        "d": 12,
+        "h": 22
+      },
+      "mount": 120,
+      "footprint": {
+        "w": 40,
+        "d": 40
+      },
+      "symbol": true
+    },
+    {
+      "id": "aed",
+      "name": "Defibrillator (AED)",
+      "group": "safety",
+      "size": {
+        "w": 38,
+        "d": 15,
+        "h": 42
+      },
+      "mount": 110,
+      "footprint": {
+        "w": 40,
+        "d": 40
+      },
+      "symbol": true
+    },
+    {
+      "id": "hose-reel",
+      "name": "Fire hose reel",
+      "group": "safety",
+      "tags": ["fire"],
+      "size": {
+        "w": 80,
+        "d": 30,
+        "h": 80
+      },
+      "mount": 90,
+      "footprint": {
+        "w": 80,
+        "d": 30
+      }
+    },
+    {
+      "id": "fire-panel",
+      "name": "Fire indicator panel",
+      "group": "safety",
+      "tags": ["fire"],
+      "size": {
+        "w": 60,
+        "d": 15,
+        "h": 80
+      },
+      "mount": 120,
+      "footprint": {
+        "w": 60,
+        "d": 15
+      }
+    },
+    {
+      "id": "eyewash",
+      "name": "Eyewash station",
+      "group": "safety",
+      "size": {
+        "w": 50,
+        "d": 40,
+        "h": 100
+      },
+      "footprint": {
+        "w": 50,
+        "d": 40
+      }
+    },
+    {
+      "id": "outdoor-table",
+      "name": "Outdoor table",
+      "group": "outdoor",
+      "size": {
+        "w": 180,
+        "d": 90,
+        "h": 75
+      },
+      "footprint": {
+        "w": 180,
+        "d": 90
+      }
+    },
+    {
+      "id": "outdoor-chair",
+      "name": "Outdoor chair",
+      "group": "outdoor",
+      "size": {
+        "w": 55,
+        "d": 60,
+        "h": 85
+      },
+      "footprint": {
+        "w": 55,
+        "d": 60
+      }
+    },
+    {
+      "id": "sun-lounger",
+      "name": "Sun lounger",
+      "group": "outdoor",
+      "size": {
+        "w": 70,
+        "d": 195,
+        "h": 35
+      },
+      "footprint": {
+        "w": 70,
+        "d": 195
+      }
+    },
+    {
+      "id": "bbq",
+      "name": "Barbecue",
+      "group": "outdoor",
+      "size": {
+        "w": 140,
+        "d": 60,
+        "h": 110
+      },
+      "footprint": {
+        "w": 140,
+        "d": 60
+      }
+    },
+    {
+      "id": "outdoor-sofa",
+      "name": "Outdoor sofa",
+      "group": "outdoor",
+      "size": {
+        "w": 200,
+        "d": 85,
+        "h": 75
+      },
+      "footprint": {
+        "w": 200,
+        "d": 85
+      }
+    },
+    {
+      "id": "umbrella",
+      "name": "Market umbrella",
+      "group": "outdoor",
+      "size": {
+        "w": 270,
+        "d": 270,
+        "h": 250
+      },
+      "footprint": {
+        "w": 270,
+        "d": 270
+      }
+    },
+    {
+      "id": "planter",
+      "name": "Planter box",
+      "group": "outdoor",
+      "size": {
+        "w": 100,
+        "d": 40,
+        "h": 50
+      },
+      "footprint": {
+        "w": 100,
+        "d": 40
+      }
+    },
+    {
+      "id": "tree",
+      "name": "Tree",
+      "group": "outdoor",
+      "size": {
+        "w": 400,
+        "d": 400,
+        "h": 600
+      },
+      "footprint": {
+        "w": 400,
+        "d": 400
+      }
+    },
+    {
+      "id": "shrub",
+      "name": "Shrub",
+      "group": "outdoor",
+      "size": {
+        "w": 100,
+        "d": 100,
+        "h": 100
+      },
+      "footprint": {
+        "w": 100,
+        "d": 100
+      }
+    },
+    {
+      "id": "water-tank",
+      "name": "Water tank, 5000 L",
+      "group": "outdoor",
+      "size": {
+        "w": 180,
+        "d": 180,
+        "h": 220
+      },
+      "footprint": {
+        "w": 180,
+        "d": 180
+      }
+    },
+    {
+      "id": "hot-water-system",
+      "name": "Hot water system",
+      "group": "outdoor",
+      "size": {
+        "w": 60,
+        "d": 60,
+        "h": 170
+      },
+      "footprint": {
+        "w": 60,
+        "d": 60
+      }
+    },
+    {
+      "id": "heat-pump",
+      "name": "Heat pump water heater",
+      "group": "outdoor",
+      "size": {
+        "w": 60,
+        "d": 60,
+        "h": 190
+      },
+      "footprint": {
+        "w": 60,
+        "d": 60
+      }
+    },
+    {
+      "id": "solar-inverter",
+      "name": "Solar inverter",
+      "group": "outdoor",
+      "tags": ["power"],
+      "size": {
+        "w": 45,
+        "d": 20,
+        "h": 60
+      },
+      "mount": 120,
+      "footprint": {
+        "w": 45,
+        "d": 20
+      }
+    },
+    {
+      "id": "wheelie-bin",
+      "name": "Wheelie bin",
+      "group": "outdoor",
+      "size": {
+        "w": 60,
+        "d": 75,
+        "h": 105
+      },
+      "footprint": {
+        "w": 60,
+        "d": 75
+      }
+    },
+    {
+      "id": "clothesline",
+      "name": "Rotary clothesline",
+      "group": "outdoor",
+      "size": {
+        "w": 300,
+        "d": 300,
+        "h": 200
+      },
+      "footprint": {
+        "w": 300,
+        "d": 300
+      }
+    },
+    {
+      "id": "car",
+      "name": "Car",
+      "group": "outdoor",
+      "size": {
+        "w": 185,
+        "d": 470,
+        "h": 150
+      },
+      "footprint": {
+        "w": 185,
+        "d": 470
+      }
+    },
+    {
+      "id": "bicycle",
+      "name": "Bicycle",
+      "group": "outdoor",
+      "size": {
+        "w": 60,
+        "d": 175,
+        "h": 100
+      },
+      "footprint": {
+        "w": 60,
+        "d": 175
+      }
+    },
+    {
+      "id": "workbench",
+      "name": "Workbench",
+      "group": "outdoor",
+      "size": {
+        "w": 180,
+        "d": 70,
+        "h": 90
+      },
+      "footprint": {
+        "w": 180,
+        "d": 70
+      }
+    },
+    {
+      "id": "garden-shed",
+      "name": "Garden shed, 2.4 × 1.8",
+      "group": "outdoor",
+      "size": {
+        "w": 240,
+        "d": 180,
+        "h": 210
+      },
+      "footprint": {
+        "w": 240,
+        "d": 180
+      }
+    },
+    {
+      "id": "pool",
+      "name": "Swimming pool",
+      "group": "outdoor",
+      "size": {
+        "w": 700,
+        "d": 350,
+        "h": 150
+      },
+      "footprint": {
+        "w": 700,
+        "d": 350
+      }
+    },
+    {
+      "id": "stairs-straight",
+      "name": "Stairs, straight",
+      "group": "structure",
+      "size": {
+        "w": 100,
+        "d": 400,
+        "h": 300
+      },
+      "footprint": {
+        "w": 100,
+        "d": 400
+      }
+    },
+    {
+      "id": "stairs-l",
+      "name": "Stairs, L-shaped",
+      "group": "structure",
+      "size": {
+        "w": 200,
+        "d": 375,
+        "h": 300
+      },
+      "footprint": {
+        "w": 200,
+        "d": 375
+      }
+    },
+    {
+      "id": "stairs-u",
+      "name": "Stairs, U-shaped",
+      "group": "structure",
+      "size": {
+        "w": 220,
+        "d": 300,
+        "h": 300
+      },
+      "footprint": {
+        "w": 220,
+        "d": 300
+      }
+    },
+    {
+      "id": "stairs-spiral",
+      "name": "Spiral stairs",
+      "group": "structure",
+      "size": {
+        "w": 160,
+        "d": 160,
+        "h": 300
+      },
+      "footprint": {
+        "w": 160,
+        "d": 160
+      }
+    },
+    {
+      "id": "column-square",
+      "name": "Column, square",
+      "group": "structure",
+      "size": {
+        "w": 40,
+        "d": 40,
+        "h": 270
+      },
+      "footprint": {
+        "w": 40,
+        "d": 40
+      }
+    },
+    {
+      "id": "column-round",
+      "name": "Column, round",
+      "group": "structure",
+      "size": {
+        "w": 40,
+        "d": 40,
+        "h": 270
+      },
+      "footprint": {
+        "w": 40,
+        "d": 40
+      }
+    },
+    {
+      "id": "fireplace",
+      "name": "Fireplace",
+      "group": "structure",
+      "size": {
+        "w": 150,
+        "d": 60,
+        "h": 110
+      },
+      "footprint": {
+        "w": 150,
+        "d": 60
+      }
+    },
+    {
+      "id": "lift",
+      "name": "Lift",
+      "group": "structure",
+      "size": {
+        "w": 160,
+        "d": 160,
+        "h": 270
+      },
+      "footprint": {
+        "w": 160,
+        "d": 160
+      }
+    },
+    {
+      "id": "ramp",
+      "name": "Ramp",
+      "group": "structure",
+      "size": {
+        "w": 120,
+        "d": 400,
+        "h": 33
+      },
+      "footprint": {
+        "w": 120,
+        "d": 400
+      }
+    },
+    {
+      "id": "ladder",
+      "name": "Fixed ladder",
+      "group": "structure",
+      "size": {
+        "w": 50,
+        "d": 30,
+        "h": 300
+      },
+      "footprint": {
+        "w": 50,
+        "d": 30
+      }
+    },
+    {
+      "id": "skylight",
+      "name": "Skylight",
+      "group": "structure",
+      "size": {
+        "w": 60,
+        "d": 120,
+        "h": 1
+      },
+      "mount": 270,
+      "footprint": {
+        "w": 60,
+        "d": 120
+      }
+    },
+    {
+      "id": "void",
+      "name": "Void / opening",
+      "group": "structure",
+      "size": {
+        "w": 200,
+        "d": 200,
+        "h": 1
+      },
+      "footprint": {
+        "w": 200,
+        "d": 200
+      }
+    }
+  ]
+}
