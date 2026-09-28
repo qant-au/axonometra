@@ -46,6 +46,9 @@ function LengthForm({ wall }: { wall: Wall }) {
           value={value}
           onChange={setValue}
           min={0.01}
+          // Clamping on blur rewrote 0 to 0.01 as focus left the field, which
+          // removed the error and moved the buttons under the pointer.
+          clampBehavior="none"
           step={0.1}
           decimalScale={2}
           data-autofocus
