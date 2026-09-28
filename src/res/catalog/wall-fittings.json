@@ -6,7 +6,9 @@
     "height": 0.2,
     "imagePath": "window",
     "category": "wall",
-    "zIndex": 2
+    "zIndex": 2,
+    "heightM": 1.2,
+    "mountM": 0.9
   },
   "door": {
     "_id": "door",
@@ -15,6 +17,8 @@
     "height": 0.8,
     "imagePath": "door",
     "category": "wall",
-    "zIndex": 2
+    "zIndex": 2,
+    "heightM": 2.1,
+    "mountM": 0
   }
 }

@@ -24,6 +24,9 @@ export class Furniture extends Sprite {
   public resourcePath: string;
   private orientation: number;
   public centerAngle: number;
+  /** Real height and height above the floor, metres (plan format v2). */
+  public heightM?: number;
+  public mountM?: number;
   constructor(
     data: FurnitureData,
     id: number,
@@ -54,6 +57,8 @@ export class Furniture extends Sprite {
       );
     }
     this.resourcePath = data.imagePath;
+    this.heightM = data.heightM;
+    this.mountM = data.mountM;
     this.id = id;
     this.orientation = 0;
     this.cursor = 'pointer';
@@ -179,6 +184,8 @@ export class Furniture extends Sprite {
       attachedToLeft: this.attachedToLeft,
       attachedToRight: this.attachedToRight
     };
+    if (this.heightM != null) res.heightM = this.heightM;
+    if (this.mountM != null) res.mountM = this.mountM;
     return res;
   }
 }

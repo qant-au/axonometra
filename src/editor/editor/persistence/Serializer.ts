@@ -2,7 +2,9 @@ import { notifications } from '@mantine/notifications';
 import { useFloorPlanStore } from '../../../stores/FloorPlanStore';
 import { useHistoryStore } from '../../../stores/HistoryStore';
 import {
+  CURRENT_PLAN_VERSION,
   FloorPlanSerializable,
+  SUPPORTED_PLAN_VERSIONS,
   safeParsePlan,
   validatePlanShape
 } from './FloorPlanSerializable';
@@ -15,10 +17,12 @@ export class Serializer {
     // Materialise the active floor so a never-touched plan still serialises
     // to a valid single-floor document.
     useFloorPlanStore.getState().getCurrentFloor();
-    const { floors, furnitureId, version } = useFloorPlanStore.getState();
+    const { floors, furnitureId } = useFloorPlanStore.getState();
 
     const floorPlanSerializable = new FloorPlanSerializable();
-    floorPlanSerializable.version = version;
+    // Always the current version: a v1 plan re-saves as v2, with its v2
+    // fields filled in from the editor.
+    floorPlanSerializable.version = CURRENT_PLAN_VERSION;
     for (const floor of floors) {
       floorPlanSerializable.floors.push(floor.serialize());
     }
@@ -59,9 +63,10 @@ export class Serializer {
       });
       return false;
     }
-    // Future schema migrations dispatch on plan.version here.
+    // Every v2 field is optional, so a v1 plan loads as it is. A future
+    // version that changes a field's meaning dispatches on version here.
     const version = (raw as { version?: number }).version ?? 1;
-    if (version !== 1) {
+    if (!SUPPORTED_PLAN_VERSIONS.includes(version)) {
       notifications.show({
         title: 'Load failed',
         message: `Unsupported plan version: ${version}.`,

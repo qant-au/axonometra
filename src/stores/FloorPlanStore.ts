@@ -6,15 +6,11 @@ import { Furniture } from '../editor/editor/objects/Furniture';
 import { Wall } from '../editor/editor/objects/Walls/Wall';
 import { WallNode } from '../editor/editor/objects/Walls/WallNode';
 import { WallNodeSequence } from '../editor/editor/objects/Walls/WallNodeSequence';
-import {
-  CURRENT_PLAN_VERSION,
-  FloorPlanSerializable
-} from '../editor/editor/persistence/FloorPlanSerializable';
+import { FloorPlanSerializable } from '../editor/editor/persistence/FloorPlanSerializable';
 import { Point } from '../helpers/Point';
 import { FurnitureData } from './FurnitureStore';
 
 export interface FloorPlanStore {
-  version: number;
   /**
    * The Floor containers. They are Pixi objects, but they are the model:
    * wall topology and furniture live inside them and are mutated in place by
@@ -58,7 +54,6 @@ export interface FloorPlanStore {
 }
 
 export const useFloorPlanStore = create<FloorPlanStore>()((set, get) => ({
-  version: CURRENT_PLAN_VERSION,
   floors: [],
   currentFloor: 0,
   furnitureId: 0,
@@ -126,8 +121,7 @@ export const useFloorPlanStore = create<FloorPlanStore>()((set, get) => ({
     set({
       floors,
       furnitureId: plan.furnitureId,
-      currentFloor: 0,
-      version: plan.version ?? CURRENT_PLAN_VERSION
+      currentFloor: 0
     });
   },
 

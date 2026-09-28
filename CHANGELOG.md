@@ -20,6 +20,7 @@ Expect breaking changes between minor versions until v1.0.0.
 
 ### Changed
 
+- Plan file format version 2. New optional fields: per floor, which walls are exterior, wall height and elevation; per item, its height and its height above the floor (a window's sill). Version 1 plans load unchanged, and the editor now always saves version 2. The axonometric view uses the new fields. See `PLAN-FORMAT.md`.
 - UI stack: Mantine 4 → 9, which requires React 18 → 19. `createStyles` replaced by CSS modules with `light-dark()`; unused `@mantine/dropzone` dropped.
 - State: Zustand 3 → 5 (named `create`, curried typing); `tabler-icons-react` → `@tabler/icons-react`.
 - Architecture: the floor-plan model moved out of the `FloorPlan` Pixi container into a `useFloorPlanStore` Zustand store. `FloorPlan` is now view-only, the `Serializer` reads and writes the store directly, and the static `FloorPlan.Instance` / `dispose()` pair is gone. See `FLOORPLAN-REFACTOR.md`.
@@ -28,6 +29,7 @@ Expect breaking changes between minor versions until v1.0.0.
 
 ### Fixed
 
+- Saving a plan lost which walls were exterior: every wall came back interior (thinner) after a save and load, including plans sent through `axo:save`. Plan format version 2 records them.
 - Licensing: the repository is `MIT AND Apache-2.0`, not MIT alone. Code carried over from upstream arcada stays under Apache-2.0, whose full text now ships verbatim in `LICENSE-APACHE` as section 4(a) requires; `LICENSE`, the README and `package.json` now say so.
 
 ### Security

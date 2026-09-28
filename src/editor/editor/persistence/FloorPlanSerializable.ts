@@ -1,6 +1,9 @@
 import { FloorSerializable } from './FloorSerializable';
 
-export const CURRENT_PLAN_VERSION = 1;
+export const CURRENT_PLAN_VERSION = 2;
+
+/** Versions this build can read. v1 lacks only optional v2 fields. */
+export const SUPPORTED_PLAN_VERSIONS = [1, 2];
 
 export class FloorPlanSerializable {
   public version: number = CURRENT_PLAN_VERSION;

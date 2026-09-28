@@ -1,10 +1,9 @@
 // Reads the live floor plan into the plain data axonometric.ts projects.
-// Live floors rather than the serialized plan, because a wall's exterior
-// flag (and so its thickness) is not part of the saved format.
 import { getItemHeights } from '../../res/catalog';
 import { useFloorPlanStore } from '../../stores/FloorPlanStore';
 import type { Floor } from '../editor/objects/Floor';
 import type { Wall } from '../editor/objects/Walls/Wall';
+import { METER } from '../editor/constants';
 import { SceneFloor, SceneWall } from './axonometric';
 
 function sceneWall(wall: Wall): SceneWall {
@@ -15,10 +14,20 @@ function sceneWall(wall: Wall): SceneWall {
   };
 }
 
-// Catalogue heights are in cm, which is also the plan unit (METER = 100).
-function heights(kind: string) {
-  const h = getItemHeights(kind);
-  return h ? { tall: h.height, mount: h.mount } : {};
+// An item's own saved heights (plan format v2, metres) win; a v1 plan's items
+// fall back to the catalogue (cm, which is also the plan unit, METER = 100).
+function heights(data: {
+  texturePath: string;
+  heightM?: number;
+  mountM?: number;
+}) {
+  const catalogue = getItemHeights(data.texturePath);
+  const tall = data.heightM != null ? data.heightM * METER : catalogue?.height;
+  const mount = data.mountM != null ? data.mountM * METER : catalogue?.mount;
+  return {
+    ...(tall != null ? { tall } : {}),
+    ...(mount != null ? { mount } : {})
+  };
 }
 
 export function sceneFromFloor(floor: Floor): SceneFloor {
@@ -39,12 +48,19 @@ export function sceneFromFloor(floor: Floor): SceneFloor {
       width: data.width,
       height: data.height,
       rotation: data.rotation,
-      ...heights(data.texturePath),
+      ...heights(data),
       wall: wall ? walls.get(wall) : undefined
     };
   });
 
-  return { walls: [...walls.values()], furniture };
+  return {
+    walls: [...walls.values()],
+    furniture,
+    ...(floor.wallHeightM != null
+      ? { wallHeight: floor.wallHeightM * METER }
+      : {}),
+    ...(floor.elevationM != null ? { elevation: floor.elevationM * METER } : {})
+  };
 }
 
 /** Every floor, lowest first, and the index of the one being edited. */

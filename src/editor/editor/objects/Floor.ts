@@ -15,6 +15,9 @@ import { WallNodeSequence } from './Walls/WallNodeSequence';
 export class Floor extends Container {
   public furnitureArray: Map<number, Furniture>;
   private wallNodeSequence: WallNodeSequence;
+  /** Plan format v2; absent means the defaults. Kept so they survive a save. */
+  public wallHeightM?: number;
+  public elevationM?: number;
   constructor(floorData?: FloorSerializable, previousFloor?: Floor) {
     super();
 
@@ -27,6 +30,11 @@ export class Floor extends Container {
       const nodeLinks = new Map<number, number[]>(floorData.wallNodeLinks);
 
       this.wallNodeSequence.load(floorData.wallNodes, nodeLinks);
+      for (const [left, right] of floorData.exteriorWalls ?? []) {
+        this.wallNodeSequence.getWall(left, right)?.setIsExterior(true);
+      }
+      this.wallHeightM = floorData.wallHeightM;
+      this.elevationM = floorData.elevationM;
       for (const fur of floorData.furnitureArray) {
         const furnitureData: FurnitureData = {
           width: fur.width,
@@ -36,6 +44,8 @@ export class Floor extends Container {
         if (fur.zIndex) {
           furnitureData.zIndex = fur.zIndex;
         }
+        if (fur.heightM != null) furnitureData.heightM = fur.heightM;
+        if (fur.mountM != null) furnitureData.mountM = fur.mountM;
         const attachedTo =
           fur.attachedToLeft != null && fur.attachedToRight != null
             ? this.wallNodeSequence.getWall(
@@ -158,6 +168,15 @@ export class Floor extends Container {
       serializedFurniture.push(furniture.serialize());
     }
     plan.furnitureArray = serializedFurniture;
+    const exterior = this.wallNodeSequence
+      .getExteriorWalls()
+      .map((wall): [number, number] => [
+        wall.leftNode.getId(),
+        wall.rightNode.getId()
+      ]);
+    if (exterior.length) plan.exteriorWalls = exterior;
+    if (this.wallHeightM != null) plan.wallHeightM = this.wallHeightM;
+    if (this.elevationM != null) plan.elevationM = this.elevationM;
     return plan;
   }
   public setFurniturePosition(

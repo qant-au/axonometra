@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { Serializer } from '../persistence/Serializer';
 import { FloorSerializable } from '../persistence/FloorSerializable';
 import {
@@ -43,7 +43,8 @@ describe('Serializer', () => {
     const parsed = safeParsePlan(out) as Record<string, unknown>;
     expect(parsed.furnitureId).toBe(9);
     expect(parsed.wallNodeId).toBe(4);
-    expect(parsed.version).toBe(1);
+    // Always the current version, whatever version was loaded.
+    expect(parsed.version).toBe(2);
     expect(Array.isArray(parsed.floors)).toBe(true);
     expect((parsed.floors as unknown[]).length).toBe(1);
   });
@@ -80,5 +81,30 @@ describe('Serializer', () => {
     );
     const parsed = JSON.parse(new Serializer().serialize());
     expect(parsed.floors.length).toBe(3);
+  });
+});
+
+describe('Serializer.load versions', () => {
+  const setPlan = vi.fn();
+  beforeEach(() => {
+    setPlan.mockClear();
+    useFloorPlanStore.setState({ setPlan });
+  });
+  const plan = (version?: number) =>
+    JSON.stringify({ version, floors: [], furnitureId: 0, wallNodeId: 0 });
+
+  it('loads version 1 and version 2 plans', () => {
+    expect(new Serializer().load(plan(1))).toBe(true);
+    expect(new Serializer().load(plan(2))).toBe(true);
+    expect(setPlan).toHaveBeenCalledTimes(2);
+  });
+
+  it('treats a plan with no version as version 1', () => {
+    expect(new Serializer().load(plan())).toBe(true);
+  });
+
+  it('refuses a version it does not know', () => {
+    expect(new Serializer().load(plan(3))).toBe(false);
+    expect(setPlan).not.toHaveBeenCalled();
   });
 });

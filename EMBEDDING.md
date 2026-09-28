@@ -94,7 +94,7 @@ The legacy `X-Frame-Options` header has been removed in favour of CSP — `X-Fra
 
 ## Plan format
 
-The `plan` payload is a `FloorPlanSerializable` JSON object — see `src/editor/editor/persistence/FloorPlanSerializable.ts`. The current schema is `version: 1`; future versions will be dispatched in `FloorPlan.load`.
+The `plan` payload is a `FloorPlanSerializable` JSON object — see `src/editor/editor/persistence/FloorPlanSerializable.ts`. The current schema is `version: 2`; version 1 plans still load. See [PLAN-FORMAT.md](./PLAN-FORMAT.md) for both. Hosts that store plans should keep them as the editor sent them: a v2 plan records which walls are exterior and item heights, which v1 plans lost.
 
 ## Signed plans
 

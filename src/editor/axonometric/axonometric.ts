@@ -33,6 +33,10 @@ export interface SceneFurniture {
 export interface SceneFloor {
   walls: SceneWall[];
   furniture: SceneFurniture[];
+  /** plan units; defaults to WALL_HEIGHT */
+  wallHeight?: number;
+  /** plan units above ground; defaults to stacking at STOREY_HEIGHT per floor */
+  elevation?: number;
 }
 
 export interface Face {
@@ -245,7 +249,8 @@ export function projectScene(
   const faces: Face[] = [];
 
   floors.forEach((floor, index) => {
-    const base = (firstLevel + index) * STOREY_HEIGHT;
+    const base = floor.elevation ?? (firstLevel + index) * STOREY_HEIGHT;
+    const wallHeight = floor.wallHeight ?? WALL_HEIGHT;
     const boxes: Box[] = [];
 
     const nodes = floor.walls.flatMap((w) => [w.a, w.b]).map(turn);
@@ -275,7 +280,7 @@ export function projectScene(
         makeBox(
           segmentFootprint(turn(wall.a), turn(wall.b), wall.thickness),
           base,
-          base + WALL_HEIGHT,
+          base + wallHeight,
           'wall'
         )
       );
@@ -287,8 +292,10 @@ export function projectScene(
         const isDoor = item.kind === 'door';
         const box = makeBox(
           segmentFootprint(turn(s), turn(e), item.wall.thickness + 4),
-          base + (isDoor ? 0 : WINDOW_SILL),
-          base + DOOR_HEIGHT,
+          base + (item.mount ?? (isDoor ? 0 : WINDOW_SILL)),
+          base +
+            (item.mount ?? (isDoor ? 0 : WINDOW_SILL)) +
+            (item.tall ?? (isDoor ? DOOR_HEIGHT : DOOR_HEIGHT - WINDOW_SILL)),
           isDoor ? 'door' : 'window',
           1
         );

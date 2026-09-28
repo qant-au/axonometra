@@ -66,9 +66,9 @@ describe('validatePlanShape', () => {
 });
 
 describe('FloorPlanSerializable', () => {
-  it('defaults version to CURRENT_PLAN_VERSION (1)', () => {
+  it('defaults version to CURRENT_PLAN_VERSION (2)', () => {
     expect(new FloorPlanSerializable().version).toBe(CURRENT_PLAN_VERSION);
-    expect(CURRENT_PLAN_VERSION).toBe(1);
+    expect(CURRENT_PLAN_VERSION).toBe(2);
   });
 
   it('round-trips through safeParsePlan + validatePlanShape', () => {

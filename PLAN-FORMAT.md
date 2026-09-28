@@ -4,7 +4,9 @@ This document describes the JSON shape that `Save` (Ctrl+S) writes and
 that `Load from local save` / `Load from disk` / `axo:load`
 ([EMBEDDING.md](./EMBEDDING.md)) reads.
 
-The current schema is **version 1**.
+The current schema is **version 2**. Version 1 plans load unchanged: every
+field version 2 added is optional, and a missing one means the default the
+editor used before (see [Version 2](#version-2)).
 
 The canonical source of truth is
 [`src/editor/editor/persistence/`](./src/editor/editor/persistence/) —
@@ -15,8 +17,8 @@ integrators.
 
 ```ts
 interface FloorPlanSerializable {
-  version: 1; // schema version, future-proofed
-  floors: FloorSerializable[]; // one entry per floor; the editor today ships a single floor
+  version: 2; // schema version; 1 is still read
+  floors: FloorSerializable[]; // one entry per floor, lowest first
   furnitureId: number; // next free furniture id (monotonic counter)
   wallNodeId: number; // next free wall-node id (monotonic counter)
 }
@@ -34,6 +36,11 @@ interface FloorSerializable {
   wallNodes: INodeSerializable[];
   // adjacency list: [nodeId, neighbourIds[]]
   wallNodeLinks: [number, number[]][];
+  // v2, optional: exterior walls as [leftNodeId, rightNodeId], in the order
+  // wallNodeLinks lists them; every other wall is interior (thinner)
+  exteriorWalls?: [number, number][];
+  wallHeightM?: number; // v2, optional: metres; default 2.7
+  elevationM?: number; // v2, optional: metres above ground; default 3.0 per storey
 }
 ```
 
@@ -57,8 +64,8 @@ interface INodeSerializable {
 interface IFurnitureSerializable {
   id: number;
   texturePath: string; // resolves via the built-in catalog under src/res/catalog/
-  width: number; // editor units
-  height: number; // editor units
+  width: number; // metres, across the plan
+  height: number; // metres, down the plan (depth, not how tall it is)
   rotation: number; // radians
   x: number; // world-space
   y: number; // world-space
@@ -66,6 +73,8 @@ interface IFurnitureSerializable {
   zIndex: number; // Pixi sort key
   attachedToLeft?: number; // wall-node id the item is anchored to (doors / windows)
   attachedToRight?: number; // second anchor node id; together they pin the item to a wall segment
+  heightM?: number; // v2, optional: how tall it is, metres; a door or window's opening height
+  mountM?: number; // v2, optional: base above the floor, metres; a window's sill
 }
 ```
 
@@ -73,11 +82,29 @@ interface IFurnitureSerializable {
 to a wall (typically doors and windows). Free-standing furniture omits
 both.
 
+## Version 2
+
+Added 2026-09-28 for the 3D view. All optional, so version 1 plans need no
+migration.
+
+| Field           | Where | Absent means                                                                                                           |
+| --------------- | ----- | ---------------------------------------------------------------------------------------------------------------------- |
+| `exteriorWalls` | floor | every wall interior. Before v2 the exterior flag was not saved at all, so a v1 plan re-opens with every wall interior. |
+| `wallHeightM`   | floor | 2.7 m                                                                                                                  |
+| `elevationM`    | floor | stacked at 3.0 m per storey                                                                                            |
+| `heightM`       | item  | the catalogue's height for its `texturePath`, else 0.7 m; doors 2.1 m, windows 1.2 m                                   |
+| `mountM`        | item  | the catalogue's mount height, else on the floor; windows 0.9 m                                                         |
+
+The editor records an item's catalogue `heightM` and `mountM` when it is
+placed, as it records the footprint, so a later catalogue change does not
+alter a saved plan. It always saves the current version, so a v1 plan
+re-saves as v2.
+
 ## Minimal example
 
 ```json
 {
-  "version": 1,
+  "version": 2,
   "furnitureId": 1,
   "wallNodeId": 3,
   "floors": [
@@ -96,8 +123,8 @@ both.
 }
 ```
 
-This is a single wall between two nodes 1 m apart (with the default
-`METER = 1000`).
+This is a single wall between two nodes 10 m apart: editor units are
+centimetres (`METER = 100` in `constants.ts`).
 
 ## Parsing and validation
 
@@ -125,9 +152,14 @@ in-frame.
 - The on-disk `version` field is a single integer.
 - New required fields, removed fields, or semantic changes to existing
   fields bump the version.
-- `FloorPlan.load` dispatches on `version` and runs forward-only
-  migrations. Plans missing a `version` are treated as version 1
-  (legacy plans written before the field existed).
+- `Serializer.load` accepts the versions in `SUPPORTED_PLAN_VERSIONS`
+  (1 and 2) and refuses any other. A version that changes a field's
+  meaning adds a forward-only migration there. Plans missing a `version`
+  are treated as version 1 (legacy plans written before the field
+  existed).
+- Adding an optional field whose absence means the old behaviour does
+  not need a migration, only a version bump so older builds refuse the
+  file instead of silently dropping the field.
 - Migrations are append-only — never edit an existing migration.
 
 There is no schema for the catalog itself; `texturePath` is resolved
@@ -141,5 +173,3 @@ back to a placeholder texture.
   build and is not part of the plan payload.
 - UI state (selected tool, snap mode, viewport position). The plan
   describes the model, not the editor session.
-- Multi-floor support. The schema admits it; the editor today exposes
-  a single floor.

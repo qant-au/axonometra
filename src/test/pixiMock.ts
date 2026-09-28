@@ -136,6 +136,13 @@ const TextureMock = {
   WHITE: { white: true }
 };
 
+// Furniture checks the Assets cache before loading an icon; report every URL
+// as cached so the constructor takes Texture.from synchronously.
+const AssetsMock = {
+  cache: { has: vi.fn(() => true) },
+  load: vi.fn(() => Promise.resolve({}))
+};
+
 class TilingSpriteMock extends SpriteMock {
   static from(_path: string, _opts?: unknown) {
     return new TilingSpriteMock();
@@ -150,6 +157,7 @@ export function createPixiMock() {
     Text: TextMock,
     TextStyle: TextStyleMock,
     Texture: TextureMock,
+    Assets: AssetsMock,
     TilingSprite: TilingSpriteMock,
     Point: PointMock,
     Application: vi.fn(),

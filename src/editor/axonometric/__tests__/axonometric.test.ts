@@ -143,4 +143,17 @@ describe('projectScene', () => {
   it('returns an empty scene for an empty plan', () => {
     expect(projectScene([{ walls: [], furniture: [] }], 0).faces).toEqual([]);
   });
+
+  it("uses a floor's saved wall height and elevation (plan format v2)", () => {
+    const walls = [wall(0, 0, 400, 0)];
+    const top = (floor: SceneFloor) => projectScene([floor], 0).viewBox[1];
+    // A taller wall reaches higher up the screen (smaller y).
+    expect(top({ walls, furniture: [], wallHeight: 400 })).toBeLessThan(
+      top({ walls, furniture: [] })
+    );
+    // An elevated floor is drawn higher than one at ground level.
+    expect(top({ walls, furniture: [], elevation: 300 })).toBeLessThan(
+      top({ walls, furniture: [] })
+    );
+  });
 });
