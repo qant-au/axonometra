@@ -149,6 +149,8 @@ export class Furniture extends Sprite {
     if (ev.button == 1) {
       this.zIndex++;
     }
+    // Right-click turns the item (onRightDown); it must not also erase it.
+    if (ev.button === 2) return;
     switch (useStore.getState().activeTool) {
       case Tool.Edit: {
         const action = new EditFurnitureAction(this);

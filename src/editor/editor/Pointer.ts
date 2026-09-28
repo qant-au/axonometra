@@ -9,6 +9,10 @@ export class Pointer extends Container {
   private ring: Graphics;
   constructor() {
     super();
+    // The cursor sits exactly under the mouse, so if it could be hit it would
+    // take every press meant for what is beneath it: wall points and
+    // furniture handles could never be dragged. It is drawn, never hit.
+    this.eventMode = 'none';
     this.graphic = new Graphics();
     this.graphic
       .circle(0, 0, 2)

@@ -102,7 +102,7 @@ export class Handle extends Graphics {
     this.on('pointerdown', this.onMouseDown);
     this.on('pointerup', this.onMouseUp);
     this.on('pointerupoutside', this.onMouseUp);
-    this.on('pointermove', this.onMouseMove);
+    this.on('globalpointermove', this.onMouseMove);
   }
 
   private onMouseDown(ev: FederatedPointerEvent) {

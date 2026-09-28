@@ -26,7 +26,7 @@ export class WallNode extends Graphics {
     this.position.set(x, y);
     this.zIndex = 999;
     this.on('pointerdown', this.onMouseDown);
-    this.on('pointermove', this.onMouseMove);
+    this.on('globalpointermove', this.onMouseMove);
     this.on('pointerup', this.onMouseUp);
     this.on('pointerupoutside', this.onMouseUp);
   }
@@ -43,6 +43,7 @@ export class WallNode extends Graphics {
   }
   private onMouseDown(ev: FederatedPointerEvent) {
     ev.stopPropagation();
+    if (ev.button !== 0) return;
     switch (useStore.getState().activeTool) {
       case Tool.Edit:
         this.dragging = true;

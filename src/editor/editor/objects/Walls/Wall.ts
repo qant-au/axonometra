@@ -6,6 +6,7 @@ import { Point } from '../../../../helpers/Point';
 import { viewportX, viewportY } from '../../../../helpers/ViewportCoordinates';
 
 import { useStore } from '../../../../stores/EditorStore';
+import { useFloorPlanStore } from '../../../../stores/FloorPlanStore';
 import { AddFurnitureAction } from '../../actions/AddFurnitureAction';
 import { AddNodeAction } from '../../actions/AddNodeAction';
 import { DeleteWallAction } from '../../actions/DeleteWallAction';
@@ -60,7 +61,7 @@ export class Wall extends Graphics {
 
     this.on('pointerdown', this.onMouseDown);
     this.on('rightdown', this.onRightDown);
-    this.on('pointermove', this.onMouseMove);
+    this.on('globalpointermove', this.onMouseMove);
     this.on('pointerup', this.onMouseUp);
     this.on('pointerupoutside', this.onMouseUp);
     this.on('click', this.onClick);
@@ -152,20 +153,17 @@ export class Wall extends Graphics {
     if (!this.dragging) {
       return;
     }
-    const currentPoint = ev.global;
+    // Both points in plan coordinates, so the wall follows the mouse at any
+    // zoom (mixing screen and plan units only worked at 100%).
     const delta = {
-      x: currentPoint.x - this.mouseStartPoint.x,
-      y: currentPoint.y - this.mouseStartPoint.y
+      x: viewportX(ev.global.x) - this.mouseStartPoint.x,
+      y: viewportY(ev.global.y) - this.mouseStartPoint.y
     };
-
-    this.leftNode.setPosition(
-      this.startLeftNode.x + delta.x,
-      this.startLeftNode.y + delta.y
-    );
-    this.rightNode.setPosition(
-      this.startRightNode.x + delta.x,
-      this.startRightNode.y + delta.y
-    );
+    this.leftNode.x = this.startLeftNode.x + delta.x;
+    this.leftNode.y = this.startLeftNode.y + delta.y;
+    this.rightNode.x = this.startRightNode.x + delta.x;
+    this.rightNode.y = this.startRightNode.y + delta.y;
+    useFloorPlanStore.getState().redrawWalls();
   }
 
   // Double-click in Edit mode opens the dialog for typing the wall's length.
@@ -183,6 +181,9 @@ export class Wall extends Graphics {
 
   private onMouseDown(ev: FederatedPointerEvent) {
     ev.stopPropagation();
+    // Right-click is onRightDown's (exterior toggle); a right press must not
+    // also split the wall, erase it or start a drag.
+    if (ev.button !== 0) return;
 
     const coords = {
       x: viewportX(ev.global.x),

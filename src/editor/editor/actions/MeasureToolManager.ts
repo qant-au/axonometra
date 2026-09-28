@@ -12,6 +12,8 @@ export class Preview {
   public constructor() {
     this.startPoint = undefined;
     this.preview = new Graphics();
+    // Follows the mouse like the cursor; never a hit target.
+    this.preview.eventMode = 'none';
     this.sizeLabel = new Label();
     this.sizeLabel.visible = false;
     this.preview.addChild(this.sizeLabel);
