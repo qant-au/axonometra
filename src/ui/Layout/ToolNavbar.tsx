@@ -118,6 +118,7 @@ function AddMenu({ setter }: { setter: Dispatch<SetStateAction<number>> }) {
           <Menu.Item
             leftSection={<IconArmchair size={18} />}
             onClick={() => {
+              notifications.clean();
               setDrawerOpened(true);
               // -1 = no active toolbar tool (deselect while the drawer is open)
               setter(-1);
@@ -202,7 +203,8 @@ export function ToolNavbar() {
       active={index === active}
       onClick={() => {
         setActive(index);
-
+        // The previous tool's hint (e.g. wall drawing) no longer applies.
+        notifications.clean();
         setTool(link.tool);
       }}
     />
