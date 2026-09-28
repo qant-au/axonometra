@@ -144,9 +144,14 @@ export class Floor extends Container {
       attachedTo.addChild(object);
       object.position.set(coords.x, coords.y);
     } else {
+      // In the middle of what is on screen, so the person sees it arrive,
+      // wherever they have panned or zoomed to.
       const main = getMain();
       this.addChild(object);
-      object.position.set(main.corner.x + 150, main.corner.y + 150);
+      object.position.set(
+        Math.round(main.center.x - object.width / 2),
+        Math.round(main.center.y - object.height / 2)
+      );
     }
 
     return id;
