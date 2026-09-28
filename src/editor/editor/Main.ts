@@ -71,6 +71,8 @@ export class Main extends Viewport {
       .clampZoom({ minScale: 1.0, maxScale: 6.0 });
     this.unsubscribeTool = useStore.subscribe((state, previous) => {
       if (state.activeTool !== previous.activeTool) {
+        // A new tool starts with pan and zoom working.
+        this.pause = false;
         this.panWith(state.activeTool);
       }
     });
@@ -95,27 +97,21 @@ export class Main extends Viewport {
     this.on('pointerdown', this.checkTools);
     this.on('pointermove', this.updatePreview);
     this.on('pointerup', this.updateEnd);
+    this.on('pointerupoutside', this.updateEnd);
   }
   private updatePreview(ev: FederatedPointerEvent) {
     this.addWallManager.updatePreview(ev);
     this.preview.updatePreview(ev);
     this.pointer.update(ev);
   }
+  // Pan and zoom are paused while a wall or measurement is being pressed
+  // out; every release resumes them (except wall drawing on touch, which
+  // keeps them off for the whole chain). Releases outside the canvas count
+  // too: a pause that was never lifted left pan and zoom dead in every tool.
   private updateEnd(_ev: FederatedPointerEvent) {
-    switch (useStore.getState().activeTool) {
-      case Tool.Measure:
-        this.preview.set(undefined);
-        this.pause = false;
-        break;
-      case Tool.WallAdd:
-        if (!isMobile) {
-          this.pause = false;
-        }
-        break;
-      case Tool.Edit:
-        this.pause = false;
-        break;
-    }
+    const tool = useStore.getState().activeTool;
+    if (tool === Tool.Measure) this.preview.set(undefined);
+    if (!(tool === Tool.WallAdd && isMobile)) this.pause = false;
   }
   private checkTools(ev: FederatedPointerEvent) {
     ev.stopPropagation();

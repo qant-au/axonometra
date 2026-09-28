@@ -148,6 +148,22 @@ test('a left drag pans in View mode', async ({ page }) => {
   expect(after.main.y - before.main.y).toBeCloseTo(-100, -1);
 });
 
+test('pan and zoom still work after drawing walls', async ({ page }) => {
+  await start(page);
+  // Drawing pauses pan and zoom; this sequence used to leave them paused.
+  await drawWall(page, 500, 800, 400);
+  await page.getByRole('button', { name: 'View', exact: true }).click();
+  const before = await axo(page);
+  await drag(page, [700, 300], [500, 200]);
+  const panned = await axo(page);
+  expect(panned.main.x - before.main.x).toBeCloseTo(-200, -1);
+  await page.mouse.move(650, 400);
+  await page.mouse.wheel(0, -400);
+  await expect
+    .poll(async () => (await axo(page)).main.scale)
+    .toBeGreaterThan(1.1);
+});
+
 test('right-clicking a wall while drawing does not split it', async ({
   page
 }) => {
