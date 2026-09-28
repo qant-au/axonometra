@@ -2,7 +2,8 @@
 //
 //   node scripts/sync-elements.mjs [path-to-elements-checkout]
 //
-// Copies dist/manifest.json and dist/plan/*.svg into src/res/catalog/elements/
+// Copies dist/manifest.json, dist/models.json and dist/plan/*.svg into
+// src/res/catalog/elements/
 // and records the source commit. Defaults to ../elements next to this repo.
 // Run `npm run build` in the elements checkout first.
 import { execFileSync } from 'node:child_process';
@@ -25,6 +26,7 @@ const dirty = execFileSync('git', ['-C', source, 'status', '--porcelain'], { enc
 rmSync(target, { recursive: true, force: true });
 mkdirSync(target, { recursive: true });
 cpSync(resolve(dist, 'manifest.json'), resolve(target, 'manifest.json'));
+cpSync(resolve(dist, 'models.json'), resolve(target, 'models.json'));
 cpSync(resolve(dist, 'plan'), resolve(target, 'plan'), { recursive: true });
 writeFileSync(
   resolve(target, 'SOURCE.md'),

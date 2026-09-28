@@ -6,6 +6,8 @@ import { METER } from '../editor/constants';
 import type { FloorPlanSerializable } from '../editor/persistence/FloorPlanSerializable';
 import { floorInput } from './fromPlan';
 import { floorGeometry, type Prism } from './geometry';
+import type { ItemModel } from '../../res/catalog/models';
+import { placeModel } from './placeModel';
 
 /** Height of a free-standing item with no recorded or catalogue height. */
 const DEFAULT_ITEM_HEIGHT = 0.7 * METER;
@@ -26,6 +28,9 @@ export type HeightLookup = (
   id: string
 ) => { height: number; mount: number } | undefined;
 
+/** A catalogue item's 3D model, if it has one. */
+export type ModelLookup = (id: string) => ItemModel | undefined;
+
 export interface SceneModel {
   prisms: Prism[];
   /** plan-unit box around everything drawn, for framing the camera */
@@ -37,7 +42,8 @@ export interface SceneModel {
 export function sceneModel(
   plan: FloorPlanSerializable,
   options: SceneOptions,
-  lookup: HeightLookup
+  lookup: HeightLookup,
+  models: ModelLookup = () => undefined
 ): SceneModel {
   const indices = options.allFloors
     ? plan.floors.map((_, i) => i)
@@ -79,6 +85,13 @@ export function sceneModel(
         item.mountM != null ? item.mountM * METER : (catalogue?.mount ?? 0);
       const z0 = input.elevation + mount;
       if (cut != null && z0 >= cut) continue; // hangs above the cut
+      furnitureCount++;
+      const model = models(item.texturePath);
+      if (model) {
+        prisms.push(...placeModel(item, model, z0, tall, cut));
+        continue;
+      }
+      // No model: a box of the item's footprint and height.
       prisms.push({
         kind: 'furniture',
         footprint: furnitureFootprint({
@@ -92,7 +105,6 @@ export function sceneModel(
         z0,
         z1: cut == null ? z0 + tall : Math.min(z0 + tall, cut)
       });
-      furnitureCount++;
     }
   }
 

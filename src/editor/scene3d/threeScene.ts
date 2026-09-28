@@ -49,21 +49,27 @@ export interface BuiltScene {
 export function buildGroup(prisms: Prism[]): BuiltScene {
   const group = new Group();
   const owned: { dispose: () => void }[] = [];
-  const byKind = new Map<PrismKind, BufferGeometry[]>();
+  // Grouped by kind and colour: each group is one merged mesh.
+  const byKind = new Map<
+    string,
+    { kind: PrismKind; colour: string; parts: BufferGeometry[] }
+  >();
   for (const p of prisms) {
     if (p.footprint.length < 3) continue;
-    const list = byKind.get(p.kind) ?? [];
-    list.push(prismGeometry(p));
-    byKind.set(p.kind, list);
+    const colour = p.colour ?? COLOURS[p.kind];
+    const key = `${p.kind} ${colour}`;
+    const group = byKind.get(key) ?? { kind: p.kind, colour, parts: [] };
+    group.parts.push(prismGeometry(p));
+    byKind.set(key, group);
   }
   const edgeMaterial = new LineBasicMaterial({ color: EDGE_COLOUR });
   owned.push(edgeMaterial);
-  for (const [kind, parts] of byKind) {
+  for (const { kind, colour, parts } of byKind.values()) {
     const merged = mergeGeometries(parts);
     for (const part of parts) part.dispose();
     if (!merged) continue;
     const material = new MeshStandardMaterial({
-      color: COLOURS[kind],
+      color: colour,
       roughness: 0.9,
       metalness: 0,
       // Push faces back a touch so the outlines draw over them cleanly.

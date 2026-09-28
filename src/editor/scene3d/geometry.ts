@@ -50,6 +50,8 @@ export interface Prism {
   z1: number;
   /** the wall a wall/sill/lintel piece belongs to */
   wallId?: string;
+  /** a furniture part's own colour; otherwise the kind's colour */
+  colour?: string;
 }
 
 export interface Room {

@@ -142,7 +142,12 @@ Each phase ships on its own and is demoable.
    it keeps one renderer path to test. Revisit if phase 4 or 5 needs more.
 4. **Furniture models:** export each element's modelled parts from the
    element library into the vendored manifest, and build the 3D meshes from
-   them in place of height boxes.
+   them in place of height boxes. _Done 2026-09-28:_ the library writes
+   `dist/models.json` (solids with colours, 48 KB for 229 items), vendored
+   with the rest; `scene3d/placeModel.ts` scales each model to its item's
+   footprint and height, mirrors it with the item's orientation, turns it and
+   raises it to its mount height. Symbol devices sit at real size in the
+   middle of their 40 cm square. Items with no model keep the height box.
 5. **Walk-through:** first-person mode with collision, touch controls, the
    reduced-motion teleport mode, and storey changes.
 6. **glTF export**, and embedding messages for it (`axo:export`).

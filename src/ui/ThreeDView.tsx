@@ -35,6 +35,7 @@ import { serializer } from '../editor/editor/persistence/Serializer';
 import { sceneModel } from '../editor/scene3d/sceneModel';
 import { buildGroup } from '../editor/scene3d/threeScene';
 import { getItemHeights } from '../res/catalog';
+import { getItemModel } from '../res/catalog/models';
 import { useFloorPlanStore } from '../stores/FloorPlanStore';
 import classes from './ThreeDView.module.css';
 
@@ -74,7 +75,8 @@ export function ThreeDView({ opened, onClose }: Props) {
       sceneModel(
         plan,
         { allFloors, current, cutaway: cutaway ? CUTAWAY : null },
-        getItemHeights
+        getItemHeights,
+        getItemModel
       ),
     [plan, allFloors, current, cutaway]
   );
@@ -83,8 +85,12 @@ export function ThreeDView({ opened, onClose }: Props) {
   // off does not push the walls out of view.
   const frameBounds = useMemo(
     () =>
-      sceneModel(plan, { allFloors, current, cutaway: null }, getItemHeights)
-        .bounds,
+      sceneModel(
+        plan,
+        { allFloors, current, cutaway: null },
+        getItemHeights,
+        getItemModel
+      ).bounds,
     [plan, allFloors, current]
   );
 
