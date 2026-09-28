@@ -45,17 +45,35 @@ export class Main extends Viewport {
     this.cursor = 'none';
   }
 
+  private unsubscribeTool?: () => void;
+
+  // Right-drag pans in every tool; in View, the hand tool, a left drag does
+  // too, since nothing else is waiting for it there.
+  private panWith(tool: Tool) {
+    return this.drag({ mouseButtons: tool === Tool.View ? 'all' : 'right' });
+  }
+
+  public override destroy(options?: Parameters<Viewport['destroy']>[0]) {
+    this.unsubscribeTool?.();
+    super.destroy(options);
+  }
+
   private setup() {
     // React StrictMode (dev) mounts EditorRoot twice; the first viewport is
     // destroyed before this deferred callback runs. Bail out rather than wire
     // plugins onto a torn-down viewport (whose transform is now null) — v7's
     // clamp plugin reads viewport.x and would throw.
     if (this.destroyed) return;
-    this.drag({ mouseButtons: 'right' })
+    this.panWith(useStore.getState().activeTool)
       .clamp({ direction: 'all' })
       .pinch()
       .wheel()
       .clampZoom({ minScale: 1.0, maxScale: 6.0 });
+    this.unsubscribeTool = useStore.subscribe((state, previous) => {
+      if (state.activeTool !== previous.activeTool) {
+        this.panWith(state.activeTool);
+      }
+    });
     this.bkgPattern = TilingSprite.from('./pattern.svg', {
       width: this.worldWidth ?? 0,
       height: this.worldHeight ?? 0
