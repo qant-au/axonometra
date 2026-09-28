@@ -49,6 +49,9 @@ function LengthForm({ wall }: { wall: Wall }) {
           // Clamping on blur rewrote 0 to 0.01 as focus left the field, which
           // removed the error and moved the buttons under the pointer.
           clampBehavior="none"
+          // Its stepper buttons have no accessible name; the arrow keys step
+          // the value, so the field goes without them.
+          hideControls
           step={0.1}
           decimalScale={2}
           data-autofocus
