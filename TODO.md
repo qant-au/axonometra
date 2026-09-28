@@ -90,4 +90,5 @@ prefix: axo
 - [x] 3D phase 4: furniture models - render catalogue items from the elements library's 3D parts in the 3D view instead of height boxes (see 3D-PLAN.md) @due(2026-11-06) @id(axo-025) @depends(axo-024)
       shipped - 3D view builds items from elements models.json; 160 unit tests pass; not deployed
 - [ ] 3D phase 5: walk-through - first-person mode with wall collision, touch controls, reduced-motion teleport mode, storey changes (see 3D-PLAN.md) @due(2026-11-20) @id(axo-026) @depends(axo-024)
-- [ ] 3D phase 6: glTF/GLB export and an axo:export embedding message (see 3D-PLAN.md) @priority(low) @due(2026-11-27) @id(axo-027) @depends(axo-024)
+- [x] 3D phase 6: glTF/GLB export and an axo:export embedding message (see 3D-PLAN.md) @priority(low) @due(2026-11-27) @id(axo-027) @depends(axo-024)
+      shipped - glb export (button + axo:export); 166 unit + 16 e2e pass locally; not deployed
