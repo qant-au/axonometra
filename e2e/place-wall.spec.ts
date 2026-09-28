@@ -137,7 +137,7 @@ test.describe('place-wall critical flow', () => {
     const parsed = JSON.parse(stored ?? '{}');
     expect(parsed).toHaveProperty('floors');
     expect(parsed).toHaveProperty('wallNodeId');
-    expect(parsed.version).toBe(1);
+    expect(parsed.version).toBe(2);
   });
 
   test('round-trips a saved plan via "Load from local save"', async ({
