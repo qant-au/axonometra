@@ -53,7 +53,7 @@ export function HelpDialog() {
     body: (
       <>
         <Group>
-          <IconClick /> <p>Right click and drag to move around the map </p>
+          <IconClick /> <p>Click and drag to move around the plan</p>
         </Group>
         <Group>
           <IconZoomIn /> <p>Use scroll wheel to zoom in or out</p>
