@@ -268,11 +268,16 @@ async function selectedSofa(page: Page) {
   await page.getByRole('menuitem', { name: 'Add furniture' }).click();
   await page.getByRole('dialog').getByAltText('Sofa, 3-seat').click();
   await page.keyboard.press('Escape');
+  // The drawer's overlay catches clicks until its closing transition ends.
+  await expect(page.getByRole('dialog')).toBeHidden();
   await page.getByRole('button', { name: 'Edit' }).click();
   const s = await sofa(page);
   await page.mouse.move(s.cx, s.cy);
   await page.mouse.down();
   await page.mouse.up();
+  await expect
+    .poll(async () => (await handles(page)).length)
+    .toBeGreaterThan(0);
   return s;
 }
 
@@ -298,6 +303,15 @@ test('the rotate handle turns an item about its centre', async ({ page }) => {
   expect(after.rotation - before.rotation).toBeCloseTo(Math.PI / 2, 1);
   expect(Math.abs(after.cx - before.cx)).toBeLessThan(3);
   expect(Math.abs(after.cy - before.cy)).toBeLessThan(3);
+
+  // Turned, the width handle sits under the width label; it still resizes.
+  const widthBefore = await sofaSize(page);
+  const width = (await handles(page)).find((h) => h.cursor === 'ew-resize')!;
+  await page.mouse.move(width.x, width.y);
+  await page.mouse.down();
+  await page.mouse.move(width.x, width.y + 40, { steps: 10 });
+  await page.mouse.up();
+  expect((await sofaSize(page)).w - widthBefore.w).toBeCloseTo(40, -1);
 });
 
 test('right-clicking a selected item turns it', async ({ page }) => {

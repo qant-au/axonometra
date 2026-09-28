@@ -97,6 +97,9 @@ export class TransformLayer extends Container {
 
   private addLabel(axis: LabelAxis) {
     this.labels[axis] = new Label();
+    // A read-out, not a control: once the item is turned, a label can sit
+    // over a handle, and it must not take the press meant for the handle.
+    this.labels[axis].eventMode = 'none';
     this.border.addChild(this.labels[axis]);
   }
 
