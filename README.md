@@ -51,7 +51,7 @@ Run `bash restart.sh NO_WATCH=1` for a containerised local preview, `npm run tes
 
 ## Saving & loading
 
-- **Ctrl+S** saves the current plan to your browser's local storage.
+- **Ctrl+S** (Cmd+S on macOS) saves the current plan to your browser's local storage.
 - The toolbar **Save** button downloads the plan as an `axonometra-plan-*.json` file.
 - Load a plan from the welcome dialog ("Load from disk" / "Load from local save") or the toolbar's **Load plan** button.
 - Saving is manual — there is no periodic autosave.

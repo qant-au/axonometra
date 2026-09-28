@@ -105,7 +105,8 @@ export function EditorRoot() {
           return;
         }
       }
-      if (e.code === 'KeyS' && e.ctrlKey) {
+      // Ctrl+S, or Cmd+S on a Mac (the browser's own save dialog otherwise).
+      if (e.code === 'KeyS' && mod) {
         e.preventDefault();
         const data = serializer.serialize();
         localStorage.setItem('autosave', data);
