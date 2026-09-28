@@ -347,7 +347,7 @@ export function ToolNavbar() {
           <Stack align="center" gap={0}>
             <NavbarLink
               icon={IconPrinter}
-              label="Print"
+              label="Save plan image"
               onClick={() => {
                 const action = new PrintAction();
                 action.execute();
