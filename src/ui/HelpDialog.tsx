@@ -178,6 +178,8 @@ export function HelpDialog() {
         size="lg"
         radius="md"
         position={{ top: 20, right: 20 }}
+        role="dialog"
+        aria-label={`Help: ${body.title}`}
       >
         {/* Dialog's own close button cannot be named, so this one replaces it. */}
         <CloseButton

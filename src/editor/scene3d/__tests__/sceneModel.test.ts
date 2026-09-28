@@ -129,6 +129,7 @@ describe('sceneModel', () => {
       noCatalogue
     );
     expect(cut.furnitureCount).toBe(0);
+    expect(cut.hiddenCount).toBe(1);
   });
 
   it('does not draw doors and windows as furniture', () => {

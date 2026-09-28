@@ -37,6 +37,8 @@ export interface SceneModel {
   bounds: { min: [number, number, number]; max: [number, number, number] };
   wallCount: number;
   furnitureCount: number;
+  /** items left out because they hang above the cut-away */
+  hiddenCount: number;
 }
 
 export function sceneModel(
@@ -52,6 +54,7 @@ export function sceneModel(
   const prisms: Prism[] = [];
   let wallCount = 0;
   let furnitureCount = 0;
+  let hiddenCount = 0;
 
   for (const index of indices) {
     const floor = plan.floors[index];
@@ -84,7 +87,12 @@ export function sceneModel(
       const mount =
         item.mountM != null ? item.mountM * METER : (catalogue?.mount ?? 0);
       const z0 = input.elevation + mount;
-      if (cut != null && z0 >= cut) continue; // hangs above the cut
+      // Hangs above the cut: left out, but counted, so the description
+      // does not claim the item is not there.
+      if (cut != null && z0 >= cut) {
+        hiddenCount++;
+        continue;
+      }
       furnitureCount++;
       const model = models(item.texturePath);
       if (model) {
@@ -108,7 +116,13 @@ export function sceneModel(
     }
   }
 
-  return { prisms, bounds: boundsOf(prisms), wallCount, furnitureCount };
+  return {
+    prisms,
+    bounds: boundsOf(prisms),
+    wallCount,
+    furnitureCount,
+    hiddenCount
+  };
 }
 
 function boundsOf(prisms: Prism[]): SceneModel['bounds'] {

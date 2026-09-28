@@ -81,7 +81,10 @@ export function ThreeDView({ opened, onClose }: Props) {
       ),
     [plan, allFloors, current, cutaway]
   );
-  const empty = model.wallCount === 0 && model.furnitureCount === 0;
+  const empty =
+    model.wallCount === 0 &&
+    model.furnitureCount === 0 &&
+    model.hiddenCount === 0;
   // The camera frames the whole-height building, so switching the cut-away
   // off does not push the walls out of view.
   const frameBounds = useMemo(
@@ -217,8 +220,8 @@ export function ThreeDView({ opened, onClose }: Props) {
   const label = `3D view of ${
     allFloors ? `all ${plan.floors.length} floors` : `floor ${current}`
   }: ${model.wallCount} walls and ${model.furnitureCount} pieces of furniture${
-    cutaway ? ', walls cut away' : ''
-  }.`;
+    model.hiddenCount ? ` (${model.hiddenCount} more above the cut)` : ''
+  }${cutaway ? ', walls cut away' : ''}.`;
   useEffect(() => {
     stage.current?.renderer.domElement.setAttribute('aria-label', label);
   }, [label, host, empty]);
@@ -347,5 +350,10 @@ function frame(s: Stage, bounds: { min: number[]; max: number[] }) {
   s.camera.near = distance / 100;
   s.camera.far = distance * 20;
   s.camera.updateProjectionMatrix();
+  // Settle the controls at once: with damping on, leftover motion from a
+  // drag or turn would otherwise carry on past the reset.
+  const damping = s.controls.enableDamping;
+  s.controls.enableDamping = false;
   s.controls.update();
+  s.controls.enableDamping = damping;
 }
