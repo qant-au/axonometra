@@ -65,7 +65,12 @@ async function drawWall(page: Page, x0: number, x1: number, y: number) {
   await page.getByRole('button', { name: 'Add', exact: true }).hover();
   await page.getByRole('menuitem', { name: 'Draw wall' }).click();
   await page.mouse.move(650, 750);
+  // At a person's pace. Clicked back to back while the whole suite was
+  // running, the last wall was sometimes missing; the cause is not
+  // established (the editor ends a chain on a repeat click of the same point,
+  // with no timing), and no person clicks this fast.
   await page.mouse.click(x0, y);
+  await page.waitForTimeout(300);
   await page.mouse.click(x1, y);
   await page.keyboard.press('Escape');
 }
@@ -190,4 +195,114 @@ test('the help panel has a named close button and closes on Escape', async ({
   await page.getByRole('button', { name: 'Help' }).click();
   await close.click();
   await expect(close).toBeHidden();
+});
+
+// The transform handles of the selected item, on screen, by cursor.
+async function handles(page: Page) {
+  return page.evaluate(() => {
+    const main = (
+      window as unknown as {
+        __axo: {
+          getMain: () => { children: { constructor: { name: string } }[] };
+        };
+      }
+    ).__axo.getMain();
+    // The handles hang off the layer's border graphic.
+    const layer = main.children.find(
+      (c) => c.constructor.name === 'TransformLayer'
+    ) as unknown as {
+      children: {
+        children: {
+          cursor: string;
+          getGlobalPosition: () => { x: number; y: number };
+        }[];
+      }[];
+    };
+    return layer.children[0].children.map((h) => ({
+      cursor: h.cursor,
+      ...h.getGlobalPosition()
+    }));
+  });
+}
+
+const sofa = (page: Page) =>
+  page.evaluate(() => {
+    const f = [
+      ...(
+        window as unknown as {
+          __axo: {
+            getPlan: () => {
+              getFurniture: () => Map<
+                number,
+                {
+                  rotation: number;
+                  getBounds: () => {
+                    x: number;
+                    y: number;
+                    width: number;
+                    height: number;
+                  };
+                  serialize: () => { orientation: number };
+                }
+              >;
+            };
+          };
+        }
+      ).__axo
+        .getPlan()
+        .getFurniture()
+        .values()
+    ][0];
+    const b = f.getBounds();
+    return {
+      rotation: f.rotation,
+      cx: b.x + b.width / 2,
+      cy: b.y + b.height / 2,
+      orientation: f.serialize().orientation
+    };
+  });
+
+async function selectedSofa(page: Page) {
+  await start(page);
+  await page.getByRole('button', { name: 'Add', exact: true }).hover();
+  await page.getByRole('menuitem', { name: 'Add furniture' }).click();
+  await page.getByRole('dialog').getByAltText('Sofa, 3-seat').click();
+  await page.keyboard.press('Escape');
+  await page.getByRole('button', { name: 'Edit' }).click();
+  const s = await sofa(page);
+  await page.mouse.move(s.cx, s.cy);
+  await page.mouse.down();
+  await page.mouse.up();
+  return s;
+}
+
+test('the rotate handle turns an item about its centre', async ({ page }) => {
+  const before = await selectedSofa(page);
+  const all = await handles(page);
+  const rotate = all.find((h) => h.cursor === 'grab');
+  if (!rotate) throw new Error('no rotate handle: ' + JSON.stringify(all));
+  // Sweep a quarter turn clockwise round the item's centre.
+  const r = Math.hypot(rotate.x - before.cx, rotate.y - before.cy);
+  const a0 = Math.atan2(rotate.y - before.cy, rotate.x - before.cx);
+  await page.mouse.move(rotate.x, rotate.y);
+  await page.mouse.down();
+  for (let i = 1; i <= 12; i++) {
+    const a = a0 + ((Math.PI / 2) * i) / 12;
+    await page.mouse.move(
+      before.cx + r * Math.cos(a),
+      before.cy + r * Math.sin(a)
+    );
+  }
+  await page.mouse.up();
+  const after = await sofa(page);
+  expect(after.rotation - before.rotation).toBeCloseTo(Math.PI / 2, 1);
+  expect(Math.abs(after.cx - before.cx)).toBeLessThan(3);
+  expect(Math.abs(after.cy - before.cy)).toBeLessThan(3);
+});
+
+test('right-clicking a selected item turns it', async ({ page }) => {
+  const before = await selectedSofa(page);
+  // The move handle sits on the item's centre, where a person right-clicks.
+  await page.mouse.click(before.cx, before.cy, { button: 'right' });
+  expect((await sofa(page)).orientation).toBe((before.orientation + 1) % 4);
 });

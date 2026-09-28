@@ -39,6 +39,7 @@ export class Handle extends Graphics {
   private startRotaton!: number;
   private startScale: Point;
   private targetStartCenterPoint: Point;
+  private targetCentreLocal: Point = { x: 0, y: 0 };
   localCoords: { x: number; y: number };
   constructor(handleConfig: IHandleConfig) {
     super();
@@ -92,7 +93,7 @@ export class Handle extends Graphics {
         this.cursor = 'nwse-resize';
         break;
       case HandleType.Rotate:
-        this.cursor = 'wait';
+        this.cursor = 'grab';
         break;
     }
     if (handleConfig.pos) {
@@ -103,6 +104,12 @@ export class Handle extends Graphics {
     this.on('pointerup', this.onMouseUp);
     this.on('pointerupoutside', this.onMouseUp);
     this.on('globalpointermove', this.onMouseMove);
+    // The handles sit on top of their item (the move handle on its centre),
+    // so a right-click there is meant for the item: it turns it.
+    this.on('rightdown', (ev: FederatedPointerEvent) => {
+      ev.stopPropagation();
+      this.target?.emit('rightdown', ev);
+    });
   }
 
   private onMouseDown(ev: FederatedPointerEvent) {
@@ -112,10 +119,16 @@ export class Handle extends Graphics {
     this.mouseStartPoint.x = ev.global.x;
     this.mouseStartPoint.y = ev.global.y; // unde se afla target la mousedown
     this.targetStartPoint = this.target.getGlobalPosition();
-    this.targetStartCenterPoint.x =
-      this.targetStartPoint.x + this.target.width / 2;
-    this.targetStartCenterPoint.y =
-      this.targetStartPoint.y + this.target.height / 2;
+    // The item's centre, on screen and in its own coordinates: rotation turns
+    // about it (anchor and mirroring included, via its local bounds).
+    const local = this.target.getLocalBounds();
+    this.targetCentreLocal = {
+      x: local.x + local.width / 2,
+      y: local.y + local.height / 2
+    };
+    const centre = this.target.toGlobal(this.targetCentreLocal);
+    this.targetStartCenterPoint.x = centre.x;
+    this.targetStartCenterPoint.y = centre.y;
     this.startRotaton = this.target.rotation;
     this.startScale.x = this.target.scale.x;
     this.startScale.y = this.target.scale.y;
@@ -154,19 +167,28 @@ export class Handle extends Graphics {
     const sizeFactor = endDistance / startDistance;
     switch (this.type) {
       case HandleType.Rotate: {
-        const relativeStart = {
-          x: this.mouseStartPoint.x - this.targetStartPoint.x,
-          y: this.mouseStartPoint.y - this.targetStartPoint.y
-        };
-        const relativeEnd = {
-          x: this.mouseEndPoint.x - this.targetStartPoint.x,
-          y: this.mouseEndPoint.y - this.targetStartPoint.y
-        };
-
-        const endAngle = Math.atan2(relativeEnd.y, relativeEnd.x);
-        const startAngle = Math.atan2(relativeStart.y, relativeStart.x);
-        const deltaAngle = endAngle - startAngle;
-        this.target.rotation = this.startRotaton + deltaAngle;
+        // Turn about the item's centre, by the angle the mouse has swept
+        // round it. The item's position is its corner, so move the corner
+        // to keep the centre where it was.
+        const c = this.targetStartCenterPoint;
+        const startAngle = Math.atan2(
+          this.mouseStartPoint.y - c.y,
+          this.mouseStartPoint.x - c.x
+        );
+        const endAngle = Math.atan2(
+          this.mouseEndPoint.y - c.y,
+          this.mouseEndPoint.x - c.x
+        );
+        this.target.rotation = this.startRotaton + endAngle - startAngle;
+        const parent = this.target.parent;
+        if (parent) {
+          const want = parent.toLocal(c);
+          const now = parent.toLocal(
+            this.target.toGlobal(this.targetCentreLocal)
+          );
+          this.target.position.x += want.x - now.x;
+          this.target.position.y += want.y - now.y;
+        }
         break;
       }
       case HandleType.Horizontal:
