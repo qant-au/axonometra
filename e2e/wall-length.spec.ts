@@ -1,4 +1,5 @@
 import { test, expect, Page } from '@playwright/test';
+import { hasAxo } from './axo';
 
 // Typing a wall's length (upstream arcada issue #13): double-click a wall in
 // Edit mode, enter metres, and the wall resizes about its midpoint as one
@@ -46,11 +47,10 @@ test('double-clicking a wall in Edit mode sets its length', async ({
   await expect(page.getByRole('button', { name: /new plan/i })).toHaveCount(0, {
     timeout: 3000
   });
-  const hasAxo = await page.evaluate(
-    () =>
-      typeof (window as unknown as { __axo?: unknown }).__axo !== 'undefined'
+  test.skip(
+    !(await hasAxo(page)),
+    'window.__axo is only present in DEV builds'
   );
-  test.skip(!hasAxo, 'window.__axo is only present in DEV builds');
   await page.waitForFunction(
     () => !!(window as unknown as { __axo?: Axo }).__axo?.getMain().bkgPattern,
     undefined,

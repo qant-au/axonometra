@@ -1,4 +1,5 @@
 import { test, expect, Page } from '@playwright/test';
+import { hasAxo } from './axo';
 
 // Undo/redo e2e: each canvas click in the Wall tool is one undo step, walked
 // back and forward with the keyboard and the toolbar. Uses the DEV-only
@@ -32,11 +33,10 @@ test.describe('undo / redo', () => {
       0,
       { timeout: 3000 }
     );
-    const hasAxo = await page.evaluate(
-      () =>
-        typeof (window as unknown as { __axo?: unknown }).__axo !== 'undefined'
+    test.skip(
+      !(await hasAxo(page)),
+      'window.__axo is only present in DEV builds'
     );
-    test.skip(!hasAxo, 'window.__axo is only present in DEV builds');
     await page.waitForFunction(
       () =>
         !!(window as unknown as { __axo?: Axo }).__axo?.getMain().bkgPattern,

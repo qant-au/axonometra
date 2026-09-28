@@ -1,4 +1,5 @@
 import { test, expect, Page } from '@playwright/test';
+import { hasAxo } from './axo';
 
 // Keyboard-only editing on the canvas (KeyboardCursor): draw a wall, pick a
 // point up and move it, cancel a move, undo, and delete, without the mouse.
@@ -47,11 +48,10 @@ test.describe('keyboard canvas', () => {
       0,
       { timeout: 3000 }
     );
-    const hasAxo = await page.evaluate(
-      () =>
-        typeof (window as unknown as { __axo?: unknown }).__axo !== 'undefined'
+    test.skip(
+      !(await hasAxo(page)),
+      'window.__axo is only present in DEV builds'
     );
-    test.skip(!hasAxo, 'window.__axo is only present in DEV builds');
     await page.waitForFunction(
       () =>
         !!(window as unknown as { __axo?: Axo }).__axo?.getMain().bkgPattern,

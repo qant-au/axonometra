@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { hasAxo } from './axo';
 
 // The furniture drawer lists the shared element library by group, and adding
 // an item puts it on the plan at its real footprint with its own icon. Uses
@@ -21,11 +22,10 @@ test('add a server rack from the furniture drawer', async ({ page }) => {
   await expect(page.getByRole('button', { name: /new plan/i })).toHaveCount(0, {
     timeout: 3000
   });
-  const hasAxo = await page.evaluate(
-    () =>
-      typeof (window as unknown as { __axo?: unknown }).__axo !== 'undefined'
+  test.skip(
+    !(await hasAxo(page)),
+    'window.__axo is only present in DEV builds'
   );
-  test.skip(!hasAxo, 'window.__axo is only present in DEV builds');
   await page.waitForFunction(
     () => !!(window as unknown as { __axo?: Axo }).__axo?.getMain().bkgPattern,
     undefined,

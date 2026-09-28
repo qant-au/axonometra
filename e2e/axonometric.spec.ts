@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { hasAxo } from './axo';
 
 // The axonometric view: draw a small room with a door, open the view from the
 // toolbar, and turn it. Tools go through the DEV-only window.__axo handle
@@ -15,11 +16,10 @@ test('shows the plan in an axonometric view that can be turned', async ({
   await page.goto('/');
   await page.getByRole('button', { name: /new plan/i }).click();
   await expect(page.getByRole('button', { name: /new plan/i })).toHaveCount(0);
-  const hasAxo = await page.evaluate(
-    () =>
-      typeof (window as unknown as { __axo?: unknown }).__axo !== 'undefined'
+  test.skip(
+    !(await hasAxo(page)),
+    'window.__axo is only present in DEV builds'
   );
-  test.skip(!hasAxo, 'window.__axo is only present in DEV builds');
   await page.waitForFunction(
     () => !!(window as unknown as { __axo?: Axo }).__axo?.getMain().bkgPattern
   );

@@ -4,6 +4,17 @@ import react from '@vitejs/plugin-react';
 export default defineConfig({
   plugins: [react()],
   server: { host: '0.0.0.0', port: 4891, strictPort: true },
+  // three.js and its add-ons are only reached through lazy imports (the 3D
+  // view and the embed export), so the dev server would discover them on
+  // first use and reload the page mid-session. Pre-bundle them at startup.
+  optimizeDeps: {
+    include: [
+      'three',
+      'three/addons/controls/OrbitControls.js',
+      'three/addons/exporters/GLTFExporter.js',
+      'three/addons/utils/BufferGeometryUtils.js'
+    ]
+  },
   preview: { host: '0.0.0.0', port: 4891, strictPort: true },
   build: {
     outDir: 'dist',
