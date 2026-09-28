@@ -2,7 +2,14 @@
 // height, furniture as low blocks, doors and windows as panels in their walls.
 // Pure geometry over plain data, so it is testable without Pixi and draws
 // to SVG. Plan units are the editor's: 100 per metre, y pointing down.
-import { METER } from '../editor/constants';
+import {
+  DOOR_HEIGHT,
+  METER,
+  SLAB_THICKNESS,
+  STOREY_HEIGHT,
+  WALL_HEIGHT,
+  WINDOW_SILL
+} from '../editor/constants';
 
 export interface ScenePoint {
   x: number;
@@ -50,11 +57,8 @@ export interface Projection {
   viewBox: [number, number, number, number];
 }
 
-export const WALL_HEIGHT = 2.7 * METER;
-export const STOREY_HEIGHT = 3.0 * METER;
-const SLAB = 0.1 * METER;
-const DOOR_HEIGHT = 2.1 * METER;
-const WINDOW_SILL = 0.9 * METER;
+export { WALL_HEIGHT, STOREY_HEIGHT };
+const SLAB = SLAB_THICKNESS;
 const DEFAULT_FURNITURE_HEIGHT = 0.7 * METER;
 
 const COS30 = Math.cos(Math.PI / 6);

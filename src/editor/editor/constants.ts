@@ -3,6 +3,14 @@ export const METER = 100;
 export const WALL_THICKNESS = 0.2 * METER;
 export const INTERIOR_WALL_THICKNESS = 0.16 * METER;
 
+// Building defaults for the axonometric and 3D views, used when a plan does
+// not record its own (plan format v2 fields are optional).
+export const WALL_HEIGHT = 2.7 * METER;
+export const STOREY_HEIGHT = 3.0 * METER;
+export const SLAB_THICKNESS = 0.1 * METER;
+export const DOOR_HEIGHT = 2.1 * METER;
+export const WINDOW_SILL = 0.9 * METER;
+
 export const LABEL_OFFSET = 10;
 
 // AddWallManager rejects new nodes within this distance of an existing node

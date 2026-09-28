@@ -129,7 +129,10 @@ Each phase ships on its own and is demoable.
    using today's constants as defaults. Update `PLAN-FORMAT.md` and
    `EMBEDDING.md`: embedding hosts store these files.
 2. **Scene geometry, pure and tested:** mitred walls with openings, room
-   detection, slabs. No renderer yet; unit tests only.
+   detection, slabs. No renderer yet; unit tests only. _Done 2026-09-28:_
+   `src/editor/scene3d/` (`geometry.ts` for the maths, `fromPlan.ts` to
+   build its input from a saved v2 floor). Output is prisms: a plan polygon
+   and two heights.
 3. **3D orbit view** ("dollhouse"): lazy-loaded three.js, orbit/zoom/pan, show
    one floor or all floors stacked, cut-away of upper walls, footprint boxes for
    furniture, PNG export. **This is the version to launch the website with.**
