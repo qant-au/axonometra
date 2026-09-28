@@ -68,22 +68,25 @@ The same polygons give room areas for the 2D view later, which is a feature
 people will ask for anyway. Open plans with gaps simply have no slab over the
 gap, which is correct.
 
-### Furniture: CC0 models, with a box when there is no model
+### Furniture: from the shared element library
 
-- **Kenney Furniture Kit** and **Quaternius** interior packs are CC0 glTF, with
-  broad generic coverage. Poly Haven (CC0) has better-quality single pieces,
-  including a wheelchair.
-- **There is no permissive healthcare set.** Hospital beds, grab rails,
-  clinical sinks and so on are mostly paid or non-commercial on the model
-  marketplaces. For the healthcare positioning this is the real gap: plan to
-  commission or model a small set ourselves (MIT or CC0, in-repo), not to find
-  one.
-- **Fallback for anything without a model:** extrude its footprint to a
-  per-kind height, as the isometric view already does. So every item shows up
-  in 3D from day one, and models replace boxes one at a time.
-- Catalogue entries gain optional `model` (a glTF path) and `heightM`. Record
-  each asset's source and licence in the catalogue, not in a separate file that
-  drifts.
+**Superseded 2026-09-28.** The first version of this section proposed CC0
+glTF packs (Kenney, Quaternius, Poly Haven). Instead, the catalogue now comes
+from our own element library, `qant-au/elements`, which Axonometra shares with
+Reticulyne (see the README). Every item there is modelled once as simple solids
+at real size (boxes, cylinders, domes, extruded outlines, with surface marks),
+and the plan icons are generated from that model. So:
+
+- **The 3D view builds meshes from the same parts.** No asset pipeline, no
+  third-party licences, and the 2D icon, the isometric icon and the 3D object
+  always agree.
+- **Heights exist today.** Every catalogue item already carries `heightM` and,
+  for wall and ceiling gear, `mountM`; the axonometric view uses them.
+- **Phase 3 can start with height boxes** (footprint × `heightM`) and phase 4
+  swaps in the modelled parts, which the library would need to export into the
+  vendored manifest (today it vendors only the plan SVGs).
+- **Healthcare fixtures are parked** (decision 2026-09-28): not in scope for
+  now.
 
 ### Walk-through controls
 
@@ -130,9 +133,9 @@ Each phase ships on its own and is demoable.
 3. **3D orbit view** ("dollhouse"): lazy-loaded three.js, orbit/zoom/pan, show
    one floor or all floors stacked, cut-away of upper walls, footprint boxes for
    furniture, PNG export. **This is the version to launch the website with.**
-4. **Furniture models:** a catalogue schema with `model`/`heightM`, the Kenney
-   and Quaternius picks, and a grown 2D catalogue to match (the 2D editor needs
-   the same pieces). Healthcare fixtures commissioned or modelled.
+4. **Furniture models:** export each element's modelled parts from the
+   element library into the vendored manifest, and build the 3D meshes from
+   them in place of height boxes.
 5. **Walk-through:** first-person mode with collision, touch controls, the
    reduced-motion teleport mode, and storey changes.
 6. **glTF export**, and embedding messages for it (`axo:export`).
