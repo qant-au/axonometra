@@ -84,7 +84,7 @@ function AddMenu({ setter }: { setter: Dispatch<SetStateAction<number>> }) {
   const getCategories = useFurnitureStore((s) => s.getCategories);
 
   const addButton = (
-    <UnstyledButton className={classes.link}>
+    <UnstyledButton className={classes.link} aria-label="Add">
       <IconPlus />
     </UnstyledButton>
   );
