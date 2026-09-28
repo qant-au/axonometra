@@ -75,8 +75,14 @@ export function EditorRoot() {
       if (!mainHolder.current) return;
       if (keyboardCursor.handleKey(e)) e.preventDefault();
     };
-    const handleCanvasFocus = () => {
-      if (mainHolder.current) keyboardCursor.focus();
+    // Only keyboard focus brings up the keyboard cursor. A mouse press also
+    // focuses the canvas, and showing the cursor then moved the view and put
+    // a crosshair where the person clicked; the first key press places it.
+    const handleCanvasFocus = (e: FocusEvent) => {
+      if (!mainHolder.current) return;
+      if ((e.target as HTMLElement).matches(':focus-visible')) {
+        keyboardCursor.focus();
+      }
     };
     const handleCanvasBlur = () => keyboardCursor.blur();
 
