@@ -7,6 +7,9 @@ import { Furniture } from '../Furniture';
 import { Wall } from '../Walls/Wall';
 import { TransformLayer } from './TransformLayer';
 
+/** Smallest width or depth a resize can reach, in plan units (cm). */
+const MIN_SIZE = 10;
+
 export enum HandleType {
   Horizontal,
   Vertical,
@@ -37,9 +40,9 @@ export class Handle extends Graphics {
   private targetStartPoint: Point;
   private mouseEndPoint: Point;
   private startRotaton!: number;
-  private startScale: Point;
   private targetStartCenterPoint: Point;
   private targetCentreLocal: Point = { x: 0, y: 0 };
+  private startSize: Point = { x: 0, y: 0 };
   localCoords: { x: number; y: number };
   constructor(handleConfig: IHandleConfig) {
     super();
@@ -55,7 +58,6 @@ export class Handle extends Graphics {
     this.mouseStartPoint = { x: 0, y: 0 };
     this.targetStartPoint = { x: 0, y: 0 };
 
-    this.startScale = { x: 0, y: 0 };
     this.targetStartCenterPoint = { x: 0, y: 0 };
     this.localCoords = { x: 0, y: 0 };
     this.mouseEndPoint = { x: 0, y: 0 };
@@ -130,8 +132,7 @@ export class Handle extends Graphics {
     this.targetStartCenterPoint.x = centre.x;
     this.targetStartCenterPoint.y = centre.y;
     this.startRotaton = this.target.rotation;
-    this.startScale.x = this.target.scale.x;
-    this.startScale.y = this.target.scale.y;
+    this.startSize = { x: this.target.width, y: this.target.height };
     TransformLayer.dragging = true;
     this.active = true;
     // this.target.setSmartPivot(0);
@@ -151,20 +152,6 @@ export class Handle extends Graphics {
     // unde se afla mouse-ul acum
     this.mouseEndPoint.x = ev.global.x;
     this.mouseEndPoint.y = ev.global.y;
-    // distanta de la obiect la punctul de start (unde a dat click utilizatorul)
-    const startDistance = this.getDistance(
-      this.mouseStartPoint,
-      this.targetStartPoint
-    );
-    // distanta de la obiect la pozitia noua a mouse-ului
-    const endDistance = this.getDistance(
-      this.mouseEndPoint,
-      this.targetStartPoint
-    );
-    // raportul dintre cele doua distante:
-    // raport > 1 -> se mareste obiectul
-    // raport < 1 -> se micsoreaza obiectul
-    const sizeFactor = endDistance / startDistance;
     switch (this.type) {
       case HandleType.Rotate: {
         // Turn about the item's centre, by the angle the mouse has swept
@@ -191,16 +178,32 @@ export class Handle extends Graphics {
         }
         break;
       }
-      case HandleType.Horizontal:
-        this.target.scale.x = this.startScale.x * sizeFactor;
+      // Resizing moves the edge by as much as the mouse has moved along the
+      // item's own axes. (Scaling by the ratio of the mouse's distances from
+      // the corner moved an edge by a fraction of the drag.)
+      case HandleType.Horizontal: {
+        const d = this.dragAlongItem();
+        this.target.width = Math.max(MIN_SIZE, this.startSize.x + d.x);
         break;
-      case HandleType.Vertical:
-        this.target.scale.y = this.startScale.y * sizeFactor;
+      }
+      case HandleType.Vertical: {
+        const d = this.dragAlongItem();
+        this.target.height = Math.max(MIN_SIZE, this.startSize.y + d.y);
         break;
-      case HandleType.HorizontalVertical:
-        this.target.scale.x = this.startScale.x * sizeFactor;
-        this.target.scale.y = this.startScale.y * sizeFactor;
+      }
+      case HandleType.HorizontalVertical: {
+        // The corner keeps the proportions.
+        const d = this.dragAlongItem();
+        const factor = Math.max(
+          MIN_SIZE / Math.min(this.startSize.x, this.startSize.y),
+          ((this.startSize.x + d.x) / this.startSize.x +
+            (this.startSize.y + d.y) / this.startSize.y) /
+            2
+        );
+        this.target.width = this.startSize.x * factor;
+        this.target.height = this.startSize.y * factor;
         break;
+      }
       case HandleType.Move: {
         // move delta: distanta intre click original si click in urma mutarii
         const delta = {
@@ -242,8 +245,16 @@ export class Handle extends Graphics {
     TransformLayer.Instance.update();
   }
 
-  private getDistance(src: Point, dest: Point) {
-    return Math.sqrt(Math.pow(dest.x - src.x, 2) + Math.pow(dest.y - src.y, 2));
+  /** The mouse's movement since the press, in plan units, along the item's axes. */
+  private dragAlongItem(): Point {
+    const parent = this.target.parent;
+    if (!parent) return { x: 0, y: 0 };
+    const a = parent.toLocal(this.mouseStartPoint);
+    const b = parent.toLocal(this.mouseEndPoint);
+    const [dx, dy] = [b.x - a.x, b.y - a.y];
+    const cos = Math.cos(this.target.rotation);
+    const sin = Math.sin(this.target.rotation);
+    return { x: dx * cos + dy * sin, y: -dx * sin + dy * cos };
   }
 
   public setTarget(target: Furniture) {
