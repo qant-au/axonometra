@@ -63,7 +63,7 @@ used before ([PLAN-FORMAT.md](PLAN-FORMAT.md)) still open, and save as scenes.
 The toolbar's **3D view** button shows the plan as a 3D model: walls with their door
 and window openings, a floor and ceiling for each room, and furniture drawn from each
 item's 3D model. Drag to turn it, right-drag or use the arrow keys to move, and scroll
-to zoom. **Walk** switches to a first-person view; with reduced motion turned on it
+to zoom. In Walk, W A S D or the arrow keys move and Q and E turn. **Walk** switches to a first-person view; with reduced motion turned on it
 moves by teleporting instead. **Cut away walls** (on by default) cuts the walls off at
 1.2 m so you can see into the rooms, **All floors** stacks every floor, **Save image**
 downloads a PNG, and **Save 3D model** downloads the building as a `.glb` file. It needs
@@ -77,7 +77,44 @@ WebGL, and three.js is only downloaded the first time the view is opened.
   resized piece of furniture), or one toolbar edit.
 - History holds the last 100 steps and is cleared when a plan is loaded.
 
-### Keyboard
+### Shortcuts
+
+Axonometra binds the shared linework keymap, the same one
+[Reticulyne](https://github.com/qant-au/reticulyne) binds, aligned with
+[Excalidraw](https://github.com/excalidraw/excalidraw): someone coming from either should
+not have to retrain. Press **?** (or the toolbar's **Keyboard shortcuts** button) for the
+full list and every deliberate difference from Excalidraw. The specification is
+[Accurona's `docs/keymap.md`](https://github.com/qant-au/accurona/blob/main/docs/keymap.md).
+
+| Key or gesture                           | Does                                                     |
+| ---------------------------------------- | -------------------------------------------------------- |
+| V or 1                                   | Select (the Edit tool)                                   |
+| H                                        | Hand: pan                                                |
+| L or 6                                   | Wall                                                     |
+| W, D                                     | Window, door                                             |
+| M                                        | Measure                                                  |
+| E or 0                                   | Erase                                                    |
+| Click, Shift + click, drag on empty plan | Select, add to the selection, select an area             |
+| Ctrl/Cmd + A                             | Select everything on the floor                           |
+| Delete or Backspace                      | Delete the selection                                     |
+| Arrow keys (Shift for 1 m)               | Nudge the selection 10 cm                                |
+| Ctrl/Cmd + C, X, V, D                    | Copy, cut, paste, duplicate                              |
+| Alt + drag                               | Drag a copy, leaving the original                        |
+| Enter, or Ctrl/Cmd + Enter               | Type the selected wall's length                          |
+| Ctrl/Cmd + F                             | Find an item on any floor                                |
+| Mouse wheel; Shift + wheel               | Pan; pan sideways                                        |
+| Ctrl/Cmd + wheel, pinch                  | Zoom                                                     |
+| Space + drag, or right-drag              | Pan, from any tool                                       |
+| Ctrl/Cmd + = / - / 0                     | Zoom in, out, reset                                      |
+| Shift + 1, Shift + 2                     | Fit everything, fit the selection                        |
+| Alt + Shift + D                          | Light or dark                                            |
+| Right-click                              | Menu: copy, delete, turn, edit length, exterior/interior |
+| Esc                                      | Deselect, or end wall drawing                            |
+
+A door or window is copied with its wall. Grouping, draw order, align and lock are not
+built yet, so their keys are unbound.
+
+### Keyboard cursor
 
 The toolbar is keyboard-operable: buttons are reachable by Tab, expose accessible
 labels, and show a visible focus ring.
@@ -85,14 +122,18 @@ labels, and show a visible focus ring.
 The canvas can be edited from the keyboard too. Tab to it (it is announced as the
 "Floor plan" application) and a cursor appears on the plan:
 
-| Key                         | Does                                                                                                             |
-| --------------------------- | ---------------------------------------------------------------------------------------------------------------- |
-| Arrow keys                  | Move the cursor 10 cm (one grid cell)                                                                            |
-| Shift + arrow keys          | Move the cursor 1 m                                                                                              |
-| Enter or Space              | Use the selected tool at the cursor: place a wall point, delete what is there, or add a door or window to a wall |
-| Enter or Space in Edit mode | Pick up the wall point, wall or piece of furniture under the cursor; arrows move it, Enter puts it down          |
-| Escape                      | Cancel a move, or end wall drawing                                                                               |
-| Ctrl/Cmd + Z                | Undo                                                                                                             |
+| Key                           | Does                                                                                                             |
+| ----------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| Arrow keys                    | Move the cursor 10 cm (one grid cell)                                                                            |
+| Shift + arrow keys            | Move the cursor 1 m                                                                                              |
+| Enter or Space                | Use the selected tool at the cursor: place a wall point, delete what is there, or add a door or window to a wall |
+| Enter or Space in Edit mode   | Pick up the wall point, wall or piece of furniture under the cursor; arrows move it, Enter puts it down          |
+| Ctrl/Cmd + Enter in Edit mode | Type the length of the wall under the cursor                                                                     |
+| Escape                        | Cancel a move, or end wall drawing                                                                               |
+| Ctrl/Cmd + Z                  | Undo                                                                                                             |
+
+The cursor takes the arrow keys and Enter while the canvas is reached from the keyboard;
+after a mouse press they go back to the selection.
 
 Every action is announced through a polite live region, including refusals such as
 deleting a wall point that still has walls attached. Doors and windows move with their

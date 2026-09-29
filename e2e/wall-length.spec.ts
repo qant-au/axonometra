@@ -89,8 +89,10 @@ test('double-clicking a wall in Edit mode sets its length', async ({
   expect((await wall(page)).length).toBeCloseTo(before.length, 5);
 
   // Keyboard: the cursor starts at the view centre, on the wall's first point.
+  // Ctrl/Cmd + Enter is the shared keymap's "edit geometry" (bare L is now
+  // the wall tool).
   await page.getByRole('application', { name: 'Floor plan' }).focus();
-  await page.keyboard.press('l');
+  await page.keyboard.press('ControlOrMeta+Enter');
   await expect(input).toBeFocused();
   await page.keyboard.press('Escape');
   await expect(input).toHaveCount(0);

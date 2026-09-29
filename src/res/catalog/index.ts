@@ -111,6 +111,13 @@ export function getPlacementDefaults(
   );
 }
 
+/** What a placed item is called, for Find: its catalogue name, or Door / Window. */
+export function getItemName(imagePath: string): string {
+  const el = byId.get(imagePath);
+  if (el) return el.name;
+  return imagePath.charAt(0).toUpperCase() + imagePath.slice(1);
+}
+
 export function getWindowFitting(): FurnitureData {
   return wallFittings.window;
 }

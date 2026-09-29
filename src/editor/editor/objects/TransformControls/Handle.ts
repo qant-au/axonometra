@@ -6,6 +6,7 @@ import { viewportX, viewportY } from '../../../../helpers/ViewportCoordinates';
 import { Furniture } from '../Furniture';
 import { Wall } from '../Walls/Wall';
 import { TransformLayer } from './TransformLayer';
+import { useFloorPlanStore } from '../../../../stores/FloorPlanStore';
 
 /** Smallest width or depth a resize can reach, in plan units (cm). */
 const MIN_SIZE = 10;
@@ -117,6 +118,10 @@ export class Handle extends Graphics {
   private onMouseDown(ev: FederatedPointerEvent) {
     if (TransformLayer.dragging) {
       return;
+    }
+    // Alt + drag: a copy stays where the item was, and this one moves on.
+    if (this.type === HandleType.Move && ev.altKey) {
+      useFloorPlanStore.getState().cloneFurniture(this.target);
     }
     this.mouseStartPoint.x = ev.global.x;
     this.mouseStartPoint.y = ev.global.y; // unde se afla target la mousedown

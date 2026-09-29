@@ -1,12 +1,4 @@
-import {
-  ChangeEvent,
-  Dispatch,
-  SetStateAction,
-  Suspense,
-  lazy,
-  useRef,
-  useState
-} from 'react';
+import { ChangeEvent, Suspense, lazy, useRef, useState } from 'react';
 import { Box, Stack, Tooltip } from '@mui/material';
 import classes from './ToolNavbar.module.css';
 import {
@@ -35,7 +27,8 @@ import {
   IconCube,
   IconView360,
   IconRulerMeasure,
-  IconCheck
+  IconCheck,
+  IconKeyboard
 } from '@tabler/icons-react';
 import type { LengthUnit } from '../../vendor/accurona-core';
 import { useUnitsStore } from '../../stores/UnitsStore';
@@ -56,6 +49,7 @@ import { Tool } from '../../editor/editor/constants';
 import { PrintAction } from '../../editor/editor/actions/PrintAction';
 import { useHistoryStore } from '../../stores/HistoryStore';
 import { redo, undo } from '../../editor/editor/history';
+import { pruneSelection } from '../../editor/editor/selection/commands';
 import { ToggleLabelAction } from '../../editor/editor/actions/ToggleLabelAction';
 import { NavbarLink } from '../NavbarLink';
 
@@ -114,7 +108,7 @@ function UnitsMenu() {
   );
 }
 
-function AddMenu({ setter }: { setter: Dispatch<SetStateAction<number>> }) {
+function AddMenu() {
   const setTool = useStore((s) => s.setTool);
   const [drawerOpened, setDrawerOpened] = useState(false);
   const getCategories = useFurnitureStore((s) => s.getCategories);
@@ -144,8 +138,6 @@ function AddMenu({ setter }: { setter: Dispatch<SetStateAction<number>> }) {
             onClick: () => {
               clearNotifications();
               setDrawerOpened(true);
-              // -1 = no active toolbar tool (deselect while the drawer is open)
-              setter(-1);
             }
           },
           {
@@ -153,7 +145,6 @@ function AddMenu({ setter }: { setter: Dispatch<SetStateAction<number>> }) {
             icon: <IconBorderLeft size={18} />,
             divider: true,
             onClick: () => {
-              setter(-1);
               setTool(Tool.WallAdd);
               clearNotifications();
               notify({
@@ -169,7 +160,6 @@ function AddMenu({ setter }: { setter: Dispatch<SetStateAction<number>> }) {
             icon: <IconWindow size={18} />,
             onClick: () => {
               setTool(Tool.FurnitureAddWindow);
-              setter(-1);
               clearNotifications();
               notify({
                 title: '🪟 Add window',
@@ -183,7 +173,6 @@ function AddMenu({ setter }: { setter: Dispatch<SetStateAction<number>> }) {
             icon: <IconDoor size={18} />,
             onClick: () => {
               setTool(Tool.FurnitureAddDoor);
-              setter(-1);
               clearNotifications();
               notify({
                 title: '🚪 Add door',
@@ -200,9 +189,12 @@ function AddMenu({ setter }: { setter: Dispatch<SetStateAction<number>> }) {
 }
 
 export function ToolNavbar() {
-  const [active, setActive] = useState(0);
+  // Follows the tool, however it was chosen (toolbar or keyboard).
+  const activeTool = useStore((s) => s.activeTool);
+  const active = modes.findIndex((m) => m.tool === activeTool);
 
   const setTool = useStore((s) => s.setTool);
+  const setShortcutsOpen = useStore((s) => s.setShortcutsOpen);
   const floor = useFloorPlanStore((s) => s.currentFloor);
   const canUndo = useHistoryStore((s) => s.past.length > 0);
   const [axonometricOpen, setAxonometricOpen] = useState(false);
@@ -219,7 +211,6 @@ export function ToolNavbar() {
       key={link.label}
       active={index === active}
       onClick={() => {
-        setActive(index);
         // The previous tool's hint (e.g. wall drawing) no longer applies.
         clearNotifications();
         setTool(link.tool);
@@ -241,7 +232,7 @@ export function ToolNavbar() {
       <Box className={classes.navbar}>
         <Box className={classes.sectionGrow}>
           <Stack sx={{ alignItems: 'center' }}>
-            <AddMenu setter={setActive} />
+            <AddMenu />
             {toolModes}
           </Stack>
         </Box>
@@ -283,13 +274,17 @@ export function ToolNavbar() {
               icon={IconArrowBackUp}
               label="Undo"
               disabled={!canUndo}
-              onClick={undo}
+              onClick={() => {
+                if (undo()) pruneSelection();
+              }}
             />
             <NavbarLink
               icon={IconArrowForwardUp}
               label="Redo"
               disabled={!canRedo}
-              onClick={redo}
+              onClick={() => {
+                if (redo()) pruneSelection();
+              }}
             />
             <NavbarLink
               icon={IconRuler2}
@@ -356,6 +351,11 @@ export function ToolNavbar() {
             <Suspense fallback={null}>
               <HelpDialog />
             </Suspense>
+            <NavbarLink
+              icon={IconKeyboard}
+              label="Keyboard shortcuts"
+              onClick={() => setShortcutsOpen(true)}
+            />
           </Stack>
         </Box>
         <Box className={classes.section}>

@@ -17,6 +17,17 @@ import { viewportX, viewportY } from '../../helpers/ViewportCoordinates';
 import { Tool } from './constants';
 import { Pointer } from './Pointer';
 import { Preview } from './actions/MeasureToolManager';
+import { SelectionOverlay } from './selection/SelectionOverlay';
+import { refsInRect } from './selection/planOps';
+import { currentFloorData, selectRefs } from './selection/commands';
+import { rightPressed } from './selection/pointer';
+import { useSelectionStore } from './selection/SelectionStore';
+import { interpretWheel } from './wheel';
+import { isTypingTarget } from '../../vendor/accurona-core';
+
+// A press that moves less than this, in screen pixels, is a click, not a
+// marquee.
+const MARQUEE_SLOP = 4;
 
 export class Main extends Viewport {
   private floorPlan!: FloorPlan;
@@ -25,6 +36,15 @@ export class Main extends Viewport {
   bkgPattern!: TilingSprite;
   public pointer!: Pointer;
   public preview: Preview;
+  public selectionOverlay!: SelectionOverlay;
+  private marqueeStart: {
+    x: number;
+    y: number;
+    sx: number;
+    sy: number;
+    add: boolean;
+  } | null = null;
+  private spaceHeld = false;
   constructor(options: IViewportOptions) {
     super(options);
 
@@ -48,14 +68,67 @@ export class Main extends Viewport {
   private unsubscribeTool?: () => void;
 
   // Right-drag pans in every tool; in View, the hand tool, a left drag does
-  // too, since nothing else is waiting for it there.
+  // too, since nothing else is waiting for it there. So does any drag while
+  // Space is held. The wheel is handled by handleWheel, not the plugin.
   private panWith(tool: Tool) {
-    return this.drag({ mouseButtons: tool === Tool.View ? 'all' : 'right' });
+    return this.drag({
+      mouseButtons: tool === Tool.View || this.spaceHeld ? 'all' : 'right',
+      wheel: false
+    });
   }
 
   public override destroy(options?: Parameters<Viewport['destroy']>[0]) {
     this.unsubscribeTool?.();
+    window.removeEventListener('keydown', this.onSpaceDown);
+    window.removeEventListener('keyup', this.onSpaceUp);
+    window.removeEventListener('blur', this.onSpaceUp);
     super.destroy(options);
+  }
+
+  // Space + drag pans from any tool, as in Excalidraw. While Space is held
+  // the plan's objects take no presses, so the drag reaches the viewport.
+  private setSpaceHeld(held: boolean) {
+    if (this.spaceHeld === held || this.destroyed) return;
+    this.spaceHeld = held;
+    if (this.floorPlan) this.floorPlan.interactiveChildren = !held;
+    if (this.transformLayer) this.transformLayer.interactiveChildren = !held;
+    this.cursor = held ? 'grab' : 'none';
+    this.panWith(useStore.getState().activeTool);
+  }
+
+  private readonly onSpaceDown = (e: KeyboardEvent) => {
+    if (e.code !== 'Space' || e.repeat || isTypingTarget(e.target)) return;
+    this.setSpaceHeld(true);
+  };
+
+  private readonly onSpaceUp = (e: KeyboardEvent | FocusEvent) => {
+    if (e instanceof KeyboardEvent && e.code !== 'Space') return;
+    this.setSpaceHeld(false);
+  };
+
+  /**
+   * The wheel, per the shared keymap: plain pans, Shift pans sideways,
+   * Ctrl/Cmd (and a trackpad pinch) zooms about the pointer.
+   */
+  public handleWheel(e: WheelEvent) {
+    e.preventDefault();
+    if (this.pause || this.destroyed) return;
+    const result = interpretWheel(e);
+    if (result.kind === 'pan') {
+      this.x -= result.dx;
+      this.y -= result.dy;
+    } else {
+      const screen = new Point(e.offsetX, e.offsetY);
+      const before = this.toWorld(screen);
+      this.setZoom(this.scale.x * result.factor);
+      (
+        this.plugins.get('clamp-zoom') as { clamp?: () => void } | null
+      )?.clamp?.();
+      const after = this.toScreen(before);
+      this.x += screen.x - after.x;
+      this.y += screen.y - after.y;
+    }
+    this.emit('moved', { viewport: this, type: 'wheel' });
   }
 
   private setup() {
@@ -67,8 +140,10 @@ export class Main extends Viewport {
     this.panWith(useStore.getState().activeTool)
       .clamp({ direction: 'all' })
       .pinch()
-      .wheel()
       .clampZoom({ minScale: 1.0, maxScale: 6.0 });
+    window.addEventListener('keydown', this.onSpaceDown);
+    window.addEventListener('keyup', this.onSpaceUp);
+    window.addEventListener('blur', this.onSpaceUp);
     this.unsubscribeTool = useStore.subscribe((state, previous) => {
       if (state.activeTool !== previous.activeTool) {
         // A new tool starts with pan and zoom working.
@@ -92,6 +167,9 @@ export class Main extends Viewport {
     this.addWallManager = AddWallManager.Instance;
     this.addChild(this.addWallManager.preview.getReference());
 
+    this.selectionOverlay = new SelectionOverlay();
+    this.addChild(this.selectionOverlay);
+
     this.pointer = new Pointer();
     this.addChild(this.pointer);
     this.on('pointerdown', this.checkTools);
@@ -103,21 +181,55 @@ export class Main extends Viewport {
     this.addWallManager.updatePreview(ev);
     this.preview.updatePreview(ev);
     this.pointer.update(ev);
+    if (this.marqueeStart) {
+      const here = this.toWorld(ev.global);
+      const { x, y } = this.marqueeStart;
+      this.selectionOverlay.setMarquee({
+        x: Math.min(x, here.x),
+        y: Math.min(y, here.y),
+        width: Math.abs(here.x - x),
+        height: Math.abs(here.y - y)
+      });
+    }
+  }
+
+  // A drag on the empty plan with the Select tool selects what it encloses.
+  private endMarquee(ev: FederatedPointerEvent) {
+    const start = this.marqueeStart;
+    if (!start) return;
+    this.marqueeStart = null;
+    this.selectionOverlay.setMarquee(null);
+    const moved = Math.hypot(ev.global.x - start.sx, ev.global.y - start.sy);
+    if (moved < MARQUEE_SLOP) return;
+    const here = this.toWorld(ev.global);
+    const floor = currentFloorData();
+    if (!floor) return;
+    const refs = refsInRect(floor, {
+      x: Math.min(start.x, here.x),
+      y: Math.min(start.y, here.y),
+      width: Math.abs(here.x - start.x),
+      height: Math.abs(here.y - start.y)
+    });
+    selectRefs(refs, start.add);
   }
   // Pan and zoom are paused while a wall or measurement is being pressed
   // out; every release resumes them (except wall drawing on touch, which
   // keeps them off for the whole chain). Releases outside the canvas count
   // too: a pause that was never lifted left pan and zoom dead in every tool.
-  private updateEnd(_ev: FederatedPointerEvent) {
+  private updateEnd(ev: FederatedPointerEvent) {
+    this.endMarquee(ev);
     const tool = useStore.getState().activeTool;
     if (tool === Tool.Measure) this.preview.set(undefined);
     if (!(tool === Tool.WallAdd && isMobile)) this.pause = false;
   }
   private checkTools(ev: FederatedPointerEvent) {
     ev.stopPropagation();
-    if (ev.button == 2 || ev.button == 2) {
+    if (ev.button == 2) {
+      rightPressed(null, ev);
       return;
     }
+    // Space + drag is a pan, whatever the tool.
+    if (this.spaceHeld) return;
     const point = { x: 0, y: 0 };
     switch (useStore.getState().activeTool) {
       case Tool.WallAdd: {
@@ -128,11 +240,20 @@ export class Main extends Viewport {
         action.execute();
         break;
       }
-      case Tool.Edit:
-        // if (!isMobile) {
-        //     this.pause = true;
-        // }
+      case Tool.Edit: {
+        // A press on the empty plan: deselect (Shift keeps the selection,
+        // for an additive marquee) and start a marquee.
+        if (!ev.shiftKey) useSelectionStore.getState().clear();
+        const world = this.toWorld(ev.global);
+        this.marqueeStart = {
+          x: world.x,
+          y: world.y,
+          sx: ev.global.x,
+          sy: ev.global.y,
+          add: ev.shiftKey
+        };
         break;
+      }
       case Tool.Measure:
         this.pause = true;
         point.x = viewportX(ev.global.x);

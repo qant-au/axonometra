@@ -9,7 +9,7 @@ import { resolveCatalogImage } from '../../../api/api-client';
 import { FurnitureData } from '../../../stores/FurnitureStore';
 import { useStore } from '../../../stores/EditorStore';
 import { DeleteFurnitureAction } from '../actions/DeleteFurnitureAction';
-import { EditFurnitureAction } from '../actions/EditFurnitureAction';
+import { pressSelect, rightPressed } from '../selection/pointer';
 import { INTERIOR_WALL_THICKNESS, METER, Tool } from '../constants';
 import { IFurnitureSerializable } from '../persistence/IFurnitureSerializable';
 import { TransformLayer } from './TransformControls/TransformLayer';
@@ -127,16 +127,18 @@ export class Furniture extends Sprite {
     }
   }
 
-  private switchOrientation() {
+  /** Turns the item one step; the context menu's Turn. */
+  public switchOrientation() {
     this.applyStep(this.orientation, false);
     this.orientation = (this.orientation + 1) % 4;
+    TransformLayer.Instance.update();
   }
 
+  // Right-click opens the context menu (Turn is in it); a right drag still
+  // pans, so the menu waits for the release (selection/pointer.ts).
   private onRightDown(ev: FederatedPointerEvent) {
     ev.stopPropagation();
-    this.switchOrientation();
-
-    return;
+    rightPressed({ kind: 'furniture', id: this.id }, ev);
   }
   private setOrientation(number: number) {
     for (let i = 0; i < number; i++) {
@@ -154,11 +156,9 @@ export class Furniture extends Sprite {
     // Right-click turns the item (onRightDown); it must not also erase it.
     if (ev.button === 2) return;
     switch (useStore.getState().activeTool) {
-      case Tool.Edit: {
-        const action = new EditFurnitureAction(this);
-        action.execute();
+      case Tool.Edit:
+        pressSelect({ kind: 'furniture', id: this.id }, ev.shiftKey);
         break;
-      }
 
       case Tool.Remove: {
         const action = new DeleteFurnitureAction(this.id);

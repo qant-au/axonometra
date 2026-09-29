@@ -162,8 +162,15 @@ test('pan and zoom still work after drawing walls', async ({ page }) => {
   await drag(page, [700, 300], [500, 200]);
   const panned = await axo(page);
   expect(panned.main.x - before.main.x).toBeCloseTo(-200, -1);
+  // The shared keymap: a plain wheel pans, Ctrl + wheel zooms.
   await page.mouse.move(650, 400);
+  await page.mouse.wheel(0, 100);
+  await expect
+    .poll(async () => (await axo(page)).main.y)
+    .toBeLessThan(panned.main.y - 50);
+  await page.keyboard.down('Control');
   await page.mouse.wheel(0, -400);
+  await page.keyboard.up('Control');
   await expect
     .poll(async () => (await axo(page)).main.scale)
     .toBeGreaterThan(1.1);
@@ -314,10 +321,12 @@ test('the rotate handle turns an item about its centre', async ({ page }) => {
   expect((await sofaSize(page)).w - widthBefore.w).toBeCloseTo(40, -1);
 });
 
-test('right-clicking a selected item turns it', async ({ page }) => {
+test('the context menu turns a selected item', async ({ page }) => {
   const before = await selectedSofa(page);
   // The move handle sits on the item's centre, where a person right-clicks.
+  // Right-click opens the menu (shared keymap); Turn is in it.
   await page.mouse.click(before.cx, before.cy, { button: 'right' });
+  await page.getByRole('menuitem', { name: 'Turn' }).click();
   expect((await sofa(page)).orientation).toBe((before.orientation + 1) % 4);
 });
 

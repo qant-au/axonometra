@@ -11,6 +11,13 @@ Expect breaking changes between minor versions until v1.0.0.
 
 ### Added
 
+- The shared keymap (Accurona's `docs/keymap.md`, the same one Reticulyne binds, aligned with Excalidraw). Tool keys (V/1 select, H hand, L/6 wall, W window, D door, M measure, E/0 erase), Ctrl/Cmd + = / - / 0 zoom, Shift + 1 / Shift + 2 fit everything / the selection, Alt + Shift + D light or dark, and a `?` list of every key with the Excalidraw differences (also on the toolbar). The table is `@accurona/core`'s, so the list cannot drift from the keys.
+- Selection: click, Shift + click, drag a box on the empty plan, Ctrl/Cmd + A; Delete or Backspace deletes it and the arrow keys nudge it (10 cm, Shift 1 m). A selected wall is outlined; one piece of furniture still gets its handles.
+- Copy, cut, paste (under the pointer) and duplicate (Ctrl/Cmd + C, X, V, D), and Alt + drag to leave a copy behind. A copied wall brings its doors and windows. Each is one undo step.
+- Find (Ctrl/Cmd + F): an item by name on any floor; choosing it goes to its floor, selects it and brings it into view.
+- Right-click menu: copy, cut, duplicate, delete, and per object Turn, Edit length, Make exterior / interior; on the empty plan Paste, Select all, Fit everything. A right drag still pans.
+- Space + drag pans from any tool.
+
 - Walk-through in the 3D view: switch from Orbit to Walk to see a floor at eye height. Walk with W A S D or the arrow keys (Q/E turn), drag to look, or use the on-screen stick on a touch screen; walls and window sills stop you and you slide along them, doorways let you through. Teleport mode (click the floor to go there, keys step 1 m and turn 30°) is on by default under reduced motion. Page Up / Page Down, or the stair buttons, change floor at a stairs item. Position and heading are announced in a live region.
 - 3D model export: **Save 3D model** in the 3D view downloads the plan as a glTF binary (`.glb`, metres, y up) with every floor, whole walls and the catalogue models, for Blender and other 3D tools. Embedding hosts get the same file with the new `axo:export` message (reply `axo:exported`, or `axo:error` with `unsupported-format` / `export-failed`). three.js still loads only on first use.
 - 3D view (toolbar): the plan as a 3D model you can turn, zoom and move, with mitred wall corners, door and window openings, a floor and ceiling per room, and every catalogue item drawn from its 3D model in the element library (scaled to its footprint, mirrored and turned as placed, at its mount height; items without a model are boxes at their real height). Walls can be cut away at 1.2 m to see into the rooms, every floor can be stacked, and the view saves as a PNG. Keyboard buttons for turning and zooming; smooth camera motion is off under reduced motion. three.js (MIT) is lazy-loaded, about 150 KB gzip, so an embed that never opens the view pays nothing. Built from the saved plan (`src/editor/scene3d/`).
@@ -22,6 +29,12 @@ Expect breaking changes between minor versions until v1.0.0.
 - Undo and redo: Ctrl/Cmd+Z, Ctrl/Cmd+Shift+Z or Ctrl+Y, and toolbar buttons. History is whole-plan snapshots taken through the Serializer, because the model lives inside Pixi objects that the drag handlers mutate in place. Each canvas pointer gesture or toolbar edit is one step, nothing is recorded when the plan did not change, and loading a plan clears the history. See `src/editor/editor/history.ts`.
 
 ### Changed
+
+- **The mouse wheel pans** (Shift + wheel sideways); Ctrl/Cmd + wheel or a pinch zooms. It used to zoom.
+- **Bare L is the wall tool.** The wall-length box moved to Ctrl/Cmd + Enter (and Enter with the wall selected); double-click still opens it.
+- **Right-click opens a menu** instead of turning an item or switching a wall between interior and exterior; both are in the menu.
+- In Walk, the left and right arrow keys step sideways, as the keymap says; Q and E turn.
+- Ctrl/Cmd + S no longer saves in a read-only embed or while typing, and Cmd + Y no longer redoes (Ctrl + Y does).
 
 - **Plans are saved as [Accurona scenes](https://github.com/qant-au/accurona/blob/main/docs/scene-format.md)** (breaking): the toolbar Save, Ctrl+S and `axo:save` all write the scene format Axonometra shares with Reticulyne, validated by `@accurona/core`'s schema. Plan format v1 and v2 files still open and save as scenes; nothing writes plan v2 any more. A scene keeps what Axonometra does not draw (diagram views, device props, ports, links, connections) and its ids through every save.
 - UI library: Mantine → MUI, so Axonometra and Reticulyne share one look (menus, panels, dialogs, notifications). The shared parts come from Accurona's `@accurona/ui`, vendored into `src/vendor/accurona-ui/` by `scripts/sync-elements.mjs`.

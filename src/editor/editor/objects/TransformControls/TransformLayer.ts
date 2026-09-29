@@ -103,13 +103,17 @@ export class TransformLayer extends Container {
     this.border.addChild(this.labels[axis]);
   }
 
-  public select(t: Furniture) {
+  /**
+   * Shows the handles on one piece of furniture. The selection decides which
+   * (SelectionOverlay): a single selected piece, with the Select tool.
+   */
+  public show(t: Furniture) {
     // guards preventing selection unless edit mode is enabled
     if (useStore.getState().activeTool != Tool.Edit) {
       return;
     }
-    if (this.target != null) {
-      this.deselect();
+    if (this.target === t) {
+      this.update();
       return;
     }
 

@@ -25,6 +25,7 @@ import { describePoint, nodeAt, wallAt } from './keyboardHit';
 import { Furniture } from './objects/Furniture';
 import { Wall } from './objects/Walls/Wall';
 import { WallNode } from './objects/Walls/WallNode';
+import { useSelectionStore } from './selection/SelectionStore';
 
 // One press moves one grid cell (10 cm); Shift moves a metre.
 export const CURSOR_STEP = 10;
@@ -43,6 +44,10 @@ interface Grab {
 export class KeyboardCursor {
   private cursor: Point = { x: 0, y: 0 };
   private placed = false;
+  // In use: the canvas was reached from the keyboard, or a key has moved the
+  // cursor since the last mouse press. While it is not, the arrow keys and
+  // Enter belong to the selection (nudge, edit) and Space to panning.
+  private active = false;
   private grab: Grab | null = null;
 
   constructor(
@@ -57,6 +62,7 @@ export class KeyboardCursor {
       this.cursor = { x: snap(center.x), y: snap(center.y) };
       this.placed = true;
     }
+    this.active = true;
     this.showCursor();
     this.announce(
       `Cursor at ${describePoint(this.cursor, useUnitsStore.getState().units)}.`
@@ -65,12 +71,28 @@ export class KeyboardCursor {
 
   public blur() {
     if (this.grab) this.cancel();
+    this.active = false;
+  }
+
+  /** A mouse press hands the canvas back to the pointer. */
+  public pointerPressed() {
+    if (!this.grab) this.active = false;
+  }
+
+  public get isActive() {
+    return this.active;
   }
 
   /** Returns true when the key was handled and should not reach the page. */
   public handleKey(e: KeyboardEvent): boolean {
     if (e.ctrlKey || e.metaKey || e.altKey) return false;
-    if (!this.placed) this.focus();
+    if (!this.active) {
+      const arrow = e.key.startsWith('Arrow');
+      // With something selected, the arrows nudge it; with nothing, the
+      // first arrow brings the cursor up, as it always has.
+      if (!arrow || useSelectionStore.getState().refs.length > 0) return false;
+      this.focus();
+    }
     const step = e.shiftKey ? CURSOR_STEP_LARGE : CURSOR_STEP;
     switch (e.key) {
       case 'ArrowLeft':
@@ -92,24 +114,26 @@ export class KeyboardCursor {
       case 'Escape':
         this.escape();
         return true;
-      case 'l':
-      case 'L':
-        if (!this.readonly) this.editLength();
-        return true;
     }
     return false;
   }
 
-  /** In Edit mode, open the length dialog for the wall under the cursor. */
-  private editLength() {
+  /**
+   * Ctrl/Cmd + Enter in Edit mode (the shared keymap's "edit geometry"):
+   * open the length dialog for the wall under the cursor. False when the
+   * cursor is not in use, so the selected wall is edited instead.
+   */
+  public editLength(): boolean {
+    if (!this.active || this.readonly) return false;
     const state = useStore.getState();
-    if (state.activeTool !== Tool.Edit || this.grab) return;
+    if (state.activeTool !== Tool.Edit || this.grab) return true;
     const wall = this.wallHere();
     if (!wall) {
       this.announce('No wall at the cursor.');
-      return;
+      return true;
     }
     state.setLengthEditWall(wall);
+    return true;
   }
 
   private move(dx: number, dy: number) {

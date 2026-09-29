@@ -9,6 +9,7 @@ import { WallNodeSequence } from '../editor/editor/objects/Walls/WallNodeSequenc
 import { FloorPlanSerializable } from '../editor/editor/persistence/FloorPlanSerializable';
 import { Point } from '../helpers/Point';
 import { FurnitureData } from './FurnitureStore';
+import { useSelectionStore } from '../editor/editor/selection/SelectionStore';
 
 export interface FloorPlanStore {
   /**
@@ -43,6 +44,9 @@ export interface FloorPlanStore {
     angle?: number
   ) => void;
   removeFurniture: (id: number) => void;
+  /** Alt + drag: leave a copy where the original was. */
+  cloneFurniture: (source: Furniture) => Furniture;
+  cloneWall: (source: Wall) => Wall | undefined;
   getObject: (id: number) => Furniture | undefined;
   redrawWalls: () => void;
   removeWallNode: (nodeId: number) => void;
@@ -78,6 +82,8 @@ export const useFloorPlanStore = create<FloorPlanStore>()((set, get) => ({
     const target = currentFloor + by;
     // Floor 0 is the ground floor; there is no basement.
     if (target < 0) return;
+    // The selection is on the floor being left.
+    useSelectionStore.getState().clear();
     const next = floors.slice();
     if (next[target] == null) {
       next[target] = new Floor(undefined, previous);
@@ -98,6 +104,7 @@ export const useFloorPlanStore = create<FloorPlanStore>()((set, get) => ({
       });
       return;
     }
+    useSelectionStore.getState().clear();
     floors[currentFloor]?.reset();
     const next = floors.slice();
     next.splice(currentFloor, 1);
@@ -158,6 +165,21 @@ export const useFloorPlanStore = create<FloorPlanStore>()((set, get) => ({
   setFurniturePosition: (id: number, x: number, y: number, angle?: number) => {
     get().getCurrentFloor().setFurniturePosition(id, x, y, angle);
   },
+
+  cloneFurniture: (source: Furniture) => {
+    const furnitureId = get().furnitureId + 1;
+    set({ furnitureId });
+    return get().getCurrentFloor().cloneFurniture(source, furnitureId);
+  },
+
+  cloneWall: (source: Wall) =>
+    get()
+      .getCurrentFloor()
+      .cloneWall(source, () => {
+        const furnitureId = get().furnitureId + 1;
+        set({ furnitureId });
+        return furnitureId;
+      }),
 
   removeFurniture: (id: number) => {
     get().getCurrentFloor().removeFurniture(id);

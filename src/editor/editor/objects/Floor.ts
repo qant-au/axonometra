@@ -157,6 +157,55 @@ export class Floor extends Container {
     return id;
   }
 
+  /**
+   * A copy of a piece of furniture, in the same place, as Alt + drag leaves
+   * behind: the original is what goes on being dragged. A door or window is
+   * copied onto `onWall` (a copied wall) when given, else onto its own wall.
+   */
+  public cloneFurniture(source: Furniture, id: number, onWall?: Wall) {
+    const data = source.serialize();
+    const furnitureData: FurnitureData = {
+      width: data.width,
+      height: data.height,
+      imagePath: data.texturePath,
+      zIndex: data.zIndex
+    };
+    if (data.heightM != null) furnitureData.heightM = data.heightM;
+    if (data.mountM != null) furnitureData.mountM = data.mountM;
+    const wall = source.isAttached ? (onWall ?? (source.parent as Wall)) : null;
+    const copy = new Furniture(
+      furnitureData,
+      id,
+      wall ?? undefined,
+      wall ? wall.leftNode.getId() : undefined,
+      wall ? wall.rightNode.getId() : undefined,
+      data.orientation
+    );
+    this.furnitureArray.set(id, copy);
+    (wall ?? this).addChild(copy);
+    copy.position.set(data.x, data.y);
+    copy.rotation = data.rotation;
+    return copy;
+  }
+
+  /**
+   * A copy of a wall, with its doors and windows, on new points in the same
+   * place, for Alt + drag. `nextFurnitureId` hands out ids for the fittings.
+   */
+  public cloneWall(source: Wall, nextFurnitureId: () => number) {
+    const left = this.addNode(source.leftNode.x, source.leftNode.y);
+    const right = this.addNode(source.rightNode.x, source.rightNode.y);
+    const wall = this.wallNodeSequence.addWall(left.getId(), right.getId());
+    if (!wall) return undefined;
+    if (source.isExteriorWall) wall.setIsExterior(true);
+    for (const child of [...source.children]) {
+      if (child instanceof Furniture) {
+        this.cloneFurniture(child, nextFurnitureId(), wall);
+      }
+    }
+    return wall;
+  }
+
   public serialize(): FloorSerializable {
     const plan = new FloorSerializable();
     const wallNodes = this.wallNodeSequence.getWallNodes();

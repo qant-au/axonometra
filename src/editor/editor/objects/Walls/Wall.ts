@@ -17,6 +17,8 @@ import {
   WALL_THICKNESS
 } from '../../constants';
 import { Label } from '../TransformControls/Label';
+import { wallRef } from '../../selection/planOps';
+import { pressSelect, rightPressed } from '../../selection/pointer';
 import { WallNode } from './WallNode';
 
 export class Wall extends Graphics {
@@ -143,10 +145,20 @@ export class Wall extends Graphics {
     this.lengthLabel.zIndex = 998;
   }
 
+  /** The context menu's Make exterior / Make interior. */
+  public toggleExterior() {
+    this.setIsExterior(!this.isExteriorWall);
+  }
+
+  // Right-click opens the context menu (the exterior toggle is in it); a
+  // right drag still pans, so the menu waits for the release.
   private onRightDown(ev: FederatedPointerEvent) {
     ev.stopPropagation();
-    this.setIsExterior(!this.isExteriorWall);
-    return;
+    rightPressed(this.ref(), ev);
+  }
+
+  public ref() {
+    return wallRef(this.leftNode.getId(), this.rightNode.getId());
   }
 
   private onMouseMove(ev: FederatedPointerEvent) {
@@ -231,6 +243,9 @@ export class Wall extends Graphics {
     }
 
     if (state.activeTool == Tool.Edit && !this.dragging) {
+      pressSelect(this.ref(), ev.shiftKey);
+      // Alt + drag: a copy stays where the wall was, and this one moves on.
+      if (ev.altKey) useFloorPlanStore.getState().cloneWall(this);
       this.dragging = true;
       this.mouseStartPoint.x = viewportX(ev.global.x);
       this.mouseStartPoint.y = viewportY(ev.global.y);

@@ -45,7 +45,8 @@ export function HelpDialog() {
           <IconClick /> <p>Click and drag to move around the plan</p>
         </Row>
         <Row>
-          <IconZoomIn /> <p>Use scroll wheel to zoom in or out</p>
+          <IconZoomIn />{' '}
+          <p>Scroll to move around; hold Ctrl or ⌘ and scroll to zoom</p>
         </Row>
       </>
     )
@@ -73,7 +74,7 @@ export function HelpDialog() {
         <Picture src={helpEditFurniture} />
         <Row>
           <IconClick /> <IconArrowNarrowRight /> <IconEdit />{' '}
-          <p> Click on furniture to enable edit controls</p>
+          <p> Click to select; Shift + click or drag a box to select more</p>
         </Row>
         <Picture src={helpEditWall} />
         <Row nowrap>
@@ -81,6 +82,9 @@ export function HelpDialog() {
         </Row>
         <Row nowrap>
           <IconRuler /> <p>Double-click a wall to type its length</p>
+        </Row>
+        <Row nowrap>
+          <IconClick /> <p>Alt + drag leaves a copy; right-click for more</p>
         </Row>
       </>
     )
@@ -124,7 +128,7 @@ export function HelpDialog() {
         </Row>
         <Row nowrap>
           <IconLayoutAlignMiddle />{' '}
-          <p>Middle click to change door orientation</p>
+          <p>Right-click a door and choose Turn to change its orientation</p>
         </Row>
       </>
     )

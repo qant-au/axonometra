@@ -5,6 +5,12 @@
   outline-offset: -3px;
 }
 
+/* Dark mode inverts the drawing, as Excalidraw does: the plan keeps its
+   contrast and every colour on it turns with one rule. */
+.dark canvas {
+  filter: invert(93%) hue-rotate(180deg);
+}
+
 /* Inline, the canvas left a text-baseline gap under it and the page scrolled. */
 .canvas canvas {
   display: block;

@@ -65,18 +65,26 @@ export function endGesture() {
   close();
 }
 
-function restore(target: Snapshot) {
+/**
+ * Rebuilds the whole plan from data, keeping the active floor. Undo uses it,
+ * and so do the selection edits (paste, delete, nudge), which change the
+ * serialised plan and hand it back here.
+ */
+export function applyPlan(plan: FloorPlanSerializable, floor: number) {
   // Anything holding a reference into the old floors goes stale.
   AddWallManager.Instance.resetTools();
-  const plan = JSON.parse(target.plan) as FloorPlanSerializable;
   useFloorPlanStore.getState().setPlan(plan);
   const { floors, visibleLabels } = useFloorPlanStore.getState();
-  const currentFloor = Math.max(
-    0,
-    Math.min(target.currentFloor, floors.length - 1)
-  );
+  const currentFloor = Math.max(0, Math.min(floor, floors.length - 1));
   useFloorPlanStore.setState({ currentFloor });
   floors[currentFloor]?.setLabelVisibility(visibleLabels);
+}
+
+function restore(target: Snapshot) {
+  applyPlan(
+    JSON.parse(target.plan) as FloorPlanSerializable,
+    target.currentFloor
+  );
 }
 
 export function undo(): boolean {

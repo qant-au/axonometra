@@ -12,17 +12,10 @@ import { TransformLayer } from './editor/objects/TransformControls/TransformLaye
 import { AddWallManager } from './editor/actions/AddWallManager';
 import { useStore } from '../stores/EditorStore';
 import { useFloorPlanStore } from '../stores/FloorPlanStore';
-import { serializer } from './editor/persistence/Serializer';
-import { notify } from '../vendor/accurona-ui';
-import { createElement } from 'react';
-import { IconDeviceFloppy } from '@tabler/icons-react';
-import {
-  beginGesture,
-  endGesture,
-  redo,
-  resetHistory,
-  undo
-} from './editor/history';
+import { beginGesture, endGesture, resetHistory } from './editor/history';
+import { handleKeydown as handleKeymap } from './keymap';
+import { rightReleased } from './editor/selection/pointer';
+import { useSelectionStore } from './editor/selection/SelectionStore';
 import { embedConfig } from '../embed/embedConfig';
 import { KeyboardCursor } from './editor/KeyboardCursor';
 import classes from './EditorRoot.module.css';
@@ -58,6 +51,7 @@ export function getFloorPlan(): FloorPlan {
 
 export function EditorRoot() {
   const ref = useRef<HTMLDivElement>(null);
+  const dark = useStore((s) => s.theme) === 'dark';
   const liveRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     // v8 Application.init is async. React StrictMode mounts this effect twice;
@@ -85,42 +79,20 @@ export function EditorRoot() {
       }
     };
     const handleCanvasBlur = () => keyboardCursor.blur();
+    const handleCanvasPointerDown = () => keyboardCursor.pointerPressed();
+    const handleWheel = (e: WheelEvent) => mainHolder.current?.handleWheel(e);
 
     const handleContextMenu = (e: Event) => {
       e.preventDefault();
     };
+    // Every key the shared keymap binds (./keymap.ts). The canvas's keyboard
+    // cursor sees a key first when the canvas has focus.
     const handleKeydown = (e: KeyboardEvent) => {
-      const mod = e.ctrlKey || e.metaKey;
-      const target = e.target as HTMLElement | null;
-      const typing =
-        target?.isContentEditable ||
-        target?.tagName === 'INPUT' ||
-        target?.tagName === 'TEXTAREA';
-      // Ctrl/Cmd+Z undoes; Ctrl/Cmd+Shift+Z and Ctrl+Y redo. Text fields keep
-      // their own undo, and a read-only embed has nothing to undo.
-      if (mod && !typing && !embedConfig.readonly) {
-        if (e.code === 'KeyZ') {
-          e.preventDefault();
-          if (e.shiftKey) redo();
-          else undo();
-          return;
-        }
-        if (e.code === 'KeyY') {
-          e.preventDefault();
-          redo();
-          return;
-        }
-      }
-      // Ctrl+S, or Cmd+S on a Mac (the browser's own save dialog otherwise).
-      if (e.code === 'KeyS' && mod) {
-        e.preventDefault();
-        localStorage.setItem('autosave', serializer.sceneText());
-        notify({
-          message: 'Saved to Local Storage!',
-          severity: 'success',
-          icon: createElement(IconDeviceFloppy)
-        });
-      }
+      if (!mainHolder.current) return;
+      handleKeymap(e, {
+        readonly: embedConfig.readonly,
+        editLengthAtCursor: () => keyboardCursor.editLength()
+      });
     };
 
     const created = new Application();
@@ -143,6 +115,9 @@ export function EditorRoot() {
         rendererHolder.current = created.renderer;
         view = created.canvas;
         view.addEventListener('contextmenu', handleContextMenu);
+        // Not passive: the wheel's default (page scroll, browser zoom on
+        // Ctrl + wheel) is always taken.
+        view.addEventListener('wheel', handleWheel, { passive: false });
 
         const viewportSettings: IViewportOptions = {
           screenWidth: created.screen.width,
@@ -160,10 +135,12 @@ export function EditorRoot() {
         // on the wrapper so this runs before Pixi (whose handlers stop
         // propagation); pointerup lands on window wherever the drag ends.
         wrapper?.addEventListener('pointerdown', beginGesture, true);
+        wrapper?.addEventListener('pointerdown', handleCanvasPointerDown, true);
         wrapper?.addEventListener('keydown', handleCanvasKeydown);
         wrapper?.addEventListener('focus', handleCanvasFocus);
         wrapper?.addEventListener('blur', handleCanvasBlur);
         window.addEventListener('pointerup', endGesture);
+        window.addEventListener('pointerup', rightReleased);
         window.addEventListener('pointercancel', endGesture);
         created.start();
         created.stage.addChild(main);
@@ -175,7 +152,8 @@ export function EditorRoot() {
           (window as unknown as { __axo: unknown }).__axo = {
             getMain,
             getPlan: () => useFloorPlanStore.getState(),
-            getStore: () => useStore.getState()
+            getStore: () => useStore.getState(),
+            getSelection: () => useSelectionStore.getState()
           };
         }
 
@@ -186,14 +164,24 @@ export function EditorRoot() {
       cancelled = true;
       document.removeEventListener('keydown', handleKeydown);
       wrapper?.removeEventListener('pointerdown', beginGesture, true);
+      wrapper?.removeEventListener(
+        'pointerdown',
+        handleCanvasPointerDown,
+        true
+      );
       wrapper?.removeEventListener('keydown', handleCanvasKeydown);
       wrapper?.removeEventListener('focus', handleCanvasFocus);
       wrapper?.removeEventListener('blur', handleCanvasBlur);
       keyboardCursor.blur();
       window.removeEventListener('pointerup', endGesture);
+      window.removeEventListener('pointerup', rightReleased);
+      useSelectionStore.getState().clear();
       window.removeEventListener('pointercancel', endGesture);
       resetHistory();
-      if (view) view.removeEventListener('contextmenu', handleContextMenu);
+      if (view) {
+        view.removeEventListener('contextmenu', handleContextMenu);
+        view.removeEventListener('wheel', handleWheel);
+      }
       // Drop the plan model and dispose the remaining singletons before
       // app.destroy so their static .instance refs reset; a remount then
       // builds fresh objects against the new Application. The FloorPlan
@@ -216,7 +204,7 @@ export function EditorRoot() {
     <>
       <div
         ref={ref}
-        className={classes.canvas}
+        className={dark ? `${classes.canvas} ${classes.dark}` : classes.canvas}
         tabIndex={0}
         role="application"
         aria-label="Floor plan"
@@ -227,8 +215,9 @@ export function EditorRoot() {
         Enter or Space uses the selected tool at the cursor. In Edit mode, Enter
         picks up a wall point, wall or piece of furniture; move it with the
         arrow keys and press Enter to put it down or Escape to cancel. In Edit
-        mode, L on a wall opens a box to type its length. Escape also ends wall
-        drawing. Control Z undoes.
+        mode, Control Enter on a wall opens a box to type its length. Escape
+        also ends wall drawing. Control Z undoes. Question mark lists every
+        keyboard shortcut.
       </p>
       <div ref={liveRef} className={classes.srOnly} aria-live="polite" />
     </>
