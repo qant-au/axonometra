@@ -4,9 +4,15 @@ import { Box, ClickAwayListener, Divider, ListItemIcon, ListItemText, MenuItem, 
 import { ToolButton } from './ToolButton.js';
 // A toolbar button that opens a menu. The menu is not modal: a click outside
 // closes it and still reaches whatever was clicked.
-export const ToolMenu = ({ name, icon, items, openOnHover = true, footer, placement = 'right-start', offset = 8, minWidth, closeDelay = 500 }) => {
+export const ToolMenu = ({ name, icon, items, openOnHover = true, footer, placement = 'right-start', offset = 8, minWidth, closeDelay = 500, open: openProp, onOpenChange }) => {
     const anchor = useRef(null);
-    const [open, setOpen] = useState(false);
+    const [ownOpen, setOwnOpen] = useState(false);
+    const open = openProp ?? ownOpen;
+    const setOpen = (next) => {
+        if (openProp === undefined)
+            setOwnOpen(next);
+        onOpenChange?.(next);
+    };
     // Opened from the keyboard or a click: move focus into the menu.
     const [focusItems, setFocusItems] = useState(false);
     const closeTimer = useRef(undefined);

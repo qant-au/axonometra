@@ -16,6 +16,8 @@ interface Props {
     offset?: number;
     minWidth?: number;
     closeDelay?: number;
+    open?: boolean;
+    onOpenChange?: (open: boolean) => void;
 }
-export declare const ToolMenu: ({ name, icon, items, openOnHover, footer, placement, offset, minWidth, closeDelay }: Props) => import("react").JSX.Element;
+export declare const ToolMenu: ({ name, icon, items, openOnHover, footer, placement, offset, minWidth, closeDelay, open: openProp, onOpenChange }: Props) => import("react").JSX.Element;
 export {};
