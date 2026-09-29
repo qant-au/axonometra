@@ -609,7 +609,7 @@ export function ThreeDView({ opened, onClose }: Props) {
               : teleport
                 ? coarse
                   ? 'Drag to look, tap the floor to go there.'
-                  : 'Drag to look, click the floor to go there, arrow keys to step and turn.'
+                  : 'Drag to look, click the floor to go there, arrow keys to step, Q and E to turn.'
                 : coarse
                   ? 'Drag to look, use the stick to walk.'
                   : 'Drag to look, W A S D or arrow keys to walk, Q and E to turn.'}

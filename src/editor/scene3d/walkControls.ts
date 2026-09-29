@@ -54,18 +54,19 @@ export interface Walk {
   dispose: () => void;
 }
 
+// The shared keymap: W A S D or the arrow keys move, Q and E turn.
 const MOVE_KEYS: Record<string, [number, number]> = {
   KeyW: [1, 0],
   ArrowUp: [1, 0],
   KeyS: [-1, 0],
   ArrowDown: [-1, 0],
   KeyA: [0, -1],
-  KeyD: [0, 1]
+  ArrowLeft: [0, -1],
+  KeyD: [0, 1],
+  ArrowRight: [0, 1]
 };
 const TURN_KEYS: Record<string, number> = {
-  ArrowLeft: 1,
   KeyQ: 1,
-  ArrowRight: -1,
   KeyE: -1
 };
 
