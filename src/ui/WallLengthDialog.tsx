@@ -19,7 +19,7 @@ function LengthForm({ wall }: { wall: Wall }) {
   const [value, setValue] = useState(
     formatPlanLength(wall.length - WALL_THICKNESS, { suffix: false })
   );
-  // Accepts any unit ('2.7 m', '270 cm', 8' 10"); a bare number is in `units`.
+  // Accepts any unit ('2.7 m', '270 cm', 8'10"); a bare number is in `units`.
   const length = parsePlanLength(value);
   const valid = length !== null && length > 0;
 

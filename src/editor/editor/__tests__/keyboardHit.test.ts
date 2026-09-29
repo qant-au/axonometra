@@ -67,7 +67,7 @@ describe('describePoint', () => {
       '2500 mm across, 12400 mm down'
     );
     expect(describePoint({ x: 250, y: 1240 }, 'ft-in')).toBe(
-      '8\' 2 7/16" across, 40\' 8 3/16" down'
+      '8\'2-7/16" across, 40\'8-3/16" down'
     );
   });
 });
