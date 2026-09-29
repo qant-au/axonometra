@@ -92,7 +92,11 @@ narrative.
 - `src/ui/` — Mantine React components.
 - `src/stores/` — Zustand stores (UI state, not engine model).
 - `src/embed/` — the iframe `postMessage` bridge.
-- `src/res/catalog/` — the built-in furniture / door / window catalog.
+- `src/res/catalog/` — the built-in catalog. Doors and windows are local
+  (`wall-fittings.json`). Furniture and equipment in `elements/` are generated
+  from the element library Axonometra shares with Reticulyne and vendored here
+  with `node scripts/sync-elements.mjs`; do not edit those files by hand. To ask
+  for a new item or a change to one, open an issue.
 - `e2e/` — Playwright specs.
 - `src/editor/editor/__tests__/` — engine unit tests.
 - `src/test/pixiMock.ts` — minimal Pixi stub used by the unit tests.
