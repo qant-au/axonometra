@@ -109,7 +109,6 @@ narrative.
   URL params, origin allowlist, CSP).
 - [`PLAN-FORMAT.md`](./PLAN-FORMAT.md) — persisted plan file format.
 - [`CHANGELOG.md`](./CHANGELOG.md) — Keep-a-Changelog log of releases.
-- `TODO.md` — roadmap; tasks use stable `@id(axo-XXX)` identifiers.
 - [`reviews/`](./reviews/) — the code-review prompt
   (`code-review-instructions.md`) and the current review cycle.
   `reviews/history/` holds superseded reviews (`STAGE*-REVIEW.md`,
