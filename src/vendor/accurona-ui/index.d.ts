@@ -1,9 +1,11 @@
-export { createLineworkTheme, type CustomThemeVars } from './theme.js';
+export { createLineworkTheme, lineworkThemeOptions, lineworkVars, type CustomThemeVars, type LineworkThemeSettings } from './theme.js';
 export { AppDialog } from './AppDialog.js';
 export { CloseButton } from './CloseButton.js';
+export { ContextMenu, type ContextMenuItem } from './ContextMenu.js';
 export { FloatingPanel } from './FloatingPanel.js';
 export { NotificationHost } from './NotificationHost.js';
 export { clearNotifications, dismissNotification, getNotifications, notify, subscribeNotifications, type Notification, type NotifyOptions, type Severity } from './notifications.js';
+export { Panel, PanelHeader, PanelSection } from './Panel.js';
 export { SidePanel } from './SidePanel.js';
 export { Surface } from './Surface.js';
 export { ToolButton, type ToolButtonProps } from './ToolButton.js';

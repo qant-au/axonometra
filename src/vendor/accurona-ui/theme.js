@@ -1,5 +1,5 @@
 import { createTheme } from '@mui/material';
-const createVars = (mode) => {
+export const lineworkVars = (mode = 'light') => {
     const isDark = mode === 'dark';
     return {
         appPadding: { x: 40, y: 40 },
@@ -17,12 +17,11 @@ const createShadows = (mode) => {
         .fill('none')
         .map((_shadow, i) => i === 0 ? 'none' : `0px 10px 20px ${i - 10}px rgba(0,0,0,${alpha})`);
 };
-export const createLineworkTheme = (mode = 'light') => {
+// The theme as options, for a host that builds its own theme on top.
+export const lineworkThemeOptions = (mode = 'light') => {
     const isDark = mode === 'dark';
-    return createTheme({
-        // Exposes the palette as --mui-* CSS variables for plain CSS modules.
-        cssVariables: true,
-        customVars: createVars(mode),
+    return {
+        customVars: lineworkVars(mode),
         shadows: createShadows(mode),
         typography: {
             h2: { fontSize: '4em', fontWeight: 'bold', lineHeight: 1.2 },
@@ -67,5 +66,6 @@ export const createLineworkTheme = (mode = 'light') => {
                 defaultProps: { variant: 'outlined' }
             }
         }
-    });
+    };
 };
+export const createLineworkTheme = (mode = 'light', { cssVariables = false } = {}) => createTheme({ ...lineworkThemeOptions(mode), cssVariables });

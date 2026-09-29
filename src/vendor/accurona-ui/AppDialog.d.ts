@@ -5,8 +5,9 @@ interface Props {
     onClose: () => void;
     title?: string;
     children: ReactNode;
+    actions?: ReactNode;
     fullScreen?: boolean;
     maxWidth?: Breakpoint | false;
 }
-export declare const AppDialog: ({ open, onClose, title, children, fullScreen, maxWidth }: Props) => import("react").JSX.Element;
+export declare const AppDialog: ({ open, onClose, title, children, actions, fullScreen, maxWidth }: Props) => import("react").JSX.Element;
 export {};

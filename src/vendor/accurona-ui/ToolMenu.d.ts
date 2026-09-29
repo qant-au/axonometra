@@ -10,9 +10,12 @@ interface Props {
     name: string;
     icon: ReactNode;
     items: ToolMenuItem[];
+    openOnHover?: boolean;
+    footer?: ReactNode;
     placement?: PopperPlacementType;
     offset?: number;
+    minWidth?: number;
     closeDelay?: number;
 }
-export declare const ToolMenu: ({ name, icon, items, placement, offset, closeDelay }: Props) => import("react").JSX.Element;
+export declare const ToolMenu: ({ name, icon, items, openOnHover, footer, placement, offset, minWidth, closeDelay }: Props) => import("react").JSX.Element;
 export {};

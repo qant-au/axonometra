@@ -1,4 +1,4 @@
-import { type PaletteMode } from '@mui/material';
+import { type PaletteMode, type ThemeOptions } from '@mui/material';
 export interface CustomThemeVars {
     appPadding: {
         x: number;
@@ -19,4 +19,9 @@ declare module '@mui/material/styles' {
         customVars?: CustomThemeVars;
     }
 }
-export declare const createLineworkTheme: (mode?: PaletteMode) => import("@mui/material").Theme;
+export declare const lineworkVars: (mode?: PaletteMode) => CustomThemeVars;
+export declare const lineworkThemeOptions: (mode?: PaletteMode) => ThemeOptions;
+export interface LineworkThemeSettings {
+    cssVariables?: boolean;
+}
+export declare const createLineworkTheme: (mode?: PaletteMode, { cssVariables }?: LineworkThemeSettings) => import("@mui/material").Theme;

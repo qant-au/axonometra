@@ -6,7 +6,8 @@ import { EmbedBridge } from './embed/EmbedBridge';
 import { createLineworkTheme, NotificationHost } from './vendor/accurona-ui';
 
 // Accurona's shared theme, so Axonometra looks like Reticulyne (D12).
-const theme = createLineworkTheme('light');
+// CSS variables on: the CSS modules read --mui-* colours.
+const theme = createLineworkTheme('light', { cssVariables: true });
 
 function App() {
   useEffect(() => {
