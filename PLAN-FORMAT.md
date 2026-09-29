@@ -1,8 +1,15 @@
-# Axonometra plan file format
+# Axonometra plan file format (legacy, read only)
 
-This document describes the JSON shape that `Save` (Ctrl+S) writes and
-that `Load from local save` / `Load from disk` / `axo:load`
-([EMBEDDING.md](./EMBEDDING.md)) reads.
+> **Axonometra no longer writes this format.** Plans are saved as
+> [Accurona scenes](https://github.com/qant-au/accurona/blob/main/docs/scene-format.md), the file format shared with Reticulyne. A file in
+> this format still opens (from disk, local storage or `axo:load`), and the
+> next save writes it as a scene. This document stays so existing files can
+> be read and converted; the mapping to the scene is in the scene format's
+> "Migrating from today's formats".
+
+This document describes the JSON shape that `Save` (Ctrl+S) wrote before the
+scene format, and that `Load from local save` / `Load from disk` / `axo:load`
+([EMBEDDING.md](./EMBEDDING.md)) still read.
 
 The current schema is **version 2**. Version 1 plans load unchanged: every
 field version 2 added is optional, and a missing one means the default the

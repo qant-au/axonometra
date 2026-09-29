@@ -23,6 +23,7 @@ Expect breaking changes between minor versions until v1.0.0.
 
 ### Changed
 
+- **Plans are saved as [Accurona scenes](https://github.com/qant-au/accurona/blob/main/docs/scene-format.md)** (breaking): the toolbar Save, Ctrl+S and `axo:save` all write the scene format Axonometra shares with Reticulyne, validated by `@accurona/core`'s schema. Plan format v1 and v2 files still open and save as scenes; nothing writes plan v2 any more. A scene keeps what Axonometra does not draw (diagram views, device props, ports, links, connections) and its ids through every save.
 - UI library: Mantine → MUI, so Axonometra and Reticulyne share one look (menus, panels, dialogs, notifications). The shared parts come from Accurona's `@accurona/ui`, vendored into `src/vendor/accurona-ui/` by `scripts/sync-elements.mjs`.
 - Plan file format version 2. New optional fields: per floor, which walls are exterior, wall height and elevation; per item, its height and its height above the floor (a window's sill). Version 1 plans load unchanged, and the editor now always saves version 2. The axonometric view uses the new fields. See `PLAN-FORMAT.md`.
 - UI stack: Mantine 4 → 9, which requires React 18 → 19. `createStyles` replaced by CSS modules with `light-dark()`; unused `@mantine/dropzone` dropped.

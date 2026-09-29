@@ -77,6 +77,40 @@ export function getItemHeights(
   return el && { height: el.size.h, mount: el.mount ?? 0 };
 }
 
+/**
+ * What an element (or a built-in door or window) is when placed with no size
+ * of its own: its plan footprint and real height, cm, and its draw order.
+ */
+export function getPlacementDefaults(
+  elementId: string
+):
+  | { w: number; d: number; h?: number; mount?: number; zIndex: number }
+  | undefined {
+  const el = byId.get(elementId);
+  if (el) {
+    return {
+      w: el.footprint.w,
+      d: el.footprint.d,
+      h: el.size.h,
+      ...(el.mount != null ? { mount: el.mount } : {}),
+      zIndex: el.mount ? 2 : 1
+    };
+  }
+  const fitting =
+    elementId === 'door' || elementId === 'window'
+      ? wallFittings[elementId]
+      : undefined;
+  return (
+    fitting && {
+      w: fitting.width * 100,
+      d: fitting.height * 100,
+      h: fitting.heightM * 100,
+      mount: fitting.mountM * 100,
+      zIndex: fitting.zIndex
+    }
+  );
+}
+
 export function getWindowFitting(): FurnitureData {
   return wallFittings.window;
 }

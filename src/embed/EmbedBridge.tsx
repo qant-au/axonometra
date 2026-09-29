@@ -14,10 +14,13 @@ export function EmbedBridge(): null {
     const handle = createInboundHandler({
       publicKeys: embedConfig.planPublicKeys,
       load: (planText) => serializer.load(planText),
-      serialize: () => serializer.serialize(),
+      // The saved file: an Accurona scene.
+      serialize: () => serializer.sceneText(),
       // three.js only downloads when a host first asks for a model.
-      exportGlb: async (planText) =>
-        (await import('../editor/scene3d/exportGlb')).exportGlb(planText),
+      exportGlb: async () =>
+        (await import('../editor/scene3d/exportGlb')).exportGlb(
+          serializer.serialize()
+        ),
       notify: (message) =>
         notify({ title: 'Plan refused', message, severity: 'error' })
     });

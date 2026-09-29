@@ -39,17 +39,23 @@ npm install
 npm run dev
 ```
 
-To embed Axonometra in another application, see [EMBEDDING.md](EMBEDDING.md). The saved
-plan format is documented in [PLAN-FORMAT.md](PLAN-FORMAT.md).
+To embed Axonometra in another application, see [EMBEDDING.md](EMBEDDING.md). Plans are
+saved as [Accurona scenes](https://github.com/qant-au/accurona/blob/main/docs/scene-format.md), the file format Axonometra shares with
+[Reticulyne](https://github.com/qant-au/reticulyne). Files in the plan format Axonometra
+used before ([PLAN-FORMAT.md](PLAN-FORMAT.md)) still open, and save as scenes.
 
 ## Using it
 
 ### Saving and loading
 
 - **Ctrl+S** (Cmd+S on macOS) saves the current plan to your browser's local storage.
-- The toolbar **Save** button downloads the plan as an `axonometra-plan-*.json` file.
+- The toolbar **Save** button downloads the plan as an `axonometra-plan-*.json` file, an
+  Accurona scene. A scene opened from a file keeps everything Axonometra does not draw
+  (Reticulyne's diagrams of the same devices, their properties and connections) when it is
+  saved again.
 - Load a plan from the welcome dialog ("Load from disk" / "Load from local save") or the
-  toolbar's **Load plan** button.
+  toolbar's **Load plan** button. A scene or an old plan file both open; only scenes are
+  saved.
 - Saving is manual; there is no periodic autosave.
 
 ### 3D view

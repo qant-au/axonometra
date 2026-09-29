@@ -53,9 +53,10 @@ export interface InboundDeps {
   publicKeys: string[];
   /** Load the plan text; returns false if the plan itself was rejected. */
   load: (planText: string) => boolean;
+  /** The file to save: the plan as an Accurona scene. */
   serialize: () => string;
-  /** The plan text as a glTF binary. Loaded lazily: it brings in three.js. */
-  exportGlb: (planText: string) => Promise<ArrayBuffer>;
+  /** The plan as a glTF binary. Loaded lazily: it brings in three.js. */
+  exportGlb: () => Promise<ArrayBuffer>;
   /** Tell the person using the editor that a plan was refused. */
   notify: (message: string) => void;
   now?: () => number;
@@ -89,7 +90,7 @@ export function createInboundHandler(deps: InboundDeps) {
         if ((message.format ?? 'glb') !== 'glb')
           return fail('unsupported-format');
         try {
-          const data = await deps.exportGlb(deps.serialize());
+          const data = await deps.exportGlb();
           reply({ type: 'axo:exported', format: 'glb', data, session });
         } catch {
           fail('export-failed');

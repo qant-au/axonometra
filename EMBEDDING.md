@@ -28,7 +28,7 @@ Host page:
       );
     }
     if (event.data?.type === 'axo:save') {
-      // event.data.plan is a JSON string
+      // event.data.plan is an Accurona scene, as a JSON string
       console.log('plan saved', event.data.plan);
     }
   });
@@ -58,7 +58,7 @@ All messages are objects with a `type: 'axo:...'` discriminator. Anything that d
 | `type`             | Payload                                                                              | Effect                                                                                                                                                                                                                                      |
 | ------------------ | ------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `axo:load`         | `{ plan: string \| object, session?: string, signature?: string, expires?: number }` | Loads `plan`. The object form is JSON-stringified, in unsigned mode only. `session` is echoed on later saves. With signing on, `signature` and `expires` are required. Replies `axo:loaded` or `axo:error`.                                 |
-| `axo:request-save` | none                                                                                 | Triggers `axo:save` reply to `event.source` with the current plan as a JSON string.                                                                                                                                                         |
+| `axo:request-save` | none                                                                                 | Triggers `axo:save` reply to `event.source` with the current plan as a scene JSON string.                                                                                                                                                   |
 | `axo:export`       | `{ format?: 'glb' }`                                                                 | Replies `axo:exported` with the current plan as a 3D model: a glTF binary, in metres with y up. `glb` is the only format and the default. three.js loads on the first request. Refused formats reply `axo:error` with `unsupported-format`. |
 | `axo:ready?`       | none                                                                                 | Triggers `axo:ready` reply to `event.source`.                                                                                                                                                                                               |
 
@@ -96,7 +96,7 @@ The legacy `X-Frame-Options` header has been removed in favour of CSP — `X-Fra
 
 ## Plan format
 
-The `plan` payload is a `FloorPlanSerializable` JSON object — see `src/editor/editor/persistence/FloorPlanSerializable.ts`. The current schema is `version: 2`; version 1 plans still load. See [PLAN-FORMAT.md](./PLAN-FORMAT.md) for both. Hosts that store plans should keep them as the editor sent them: a v2 plan records which walls are exterior and item heights, which v1 plans lost.
+`axo:save` sends an [Accurona scene](https://github.com/qant-au/accurona/blob/main/docs/scene-format.md): the file format Axonometra shares with Reticulyne, validated by one schema whose JSON Schema is published (the file names it in `$schema`). `axo:load` accepts a scene, or a plan in the format Axonometra used before ([PLAN-FORMAT.md](./PLAN-FORMAT.md), versions 1 and 2), which is read and never written again: the next save is a scene. Hosts that store plans should store the scenes the editor sends. A scene loaded here keeps everything Axonometra does not draw (diagram views, device properties, connections) through later saves.
 
 ## Signed plans
 

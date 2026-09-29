@@ -116,7 +116,9 @@ test.describe('place-wall critical flow', () => {
     expect(await getWallCount(page)).toBeGreaterThanOrEqual(1);
   });
 
-  test('Ctrl+S writes the plan to localStorage', async ({ page }) => {
+  test('Ctrl+S writes the plan to localStorage as a scene', async ({
+    page
+  }) => {
     await selectWallTool(page);
     const canvas = page.locator('canvas').first();
     const box = await canvas.boundingBox();
@@ -135,9 +137,12 @@ test.describe('place-wall critical flow', () => {
     );
     expect(stored).not.toBeNull();
     const parsed = JSON.parse(stored ?? '{}');
-    expect(parsed).toHaveProperty('floors');
-    expect(parsed).toHaveProperty('wallNodeId');
-    expect(parsed.version).toBe(2);
+    // An Accurona scene, never the old plan format.
+    expect(parsed.format).toBe('accurona-scene');
+    expect(parsed.version).toBe(1);
+    expect(parsed.views[0].kind).toBe('plan');
+    expect(parsed.views[0].floors[0].nodes.length).toBeGreaterThanOrEqual(2);
+    expect(parsed).not.toHaveProperty('wallNodeId');
   });
 
   test('round-trips a saved plan via "Load from local save"', async ({

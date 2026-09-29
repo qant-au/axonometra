@@ -13,7 +13,8 @@ export function timestamp() {
 
 export class SaveAction implements Action {
   public execute() {
-    const data = serializer.serialize();
+    // An Accurona scene: the one file format of Axonometra and Reticulyne.
+    const data = serializer.sceneText();
     const blob = new Blob([data], { type: 'application/json;charset=utf-8' });
     saveAs(blob, `axonometra-plan-${timestamp()}.json`);
   }

@@ -147,3 +147,71 @@ describe('Serializer display units', () => {
     expect(useUnitsStore.getState().units).toBe('mm');
   });
 });
+
+describe('Serializer scene files', () => {
+  const setPlan = vi.fn();
+  beforeEach(() => {
+    setPlan.mockClear();
+    useFloorPlanStore.setState({ setPlan });
+  });
+
+  it('opens a scene and saves back the scene it opened', () => {
+    const scene = {
+      format: 'accurona-scene',
+      version: 1,
+      id: 'comms',
+      title: 'Comms room',
+      objects: [{ id: 'fw', element: 'firewall', props: { ip: '10.0.0.1' } }],
+      views: [{ id: 'plan', kind: 'plan', name: 'Plan', floors: [{ id: 'g' }] }]
+    };
+    const serializer = new Serializer();
+    expect(serializer.load(JSON.stringify(scene))).toBe(true);
+    expect(setPlan).toHaveBeenCalledTimes(1);
+    // The store is mocked, so save what setPlan received.
+    const loaded = setPlan.mock.calls[0][0];
+    seedPlan(
+      loaded.floors.map((f: FloorSerializable) =>
+        makeFakeFloor({ wallNodeId: 0, floorData: f })
+      ),
+      0
+    );
+    const saved = JSON.parse(serializer.sceneText());
+    expect(saved.format).toBe('accurona-scene');
+    expect(saved.id).toBe('comms');
+    expect(saved.title).toBe('Comms room');
+    expect(saved.objects).toEqual([
+      { id: 'fw', element: 'firewall', props: { ip: '10.0.0.1' } }
+    ]);
+    expect(saved.$schema).toMatch(/scene-v1\.json$/);
+  });
+
+  it('refuses an invalid scene whole', () => {
+    const bad = {
+      format: 'accurona-scene',
+      version: 1,
+      id: 'x',
+      objects: [{ id: 'a', colour: 'red' }]
+    };
+    expect(new Serializer().load(JSON.stringify(bad))).toBe(false);
+    expect(setPlan).not.toHaveBeenCalled();
+  });
+
+  it('opens a plan v2 file and saves it as a scene', () => {
+    const serializer = new Serializer();
+    expect(
+      serializer.load(
+        JSON.stringify({
+          version: 2,
+          floors: [],
+          furnitureId: 0,
+          wallNodeId: 0
+        })
+      )
+    ).toBe(true);
+    seedPlan([makeFakeFloor({ wallNodeId: 0 })], 0);
+    const saved = JSON.parse(serializer.sceneText());
+    expect(saved.format).toBe('accurona-scene');
+    expect(saved.views[0].kind).toBe('plan');
+    expect(saved.floors).toBeUndefined();
+  });
+});

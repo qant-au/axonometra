@@ -162,7 +162,7 @@ describe('axo:export', () => {
     const { deps, replies, send } = setup([]);
     await send({ type: 'axo:load', plan: PLAN, session: 's' });
     await send({ type: 'axo:export', format: 'glb' });
-    expect(deps.exportGlb).toHaveBeenCalledWith('CURRENT');
+    expect(deps.exportGlb).toHaveBeenCalledWith();
     expect(replies[1]).toEqual({
       type: 'axo:exported',
       format: 'glb',

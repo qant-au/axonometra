@@ -110,7 +110,7 @@ test.describe('signed embedding', () => {
     baseURL
   }) => {
     const plan = await capturePlan(page, baseURL!);
-    expect(JSON.parse(plan).floors[0].wallNodes.length).toBe(2);
+    expect(JSON.parse(plan).views[0].floors[0].nodes.length).toBe(2);
 
     await openHost(page, baseURL!);
     const expires = Math.floor(Date.now() / 1000) + 300;
@@ -137,12 +137,15 @@ test.describe('signed embedding', () => {
     await send(page, { type: 'axo:request-save' });
     const saved = await lastReply(page, 'axo:save');
     expect(saved.session).toBe('sess-42');
-    expect(JSON.parse(saved.plan as string).floors[0].wallNodes.length).toBe(2);
+    expect(
+      JSON.parse(saved.plan as string).views[0].floors[0].nodes.length
+    ).toBe(2);
 
     // Tampered plan (one node dropped) with the old signature: refused, and
     // the editor still holds the signed plan.
     const tampered = JSON.parse(plan);
-    tampered.floors[0].wallNodes.pop();
+    tampered.views[0].floors[0].nodes.pop();
+    tampered.views[0].floors[0].walls = [];
     await clearReplies(page);
     await send(page, {
       type: 'axo:load',
@@ -156,7 +159,9 @@ test.describe('signed embedding', () => {
     });
     await send(page, { type: 'axo:request-save' });
     const after = await lastReply(page, 'axo:save');
-    expect(JSON.parse(after.plan as string).floors[0].wallNodes.length).toBe(2);
+    expect(
+      JSON.parse(after.plan as string).views[0].floors[0].nodes.length
+    ).toBe(2);
   });
 
   test('exports the loaded plan as a glb over axo:export', async ({

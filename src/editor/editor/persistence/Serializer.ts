@@ -1,4 +1,9 @@
-import { isLengthUnit } from '../../../vendor/accurona-core';
+import {
+  isLengthUnit,
+  isSceneDocument,
+  serializeScene,
+  validateScene
+} from '../../../vendor/accurona-core';
 import { notify } from '../../../vendor/accurona-ui';
 import { useFloorPlanStore } from '../../../stores/FloorPlanStore';
 import { useHistoryStore } from '../../../stores/HistoryStore';
@@ -10,11 +15,37 @@ import {
   safeParsePlan,
   validatePlanShape
 } from './FloorPlanSerializable';
+import {
+  newContext,
+  planToScene,
+  sceneToPlan,
+  SceneContext
+} from './sceneFile';
 
 // Reads and writes the floor plan model held in useFloorPlanStore. The
 // editor's Pixi containers are not involved: `Floor.serialize()` produces the
 // DTO, and `setPlan` rebuilds the floors from one.
+//
+// Files are Accurona scenes (sceneText, load). Plan v2, the format this
+// editor used before, is read on load and never written. The in-memory plan
+// text (serialize) is what undo, the 3D view and the glTF export work on.
 export class Serializer {
+  // The scene the plan was opened from, so a save keeps what Axonometra does
+  // not draw. A new or plan v2 document starts from an empty scene.
+  private context: SceneContext = newContext();
+
+  /** The file to save: the plan as an Accurona scene. */
+  public sceneText(): string {
+    const plan = JSON.parse(this.serialize()) as FloorPlanSerializable;
+    return serializeScene(planToScene(plan, this.context));
+  }
+
+  /** Starts a new, unsaved document. */
+  public reset(): void {
+    this.context = newContext();
+  }
+
+  /** The in-memory plan, not a file: see sceneText. */
   public serialize(): string {
     // Materialise the active floor so a never-touched plan still serialises
     // to a valid single-floor document.
@@ -38,7 +69,10 @@ export class Serializer {
     return JSON.stringify(floorPlanSerializable);
   }
 
-  /** Returns true when the plan was loaded; failures are toasted here. */
+  /**
+   * Opens a scene, or a plan v2 file (read only; it saves as a scene).
+   * Returns true when it loaded; failures are toasted here.
+   */
   public load(planText: string | null): boolean {
     if (planText == null || planText === '') {
       notify({
@@ -58,6 +92,21 @@ export class Serializer {
         severity: 'error'
       });
       return false;
+    }
+    if (isSceneDocument(raw)) {
+      const result = validateScene(raw);
+      if (!result.ok) {
+        notify({
+          title: 'Load failed',
+          message: `Not a valid scene: ${result.errors[0]}`,
+          severity: 'error'
+        });
+        return false;
+      }
+      const { plan, ctx } = sceneToPlan(result.scene);
+      this.apply(plan);
+      this.context = ctx;
+      return true;
     }
     const plan = validatePlanShape(raw);
     if (!plan) {
@@ -79,6 +128,12 @@ export class Serializer {
       });
       return false;
     }
+    this.apply(plan);
+    this.context = newContext();
+    return true;
+  }
+
+  private apply(plan: FloorPlanSerializable) {
     // Before setPlan, so the wall labels it draws are in the plan's units.
     useUnitsStore
       .getState()
@@ -87,7 +142,6 @@ export class Serializer {
     // A loaded plan is a different document; undo must not step back into
     // the one it replaced.
     useHistoryStore.getState().clear();
-    return true;
   }
 }
 
