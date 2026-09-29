@@ -1,5 +1,5 @@
 # Vendored shared core
 
-`@accurona/core`, built by [qant-au/accurona](https://github.com/qant-au/accurona) at `2889467`.
+`@accurona/core`, built by [qant-au/accurona](https://github.com/qant-au/accurona) at `cedf8a7`.
 Do not edit these files: change packages/core in that repo and re-run
 `node scripts/sync-elements.mjs`.
