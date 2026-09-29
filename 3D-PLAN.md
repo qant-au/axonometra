@@ -161,7 +161,7 @@ Each phase ships on its own and is demoable.
    the lock's Escape and the dialog's. Touch gets an on-screen stick.
    Teleport (click the floor to go there, keys step 1 m and turn 30°) is on
    by default under reduced motion and a switch for everyone. Storeys change
-   with Page Up / Page Down or the buttons at a `stairs-*` item, arriving at
+   with Page Up / Page Down or the buttons at a `stairs-*` item, arriving beside
    the nearest stairs on the new floor; a floor with no stairs lets you
    change from anywhere, so such a plan is not a dead end.
 6. **glTF export**, and embedding messages for it (`axo:export`). _Done
