@@ -59,9 +59,12 @@ describe('wallAt', () => {
 });
 
 describe('describePoint', () => {
-  it('reads out metres to two decimals', () => {
-    expect(describePoint({ x: 250, y: 1240 }, 100)).toBe(
-      '2.50 m across, 12.40 m down'
+  it('reads out the position in the display units', () => {
+    expect(describePoint({ x: 250, y: 1240 }, 'm')).toBe(
+      '2.5 m across, 12.4 m down'
+    );
+    expect(describePoint({ x: 250, y: 1240 }, 'mm')).toBe(
+      '2500 mm across, 12400 mm down'
     );
   });
 });

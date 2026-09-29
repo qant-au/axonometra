@@ -10,6 +10,11 @@ export class FloorPlanSerializable {
   floors: FloorSerializable[];
   public furnitureId!: number;
   public wallNodeId!: number;
+  /**
+   * v2: display units, the scene format's `units` field. Lengths are shown
+   * and typed in them, never stored in them; absent means 'mm'.
+   */
+  public units?: string;
 
   constructor() {
     this.floors = [];

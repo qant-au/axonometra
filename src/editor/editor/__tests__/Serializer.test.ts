@@ -6,6 +6,7 @@ import {
   validatePlanShape
 } from '../persistence/FloorPlanSerializable';
 import { useFloorPlanStore } from '../../../stores/FloorPlanStore';
+import { useUnitsStore } from '../../../stores/UnitsStore';
 import type { Floor } from '../objects/Floor';
 
 // Serializer is pure JSON.stringify over what Floor.serialize() returns, so we
@@ -106,5 +107,41 @@ describe('Serializer.load versions', () => {
   it('refuses a version it does not know', () => {
     expect(new Serializer().load(plan(3))).toBe(false);
     expect(setPlan).not.toHaveBeenCalled();
+  });
+});
+
+describe('Serializer display units', () => {
+  const setPlan = vi.fn();
+  beforeEach(() => {
+    useFloorPlanStore.setState({ setPlan, floors: [], currentFloor: 0 });
+    useUnitsStore.setState({ units: 'mm' });
+  });
+  const plan = (units?: unknown) =>
+    JSON.stringify({
+      version: 2,
+      units,
+      floors: [],
+      furnitureId: 0,
+      wallNodeId: 0
+    });
+
+  it('writes units only when they are not the default', () => {
+    seedPlan([makeFakeFloor({ wallNodeId: 0 })], 0);
+    const saved = () =>
+      (safeParsePlan(new Serializer().serialize()) as Record<string, unknown>)
+        .units;
+    expect(saved()).toBeUndefined();
+    useUnitsStore.setState({ units: 'm' });
+    expect(saved()).toBe('m');
+  });
+
+  it('restores the units on load, falling back to millimetres', () => {
+    new Serializer().load(plan('cm'));
+    expect(useUnitsStore.getState().units).toBe('cm');
+    new Serializer().load(plan());
+    expect(useUnitsStore.getState().units).toBe('mm');
+    useUnitsStore.setState({ units: 'm' });
+    new Serializer().load(plan('furlongs'));
+    expect(useUnitsStore.getState().units).toBe('mm');
   });
 });

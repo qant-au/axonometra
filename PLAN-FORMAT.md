@@ -21,6 +21,7 @@ interface FloorPlanSerializable {
   floors: FloorSerializable[]; // one entry per floor, lowest first
   furnitureId: number; // next free furniture id (monotonic counter)
   wallNodeId: number; // next free wall-node id (monotonic counter)
+  units?: 'mm' | 'cm' | 'm'; // display units (v2); lengths are never stored in them
 }
 ```
 
@@ -87,13 +88,14 @@ both.
 Added 2026-09-28 for the 3D view. All optional, so version 1 plans need no
 migration.
 
-| Field           | Where | Absent means                                                                                                           |
-| --------------- | ----- | ---------------------------------------------------------------------------------------------------------------------- |
-| `exteriorWalls` | floor | every wall interior. Before v2 the exterior flag was not saved at all, so a v1 plan re-opens with every wall interior. |
-| `wallHeightM`   | floor | 2.7 m                                                                                                                  |
-| `elevationM`    | floor | stacked at 3.0 m per storey                                                                                            |
-| `heightM`       | item  | the catalogue's height for its `texturePath`, else 0.7 m; doors 2.1 m, windows 1.2 m                                   |
-| `mountM`        | item  | the catalogue's mount height, else on the floor; windows 0.9 m                                                         |
+| Field           | Where | Absent means                                                                                                                |
+| --------------- | ----- | --------------------------------------------------------------------------------------------------------------------------- |
+| `exteriorWalls` | floor | every wall interior. Before v2 the exterior flag was not saved at all, so a v1 plan re-opens with every wall interior.      |
+| `wallHeightM`   | floor | 2.7 m                                                                                                                       |
+| `elevationM`    | floor | stacked at 3.0 m per storey                                                                                                 |
+| `heightM`       | item  | the catalogue's height for its `texturePath`, else 0.7 m; doors 2.1 m, windows 1.2 m                                        |
+| `mountM`        | item  | the catalogue's mount height, else on the floor; windows 0.9 m                                                              |
+| `units`         | plan  | millimetres. How lengths are shown and typed, never how they are stored; the scene format's `units` field. Added 2026-09-29 |
 
 The editor records an item's catalogue `heightM` and `mountM` when it is
 placed, as it records the footprint, so a later catalogue change does not

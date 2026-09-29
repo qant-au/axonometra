@@ -33,8 +33,13 @@ import {
   IconArrowBackUp,
   IconArrowForwardUp,
   IconCube,
-  IconView360
+  IconView360,
+  IconRulerMeasure,
+  IconCheck
 } from '@tabler/icons-react';
+import type { MetricUnit } from '../../vendor/accurona-core';
+import { useUnitsStore } from '../../stores/UnitsStore';
+import { SetUnitsAction } from '../../editor/editor/actions/SetUnitsAction';
 import {
   clearNotifications,
   notify,
@@ -77,6 +82,34 @@ const modes = [
   { icon: IconPencil, label: 'Edit', tool: Tool.Edit },
   { icon: IconEraser, label: 'Erase', tool: Tool.Remove }
 ];
+
+const UNIT_NAMES: { unit: MetricUnit; label: string }[] = [
+  { unit: 'mm', label: 'Millimetres' },
+  { unit: 'cm', label: 'Centimetres' },
+  { unit: 'm', label: 'Metres' }
+];
+
+// How lengths are shown and typed; saved with the plan.
+function UnitsMenu() {
+  const units = useUnitsStore((s) => s.units);
+  return (
+    <ToolMenu
+      name="Units"
+      icon={<IconRulerMeasure />}
+      items={UNIT_NAMES.map(({ unit, label }) => ({
+        label: `${label} (${unit})`,
+        // A blank box keeps the labels aligned beside the tick.
+        icon:
+          unit === units ? (
+            <IconCheck size={18} aria-label="selected" />
+          ) : (
+            <Box sx={{ width: 18 }} />
+          ),
+        onClick: () => new SetUnitsAction(unit).execute()
+      }))}
+    />
+  );
+}
 
 function AddMenu({ setter }: { setter: Dispatch<SetStateAction<number>> }) {
   const setTool = useStore((s) => s.setTool);
@@ -293,6 +326,7 @@ export function ToolNavbar() {
                 });
               }}
             />
+            <UnitsMenu />
             <NavbarLink
               icon={IconCube}
               label="Axonometric view"

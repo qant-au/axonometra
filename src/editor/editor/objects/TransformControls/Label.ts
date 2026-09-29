@@ -1,11 +1,7 @@
 import { Container, Sprite, Text, TextStyle, Texture } from 'pixi.js';
+import { formatPlanLength } from '../../../../helpers/planLength';
 import { Point } from '../../../../helpers/Point';
-import {
-  LABEL_COLOR,
-  LABEL_FONT,
-  LABEL_FONT_SIZE,
-  METER
-} from '../../constants';
+import { LABEL_COLOR, LABEL_FONT, LABEL_FONT_SIZE } from '../../constants';
 
 export class Label extends Container {
   text: Text;
@@ -31,7 +27,7 @@ export class Label extends Container {
   }
 
   public update(sizeInPixels: number) {
-    this.text.text = this.toMeter(sizeInPixels);
+    this.text.text = formatPlanLength(Math.abs(sizeInPixels));
     this.textBkg.width = this.text.width;
     this.textBkg.height = this.text.height;
   }
@@ -39,14 +35,5 @@ export class Label extends Container {
   public updatePos(pos: Point, sizeInPixels: number) {
     this.position.set(pos.x, pos.y);
     this.update(sizeInPixels);
-  }
-
-  private toMeter(size: number) {
-    size = Math.abs(size) / METER;
-
-    // truncating to the 2nd decimal
-    const sizeLabel = (Math.round(size * 100) / 100).toFixed(2);
-
-    return sizeLabel + 'm';
   }
 }

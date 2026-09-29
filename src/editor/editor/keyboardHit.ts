@@ -1,6 +1,8 @@
 // Geometry for the keyboard cursor: what lies under a world-space point.
 // Pure functions over plain coordinates so they can be tested without Pixi.
+import { planToMm } from '../../helpers/planLength';
 import { Point } from '../../helpers/Point';
+import { formatLength, type MetricUnit } from '../../vendor/accurona-core';
 
 export interface NodeLike {
   x: number;
@@ -61,9 +63,9 @@ export function wallAt<T extends WallLike>(
   return best;
 }
 
-/** Plan coordinates as a person reads them: metres, two decimals. */
-export function describePoint(p: Point, meter: number): string {
-  return `${(p.x / meter).toFixed(2)} m across, ${(p.y / meter).toFixed(2)} m down`;
+/** Plan coordinates as a person reads them, in the plan's display units. */
+export function describePoint(p: Point, units: MetricUnit): string {
+  return `${formatLength(planToMm(p.x), units)} across, ${formatLength(planToMm(p.y), units)} down`;
 }
 
 /**

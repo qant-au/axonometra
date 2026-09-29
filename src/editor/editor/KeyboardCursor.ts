@@ -9,6 +9,7 @@
 import { getMain } from '../EditorRoot';
 import { useStore } from '../../stores/EditorStore';
 import { useFloorPlanStore } from '../../stores/FloorPlanStore';
+import { useUnitsStore } from '../../stores/UnitsStore';
 import { Point } from '../../helpers/Point';
 import { snap } from '../../helpers/ViewportCoordinates';
 import { getDoorFitting, getWindowFitting } from '../../res/catalog';
@@ -57,7 +58,9 @@ export class KeyboardCursor {
       this.placed = true;
     }
     this.showCursor();
-    this.announce(`Cursor at ${describePoint(this.cursor, METER)}.`);
+    this.announce(
+      `Cursor at ${describePoint(this.cursor, useUnitsStore.getState().units)}.`
+    );
   }
 
   public blur() {
@@ -119,7 +122,7 @@ export class KeyboardCursor {
       useFloorPlanStore.getState().redrawWalls();
     }
     this.showCursor();
-    const where = describePoint(this.cursor, METER);
+    const where = describePoint(this.cursor, useUnitsStore.getState().units);
     this.announce(
       this.grab
         ? `Moving ${this.grab.label} to ${where}.`
@@ -231,7 +234,7 @@ export class KeyboardCursor {
       new AddNodeAction(wall, { ...this.cursor }).execute();
     });
     const after = useFloorPlanStore.getState().getWallNodeSeq();
-    const where = describePoint(this.cursor, METER);
+    const where = describePoint(this.cursor, useUnitsStore.getState().units);
     if (after.getWalls().length > wallsBefore) {
       this.announce(`Wall added, ending at ${where}.`);
     } else if (after.getWallNodes().size > nodesBefore) {
@@ -327,7 +330,9 @@ export class KeyboardCursor {
     const label = this.grab?.label;
     this.grab = null;
     endGesture();
-    this.announce(`Put down ${label} at ${describePoint(this.cursor, METER)}.`);
+    this.announce(
+      `Put down ${label} at ${describePoint(this.cursor, useUnitsStore.getState().units)}.`
+    );
   }
 
   private cancel() {

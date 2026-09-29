@@ -1,11 +1,13 @@
 import { Button, Stack, TextField } from '@mui/material';
 import { useState } from 'react';
-import { METER, WALL_THICKNESS } from '../editor/editor/constants';
+import { WALL_THICKNESS } from '../editor/editor/constants';
 import { transact } from '../editor/editor/history';
 import { resizeAboutMidpoint } from '../editor/editor/keyboardHit';
+import { formatPlanLength, parsePlanLength } from '../helpers/planLength';
 import type { Wall } from '../editor/editor/objects/Walls/Wall';
 import { useStore } from '../stores/EditorStore';
 import { useFloorPlanStore } from '../stores/FloorPlanStore';
+import { useUnitsStore } from '../stores/UnitsStore';
 import { AppDialog } from '../vendor/accurona-ui';
 
 const close = () => useStore.getState().setLengthEditWall(null);
@@ -13,18 +15,20 @@ const close = () => useStore.getState().setLengthEditWall(null);
 // The wall label shows the drawn length less one wall thickness, so the typed
 // value is read the same way. The wall keeps its midpoint and direction.
 function LengthForm({ wall }: { wall: Wall }) {
+  const units = useUnitsStore((s) => s.units);
   const [value, setValue] = useState(
-    String(Math.round(((wall.length - WALL_THICKNESS) / METER) * 100) / 100)
+    formatPlanLength(wall.length - WALL_THICKNESS, { suffix: false })
   );
-  const metres = parseFloat(value);
-  const valid = Number.isFinite(metres) && metres > 0;
+  // Accepts any metric unit ('2.7 m', '270 cm'); a bare number is in `units`.
+  const length = parsePlanLength(value);
+  const valid = length !== null && length > 0;
 
   const apply = () => {
     if (!valid) return;
     const [a, b] = resizeAboutMidpoint(
       wall.leftNode,
       wall.rightNode,
-      metres * METER + WALL_THICKNESS
+      length + WALL_THICKNESS
     );
     transact(() => {
       wall.leftNode.position.set(a.x, a.y);
@@ -43,13 +47,11 @@ function LengthForm({ wall }: { wall: Wall }) {
     >
       <Stack spacing={2} sx={{ pt: 1 }}>
         <TextField
-          label="Length (m)"
-          type="number"
+          label={`Length (${units})`}
           value={value}
           onChange={(e) => setValue(e.target.value)}
-          // No min: the browser would refuse to submit 0 with its own
-          // message; the error below says what is wrong instead.
-          slotProps={{ htmlInput: { step: 0.01 } }}
+          // Text, not number: a unit may be typed after the value.
+          slotProps={{ htmlInput: { inputMode: 'decimal' } }}
           autoFocus
           error={!valid}
           helperText={valid ? undefined : 'Enter a length greater than 0'}

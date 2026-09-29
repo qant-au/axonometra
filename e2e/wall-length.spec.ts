@@ -68,9 +68,10 @@ test('double-clicking a wall in Edit mode sets its length', async ({
 
   await setTool(page, 1);
   await page.mouse.dblclick(cx + 100, cy);
-  const input = page.getByLabel('Length (m)');
+  const input = page.getByLabel('Length (mm)');
   await expect(input).toBeFocused();
-  await input.fill('3');
+  // Any metric unit may be typed; a bare number is in the display units.
+  await input.fill('3 m');
   await page.getByRole('button', { name: 'Apply' }).click();
   await expect(input).toHaveCount(0);
 
