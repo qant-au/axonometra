@@ -38,6 +38,13 @@ export function WelcomeModal() {
     message:
       '⚒️ Use the tools on the left to create your floor plan. For detailed instructions, press the Help button on the left.'
   };
+  // The dialog stays on screen while it fades out, and a click then (a second
+  // click on New plan, or one on the backdrop) must not welcome twice.
+  const startNewPlan = () => {
+    if (!opened) return;
+    setOpened(false);
+    notify(notification);
+  };
   return (
     <>
       <Dialog
@@ -47,19 +54,13 @@ export function WelcomeModal() {
         slotProps={{
           backdrop: { sx: { backgroundColor: 'rgb(233 236 239 / 55%)' } }
         }}
-        onClose={() => {
-          setOpened(false);
-          notify(notification);
-        }}
+        onClose={startNewPlan}
       >
         <DialogContent>
           <Stack spacing={1}>
             {image}
             <Button
-              onClick={() => {
-                setOpened(false);
-                notify(notification);
-              }}
+              onClick={startNewPlan}
               startIcon={<IconPlus />}
               variant="text"
             >
