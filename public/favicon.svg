@@ -1,9 +1,1 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" role="img" aria-label="Axonometra">
-  <rect width="120" height="120" fill="#F4EFE7"/>
-  <g fill="none" stroke="#0E2A47" stroke-width="6" stroke-linecap="square" stroke-linejoin="miter">
-    <polyline points="20,96 60,16 100,96"/>
-    <line x1="38" y1="60" x2="82" y2="60"/>
-    <line x1="60" y1="16" x2="60" y2="96"/>
-  </g>
-  <polyline points="20,96 60,108 100,96" fill="none" stroke="#0E2A47" stroke-width="6" stroke-linecap="square" stroke-linejoin="miter" opacity="0.45"/>
-</svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" role="img" aria-label="Axonometra"><style>.i{stroke:#16213D}@media (prefers-color-scheme:dark){.i{stroke:#F2F0EA}}</style><g fill="none" class="i" stroke-width="11" stroke-linejoin="miter" stroke-linecap="butt"><polyline points="18.00,106.00 60.00,12.00 102.00,106.00"/><polyline points="25.08,90.16 60.00,70.00 94.92,90.16"/><line x1="60.0" y1="12.0" x2="60.0" y2="70.0"/></g><circle cx="60.0" cy="70.0" r="11" fill="#B8703A"/></svg>

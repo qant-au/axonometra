@@ -1,14 +1,1 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 200" role="img" aria-label="Axonometra wordmark + mark">
-  <g transform="translate(40,40)">
-    <g fill="none" stroke="#0E2A47" stroke-width="6" stroke-linecap="square" stroke-linejoin="miter">
-      <polyline points="20,96 60,16 100,96"/>
-      <line x1="38" y1="60" x2="82" y2="60"/>
-      <line x1="60" y1="16" x2="60" y2="96"/>
-    </g>
-    <polyline points="20,96 60,108 100,96" fill="none" stroke="#0E2A47" stroke-width="6" stroke-linecap="square" stroke-linejoin="miter" opacity="0.45"/>
-  </g>
-  <text x="200" y="120" fill="#0E2A47"
-        font-family="Inter, -apple-system, 'Helvetica Neue', Arial, sans-serif"
-        font-size="44" font-weight="500" letter-spacing="14"
-        text-anchor="start">AXONOMETRA</text>
-</svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 620 120" role="img" aria-label="Axonometra"><g fill="none" stroke="#16213D" stroke-width="7" stroke-linejoin="miter" stroke-linecap="butt"><polyline points="18.00,106.00 60.00,12.00 102.00,106.00"/><polyline points="25.08,90.16 60.00,70.00 94.92,90.16"/><line x1="60.0" y1="12.0" x2="60.0" y2="70.0"/></g><circle cx="60.0" cy="70.0" r="7.5" fill="#B8703A"/><text x="146" y="76" fill="#16213D" font-family="Avenir Next, Inter, Helvetica Neue, Arial, sans-serif" font-weight="500" font-size="44" letter-spacing="14.1">AXONOMETRA</text></svg>
