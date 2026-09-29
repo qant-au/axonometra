@@ -1,63 +1,48 @@
-# Security Policy
+# Security policy
 
 ## Supported versions
 
-Axonometra is pre-1.0 and breaking changes happen between minor releases.
-Only the latest tagged release on `main` receives security fixes.
+Axonometra is pre-1.0, and breaking changes can happen between minor releases. Only the
+latest release receives security fixes.
 
-| Version | Supported          |
-| ------- | ------------------ |
-| 0.3.x   | :white_check_mark: |
-| < 0.3   | :x:                |
+| Version | Supported |
+| ------- | --------- |
+| 0.3.x   | Yes       |
+| < 0.3   | No        |
 
 ## Reporting a vulnerability
 
-**Please do not file a public GitHub issue for security reports.**
+**Please do not open a public issue for a security report.** Use GitHub's private
+vulnerability reporting instead:
 
-Use GitHub's private vulnerability reporting:
+<https://github.com/qant-au/axonometra/security/advisories/new>
 
-→ <https://github.com/qant-au/axonometra/security/advisories/new>
+We aim to acknowledge a report within **7 days** and to ship a fix or mitigation within
+**30 days** of confirming it. If you have not heard back, please follow up through the
+maintainer's contact form at <https://adamburgess.me/contact>.
 
-We aim to acknowledge reports within **7 days** and to ship a fix or
-mitigation within **30 days** of a confirmed issue. If you do not hear
-back, please escalate via the maintainer contact form at
-<https://adamburgess.me/contact> (linked from [axonometra.com](https://axonometra.com)).
+Please include:
 
-When reporting, please include:
-
-- A clear description of the issue and its impact.
-- Steps to reproduce (a minimal plan file or HTML harness if applicable).
-- The commit SHA or release tag the report applies to.
-- Any proof-of-concept code or screenshots.
+- a clear description of the issue and its impact;
+- steps to reproduce (a minimal plan file or HTML harness, if applicable);
+- the release or commit SHA the report applies to;
+- any proof-of-concept code or screenshots.
 
 ## In scope
 
-- The SPA bundle (`src/`) — XSS, prototype pollution via plan files,
-  unsafe deserialization, DOM clobbering, the file-input handlers.
-- The embedding bridge (`src/embed/`) — `postMessage` origin checks,
-  URL-parameter handling, `axo:ready` broadcast behaviour.
-- The persisted plan format (`src/editor/editor/persistence/`) — parser
-  hardening, schema validation, version-dispatch safety.
-- The shipped nginx config (`docker/nginx.conf`) — CSP, security
-  headers, MIME handling.
+- The app bundle (`src/`): XSS, prototype pollution through plan files, unsafe deserialisation, DOM clobbering, the file-input handlers.
+- The embedding bridge (`src/embed/`): `postMessage` origin checks, URL-parameter handling, signed-plan verification.
+- The saved plan format (`src/editor/editor/persistence/`): parser hardening, schema validation, version handling.
+- The Docker image (`Dockerfile`, `docker/nginx.conf`): CSP, security headers, MIME handling.
 
 ## Out of scope
 
-- The upstream **`arcada-backend`** Express server. Axonometra does not
-  ship it and does not depend on it — the built-in catalog at
-  `src/res/catalog/` replaces its role. Reports against `arcada-backend`
-  should go to the [upstream repo](https://github.com/mehanix/arcada).
-- Vulnerabilities that require a privileged attacker on the same machine
-  (e.g. access to the browser's IndexedDB / `localStorage`).
-- Vulnerabilities in development-only dependencies (`vite`, `vitest`,
-  ESLint, Playwright) that do not ship with the production build — the
-  deployed static bundle is unaffected. We track these via `npm audit`
-  (also run in CI) and patch on major bumps.
-- Self-XSS via paste-into-DevTools or via a plan file the user authored
-  themselves.
+- The upstream [Arcada](https://github.com/mehanix/arcada) project and its `arcada-backend` server, which Axonometra does not ship.
+- Attacks that need a privileged attacker on the same machine (for example, access to the browser's local storage).
+- Vulnerabilities in development-only dependencies that do not ship in the build; these are tracked with `npm audit`, which also runs in CI.
+- Self-XSS, for example pasting script into the browser's developer tools, or a file the user wrote themselves.
 
 ## Disclosure
 
-We prefer coordinated disclosure. Once a fix is released, we will
-publish a GitHub security advisory crediting the reporter (unless
-anonymity is requested).
+We prefer coordinated disclosure. Once a fix is released we publish a GitHub security
+advisory that credits the reporter, unless they ask to stay anonymous.

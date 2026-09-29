@@ -15,7 +15,6 @@ module.exports = tseslint.config(
       'playwright-out/**',
       'playwright-report/**',
       'test-results/**',
-      'graphify-out/**',
       '.idea/**',
       'docker/**',
       // Root tooling configs are Node files, not app code — kept out of the

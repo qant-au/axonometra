@@ -41,7 +41,7 @@ Expect breaking changes between minor versions until v1.0.0.
 
 ## [0.3.0] — 2026-06-17
 
-Pixi 8 migration and the 2026-06-16 action-items batch.
+Pixi 8 migration and a batch of review fixes.
 
 ### Added
 
@@ -130,7 +130,6 @@ Initial Axonometra release after the fork from
 - Switched to `createRoot` and aligned `@types/react` with React 18.
 - Transitional multi-stage Dockerfile (`build → nginx`) and `restart.sh` helper.
 - Playwright smoke spec validating title, modal, and canvas mount.
-- TODO.md with the Stage 2 / 3 / 4 roadmap.
 
 ### Changed
 

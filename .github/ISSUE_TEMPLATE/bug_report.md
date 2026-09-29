@@ -1,35 +1,29 @@
 ---
 name: Bug report
-about: Report something that isn't working as expected
+about: Something is not working as expected
 title: '[Bug] '
 labels: bug
 assignees: ''
 ---
 
-## Description
+## What happened
 
-A clear and concise description of the bug.
+A clear description of the bug.
 
 ## Steps to reproduce
 
-1. Go to '...'
-2. Click on '...'
-3. See error
+1.
+2.
+3.
 
-## Expected behaviour
-
-What you expected to happen.
-
-## Actual behaviour
-
-What actually happened. Include screenshots if helpful.
+## What you expected
 
 ## Environment
 
-- Axonometra version / commit SHA:
+- Axonometra version (release or commit SHA):
 - Browser and version:
 - OS:
 
-## Additional context
+## Anything else
 
-Anything else that might help — console errors, a saved plan file, etc.
+Console errors, screenshots, or files. A saved plan file that shows the problem helps most.

@@ -1,4 +1,4 @@
-// 3D models of the catalogue's elements, vendored from qant-au/elements
+// 3D models of the catalogue's elements, vendored from qant-au/accurona
 // (models.json). Only the 3D view imports this, so the models load with it.
 import manifest from './elements/manifest.json';
 import models from './elements/models.json';

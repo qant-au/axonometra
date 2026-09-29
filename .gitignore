@@ -40,8 +40,8 @@ graphify-out/
 .idea/
 
 
-# Scout posture scans — session artefacts, regenerable
+# Local-only: maintainer tooling output and assistant instructions, never published
 scout-out/
+CLAUDE.md
+.claude/
 
-# Superpowers per-session staging — never committed
-.superpowers/

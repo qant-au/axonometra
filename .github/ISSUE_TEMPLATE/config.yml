@@ -3,6 +3,3 @@ contact_links:
   - name: Report a security vulnerability
     url: https://github.com/qant-au/axonometra/security/advisories/new
     about: Please report security issues privately, never as a public issue. See SECURITY.md.
-  - name: Ask a question
-    url: https://github.com/qant-au/axonometra/discussions
-    about: Questions and ideas that are not yet a concrete bug or feature belong in Discussions.

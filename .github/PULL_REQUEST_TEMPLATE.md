@@ -1,23 +1,20 @@
 ## Summary
 
-Briefly describe what this PR does and why.
+What this changes and why.
 
-## Related issues
+## Related issue
 
 Closes #
 
-## Changes
-
--
--
-
 ## Testing
 
-How was this verified? (e.g. `npm run test`, `npm run test:e2e`, manual steps in the dev server)
+How you checked it.
 
 ## Checklist
 
-- [ ] `npm run lint` passes
-- [ ] `npm run test` passes
+- [ ] `npm run lint` and `npm run format:check` pass
+- [ ] `npx tsc --noEmit` passes
+- [ ] `npm test` passes
+- [ ] `npm run test:e2e` passes (for canvas or embedding changes)
 - [ ] Commits follow [Conventional Commits](https://www.conventionalcommits.org/)
-- [ ] Docs updated if behaviour or APIs changed
+- [ ] Docs updated if behaviour or an API changed

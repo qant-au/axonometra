@@ -109,16 +109,15 @@ at the same size and in the same colours, in a floor plan and in a network diagr
 
 Issues and pull requests are welcome.
 
-- **Found a bug?** [Open an issue](https://github.com/qant-au/axonometra/issues/new/choose)
-  with steps to reproduce. A saved plan file that shows the problem helps most.
-- **Have an idea or a question?** Start a
-  [discussion](https://github.com/qant-au/axonometra/discussions) first, so we can agree
-  on scope before code is written.
-- **Sending a pull request?** Read [CONTRIBUTING.md](CONTRIBUTING.md) for setup, the
-  checks CI runs, and conventions.
+- **Found a bug, or have an idea or a question?**
+  [Open an issue](https://github.com/qant-au/axonometra/issues/new/choose). For anything
+  substantial, open the issue before writing code so we can agree on the scope.
+- **Sending a pull request?** Read [CONTRIBUTING.md](CONTRIBUTING.md) for setup, checks
+  and conventions.
+- **Found a security problem?** Report it privately, as described in
+  [SECURITY.md](SECURITY.md).
 
 Everyone taking part is expected to follow the [Code of Conduct](CODE_OF_CONDUCT.md).
-Report security issues privately as described in [SECURITY.md](SECURITY.md).
 
 ## Author
 

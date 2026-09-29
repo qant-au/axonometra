@@ -126,7 +126,7 @@ describe('WallNodeSequence', () => {
       });
     });
 
-    it('is a no-op when the node id is unknown (guard added by axo-015)', () => {
+    it('is a no-op when the node id is unknown', () => {
       const seq = new WallNodeSequence();
       expect(() => seq.remove(999)).not.toThrow();
       expect(showNotification).not.toHaveBeenCalled();

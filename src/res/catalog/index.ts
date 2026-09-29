@@ -1,5 +1,5 @@
 // The built-in catalogue. Furniture and equipment come from the shared element
-// library (qant-au/elements), vendored into ./elements by
+// library (qant-au/accurona), vendored into ./elements by
 // scripts/sync-elements.mjs; doors and windows are still local
 // (wall-fittings.json and ./images).
 import manifest from './elements/manifest.json';

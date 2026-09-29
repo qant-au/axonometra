@@ -1,8 +1,7 @@
 # Dependabot VERSION updates. Security updates are enabled in the repo
 # settings and need no config file; version updates do.
 #
-# Mirrors the qant fleet config (brands/*/.github/dependabot.yml) minus the
-# GitHub Packages registry: this repo has no @qant-au/* dependencies.
+# npm only, from the public registry.
 version: 2
 
 updates:
