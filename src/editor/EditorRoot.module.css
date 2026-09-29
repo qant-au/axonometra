@@ -5,6 +5,11 @@
   outline-offset: -3px;
 }
 
+/* Inline, the canvas left a text-baseline gap under it and the page scrolled. */
+.canvas canvas {
+  display: block;
+}
+
 /* Read by screen readers, not shown. */
 .srOnly {
   position: absolute;

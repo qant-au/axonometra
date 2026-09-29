@@ -1,9 +1,13 @@
 .navbar {
+  /* The padding sits inside the full height, and a toolbar taller than the
+     window scrolls itself rather than pushing Save and Load below the page. */
+  box-sizing: border-box;
   height: 100vh;
   width: 70px;
   padding: 16px;
   display: flex;
   flex-direction: column;
+  overflow-y: auto;
 }
 
 .section {
