@@ -4,15 +4,19 @@ import {
   Button,
   Group,
   Modal,
+  SegmentedControl,
   Switch,
   Text,
   Tooltip
 } from '@mantine/core';
 import {
+  IconArrowUp,
   IconDownload,
   IconFocusCentered,
   IconRotate2,
   IconRotateClockwise2,
+  IconStairsDown,
+  IconStairsUp,
   IconZoomIn,
   IconZoomOut
 } from '@tabler/icons-react';
@@ -20,6 +24,7 @@ import {
   Color,
   DirectionalLight,
   HemisphereLight,
+  Object3D,
   PerspectiveCamera,
   Scene,
   Spherical,
@@ -35,10 +40,29 @@ import { serializer } from '../editor/editor/persistence/Serializer';
 import { sceneModel } from '../editor/scene3d/sceneModel';
 import { buildGroup } from '../editor/scene3d/threeScene';
 import { exportGlb } from '../editor/scene3d/exportGlb';
+import { floorInput } from '../editor/scene3d/fromPlan';
+import { floorGeometry, type Point } from '../editor/scene3d/geometry';
+import {
+  arrival,
+  atStairs,
+  canChangeFloor,
+  obstacles,
+  startPoint,
+  stairsOn
+} from '../editor/scene3d/walk';
+import {
+  STEP,
+  SNAP_TURN,
+  createWalk,
+  facing,
+  type Walk,
+  type WalkPose
+} from '../editor/scene3d/walkControls';
 import { getItemHeights } from '../res/catalog';
 import { getItemModel } from '../res/catalog/models';
 import { useFloorPlanStore } from '../stores/FloorPlanStore';
 import classes from './ThreeDView.module.css';
+import { WalkJoystick } from './WalkJoystick';
 
 interface Props {
   opened: boolean;
@@ -48,12 +72,20 @@ interface Props {
 /** Walls are cut off this far above each floor in the cut-away view. */
 const CUTAWAY = 1.2 * METER;
 const TURN = Math.PI / 6;
+const ORBIT_FOV = 40;
+const WALK_FOV = 70;
+
+type Mode = 'orbit' | 'walk';
 
 interface Stage {
   renderer: WebGLRenderer;
   scene: Scene;
   camera: PerspectiveCamera;
   controls: OrbitControls;
+  /** the building now shown; teleport clicks are tested against it */
+  building: Object3D | null;
+  /** set while walking: moves the camera each frame instead of the orbit */
+  tick: ((seconds: number) => void) | null;
 }
 
 // Read-only 3D view of the plan: orbit, zoom and pan, one floor or all of
@@ -62,6 +94,25 @@ interface Stage {
 export function ThreeDView({ opened, onClose }: Props) {
   const [allFloors, setAllFloors] = useState(false);
   const [cutaway, setCutaway] = useState(true);
+  const [mode, setMode] = useState<Mode>('orbit');
+  const [reduceMotion] = useState(
+    () => !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+  );
+  const [coarse] = useState(
+    () => !!window.matchMedia?.('(pointer: coarse)').matches
+  );
+  const [teleport, setTeleport] = useState(reduceMotion);
+  const walk = useRef<Walk | null>(null);
+  // Where the walker should stand when its floor changes; null starts afresh.
+  const arriveAt = useRef<Point | null>(null);
+  // The walker's spot changes every frame, so it lives in a ref; the view
+  // only re-renders when what it shows about it changes.
+  const walkerAt = useRef<Point | null>(null);
+  const [pose, setPose] = useState<{
+    facing: string;
+    atStairs: boolean;
+    canClimb: boolean;
+  } | null>(null);
   const [noWebGl] = useState(() => !webGlAvailable());
   const [host, setHost] = useState<HTMLDivElement | null>(null);
   const stage = useRef<Stage | null>(null);
@@ -71,16 +122,66 @@ export function ThreeDView({ opened, onClose }: Props) {
     () => JSON.parse(serializer.serialize()) as FloorPlanSerializable
   );
   const [current] = useState(() => useFloorPlanStore.getState().currentFloor);
+  const [walkFloor, setWalkFloor] = useState(current);
+  const walking = mode === 'walk';
   const model = useMemo(
     () =>
       sceneModel(
         plan,
-        { allFloors, current, cutaway: cutaway ? CUTAWAY : null },
+        walking
+          ? // One floor, walls whole and a ceiling overhead.
+            { allFloors: false, current: walkFloor, cutaway: null }
+          : { allFloors, current, cutaway: cutaway ? CUTAWAY : null },
         getItemHeights,
         getItemModel
       ),
-    [plan, allFloors, current, cutaway]
+    [plan, walking, walkFloor, allFloors, current, cutaway]
   );
+  // What the walker bumps into and stands on for the floor being walked.
+  const walkWorld = useMemo(() => {
+    const floor = plan.floors[walkFloor];
+    if (!floor) return null;
+    const input = floorInput(floor, walkFloor);
+    const geometry = floorGeometry(input);
+    return {
+      elevation: input.elevation,
+      geometry,
+      blocks: obstacles(geometry.walls, input.elevation),
+      stairs: stairsOn(floor)
+    };
+  }, [plan, walkFloor]);
+  const walkWorldRef = useRef(walkWorld);
+  useEffect(() => {
+    walkWorldRef.current = walkWorld;
+  }, [walkWorld]);
+  // A floor with no walls has nothing to walk in, so it is skipped.
+  const walkable = (i: number) =>
+    (plan.floors[i]?.wallNodeLinks.length ?? 0) > 0;
+  const canClimb = !!pose?.canClimb;
+  const floorAbove = walkable(walkFloor + 1);
+  const floorBelow = walkable(walkFloor - 1);
+  const goToFloor = (direction: 1 | -1) => {
+    const target = walkFloor + direction;
+    const from = walkerAt.current;
+    if (!from || !canClimb || !walkable(target)) return;
+    const floor = plan.floors[target];
+    const input = floorInput(floor, target);
+    const geometry = floorGeometry(input);
+    arriveAt.current = arrival(
+      from,
+      stairsOn(floor),
+      geometry,
+      obstacles(geometry.walls, input.elevation)
+    );
+    setWalkFloor(target);
+  };
+  // The walker's Page Up / Page Down go through a ref, so they always see
+  // the floor and pose of the latest render.
+  const changeFloor = useRef(goToFloor);
+  useEffect(() => {
+    changeFloor.current = goToFloor;
+  });
+
   const empty =
     model.wallCount === 0 &&
     model.furnitureCount === 0 &&
@@ -117,18 +218,23 @@ export function ThreeDView({ opened, onClose }: Props) {
     scene.add(new HemisphereLight('#ffffff', '#8d8a85', 2.2));
     const sun = new DirectionalLight('#ffffff', 1.4);
     scene.add(sun);
-    const camera = new PerspectiveCamera(40, 1, 10, 1e6);
+    const camera = new PerspectiveCamera(ORBIT_FOV, 1, 10, 1e6);
     const controls = new OrbitControls(camera, renderer.domElement);
-    const reduceMotion = window.matchMedia?.(
-      '(prefers-reduced-motion: reduce)'
-    ).matches;
     controls.enableDamping = !reduceMotion;
     // Arrow keys pan when the view has focus.
     controls.listenToKeyEvents(renderer.domElement);
     controls.keyPanSpeed = 20;
     // Stay above the ground.
     controls.maxPolarAngle = Math.PI * 0.49;
-    stage.current = { renderer, scene, camera, controls };
+    stage.current = {
+      renderer,
+      scene,
+      camera,
+      controls,
+      building: null,
+      tick: null
+    };
+    const s = stage.current;
 
     const resize = () => {
       const { clientWidth: w, clientHeight: h } = host;
@@ -142,8 +248,12 @@ export function ThreeDView({ opened, onClose }: Props) {
     resize();
 
     let frame = 0;
+    let last = performance.now();
     const loop = () => {
-      controls.update();
+      const now = performance.now();
+      if (s.tick) s.tick((now - last) / 1000);
+      else controls.update();
+      last = now;
       sun.position.copy(camera.position).add(new Vector3(0, 500, 0));
       renderer.render(scene, camera);
       frame = requestAnimationFrame(loop);
@@ -159,7 +269,7 @@ export function ThreeDView({ opened, onClose }: Props) {
       stage.current = null;
     };
     // `empty` flips only between no plan and some plan; the stage is rebuilt then.
-  }, [host, empty, noWebGl]);
+  }, [host, empty, noWebGl, reduceMotion]);
 
   // Rebuild the building when the options change, keeping the camera.
   useEffect(() => {
@@ -167,8 +277,10 @@ export function ThreeDView({ opened, onClose }: Props) {
     if (!s) return;
     const built = buildGroup(model.prisms);
     s.scene.add(built.group);
+    s.building = built.group;
     return () => {
       s.scene.remove(built.group);
+      s.building = null;
       built.dispose();
     };
   }, [model, host, empty]);
@@ -176,10 +288,75 @@ export function ThreeDView({ opened, onClose }: Props) {
   // Frame the building when the view opens and when what is shown changes
   // size (one floor or all), not when the cut-away is toggled.
   useEffect(() => {
-    if (stage.current) frame(stage.current, frameBounds);
-  }, [frameBounds, host, empty]);
+    if (stage.current && !walking) frame(stage.current, frameBounds);
+  }, [frameBounds, host, empty, walking]);
+
+  // Walking: the orbit controls step aside and the walker drives the camera.
+  useEffect(() => {
+    const s = stage.current;
+    if (!s || !walking) return;
+    s.controls.enabled = false;
+    s.camera.fov = WALK_FOV;
+    s.camera.near = 5;
+    s.camera.far = 1e5;
+    s.camera.updateProjectionMatrix();
+    const w = createWalk({
+      camera: s.camera,
+      canvas: s.renderer.domElement,
+      targets: () => (s.building ? [s.building] : []),
+      onMove: (p: WalkPose) => {
+        walkerAt.current = p.pos;
+        const world = walkWorldRef.current;
+        const next = {
+          facing: facing(p.yaw),
+          atStairs: !!world && atStairs(p.pos, world.stairs),
+          canClimb: !!world && canChangeFloor(p.pos, world.stairs)
+        };
+        setPose((old) =>
+          old &&
+          old.facing === next.facing &&
+          old.atStairs === next.atStairs &&
+          old.canClimb === next.canClimb
+            ? old
+            : next
+        );
+      },
+      onFloorKey: (direction) => changeFloor.current(direction)
+    });
+    walk.current = w;
+    s.tick = w.tick;
+    s.renderer.domElement.focus();
+    return () => {
+      w.dispose();
+      walk.current = null;
+      s.tick = null;
+      s.controls.enabled = true;
+      s.camera.fov = ORBIT_FOV;
+      s.camera.updateProjectionMatrix();
+      walkerAt.current = null;
+      setPose(null);
+    };
+  }, [walking, host, empty]);
+
+  // Put the walker on its floor, on entering walk mode and after the stairs.
+  useEffect(() => {
+    const w = walk.current;
+    if (!w || !walkWorld) return;
+    const at =
+      arriveAt.current ?? startPoint(walkWorld.geometry, walkWorld.blocks);
+    arriveAt.current = null;
+    w.place(walkWorld.blocks, walkWorld.elevation, at);
+  }, [walkWorld, walking, host, empty]);
+
+  useEffect(() => {
+    walk.current?.setTeleport(teleport);
+  }, [teleport, walking, host, empty]);
 
   const turn = (angle: number) => {
+    if (walk.current) {
+      walk.current.turn(angle);
+      return;
+    }
     const s = stage.current;
     if (!s) return;
     const offset = s.camera.position.clone().sub(s.controls.target);
@@ -198,6 +375,14 @@ export function ThreeDView({ opened, onClose }: Props) {
       .add(offset.multiplyScalar(factor));
   };
   const resetView = () => {
+    if (walk.current && walkWorld) {
+      walk.current.place(
+        walkWorld.blocks,
+        walkWorld.elevation,
+        startPoint(walkWorld.geometry, walkWorld.blocks)
+      );
+      return;
+    }
     if (stage.current) frame(stage.current, frameBounds);
   };
   const savePng = () => {
@@ -217,11 +402,18 @@ export function ThreeDView({ opened, onClose }: Props) {
     );
   };
 
-  const label = `3D view of ${
-    allFloors ? `all ${plan.floors.length} floors` : `floor ${current}`
-  }: ${model.wallCount} walls and ${model.furnitureCount} pieces of furniture${
-    model.hiddenCount ? ` (${model.hiddenCount} more above the cut)` : ''
-  }${cutaway ? ', walls cut away' : ''}.`;
+  const where = pose
+    ? `Floor ${walkFloor}, facing ${pose.facing}${
+        pose.atStairs ? ', at the stairs' : ''
+      }.`
+    : '';
+  const label = walking
+    ? `3D walk-through of floor ${walkFloor}: ${model.wallCount} walls and ${model.furnitureCount} pieces of furniture.`
+    : `3D view of ${
+        allFloors ? `all ${plan.floors.length} floors` : `floor ${current}`
+      }: ${model.wallCount} walls and ${model.furnitureCount} pieces of furniture${
+        model.hiddenCount ? ` (${model.hiddenCount} more above the cut)` : ''
+      }${cutaway ? ', walls cut away' : ''}.`;
   useEffect(() => {
     stage.current?.renderer.domElement.setAttribute('aria-label', label);
   }, [label, host, empty]);
@@ -236,29 +428,96 @@ export function ThreeDView({ opened, onClose }: Props) {
     >
       <Group justify="space-between" className={classes.controls}>
         <Group gap="xs">
-          <ViewButton name="Turn left" onClick={() => turn(-TURN)}>
-            <IconRotate2 />
-          </ViewButton>
-          <ViewButton name="Turn right" onClick={() => turn(TURN)}>
-            <IconRotateClockwise2 />
-          </ViewButton>
-          <ViewButton name="Zoom in" onClick={() => zoom(0.8)}>
-            <IconZoomIn />
-          </ViewButton>
-          <ViewButton name="Zoom out" onClick={() => zoom(1.25)}>
-            <IconZoomOut />
-          </ViewButton>
+          <SegmentedControl
+            aria-label="View mode"
+            value={mode}
+            onChange={(v) => {
+              // Start on the floor in view, or the first with walls.
+              if (v === 'walk')
+                setWalkFloor(
+                  walkable(current)
+                    ? current
+                    : Math.max(
+                        0,
+                        plan.floors.findIndex((_, i) => walkable(i))
+                      )
+                );
+              setMode(v as Mode);
+            }}
+            data={[
+              { value: 'orbit', label: 'Orbit' },
+              { value: 'walk', label: 'Walk' }
+            ]}
+            disabled={empty || noWebGl}
+          />
+          {walking ? (
+            <>
+              <ViewButton name="Turn left" onClick={() => turn(SNAP_TURN)}>
+                <IconRotate2 />
+              </ViewButton>
+              <ViewButton name="Turn right" onClick={() => turn(-SNAP_TURN)}>
+                <IconRotateClockwise2 />
+              </ViewButton>
+              <ViewButton
+                name="Step forward"
+                onClick={() => walk.current?.step(STEP)}
+              >
+                <IconArrowUp />
+              </ViewButton>
+              {plan.floors.length > 1 && (
+                <>
+                  <ViewButton
+                    name="Go up a floor"
+                    onClick={() => goToFloor(1)}
+                    disabled={!canClimb || !floorAbove}
+                  >
+                    <IconStairsUp />
+                  </ViewButton>
+                  <ViewButton
+                    name="Go down a floor"
+                    onClick={() => goToFloor(-1)}
+                    disabled={!canClimb || !floorBelow}
+                  >
+                    <IconStairsDown />
+                  </ViewButton>
+                </>
+              )}
+            </>
+          ) : (
+            <>
+              <ViewButton name="Turn left" onClick={() => turn(-TURN)}>
+                <IconRotate2 />
+              </ViewButton>
+              <ViewButton name="Turn right" onClick={() => turn(TURN)}>
+                <IconRotateClockwise2 />
+              </ViewButton>
+              <ViewButton name="Zoom in" onClick={() => zoom(0.8)}>
+                <IconZoomIn />
+              </ViewButton>
+              <ViewButton name="Zoom out" onClick={() => zoom(1.25)}>
+                <IconZoomOut />
+              </ViewButton>
+            </>
+          )}
           <ViewButton name="Reset view" onClick={resetView}>
             <IconFocusCentered />
           </ViewButton>
         </Group>
         <Group gap="md">
-          <Switch
-            label="Cut away walls"
-            checked={cutaway}
-            onChange={(e) => setCutaway(e.currentTarget.checked)}
-          />
-          {plan.floors.length > 1 && (
+          {walking ? (
+            <Switch
+              label="Teleport"
+              checked={teleport}
+              onChange={(e) => setTeleport(e.currentTarget.checked)}
+            />
+          ) : (
+            <Switch
+              label="Cut away walls"
+              checked={cutaway}
+              onChange={(e) => setCutaway(e.currentTarget.checked)}
+            />
+          )}
+          {!walking && plan.floors.length > 1 && (
             <Switch
               label="All floors"
               checked={allFloors}
@@ -293,10 +552,28 @@ export function ThreeDView({ opened, onClose }: Props) {
         </Text>
       ) : (
         <>
-          <div ref={setHost} className={classes.stage} />
+          <div ref={setHost} className={classes.stage}>
+            {walking && coarse && !teleport && (
+              <WalkJoystick onChange={(x, y) => walk.current?.setStick(x, y)} />
+            )}
+          </div>
           <Text size="sm" c="dimmed">
-            Drag to turn, right-drag or arrow keys to move, scroll to zoom.
+            {!walking
+              ? 'Drag to turn, right-drag or arrow keys to move, scroll to zoom.'
+              : teleport
+                ? 'Drag to look, click the floor to go there, arrow keys to step and turn.'
+                : coarse
+                  ? 'Drag to look, use the stick to walk.'
+                  : 'Drag to look, W A S D or arrow keys to walk, Q and E to turn.'}
+            {walking &&
+              plan.floors.length > 1 &&
+              ' Page Up and Page Down change floor at the stairs.'}
           </Text>
+          {walking && (
+            <Text size="sm" aria-live="polite">
+              {where}
+            </Text>
+          )}
         </>
       )}
     </Modal>
@@ -306,10 +583,12 @@ export function ThreeDView({ opened, onClose }: Props) {
 function ViewButton({
   name,
   onClick,
+  disabled,
   children
 }: {
   name: string;
   onClick: () => void;
+  disabled?: boolean;
   children: ReactNode;
 }) {
   return (
@@ -319,6 +598,7 @@ function ViewButton({
         size="lg"
         aria-label={name}
         onClick={onClick}
+        disabled={disabled}
       >
         {children}
       </ActionIcon>

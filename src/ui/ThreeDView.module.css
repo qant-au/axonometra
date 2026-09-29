@@ -29,3 +29,26 @@
 .message {
   margin-top: 20vh;
 }
+
+.joystick {
+  position: absolute;
+  left: var(--mantine-spacing-lg);
+  bottom: var(--mantine-spacing-lg);
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: rgb(0 0 0 / 12%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  touch-action: none;
+}
+
+.knob {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: rgb(255 255 255 / 85%);
+  box-shadow: 0 1px 4px rgb(0 0 0 / 30%);
+  pointer-events: none;
+}

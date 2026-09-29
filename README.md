@@ -1,6 +1,6 @@
 # Axonometra
 
-An open-source 2D floor planner for the browser. Walls, doors, windows, fixtures, furniture, multiple floors, accurate-to-scale measurement, an axonometric view, and a 3D view you can turn, zoom and save as an image — with a first-person walk-through on the roadmap.
+An open-source 2D floor planner for the browser. Walls, doors, windows, fixtures, furniture, multiple floors, accurate-to-scale measurement, an axonometric view, and a 3D view you can turn, zoom and save as an image, or walk through in first person.
 
 Built for healthcare facility layouts, small-building design (sheds, bunkers, ADUs), and any place a fast, embeddable plan editor is wanted (see [EMBEDDING.md](./EMBEDDING.md) for the iframe + postMessage contract).
 
@@ -24,7 +24,7 @@ Axonometra is a fork of [mehanix/arcada](https://github.com/mehanix/arcada), ori
 **Why the rename?**
 
 - To avoid confusion with the upstream `arcada` brand, which retains its own identity, demo, and direction.
-- To signal a different long-term trajectory: Axonometra is maintained under the QANT umbrella as a browser-embeddable plan editor (see [EMBEDDING.md](./EMBEDDING.md)) with a roadmap (a 3D walk-through view, healthcare and small-building presets) that diverges from upstream.
+- To signal a different long-term trajectory: Axonometra is maintained under the QANT umbrella as a browser-embeddable plan editor (see [EMBEDDING.md](./EMBEDDING.md)) with a roadmap (healthcare and small-building presets) that diverges from upstream.
 - To match the public brand at [axonometra.com](https://axonometra.com).
 
 We do **not** plan to merge changes back upstream, nor to pull from upstream. **License: MIT AND Apache-2.0.** Code carried over from upstream stays under Apache-2.0 (full text in [`LICENSE-APACHE`](LICENSE-APACHE)); Axonometra's own changes and additions are MIT. Attribution to the original author is maintained in `LICENSE` and in this README.

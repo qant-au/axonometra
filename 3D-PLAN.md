@@ -149,7 +149,21 @@ Each phase ships on its own and is demoable.
    raises it to its mount height. Symbol devices sit at real size in the
    middle of their 40 cm square. Items with no model keep the height box.
 5. **Walk-through:** first-person mode with collision, touch controls, the
-   reduced-motion teleport mode, and storey changes.
+   reduced-motion teleport mode, and storey changes. _Done 2026-09-29:_
+   an Orbit / Walk switch in the 3D view. `scene3d/walk.ts` is the pure part
+   (unit-tested): the walker is a 25 cm circle collided in plan space against
+   the wall, sill and lintel pieces between 30 cm and 1.8 m above the floor,
+   so doorways are open and window sills block; furniture does not block.
+   That replaces `three-mesh-bvh`: every obstacle is a vertical prism, so a
+   2D test is exact and needs no dependency. `scene3d/walkControls.ts`
+   drives the camera. Looking is drag-to-look for mouse and touch alike
+   rather than `PointerLockControls`: one code path, and no clash between
+   the lock's Escape and the dialog's. Touch gets an on-screen stick.
+   Teleport (click the floor to go there, keys step 1 m and turn 30°) is on
+   by default under reduced motion and a switch for everyone. Storeys change
+   with Page Up / Page Down or the buttons at a `stairs-*` item, arriving at
+   the nearest stairs on the new floor; a floor with no stairs lets you
+   change from anywhere, so such a plan is not a dead end.
 6. **glTF export**, and embedding messages for it (`axo:export`). _Done
    2026-09-28:_ `scene3d/exportGlb.ts` (three's GLTFExporter, no renderer
    needed), a Save 3D model button, and `axo:export` / `axo:exported`.
