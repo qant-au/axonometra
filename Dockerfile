@@ -6,7 +6,9 @@
 # mapping is managed by `restart.sh` (defaults to 4890 — see the
 # reserved 4890-4899 range for this project).
 
-FROM node:22.22-alpine AS build
+# Tag: node:22.22-alpine · Refreshed: 2026-09-29
+# Refresh: docker buildx imagetools inspect node:22.22-alpine  (use the top-level Digest)
+FROM node:22.22-alpine@sha256:e58326d0d441090181ac150dc2078d3e2cf6a0d42e809aebba3ef5880935ffdd AS build
 
 WORKDIR /app
 
@@ -34,7 +36,9 @@ RUN npm run build
 # nginx-unprivileged: runs as the `nginx` user (uid 101) and listens
 # on 8080 out of the box, so the container ships without ever starting
 # a root-owned process. Pinned to the nginx stable line.
-FROM nginxinc/nginx-unprivileged:1.30-alpine
+# Tag: nginxinc/nginx-unprivileged:1.30-alpine · Refreshed: 2026-09-29
+# Refresh: docker buildx imagetools inspect nginxinc/nginx-unprivileged:1.30-alpine  (use the top-level Digest)
+FROM nginxinc/nginx-unprivileged:1.30-alpine@sha256:ed04ec1ff34502c339ee5c3ae3f855442398edc1d05591e2b98981dcbbd20b1e
 
 COPY --chown=nginx:nginx docker/nginx.conf /etc/nginx/conf.d/default.conf
 COPY --from=build --chown=nginx:nginx /app/dist /usr/share/nginx/html
