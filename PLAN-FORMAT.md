@@ -21,7 +21,7 @@ interface FloorPlanSerializable {
   floors: FloorSerializable[]; // one entry per floor, lowest first
   furnitureId: number; // next free furniture id (monotonic counter)
   wallNodeId: number; // next free wall-node id (monotonic counter)
-  units?: 'mm' | 'cm' | 'm'; // display units (v2); lengths are never stored in them
+  units?: 'mm' | 'cm' | 'm' | 'in' | 'ft-in'; // display units (v2); lengths are never stored in them
 }
 ```
 

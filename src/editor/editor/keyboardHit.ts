@@ -2,7 +2,7 @@
 // Pure functions over plain coordinates so they can be tested without Pixi.
 import { planToMm } from '../../helpers/planLength';
 import { Point } from '../../helpers/Point';
-import { formatLength, type MetricUnit } from '../../vendor/accurona-core';
+import { formatLength, type LengthUnit } from '../../vendor/accurona-core';
 
 export interface NodeLike {
   x: number;
@@ -64,7 +64,7 @@ export function wallAt<T extends WallLike>(
 }
 
 /** Plan coordinates as a person reads them, in the plan's display units. */
-export function describePoint(p: Point, units: MetricUnit): string {
+export function describePoint(p: Point, units: LengthUnit): string {
   return `${formatLength(planToMm(p.x), units)} across, ${formatLength(planToMm(p.y), units)} down`;
 }
 

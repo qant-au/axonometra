@@ -19,7 +19,7 @@ function LengthForm({ wall }: { wall: Wall }) {
   const [value, setValue] = useState(
     formatPlanLength(wall.length - WALL_THICKNESS, { suffix: false })
   );
-  // Accepts any metric unit ('2.7 m', '270 cm'); a bare number is in `units`.
+  // Accepts any unit ('2.7 m', '270 cm', 8' 10"); a bare number is in `units`.
   const length = parsePlanLength(value);
   const valid = length !== null && length > 0;
 
@@ -50,8 +50,14 @@ function LengthForm({ wall }: { wall: Wall }) {
           label={`Length (${units})`}
           value={value}
           onChange={(e) => setValue(e.target.value)}
-          // Text, not number: a unit may be typed after the value.
-          slotProps={{ htmlInput: { inputMode: 'decimal' } }}
+          // Text, not number: a unit may be typed after the value, and
+          // feet and inches need their marks, which a decimal keypad lacks.
+          slotProps={{
+            htmlInput: {
+              inputMode:
+                units === 'in' || units === 'ft-in' ? 'text' : 'decimal'
+            }
+          }}
           autoFocus
           error={!valid}
           helperText={valid ? undefined : 'Enter a length greater than 0'}

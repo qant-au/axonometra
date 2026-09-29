@@ -1,11 +1,8 @@
+import { isLengthUnit } from '../../../vendor/accurona-core';
 import { notify } from '../../../vendor/accurona-ui';
 import { useFloorPlanStore } from '../../../stores/FloorPlanStore';
 import { useHistoryStore } from '../../../stores/HistoryStore';
-import {
-  DEFAULT_UNITS,
-  isMetricUnit,
-  useUnitsStore
-} from '../../../stores/UnitsStore';
+import { DEFAULT_UNITS, useUnitsStore } from '../../../stores/UnitsStore';
 import {
   CURRENT_PLAN_VERSION,
   FloorPlanSerializable,
@@ -85,7 +82,7 @@ export class Serializer {
     // Before setPlan, so the wall labels it draws are in the plan's units.
     useUnitsStore
       .getState()
-      .setUnits(isMetricUnit(plan.units) ? plan.units : DEFAULT_UNITS);
+      .setUnits(isLengthUnit(plan.units) ? plan.units : DEFAULT_UNITS);
     useFloorPlanStore.getState().setPlan(plan);
     // A loaded plan is a different document; undo must not step back into
     // the one it replaced.

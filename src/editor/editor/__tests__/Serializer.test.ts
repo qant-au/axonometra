@@ -138,6 +138,8 @@ describe('Serializer display units', () => {
   it('restores the units on load, falling back to millimetres', () => {
     new Serializer().load(plan('cm'));
     expect(useUnitsStore.getState().units).toBe('cm');
+    new Serializer().load(plan('ft-in'));
+    expect(useUnitsStore.getState().units).toBe('ft-in');
     new Serializer().load(plan());
     expect(useUnitsStore.getState().units).toBe('mm');
     useUnitsStore.setState({ units: 'm' });

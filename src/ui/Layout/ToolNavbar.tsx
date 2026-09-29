@@ -37,7 +37,7 @@ import {
   IconRulerMeasure,
   IconCheck
 } from '@tabler/icons-react';
-import type { MetricUnit } from '../../vendor/accurona-core';
+import type { LengthUnit } from '../../vendor/accurona-core';
 import { useUnitsStore } from '../../stores/UnitsStore';
 import { SetUnitsAction } from '../../editor/editor/actions/SetUnitsAction';
 import {
@@ -83,10 +83,12 @@ const modes = [
   { icon: IconEraser, label: 'Erase', tool: Tool.Remove }
 ];
 
-const UNIT_NAMES: { unit: MetricUnit; label: string }[] = [
+const UNIT_NAMES: { unit: LengthUnit; label: string }[] = [
   { unit: 'mm', label: 'Millimetres' },
   { unit: 'cm', label: 'Centimetres' },
-  { unit: 'm', label: 'Metres' }
+  { unit: 'm', label: 'Metres' },
+  { unit: 'in', label: 'Inches' },
+  { unit: 'ft-in', label: 'Feet and inches' }
 ];
 
 // How lengths are shown and typed; saved with the plan.
@@ -105,6 +107,7 @@ function UnitsMenu() {
           ) : (
             <Box sx={{ width: 18 }} />
           ),
+        divider: unit === 'in',
         onClick: () => new SetUnitsAction(unit).execute()
       }))}
     />

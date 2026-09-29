@@ -22,7 +22,7 @@ export function formatPlanLength(
   );
 }
 
-/** Typed input in mm, cm or m (a bare number in the display units) as plan units, or null. */
+/** Typed input in any unit (a bare number in the display units) as plan units, or null. */
 export function parsePlanLength(text: string): number | null {
   const mm = parseLength(text, useUnitsStore.getState().units);
   return mm === null ? null : mmToPlan(mm);
