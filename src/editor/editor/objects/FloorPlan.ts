@@ -2,6 +2,7 @@ import { Container, DestroyOptions } from 'pixi.js';
 import { notify } from '../../../vendor/accurona-ui';
 import { useFloorPlanStore } from '../../../stores/FloorPlanStore';
 import { rendererHolder } from '../../EditorRoot';
+import { timestamp } from '../actions/SaveAction';
 
 // View for the floor plan model. The model itself lives in useFloorPlanStore;
 // this container only mirrors the active floor into the scene graph and owns
@@ -63,8 +64,7 @@ export class FloorPlan extends Container {
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      const ts = new Date().toISOString().slice(0, 16).replace(/[:T]/g, '-');
-      a.download = `axonometra-plan-${ts}.png`;
+      a.download = `axonometra-plan-${timestamp()}.png`;
       document.body.appendChild(a);
       a.click();
       a.remove();
