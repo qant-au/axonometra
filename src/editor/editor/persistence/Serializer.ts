@@ -1,4 +1,4 @@
-import { notifications } from '@mantine/notifications';
+import { notify } from '../../../vendor/accurona-ui';
 import { useFloorPlanStore } from '../../../stores/FloorPlanStore';
 import { useHistoryStore } from '../../../stores/HistoryStore';
 import {
@@ -36,10 +36,10 @@ export class Serializer {
   /** Returns true when the plan was loaded; failures are toasted here. */
   public load(planText: string | null): boolean {
     if (planText == null || planText === '') {
-      notifications.show({
+      notify({
         title: 'Load failed',
         message: 'No plan data to load.',
-        color: 'red'
+        severity: 'error'
       });
       return false;
     }
@@ -47,19 +47,19 @@ export class Serializer {
     try {
       raw = safeParsePlan(planText);
     } catch {
-      notifications.show({
+      notify({
         title: 'Load failed',
         message: 'Plan file is not valid JSON.',
-        color: 'red'
+        severity: 'error'
       });
       return false;
     }
     const plan = validatePlanShape(raw);
     if (!plan) {
-      notifications.show({
+      notify({
         title: 'Load failed',
         message: 'Plan file is missing required fields.',
-        color: 'red'
+        severity: 'error'
       });
       return false;
     }
@@ -67,10 +67,10 @@ export class Serializer {
     // version that changes a field's meaning dispatches on version here.
     const version = (raw as { version?: number }).version ?? 1;
     if (!SUPPORTED_PLAN_VERSIONS.includes(version)) {
-      notifications.show({
+      notify({
         title: 'Load failed',
         message: `Unsupported plan version: ${version}.`,
-        color: 'red'
+        severity: 'error'
       });
       return false;
     }

@@ -1,6 +1,6 @@
 /** the floor plan model — floors, the active floor, and the furniture counter */
 import { create } from 'zustand';
-import { notifications } from '@mantine/notifications';
+import { notify } from '../vendor/accurona-ui';
 import { Floor } from '../editor/editor/objects/Floor';
 import { Furniture } from '../editor/editor/objects/Furniture';
 import { Wall } from '../editor/editor/objects/Walls/Wall';
@@ -90,11 +90,11 @@ export const useFloorPlanStore = create<FloorPlanStore>()((set, get) => ({
   removeFloor: () => {
     const { floors, currentFloor, visibleLabels } = get();
     if (floors.length < 2) {
-      notifications.show({
+      notify({
         title: 'Floor removal not permitted',
         message:
           'This floor is the only floor in the plan. You cannot have a plan with no floors. Create a new floor before deleting.',
-        color: 'red'
+        severity: 'error'
       });
       return;
     }

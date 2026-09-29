@@ -13,7 +13,7 @@ import { AddWallManager } from './editor/actions/AddWallManager';
 import { useStore } from '../stores/EditorStore';
 import { useFloorPlanStore } from '../stores/FloorPlanStore';
 import { serializer } from './editor/persistence/Serializer';
-import { notifications } from '@mantine/notifications';
+import { notify } from '../vendor/accurona-ui';
 import { createElement } from 'react';
 import { IconDeviceFloppy } from '@tabler/icons-react';
 import {
@@ -116,9 +116,9 @@ export function EditorRoot() {
         e.preventDefault();
         const data = serializer.serialize();
         localStorage.setItem('autosave', data);
-        notifications.show({
+        notify({
           message: 'Saved to Local Storage!',
-          color: 'green',
+          severity: 'success',
           icon: createElement(IconDeviceFloppy)
         });
       }

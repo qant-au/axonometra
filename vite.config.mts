@@ -40,14 +40,14 @@ export default defineConfig({
     rollupOptions: {
       output: {
         // Function form: the array form leaves react/react-dom absorbed into
-        // the mantine chunk (and emits an empty `react` chunk), so match the
+        // the mui chunk (and emits an empty `react` chunk), so match the
         // vendor packages by resolved path instead.
         manualChunks(id) {
           if (!id.includes('node_modules')) return;
           if (id.includes('/pixi.js/') || id.includes('/pixi-viewport/'))
             return 'pixi';
           if (id.includes('/@pixi/')) return 'pixi';
-          if (id.includes('/@mantine/')) return 'mantine';
+          if (id.includes('/@mui/') || id.includes('/@emotion/')) return 'mui';
           if (
             id.includes('/react/') ||
             id.includes('/react-dom/') ||

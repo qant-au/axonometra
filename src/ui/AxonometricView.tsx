@@ -1,9 +1,17 @@
 import { useMemo, useState } from 'react';
-import { ActionIcon, Group, Modal, Switch, Text, Tooltip } from '@mantine/core';
+import {
+  FormControlLabel,
+  IconButton,
+  Stack,
+  Switch,
+  Tooltip,
+  Typography
+} from '@mui/material';
 import { IconRotate2, IconRotateClockwise2 } from '@tabler/icons-react';
 import { projectScene } from '../editor/axonometric/axonometric';
 import { sceneFromPlan } from '../editor/axonometric/sceneFromPlan';
 import classes from './AxonometricView.module.css';
+import { AppDialog } from '../vendor/accurona-ui';
 
 interface Props {
   opened: boolean;
@@ -36,48 +44,54 @@ export function AxonometricView({ opened, onClose }: Props) {
   } degrees.`;
 
   return (
-    <Modal
-      opened={opened}
+    <AppDialog
+      open={opened}
       onClose={onClose}
       fullScreen
       title="Axonometric view"
-      classNames={{ body: classes.body }}
     >
-      <Group justify="space-between" className={classes.controls}>
-        <Group gap="xs">
-          <Tooltip label="Turn left">
-            <ActionIcon
-              variant="default"
-              size="lg"
+      <Stack
+        direction="row"
+        className={classes.controls}
+        sx={{ justifyContent: 'space-between', alignItems: 'center' }}
+      >
+        <Stack direction="row" spacing={1}>
+          <Tooltip title="Turn left">
+            <IconButton
               aria-label="Turn left"
               onClick={() => setTurns((t) => (t + 3) % 4)}
             >
               <IconRotate2 />
-            </ActionIcon>
+            </IconButton>
           </Tooltip>
-          <Tooltip label="Turn right">
-            <ActionIcon
-              variant="default"
-              size="lg"
+          <Tooltip title="Turn right">
+            <IconButton
               aria-label="Turn right"
               onClick={() => setTurns((t) => (t + 1) % 4)}
             >
               <IconRotateClockwise2 />
-            </ActionIcon>
+            </IconButton>
           </Tooltip>
-        </Group>
+        </Stack>
         {scene.floors.length > 1 && (
-          <Switch
+          <FormControlLabel
             label="All floors"
-            checked={allFloors}
-            onChange={(e) => setAllFloors(e.currentTarget.checked)}
+            control={
+              <Switch
+                checked={allFloors}
+                onChange={(e) => setAllFloors(e.currentTarget.checked)}
+              />
+            }
           />
         )}
-      </Group>
+      </Stack>
       {wallCount === 0 ? (
-        <Text c="dimmed" ta="center" className={classes.empty}>
+        <Typography
+          className={classes.empty}
+          sx={{ color: 'text.secondary', textAlign: 'center' }}
+        >
           Draw some walls on this floor to see them here.
-        </Text>
+        </Typography>
       ) : (
         <svg
           className={classes.drawing}
@@ -94,6 +108,6 @@ export function AxonometricView({ opened, onClose }: Props) {
           ))}
         </svg>
       )}
-    </Modal>
+    </AppDialog>
   );
 }

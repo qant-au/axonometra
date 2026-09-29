@@ -1,4 +1,4 @@
-import { notifications } from '@mantine/notifications';
+import { notify } from '../vendor/accurona-ui';
 
 const MAX_BYTES = 5 * 1024 * 1024;
 // Browsers frequently report an empty MIME type for `.json` files, so the
@@ -19,18 +19,18 @@ export async function readPlanFile(
   const nameOk = /\.(json|txt)$/i.test(file.name);
   const typeOk = ALLOWED_TYPES.includes(file.type);
   if (!nameOk && !typeOk) {
-    notifications.show({
+    notify({
       title: 'Unsupported file',
       message: 'Please choose a .json plan file.',
-      color: 'red'
+      severity: 'error'
     });
     return null;
   }
   if (file.size > MAX_BYTES) {
-    notifications.show({
+    notify({
       title: 'File too large',
       message: 'Plan files must be smaller than 5 MB.',
-      color: 'red'
+      severity: 'error'
     });
     return null;
   }

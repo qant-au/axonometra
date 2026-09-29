@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { notifications } from '@mantine/notifications';
+import { notify } from '../vendor/accurona-ui';
 import { serializer } from '../editor/editor/persistence/Serializer';
 import { embedConfig, originAllowed } from './embedConfig';
 import { createInboundHandler, isAxoInbound } from './inbound';
@@ -19,7 +19,7 @@ export function EmbedBridge(): null {
       exportGlb: async (planText) =>
         (await import('../editor/scene3d/exportGlb')).exportGlb(planText),
       notify: (message) =>
-        notifications.show({ title: 'Plan refused', message, color: 'red' })
+        notify({ title: 'Plan refused', message, severity: 'error' })
     });
 
     const handler = (event: MessageEvent) => {

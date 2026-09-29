@@ -1,4 +1,4 @@
-import { notifications } from '@mantine/notifications';
+import { notify } from '../../../../vendor/accurona-ui';
 import { Container } from 'pixi.js';
 import { INodeSerializable } from '../../persistence/INodeSerializable';
 import { Wall } from './Wall';
@@ -100,9 +100,9 @@ export class WallNodeSequence extends Container {
       // removed links need not be remembered here.
       // this.wallNodeLinks[id].length = 0;
     } else {
-      notifications.show({
+      notify({
         title: 'Not permitted',
-        color: 'red',
+        severity: 'error',
         message:
           'Cannot delete node with walls attached. Please remove walls first.'
       });

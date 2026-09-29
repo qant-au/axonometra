@@ -5,8 +5,8 @@ import type { Floor } from '../../editor/editor/objects/Floor';
 // Floors are Pixi containers; the store only ever calls a handful of their
 // methods, so a plain fake stands in and no Pixi mock is needed.
 const showNotification = vi.fn();
-vi.mock('@mantine/notifications', () => ({
-  notifications: { show: showNotification }
+vi.mock('../../vendor/accurona-ui', () => ({
+  notify: showNotification
 }));
 
 interface FakeFloor {

@@ -1,7 +1,7 @@
 .navbar {
   height: 100vh;
   width: 70px;
-  padding: var(--mantine-spacing-md);
+  padding: 16px;
   display: flex;
   flex-direction: column;
 }
@@ -14,19 +14,12 @@
   flex-grow: 1;
 }
 
+/* The current-floor number, sized like a tool button. */
 .link {
   width: 40px;
   height: 40px;
-  border-radius: var(--mantine-radius-md);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: light-dark(var(--mantine-color-gray-7), var(--mantine-color-dark-0));
-}
-
-.link:hover {
-  background-color: light-dark(
-    var(--mantine-color-gray-0),
-    var(--mantine-color-dark-5)
-  );
+  color: var(--mui-palette-text-secondary);
 }

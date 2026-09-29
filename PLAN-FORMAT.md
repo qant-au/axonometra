@@ -141,7 +141,7 @@ persistence layer exposes two helpers:
 Both live in
 [`FloorPlanSerializable.ts`](./src/editor/editor/persistence/FloorPlanSerializable.ts).
 
-`FloorPlan.load` calls both in sequence and surfaces a Mantine error
+`FloorPlan.load` calls both in sequence and surfaces an error
 notification if either step fails. Hosts integrating via
 [`EMBEDDING.md`](./EMBEDDING.md) see this as a silent rejection: the
 editor stays on the previously-loaded plan and toasts the error

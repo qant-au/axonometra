@@ -5,8 +5,8 @@ vi.mock('pixi.js', async () => {
   return createPixiMock();
 });
 vi.mock('../../../helpers/isMobile', () => ({ isMobile: false }));
-vi.mock('@mantine/notifications', () => ({
-  notifications: { show: vi.fn() }
+vi.mock('../../../vendor/accurona-ui', () => ({
+  notify: vi.fn()
 }));
 vi.mock('../../../api/api-client', () => ({
   getDoor: () => Promise.resolve([]),

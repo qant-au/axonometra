@@ -1,7 +1,7 @@
 /* The canvas wrapper takes keyboard focus (see KeyboardCursor). Inset the
    ring so it stays visible against the page edges the canvas fills. */
 .canvas:focus-visible {
-  outline: 3px solid var(--mantine-primary-color-6);
+  outline: 3px solid var(--mui-palette-primary-main);
   outline-offset: -3px;
 }
 

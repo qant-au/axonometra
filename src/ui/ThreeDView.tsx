@@ -1,14 +1,16 @@
 import { ReactNode, useEffect, useMemo, useRef, useState } from 'react';
 import {
-  ActionIcon,
   Button,
-  Group,
-  Modal,
-  SegmentedControl,
+  FormControlLabel,
+  IconButton,
+  Stack,
   Switch,
-  Text,
-  Tooltip
-} from '@mantine/core';
+  ToggleButton,
+  ToggleButtonGroup,
+  Tooltip,
+  Typography,
+  useMediaQuery
+} from '@mui/material';
 import {
   IconArrowUp,
   IconDownload,
@@ -33,11 +35,11 @@ import {
   Vector3,
   WebGLRenderer
 } from 'three';
-import { useMediaQuery } from '@mantine/hooks';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import saveAs from 'file-saver';
 import { timestamp } from '../editor/editor/actions/SaveAction';
 import { METER } from '../editor/editor/constants';
+import { AppDialog } from '../vendor/accurona-ui';
 import type { FloorPlanSerializable } from '../editor/editor/persistence/FloorPlanSerializable';
 import { serializer } from '../editor/editor/persistence/Serializer';
 import { sceneModel } from '../editor/scene3d/sceneModel';
@@ -105,7 +107,7 @@ export function ThreeDView({ opened, onClose }: Props) {
     () => !!window.matchMedia?.('(pointer: coarse)').matches
   );
   const [teleport, setTeleport] = useState(reduceMotion);
-  const narrow = useMediaQuery('(max-width: 48em)') ?? false;
+  const narrow = useMediaQuery('(max-width: 48em)');
   const walk = useRef<Walk | null>(null);
   // Where the walker should stand when its floor changes; null starts afresh.
   const arriveAt = useRef<Point | null>(null);
@@ -424,19 +426,29 @@ export function ThreeDView({ opened, onClose }: Props) {
   }, [label, host, empty]);
 
   return (
-    <Modal
-      opened={opened}
-      onClose={onClose}
-      fullScreen
-      title="3D view"
-      classNames={{ body: classes.body }}
-    >
-      <Group justify="space-between" className={classes.controls}>
-        <Group gap="xs">
-          <SegmentedControl
+    <AppDialog open={opened} onClose={onClose} fullScreen title="3D view">
+      <Stack
+        direction="row"
+        className={classes.controls}
+        sx={{
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          gap: 2
+        }}
+      >
+        <Stack
+          direction="row"
+          sx={{ alignItems: 'center', flexWrap: 'wrap', gap: 1 }}
+        >
+          <ToggleButtonGroup
             aria-label="View mode"
+            size="small"
+            exclusive
             value={mode}
-            onChange={(v) => {
+            disabled={empty || noWebGl}
+            onChange={(_e, v: Mode | null) => {
+              if (v === null) return;
               // Start on the floor in view, or the first with walls.
               if (v === 'walk')
                 setWalkFloor(
@@ -447,14 +459,12 @@ export function ThreeDView({ opened, onClose }: Props) {
                         plan.floors.findIndex((_, i) => walkable(i))
                       )
                 );
-              setMode(v as Mode);
+              setMode(v);
             }}
-            data={[
-              { value: 'orbit', label: 'Orbit' },
-              { value: 'walk', label: 'Walk' }
-            ]}
-            disabled={empty || noWebGl}
-          />
+          >
+            <ToggleButton value="orbit">Orbit</ToggleButton>
+            <ToggleButton value="walk">Walk</ToggleButton>
+          </ToggleButtonGroup>
           {walking ? (
             <>
               <ViewButton name="Turn left" onClick={() => turn(SNAP_TURN)}>
@@ -507,31 +517,34 @@ export function ThreeDView({ opened, onClose }: Props) {
           <ViewButton name="Reset view" onClick={resetView}>
             <IconFocusCentered />
           </ViewButton>
-        </Group>
-        <Group gap="md">
+        </Stack>
+        <Stack
+          direction="row"
+          sx={{ alignItems: 'center', flexWrap: 'wrap', gap: 1 }}
+        >
           {walking ? (
-            <Switch
+            <LabelledSwitch
               label="Teleport"
               checked={teleport}
-              onChange={(e) => setTeleport(e.currentTarget.checked)}
+              onChange={setTeleport}
             />
           ) : (
-            <Switch
+            <LabelledSwitch
               label="Cut away walls"
               checked={cutaway}
-              onChange={(e) => setCutaway(e.currentTarget.checked)}
+              onChange={setCutaway}
             />
           )}
           {!walking && plan.floors.length > 1 && (
-            <Switch
+            <LabelledSwitch
               label="All floors"
               checked={allFloors}
-              onChange={(e) => setAllFloors(e.currentTarget.checked)}
+              onChange={setAllFloors}
             />
           )}
           {narrow ? (
             // Icons on a phone, so the toolbar leaves room for the view.
-            <Group gap="xs">
+            <Stack direction="row" spacing={1}>
               <ViewButton
                 name="Save image"
                 onClick={savePng}
@@ -546,20 +559,20 @@ export function ThreeDView({ opened, onClose }: Props) {
               >
                 <IconFileDownload />
               </ViewButton>
-            </Group>
+            </Stack>
           ) : (
             <>
               <Button
-                variant="default"
-                leftSection={<IconDownload size={18} />}
+                variant="outlined"
+                startIcon={<IconDownload size={18} />}
                 onClick={savePng}
                 disabled={empty || noWebGl}
               >
                 Save image
               </Button>
               <Button
-                variant="default"
-                leftSection={<IconDownload size={18} />}
+                variant="outlined"
+                startIcon={<IconDownload size={18} />}
                 onClick={() => void saveModel()}
                 disabled={empty}
               >
@@ -567,16 +580,22 @@ export function ThreeDView({ opened, onClose }: Props) {
               </Button>
             </>
           )}
-        </Group>
-      </Group>
+        </Stack>
+      </Stack>
       {empty ? (
-        <Text c="dimmed" ta="center" className={classes.message}>
+        <Typography
+          className={classes.message}
+          sx={{ color: 'text.secondary', textAlign: 'center' }}
+        >
           Draw some walls on this floor to see them here.
-        </Text>
+        </Typography>
       ) : noWebGl ? (
-        <Text c="dimmed" ta="center" className={classes.message}>
+        <Typography
+          className={classes.message}
+          sx={{ color: 'text.secondary', textAlign: 'center' }}
+        >
           The 3D view needs WebGL, which this browser does not provide.
-        </Text>
+        </Typography>
       ) : (
         <>
           <div ref={setHost} className={classes.stage}>
@@ -584,7 +603,7 @@ export function ThreeDView({ opened, onClose }: Props) {
               <WalkJoystick onChange={(x, y) => walk.current?.setStick(x, y)} />
             )}
           </div>
-          <Text size="sm" c="dimmed">
+          <Typography variant="body2" sx={{ color: 'text.secondary' }}>
             {!walking
               ? 'Drag to turn, right-drag or arrow keys to move, scroll to zoom.'
               : teleport
@@ -599,15 +618,15 @@ export function ThreeDView({ opened, onClose }: Props) {
               (coarse
                 ? ' Use the stair buttons at the stairs to change floor.'
                 : ' Page Up and Page Down change floor at the stairs.')}
-          </Text>
+          </Typography>
           {walking && (
-            <Text size="sm" aria-live="polite">
+            <Typography variant="body2" aria-live="polite">
               {where}
-            </Text>
+            </Typography>
           )}
         </>
       )}
-    </Modal>
+    </AppDialog>
   );
 }
 
@@ -623,17 +642,36 @@ function ViewButton({
   children: ReactNode;
 }) {
   return (
-    <Tooltip label={name}>
-      <ActionIcon
-        variant="default"
-        size="lg"
-        aria-label={name}
-        onClick={onClick}
-        disabled={disabled}
-      >
-        {children}
-      </ActionIcon>
+    <Tooltip title={name}>
+      {/* A disabled button fires no events, so the tooltip needs a wrapper. */}
+      <span>
+        <IconButton aria-label={name} onClick={onClick} disabled={disabled}>
+          {children}
+        </IconButton>
+      </span>
     </Tooltip>
+  );
+}
+
+function LabelledSwitch({
+  label,
+  checked,
+  onChange
+}: {
+  label: string;
+  checked: boolean;
+  onChange: (checked: boolean) => void;
+}) {
+  return (
+    <FormControlLabel
+      label={label}
+      control={
+        <Switch
+          checked={checked}
+          onChange={(e) => onChange(e.currentTarget.checked)}
+        />
+      }
+    />
   );
 }
 

@@ -1,4 +1,4 @@
-import { Button, Group, Modal, NumberInput, Stack } from '@mantine/core';
+import { Button, Stack, TextField } from '@mui/material';
 import { useState } from 'react';
 import { METER, WALL_THICKNESS } from '../editor/editor/constants';
 import { transact } from '../editor/editor/history';
@@ -6,16 +6,17 @@ import { resizeAboutMidpoint } from '../editor/editor/keyboardHit';
 import type { Wall } from '../editor/editor/objects/Walls/Wall';
 import { useStore } from '../stores/EditorStore';
 import { useFloorPlanStore } from '../stores/FloorPlanStore';
+import { AppDialog } from '../vendor/accurona-ui';
 
 const close = () => useStore.getState().setLengthEditWall(null);
 
 // The wall label shows the drawn length less one wall thickness, so the typed
 // value is read the same way. The wall keeps its midpoint and direction.
 function LengthForm({ wall }: { wall: Wall }) {
-  const [value, setValue] = useState<number | string>(
-    Math.round(((wall.length - WALL_THICKNESS) / METER) * 100) / 100
+  const [value, setValue] = useState(
+    String(Math.round(((wall.length - WALL_THICKNESS) / METER) * 100) / 100)
   );
-  const metres = typeof value === 'number' ? value : parseFloat(value);
+  const metres = parseFloat(value);
   const valid = Number.isFinite(metres) && metres > 0;
 
   const apply = () => {
@@ -40,31 +41,27 @@ function LengthForm({ wall }: { wall: Wall }) {
         apply();
       }}
     >
-      <Stack>
-        <NumberInput
+      <Stack spacing={2} sx={{ pt: 1 }}>
+        <TextField
           label="Length (m)"
+          type="number"
           value={value}
-          onChange={setValue}
-          min={0.01}
-          // Clamping on blur rewrote 0 to 0.01 as focus left the field, which
-          // removed the error and moved the buttons under the pointer.
-          clampBehavior="none"
-          // Its stepper buttons have no accessible name; the arrow keys step
-          // the value, so the field goes without them.
-          hideControls
-          step={0.1}
-          decimalScale={2}
-          data-autofocus
-          error={valid ? undefined : 'Enter a length greater than 0'}
+          onChange={(e) => setValue(e.target.value)}
+          // No min: the browser would refuse to submit 0 with its own
+          // message; the error below says what is wrong instead.
+          slotProps={{ htmlInput: { step: 0.01 } }}
+          autoFocus
+          error={!valid}
+          helperText={valid ? undefined : 'Enter a length greater than 0'}
         />
-        <Group justify="flex-end">
-          <Button variant="default" onClick={close}>
+        <Stack direction="row" spacing={1} sx={{ justifyContent: 'flex-end' }}>
+          <Button variant="outlined" onClick={close}>
             Cancel
           </Button>
           <Button type="submit" disabled={!valid}>
             Apply
           </Button>
-        </Group>
+        </Stack>
       </Stack>
     </form>
   );
@@ -73,8 +70,8 @@ function LengthForm({ wall }: { wall: Wall }) {
 export function WallLengthDialog() {
   const wall = useStore((s) => s.lengthEditWall);
   return (
-    <Modal opened={wall !== null} onClose={close} title="Set wall length">
+    <AppDialog open={wall !== null} onClose={close} title="Set wall length">
       {wall && <LengthForm wall={wall} />}
-    </Modal>
+    </AppDialog>
   );
 }

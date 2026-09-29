@@ -1,8 +1,8 @@
-import { Box, ScrollArea, Select, SimpleGrid } from '@mantine/core';
+import { Box, MenuItem, Select } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { FurnitureItem } from './FurnitureItem';
 import { useFurnitureStore } from '../../../stores/FurnitureStore';
-import { notifications } from '@mantine/notifications';
+import { notify } from '../../../vendor/accurona-ui';
 
 export function FurnitureAddPanel() {
   const categories = useFurnitureStore((s) => s.categories);
@@ -20,33 +20,40 @@ export function FurnitureAddPanel() {
 
   useEffect(() => {
     if (!categories[0]?._id) {
-      notifications.show({
+      notify({
         message: 'Check your internet connection',
-        color: 'green'
+        severity: 'warning'
       });
     }
   }, [categories]);
 
   return (
     <>
-      <Box>
-        <Select
-          my="xs"
-          value={category}
-          onChange={(value) => setCategory(value ?? '')}
-          data={categories.map((cat) => {
-            return { value: cat._id, label: cat.name };
-          })}
-        />
-      </Box>
-      <Box style={{ height: '100%' }} mx="-xs" px="xs">
-        <ScrollArea style={{ width: '320', height: '90%' }}>
-          <SimpleGrid style={{ padding: 5 }} cols={2}>
-            {currentFurnitureData.map((item) => (
-              <FurnitureItem data={item} key={item._id}></FurnitureItem>
-            ))}
-          </SimpleGrid>
-        </ScrollArea>
+      <Select
+        fullWidth
+        size="small"
+        sx={{ my: 1 }}
+        value={categories.length ? category : ''}
+        onChange={(e) => setCategory(e.target.value)}
+        inputProps={{ 'aria-label': 'Category' }}
+      >
+        {categories.map((cat) => (
+          <MenuItem key={cat._id} value={cat._id}>
+            {cat.name}
+          </MenuItem>
+        ))}
+      </Select>
+      <Box
+        sx={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
+          gap: 2,
+          p: 0.5
+        }}
+      >
+        {currentFurnitureData.map((item) => (
+          <FurnitureItem data={item} key={item._id}></FurnitureItem>
+        ))}
       </Box>
     </>
   );

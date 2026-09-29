@@ -1,42 +1,24 @@
 import { useEffect } from 'react';
+import { CssBaseline, ThemeProvider } from '@mui/material';
 import { PageLayout } from './ui/Layout/PageLayout';
 import { useFurnitureStore } from './stores/FurnitureStore';
-import {
-  Drawer,
-  MantineProvider,
-  Modal,
-  Notification,
-  createTheme
-} from '@mantine/core';
-import { Notifications } from '@mantine/notifications';
 import { EmbedBridge } from './embed/EmbedBridge';
+import { createLineworkTheme, NotificationHost } from './vendor/accurona-ui';
 
-// Mantine's close buttons are icon-only and unnamed by default, so screen
-// readers announced every dialog's close as a bare "button".
-const theme = createTheme({
-  components: {
-    Modal: Modal.extend({
-      defaultProps: { closeButtonProps: { 'aria-label': 'Close' } }
-    }),
-    Drawer: Drawer.extend({
-      defaultProps: { closeButtonProps: { 'aria-label': 'Close' } }
-    }),
-    Notification: Notification.extend({
-      defaultProps: { closeButtonProps: { 'aria-label': 'Close' } }
-    })
-  }
-});
+// Accurona's shared theme, so Axonometra looks like Reticulyne (D12).
+const theme = createLineworkTheme('light');
 
 function App() {
   useEffect(() => {
     useFurnitureStore.getState().getCategories();
   }, []);
   return (
-    <MantineProvider theme={theme}>
-      <Notifications />
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
+      <NotificationHost />
       <PageLayout />
       <EmbedBridge />
-    </MantineProvider>
+    </ThemeProvider>
   );
 }
 export default App;

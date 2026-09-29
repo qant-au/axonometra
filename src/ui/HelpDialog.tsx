@@ -1,5 +1,5 @@
-import { ReactNode, useEffect, useState } from 'react';
-import { CloseButton, Dialog, Group, Text } from '@mantine/core';
+import { ReactNode, useState } from 'react';
+import { Box, Stack, Typography } from '@mui/material';
 import { useStore } from '../stores/EditorStore';
 import { NavbarLink } from './NavbarLink';
 import {
@@ -16,7 +16,7 @@ import {
   IconZoomIn
 } from '@tabler/icons-react';
 import { Tool } from '../editor/editor/constants';
-import { Image } from '@mantine/core';
+import { FloatingPanel } from '../vendor/accurona-ui';
 
 const helpAddWall = '/help/add-wall.gif';
 const helpDelete = '/help/delete.gif';
@@ -33,17 +33,6 @@ interface IHelpBody {
 
 export function HelpDialog() {
   const [opened, setOpened] = useState(false);
-  // Help is a non-modal panel, so Mantine does not close it on Escape.
-  useEffect(() => {
-    if (!opened) return;
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setOpened(false);
-    };
-    // Capture phase: with the Help button focused, a Mantine handler on it
-    // stops Escape from bubbling to the window.
-    window.addEventListener('keydown', onKey, true);
-    return () => window.removeEventListener('keydown', onKey, true);
-  }, [opened]);
 
   const activeTool = useStore((s) => s.activeTool);
   const helpBody: IHelpBody[] = [];
@@ -52,12 +41,12 @@ export function HelpDialog() {
     title: 'View Mode',
     body: (
       <>
-        <Group>
+        <Row>
           <IconClick /> <p>Click and drag to move around the plan</p>
-        </Group>
-        <Group>
+        </Row>
+        <Row>
           <IconZoomIn /> <p>Use scroll wheel to zoom in or out</p>
-        </Group>
+        </Row>
       </>
     )
   };
@@ -66,14 +55,14 @@ export function HelpDialog() {
     title: 'Erase Mode',
     body: (
       <>
-        <Image src={helpDelete}></Image>
-        <Group gap="xs">
+        <Picture src={helpDelete} />
+        <Row>
           <IconClick /> <IconArrowNarrowRight /> <IconTrash />{' '}
           <p> Click on object to remove from plan</p>
-        </Group>
-        <Group wrap="nowrap">
+        </Row>
+        <Row nowrap>
           <IconVector /> <p>Wall nodes may only be removed if disconnected</p>
-        </Group>
+        </Row>
       </>
     )
   };
@@ -81,18 +70,18 @@ export function HelpDialog() {
     title: 'Edit Mode',
     body: (
       <>
-        <Image src={helpEditFurniture}></Image>
-        <Group gap="xs">
+        <Picture src={helpEditFurniture} />
+        <Row>
           <IconClick /> <IconArrowNarrowRight /> <IconEdit />{' '}
           <p> Click on furniture to enable edit controls</p>
-        </Group>
-        <Image src={helpEditWall}></Image>
-        <Group wrap="nowrap">
+        </Row>
+        <Picture src={helpEditWall} />
+        <Row nowrap>
           <IconVector /> <p>Click and drag wall nodes to edit walls</p>
-        </Group>
-        <Group wrap="nowrap">
+        </Row>
+        <Row nowrap>
           <IconRuler /> <p>Double-click a wall to type its length</p>
-        </Group>
+        </Row>
       </>
     )
   };
@@ -100,16 +89,16 @@ export function HelpDialog() {
     title: 'Add Wall',
     body: (
       <>
-        <Image src={helpAddWall}></Image>
-        <Group wrap="nowrap">
+        <Picture src={helpAddWall} />
+        <Row nowrap>
           <IconClick /> <p>Click to add connected wall chain</p>
-        </Group>
-        <Group wrap="nowrap">
+        </Row>
+        <Row nowrap>
           <IconMultiplier2x /> <p>Double click on wall node to end chain</p>
-        </Group>
-        <Group wrap="nowrap">
+        </Row>
+        <Row nowrap>
           <IconGitFork /> <p>Click on existing walls to connect</p>
-        </Group>
+        </Row>
       </>
     )
   };
@@ -118,10 +107,10 @@ export function HelpDialog() {
     title: 'Add Window',
     body: (
       <>
-        <Image src={helpAddWindow}></Image>
-        <Group wrap="nowrap">
+        <Picture src={helpAddWindow} />
+        <Row nowrap>
           <IconClick /> <p>Click on wall to add window</p>
-        </Group>
+        </Row>
       </>
     )
   };
@@ -129,14 +118,14 @@ export function HelpDialog() {
     title: 'Add Door',
     body: (
       <>
-        <Image src={helpAddDoor}></Image>
-        <Group wrap="nowrap">
+        <Picture src={helpAddDoor} />
+        <Row nowrap>
           <IconClick /> <p>Click on wall to add door</p>
-        </Group>
-        <Group wrap="nowrap">
+        </Row>
+        <Row nowrap>
           <IconLayoutAlignMiddle />{' '}
           <p>Middle click to change door orientation</p>
-        </Group>
+        </Row>
       </>
     )
   };
@@ -144,10 +133,10 @@ export function HelpDialog() {
     title: 'Measure tool',
     body: (
       <>
-        <Image src={helpMeasure}></Image>
-        <Group wrap="nowrap">
+        <Picture src={helpMeasure} />
+        <Row nowrap>
           <IconClick /> <p>Click and drag to measure distances</p>
-        </Group>
+        </Row>
       </>
     )
   };
@@ -163,35 +152,48 @@ export function HelpDialog() {
 
   return (
     <>
-      <Group justify="center">
-        <NavbarLink
-          onClick={() => setOpened((o) => !o)}
-          icon={IconHelp}
-          label="Help"
-        />
-      </Group>
+      <NavbarLink
+        onClick={() => setOpened((o) => !o)}
+        icon={IconHelp}
+        label="Help"
+      />
 
-      <Dialog
-        opened={opened}
-        withCloseButton={false}
+      <FloatingPanel
+        open={opened}
         onClose={() => setOpened(false)}
-        size="lg"
-        radius="md"
-        position={{ top: 20, right: 20 }}
-        role="dialog"
-        aria-label={`Help: ${body.title}`}
+        label={`Help: ${body.title}`}
       >
-        {/* Dialog's own close button cannot be named, so this one replaces it. */}
-        <CloseButton
-          aria-label="Close"
-          onClick={() => setOpened(false)}
-          style={{ position: 'absolute', top: 10, right: 10 }}
-        />
-        <Text size="sm" style={{ marginBottom: 10 }} fw={500} component="div">
+        <Typography component="div" sx={{ fontWeight: 500 }}>
           <b>{body.title}</b>
           {body.body}
-        </Text>
-      </Dialog>
+        </Typography>
+      </FloatingPanel>
     </>
+  );
+}
+
+function Row({ children, nowrap }: { children: ReactNode; nowrap?: boolean }) {
+  return (
+    <Stack
+      direction="row"
+      sx={{
+        alignItems: 'center',
+        columnGap: 1.5,
+        flexWrap: nowrap ? 'nowrap' : 'wrap'
+      }}
+    >
+      {children}
+    </Stack>
+  );
+}
+
+function Picture({ src }: { src: string }) {
+  return (
+    <Box
+      component="img"
+      src={src}
+      alt=""
+      sx={{ display: 'block', maxWidth: '100%', my: 1 }}
+    />
   );
 }

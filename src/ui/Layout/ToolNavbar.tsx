@@ -7,15 +7,7 @@ import {
   useRef,
   useState
 } from 'react';
-import {
-  Box,
-  Tooltip,
-  UnstyledButton,
-  Stack,
-  Menu,
-  Divider,
-  Drawer
-} from '@mantine/core';
+import { Box, Stack, Tooltip } from '@mui/material';
 import classes from './ToolNavbar.module.css';
 import {
   IconArmchair,
@@ -43,7 +35,12 @@ import {
   IconCube,
   IconView360
 } from '@tabler/icons-react';
-import { notifications } from '@mantine/notifications';
+import {
+  clearNotifications,
+  notify,
+  SidePanel,
+  ToolMenu
+} from '../../vendor/accurona-ui';
 import { useStore } from '../../stores/EditorStore';
 import { useFloorPlanStore } from '../../stores/FloorPlanStore';
 import { ChangeFloorAction } from '../../editor/editor/actions/ChangeFloorAction';
@@ -84,100 +81,84 @@ const modes = [
 function AddMenu({ setter }: { setter: Dispatch<SetStateAction<number>> }) {
   const setTool = useStore((s) => s.setTool);
   const [drawerOpened, setDrawerOpened] = useState(false);
-
-  const [_modalOpened, _setModalOpened] = useState(false);
   const getCategories = useFurnitureStore((s) => s.getCategories);
-
-  const addButton = (
-    <UnstyledButton className={classes.link} aria-label="Add">
-      <IconPlus />
-    </UnstyledButton>
-  );
 
   return (
     <>
-      <Drawer
-        opened={drawerOpened}
-        position="right"
+      <SidePanel
+        open={drawerOpened}
         onClose={() => {
           getCategories();
           setDrawerOpened(false);
         }}
         title="Add furniture"
-        padding="xl"
-        size="lg"
-        overlayProps={{ backgroundOpacity: 0 }}
       >
         <Suspense fallback={null}>
           <FurnitureAddPanel />
         </Suspense>
-      </Drawer>
-      <Menu position="right" offset={22} trigger="hover" closeDelay={500}>
-        <Menu.Target>{addButton}</Menu.Target>
-        <Menu.Dropdown>
-          <Menu.Item
-            leftSection={<IconArmchair size={18} />}
-            onClick={() => {
-              notifications.clean();
+      </SidePanel>
+      <ToolMenu
+        name="Add"
+        icon={<IconPlus />}
+        offset={22}
+        items={[
+          {
+            label: 'Add furniture',
+            icon: <IconArmchair size={18} />,
+            onClick: () => {
+              clearNotifications();
               setDrawerOpened(true);
               // -1 = no active toolbar tool (deselect while the drawer is open)
               setter(-1);
-            }}
-          >
-            Add furniture
-          </Menu.Item>
-          <Divider />
-          <Menu.Item
-            leftSection={<IconBorderLeft size={18} />}
-            onClick={() => {
+            }
+          },
+          {
+            label: 'Draw wall',
+            icon: <IconBorderLeft size={18} />,
+            divider: true,
+            onClick: () => {
               setter(-1);
               setTool(Tool.WallAdd);
-              notifications.clean();
-              notifications.show({
+              clearNotifications();
+              notify({
                 title: '✏️ Wall drawing mode',
                 message:
                   'Click to draw walls. Double click on wall node to end sequence.',
-                color: 'blue'
+                severity: 'info'
               });
-            }}
-          >
-            Draw wall
-          </Menu.Item>
-          <Menu.Item
-            leftSection={<IconWindow size={18} />}
-            onClick={() => {
+            }
+          },
+          {
+            label: 'Add window',
+            icon: <IconWindow size={18} />,
+            onClick: () => {
               setTool(Tool.FurnitureAddWindow);
               setter(-1);
-              notifications.clean();
-
-              notifications.show({
+              clearNotifications();
+              notify({
                 title: '🪟 Add window',
                 message: 'Click on wall to add window',
-                color: 'blue'
+                severity: 'info'
               });
-            }}
-          >
-            Add window
-          </Menu.Item>
-          <Menu.Item
-            leftSection={<IconDoor size={18} />}
-            onClick={() => {
+            }
+          },
+          {
+            label: 'Add door',
+            icon: <IconDoor size={18} />,
+            onClick: () => {
               setTool(Tool.FurnitureAddDoor);
               setter(-1);
-              notifications.clean();
-
-              notifications.show({
+              clearNotifications();
+              notify({
                 title: '🚪 Add door',
                 message:
                   'Click on wall to add door. Right click to change orientation',
-                color: 'blue'
+                severity: 'info'
               });
-            }}
-          >
-            Add door
-          </Menu.Item>
-        </Menu.Dropdown>
-      </Menu>
+            }
+          }
+        ]}
+      />
     </>
   );
 }
@@ -204,7 +185,7 @@ export function ToolNavbar() {
       onClick={() => {
         setActive(index);
         // The previous tool's hint (e.g. wall drawing) no longer applies.
-        notifications.clean();
+        clearNotifications();
         setTool(link.tool);
       }}
     />
@@ -223,19 +204,14 @@ export function ToolNavbar() {
     <div style={{ position: 'absolute' }}>
       <Box className={classes.navbar}>
         <Box className={classes.sectionGrow}>
-          <Stack align="center" gap={0}>
+          <Stack sx={{ alignItems: 'center' }}>
             <AddMenu setter={setActive} />
             {toolModes}
           </Stack>
         </Box>
         <Box className={classes.sectionGrow}>
-          <Stack align="center" gap={0}>
-            <Tooltip
-              label={'Current floor'}
-              position="right"
-              withArrow
-              transitionProps={{ duration: 0 }}
-            >
+          <Stack sx={{ alignItems: 'center' }}>
+            <Tooltip title="Current floor" placement="right" arrow>
               <div className={classes.link}>{floor}</div>
             </Tooltip>
 
@@ -266,7 +242,7 @@ export function ToolNavbar() {
           </Stack>
         </Box>
         <Box className={classes.sectionGrow}>
-          <Stack align="center" gap={0}>
+          <Stack sx={{ alignItems: 'center' }}>
             <NavbarLink
               icon={IconArrowBackUp}
               label="Undo"
@@ -284,8 +260,8 @@ export function ToolNavbar() {
               label="Measure tool"
               onClick={() => {
                 setTool(Tool.Measure);
-                notifications.clean();
-                notifications.show({
+                clearNotifications();
+                notify({
                   title: '📐 Measure tool',
                   message: 'Click and drag to measure areas'
                 });
@@ -297,8 +273,8 @@ export function ToolNavbar() {
               onClick={() => {
                 const next = !snap;
                 setSnap(next);
-                notifications.clean();
-                notifications.show({
+                clearNotifications();
+                notify({
                   message: 'Snap to grid now ' + (next ? 'On' : 'Off'),
                   icon: next ? <IconTable /> : <IconTableOff />
                 });
@@ -310,8 +286,8 @@ export function ToolNavbar() {
               onClick={() => {
                 const action = new ToggleLabelAction();
                 action.execute();
-                notifications.clean();
-                notifications.show({
+                clearNotifications();
+                notify({
                   message: 'Toggled size labels',
                   icon: <IconTag />
                 });
@@ -346,7 +322,7 @@ export function ToolNavbar() {
           </Stack>
         </Box>
         <Box className={classes.section}>
-          <Stack align="center" gap={0}>
+          <Stack sx={{ alignItems: 'center' }}>
             <NavbarLink
               icon={IconPrinter}
               label="Save plan image"

@@ -1,5 +1,5 @@
 import { Container, DestroyOptions } from 'pixi.js';
-import { notifications } from '@mantine/notifications';
+import { notify } from '../../../vendor/accurona-ui';
 import { useFloorPlanStore } from '../../../stores/FloorPlanStore';
 import { rendererHolder } from '../../EditorRoot';
 
@@ -43,20 +43,20 @@ export class FloorPlan extends Container {
     // this scene's GPU resources). extract.canvas sizes itself to the bounds.
     const renderer = rendererHolder.current;
     if (!renderer) {
-      notifications.show({
+      notify({
         title: 'Export failed',
         message: 'Editor is not ready.',
-        color: 'red'
+        severity: 'error'
       });
       return;
     }
     const canvas = renderer.extract.canvas(this) as HTMLCanvasElement;
     canvas.toBlob((blob) => {
       if (!blob) {
-        notifications.show({
+        notify({
           title: 'Export failed',
           message: 'Could not generate plan image.',
-          color: 'red'
+          severity: 'error'
         });
         return;
       }

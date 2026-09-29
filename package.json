@@ -7,9 +7,9 @@
     "node": ">=22.12"
   },
   "dependencies": {
-    "@mantine/core": "^9.3.2",
-    "@mantine/hooks": "^9.3.2",
-    "@mantine/notifications": "^9.3.2",
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
+    "@mui/material": "^9.4.0",
     "@tabler/icons-react": "^3.44.0",
     "file-saver": "^2.0.5",
     "pixi-viewport": "^6.0.3",

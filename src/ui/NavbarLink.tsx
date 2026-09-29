@@ -1,16 +1,15 @@
 import { type Icon as TablerIcon } from '@tabler/icons-react';
-
-import { Tooltip, UnstyledButton } from '@mantine/core';
-import classes from './NavbarLink.module.css';
+import { ToolButton } from '../vendor/accurona-ui';
 
 interface NavbarLinkProps {
   icon: TablerIcon;
-  label?: string;
+  label: string;
   active?: boolean;
   disabled?: boolean;
   onClick?(): void;
 }
 
+// One tool on the left toolbar: Accurona's shared ToolButton.
 export function NavbarLink({
   icon: Icon,
   label,
@@ -19,20 +18,13 @@ export function NavbarLink({
   onClick
 }: NavbarLinkProps) {
   return (
-    <Tooltip
-      label={label}
-      position="right"
-      withArrow
-      transitionProps={{ duration: 0 }}
-    >
-      <UnstyledButton
-        onClick={onClick}
-        disabled={disabled}
-        aria-label={label}
-        className={`${classes.link}${active ? ` ${classes.active}` : ''}`}
-      >
-        <Icon />
-      </UnstyledButton>
-    </Tooltip>
+    <ToolButton
+      name={label}
+      icon={<Icon />}
+      isActive={active}
+      disabled={disabled}
+      onClick={onClick}
+      tooltipPosition="right"
+    />
   );
 }

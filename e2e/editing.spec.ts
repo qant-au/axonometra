@@ -186,7 +186,7 @@ test('the help panel has a named close button and closes on Escape', async ({
   page
 }) => {
   await start(page);
-  const help = page.locator('.mantine-Dialog-root');
+  const help = page.getByRole('dialog', { name: /^Help:/ });
   const close = help.getByRole('button', { name: 'Close' });
   await page.getByRole('button', { name: 'Help' }).click();
   await expect(close).toBeVisible();
