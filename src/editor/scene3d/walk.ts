@@ -225,7 +225,7 @@ export function canChangeFloor(p: Point, stairs: Point[][]): boolean {
 }
 
 /**
- * Where to stand after changing floor from `from`: on the new floor's
+ * Where to stand after changing floor from `from`: beside the new floor's
  * stairs if it has some (the nearest set), else the same spot if there is
  * room, else the new floor's start point.
  */
@@ -243,7 +243,8 @@ export function arrival(
         Math.hypot(a.x - from.x, a.y - from.y) -
         Math.hypot(b.x - from.x, b.y - from.y)
     );
-    return nearestFree(centres[0], blocks, radius);
+    // Beside the stairs, not inside their model.
+    return nearestFree(centres[0], [...blocks, ...stairs], radius);
   }
   if (canStand(from, blocks, radius)) return from;
   return startPoint(geometry, blocks, radius);

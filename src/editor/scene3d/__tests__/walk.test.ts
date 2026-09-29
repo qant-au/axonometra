@@ -108,11 +108,14 @@ describe('changing floor', () => {
     expect(canChangeFloor({ x: 340, y: 100 }, marked)).toBe(true);
   });
 
-  it('arrives at the stairs on the new floor', () => {
+  it('arrives beside the stairs on the new floor, not inside them', () => {
     const { floor, geometry, blocks } = room([stairs]);
-    const p = arrival({ x: 50, y: 250 }, stairsOn(floor), geometry, blocks);
-    expect(Math.hypot(p.x - 350, p.y - 100)).toBeLessThan(60);
+    const marked = stairsOn(floor);
+    const p = arrival({ x: 50, y: 250 }, marked, geometry, blocks);
     expect(canStand(p, blocks)).toBe(true);
+    // Clear of the stairs' footprint, yet close enough to go back.
+    expect(canStand(p, marked)).toBe(true);
+    expect(canChangeFloor(p, marked)).toBe(true);
   });
 
   it('keeps its spot on a floor without stairs when there is room', () => {

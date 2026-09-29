@@ -34,8 +34,16 @@ export interface WalkOptions {
 }
 
 export interface Walk {
-  /** put the walker on a floor: its obstacles, height and where to stand */
-  place: (blocks: Obstacle[], elevation: number, pos: Point) => void;
+  /**
+   * Put the walker on a floor: its obstacles, height and where to stand.
+   * With `yaw`, also face that way and look level.
+   */
+  place: (
+    blocks: Obstacle[],
+    elevation: number,
+    pos: Point,
+    yaw?: number
+  ) => void;
   tick: (seconds: number) => void;
   turn: (angle: number) => void;
   /** move `distance` forward (negative: back), sliding along walls */
@@ -167,10 +175,14 @@ export function createWalk(options: WalkOptions): Walk {
   canvas.addEventListener('pointercancel', onPointerUp);
 
   return {
-    place(nextBlocks, nextElevation, at) {
+    place(nextBlocks, nextElevation, at, facing) {
       blocks = nextBlocks;
       elevation = nextElevation;
       pos = at;
+      if (facing != null) {
+        yaw = facing;
+        pitch = 0;
+      }
       apply();
     },
     tick(seconds) {

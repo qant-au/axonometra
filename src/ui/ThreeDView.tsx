@@ -12,6 +12,8 @@ import {
 import {
   IconArrowUp,
   IconDownload,
+  IconFileDownload,
+  IconPhotoDown,
   IconFocusCentered,
   IconRotate2,
   IconRotateClockwise2,
@@ -31,6 +33,7 @@ import {
   Vector3,
   WebGLRenderer
 } from 'three';
+import { useMediaQuery } from '@mantine/hooks';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import saveAs from 'file-saver';
 import { timestamp } from '../editor/editor/actions/SaveAction';
@@ -102,6 +105,7 @@ export function ThreeDView({ opened, onClose }: Props) {
     () => !!window.matchMedia?.('(pointer: coarse)').matches
   );
   const [teleport, setTeleport] = useState(reduceMotion);
+  const narrow = useMediaQuery('(max-width: 48em)') ?? false;
   const walk = useRef<Walk | null>(null);
   // Where the walker should stand when its floor changes; null starts afresh.
   const arriveAt = useRef<Point | null>(null);
@@ -379,7 +383,8 @@ export function ThreeDView({ opened, onClose }: Props) {
       walk.current.place(
         walkWorld.blocks,
         walkWorld.elevation,
-        startPoint(walkWorld.geometry, walkWorld.blocks)
+        startPoint(walkWorld.geometry, walkWorld.blocks),
+        0
       );
       return;
     }
@@ -524,22 +529,44 @@ export function ThreeDView({ opened, onClose }: Props) {
               onChange={(e) => setAllFloors(e.currentTarget.checked)}
             />
           )}
-          <Button
-            variant="default"
-            leftSection={<IconDownload size={18} />}
-            onClick={savePng}
-            disabled={empty || noWebGl}
-          >
-            Save image
-          </Button>
-          <Button
-            variant="default"
-            leftSection={<IconDownload size={18} />}
-            onClick={() => void saveModel()}
-            disabled={empty}
-          >
-            Save 3D model
-          </Button>
+          {narrow ? (
+            // Icons on a phone, so the toolbar leaves room for the view.
+            <Group gap="xs">
+              <ViewButton
+                name="Save image"
+                onClick={savePng}
+                disabled={empty || noWebGl}
+              >
+                <IconPhotoDown />
+              </ViewButton>
+              <ViewButton
+                name="Save 3D model"
+                onClick={() => void saveModel()}
+                disabled={empty}
+              >
+                <IconFileDownload />
+              </ViewButton>
+            </Group>
+          ) : (
+            <>
+              <Button
+                variant="default"
+                leftSection={<IconDownload size={18} />}
+                onClick={savePng}
+                disabled={empty || noWebGl}
+              >
+                Save image
+              </Button>
+              <Button
+                variant="default"
+                leftSection={<IconDownload size={18} />}
+                onClick={() => void saveModel()}
+                disabled={empty}
+              >
+                Save 3D model
+              </Button>
+            </>
+          )}
         </Group>
       </Group>
       {empty ? (
@@ -561,13 +588,17 @@ export function ThreeDView({ opened, onClose }: Props) {
             {!walking
               ? 'Drag to turn, right-drag or arrow keys to move, scroll to zoom.'
               : teleport
-                ? 'Drag to look, click the floor to go there, arrow keys to step and turn.'
+                ? coarse
+                  ? 'Drag to look, tap the floor to go there.'
+                  : 'Drag to look, click the floor to go there, arrow keys to step and turn.'
                 : coarse
                   ? 'Drag to look, use the stick to walk.'
                   : 'Drag to look, W A S D or arrow keys to walk, Q and E to turn.'}
             {walking &&
               plan.floors.length > 1 &&
-              ' Page Up and Page Down change floor at the stairs.'}
+              (coarse
+                ? ' Use the stair buttons at the stairs to change floor.'
+                : ' Page Up and Page Down change floor at the stairs.')}
           </Text>
           {walking && (
             <Text size="sm" aria-live="polite">
