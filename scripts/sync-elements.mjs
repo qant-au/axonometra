@@ -3,8 +3,9 @@
 //   node scripts/sync-elements.mjs [path-to-accurona-checkout]
 //
 // Copies dist/manifest.json, dist/models.json and dist/plan/*.svg into
-// src/res/catalog/elements/, and the shared UI (packages/ui/dist/) into
-// src/vendor/accurona-ui/, and records the source commit in each.
+// src/res/catalog/elements/, the shared UI (packages/ui/dist/) into
+// src/vendor/accurona-ui/ and the shared core (packages/core/dist/) into
+// src/vendor/accurona-core/, and records the source commit in each.
 // Defaults to ../accurona next to this repo.
 // Run `npm run build` in the accurona checkout first.
 import { execFileSync } from 'node:child_process';
@@ -17,14 +18,18 @@ const dist = resolve(source, 'dist');
 const target = resolve(root, 'src/res/catalog/elements');
 const uiDist = resolve(source, 'packages/ui/dist');
 const uiTarget = resolve(root, 'src/vendor/accurona-ui');
+const coreDist = resolve(source, 'packages/core/dist');
+const coreTarget = resolve(root, 'src/vendor/accurona-core');
 
 if (!existsSync(resolve(dist, 'manifest.json'))) {
   console.error(`No ${dist}/manifest.json. Run \`npm run build\` in ${source}.`);
   process.exit(1);
 }
-if (!existsSync(resolve(uiDist, 'index.js'))) {
-  console.error(`No ${uiDist}/index.js. Run \`npm run build\` in ${source}.`);
-  process.exit(1);
+for (const dir of [uiDist, coreDist]) {
+  if (!existsSync(resolve(dir, 'index.js'))) {
+    console.error(`No ${dir}/index.js. Run \`npm run build\` in ${source}.`);
+    process.exit(1);
+  }
 }
 
 const commit = execFileSync('git', ['-C', source, 'rev-parse', '--short', 'HEAD'], { encoding: 'utf8' }).trim();
@@ -45,4 +50,10 @@ writeFileSync(
   resolve(uiTarget, 'SOURCE.md'),
   `# Vendored shared UI\n\n\`@accurona/ui\`, built by [qant-au/accurona](https://github.com/qant-au/accurona) at \`${commit}\`${dirty ? ' (with uncommitted changes)' : ''}.\nDo not edit these files: change packages/ui in that repo and re-run\n\`node scripts/sync-elements.mjs\`.\n`
 );
-console.log(`Synced elements @ ${commit}${dirty ? '+dirty' : ''} → src/res/catalog/elements/ and src/vendor/accurona-ui/`);
+rmSync(coreTarget, { recursive: true, force: true });
+cpSync(coreDist, coreTarget, { recursive: true });
+writeFileSync(
+  resolve(coreTarget, 'SOURCE.md'),
+  `# Vendored shared core\n\n\`@accurona/core\`, built by [qant-au/accurona](https://github.com/qant-au/accurona) at \`${commit}\`${dirty ? ' (with uncommitted changes)' : ''}.\nDo not edit these files: change packages/core in that repo and re-run\n\`node scripts/sync-elements.mjs\`.\n`
+);
+console.log(`Synced elements @ ${commit}${dirty ? '+dirty' : ''} → src/res/catalog/elements/, src/vendor/accurona-ui/ and src/vendor/accurona-core/`);
