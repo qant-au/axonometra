@@ -3,6 +3,7 @@ export { AppDialog } from './AppDialog.js';
 export { CloseButton } from './CloseButton.js';
 export { ContextMenu, type ContextMenuItem } from './ContextMenu.js';
 export { FloatingPanel } from './FloatingPanel.js';
+export { KeyboardShortcutsDialog, type KeyboardShortcutDifference, type KeyboardShortcutSection } from './KeyboardShortcutsDialog.js';
 export { NotificationHost } from './NotificationHost.js';
 export { clearNotifications, dismissNotification, getNotifications, notify, subscribeNotifications, type Notification, type NotifyOptions, type Severity } from './notifications.js';
 export { Panel, PanelHeader, PanelSection } from './Panel.js';
