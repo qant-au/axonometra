@@ -93,17 +93,6 @@ deleting a wall point that still has walls attached. Doors and windows move with
 wall and cannot be picked up on their own. Resizing and rotating furniture still needs
 the pointer.
 
-## Roadmap
-
-Planned, roughly in order:
-
-- **Rack elevations.** Server racks drawn front-on, to scale, alongside the floor plan.
-- **More IT and security equipment** in the element library.
-- **Shared keyboard shortcuts** with Reticulyne, so moving between the two tools needs
-  no relearning.
-- **Linking to Reticulyne.** A device placed on a floor plan linked to its node in a
-  network diagram.
-
 ## A sibling project: Reticulyne
 
 Axonometra has a sibling, [Reticulyne](https://github.com/qant-au/reticulyne), an
