@@ -1,5 +1,5 @@
 import { Button, Stack, TextField } from '@mui/material';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { WALL_THICKNESS } from '../editor/editor/constants';
 import { transact } from '../editor/editor/history';
 import { resizeAboutMidpoint } from '../editor/editor/keyboardHit';
@@ -22,6 +22,10 @@ function LengthForm({ wall }: { wall: Wall }) {
   // Accepts any unit ('2.7 m', '270 cm', 8'10"); a bare number is in `units`.
   const length = parsePlanLength(value);
   const valid = length !== null && length > 0;
+  // autoFocus alone loses the input in development: StrictMode re-runs MUI's
+  // focus trap, which hands focus back to the canvas and then to the dialog.
+  const inputRef = useRef<HTMLInputElement>(null);
+  useEffect(() => inputRef.current?.focus(), []);
 
   const apply = () => {
     if (!valid) return;
@@ -59,6 +63,7 @@ function LengthForm({ wall }: { wall: Wall }) {
             }
           }}
           autoFocus
+          inputRef={inputRef}
           error={!valid}
           helperText={valid ? undefined : 'Enter a length greater than 0'}
         />
