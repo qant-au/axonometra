@@ -218,4 +218,41 @@ describe('plan <-> scene', () => {
     near(rack.x + (rack.width * 100) / 2, 60);
     near(rack.y + (rack.height * 100) / 2, 90);
   });
+
+  it('keeps a wall exterior whichever way the scene runs it', () => {
+    const scene: Scene = {
+      format: 'accurona-scene',
+      version: 1,
+      id: 'room',
+      objects: [],
+      views: [
+        {
+          id: 'plan',
+          kind: 'plan',
+          name: 'Floor plan',
+          floors: [
+            {
+              id: 'g',
+              nodes: [
+                { id: 'n1', x: 0, y: 0 },
+                { id: 'n2', x: 4000, y: 0 },
+                { id: 'n3', x: 4000, y: 3000 }
+              ],
+              walls: [
+                { id: 'w1', from: 'n1', to: 'n2', exterior: true },
+                { id: 'w2', from: 'n3', to: 'n2', exterior: true }
+              ]
+            }
+          ]
+        }
+      ]
+    };
+    const [floor] = sceneToPlan(scene).plan.floors;
+    const links = new Map(floor.wallNodeLinks);
+    // Floor finds an exterior wall by its pair in the direction it is linked.
+    expect(floor.exteriorWalls).toHaveLength(2);
+    for (const [a, b] of floor.exteriorWalls!) {
+      expect(links.get(a)).toContain(b);
+    }
+  });
 });

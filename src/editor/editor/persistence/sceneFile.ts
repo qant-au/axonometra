@@ -323,7 +323,7 @@ export function sceneToPlan(scene: Scene): {
       const [lo, hi] = a < b ? [a, b] : [b, a];
       if (!links.has(lo)) links.set(lo, []);
       links.get(lo)!.push(hi);
-      if (wall.exterior) exterior.push([a, b]);
+      if (wall.exterior) exterior.push([lo, hi]);
       ctx.wallIds.set(pairKey(a, b), wall.id);
       frames.set(wall.id, {
         frame: wallFrame(nodes.get(a)!, nodes.get(b)!, !!wall.exterior),
