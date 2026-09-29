@@ -67,7 +67,12 @@ test.describe('keyboard canvas', () => {
     const live = page.locator('[aria-live="polite"]');
 
     await setTool(page, 0);
-    await canvas.focus();
+    // Only keyboard focus brings up the cursor (a mouse press into the plan
+    // must not), so reach the canvas with Tab, as a keyboard user does.
+    for (let i = 0; i < 40; i++) {
+      if (await canvas.evaluate((el) => el === document.activeElement)) break;
+      await page.keyboard.press('Tab');
+    }
     await expect(live).toContainText('Cursor at');
 
     // Two points 2 m apart make one wall; Escape ends the chain.

@@ -67,6 +67,9 @@ test('double-clicking a wall in Edit mode sets its length', async ({
   const before = await wall(page);
 
   await setTool(page, 1);
+  // Clicks within 200 ms are counted together: straight after the click that
+  // ended the wall, this double-click would count as a triple click.
+  await page.waitForTimeout(300);
   await page.mouse.dblclick(cx + 100, cy);
   const input = page.getByLabel('Length (mm)');
   await expect(input).toBeFocused();
