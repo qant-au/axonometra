@@ -17,6 +17,8 @@ module.exports = tseslint.config(
       'test-results/**',
       '.idea/**',
       'docker/**',
+      // Vendored from qant-au/accurona by scripts/sync-elements.mjs.
+      'src/vendor/**',
       // Root tooling configs are Node files, not app code — kept out of the
       // linted surface (`npm run lint` targets src/e2e). Covers js/cjs/mjs/ts/mts.
       '*.config.{js,cjs,mjs,ts,mts}'
