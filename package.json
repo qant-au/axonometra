@@ -27,7 +27,8 @@
     "LICENSE-APACHE"
   ],
   "sideEffects": [
-    "./dist-lib/index.mjs"
+    "./dist-lib/index.mjs",
+    "./src/zodConfig.ts"
   ],
   "publishConfig": {
     "access": "public"
