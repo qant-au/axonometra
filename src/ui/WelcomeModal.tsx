@@ -11,6 +11,7 @@ import AxonometraLogo from '../res/axonometra-logo.svg';
 import { useInstance } from '../editor/instance/context';
 import { readPlanFile } from '../helpers/readPlanFile';
 import { useStore } from '../stores/EditorStore';
+import { TOOLBAR_WIDTH } from '../editor/editor/constants';
 
 /** A dialog that leaves the notifications showing on a phone (Axonometra). */
 export const KEEPS_NOTIFICATIONS = 'axo-keeps-notifications';
@@ -127,7 +128,22 @@ export function WelcomeModal() {
             inside it, while it is open; the editor's own host steps aside.
             Only one host is ever rendered, so each notification is one
             element. */}
-        {opened && <NotificationHost notifier={inst.notifier} />}
+        {opened && (
+          // The editor's type sizes are in em and its host sits in body1
+          // type (ScopedCssBaseline); the dialog is portalled outside that,
+          // so it takes body1 here to draw notifications the same size, and
+          // keeps clear of the tool bar as the editor's host does.
+          <Box
+            sx={{
+              typography: 'body1',
+              '& > .MuiStack-root': {
+                maxWidth: `calc(100% - ${TOOLBAR_WIDTH + 32}px)`
+              }
+            }}
+          >
+            <NotificationHost notifier={inst.notifier} />
+          </Box>
+        )}
       </Dialog>
     </>
   );

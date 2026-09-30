@@ -92,10 +92,18 @@ test('a load from the welcome dialog that fails leaves it open', async ({
   await expect(
     welcome.getByRole('button', { name: /new plan/i })
   ).toBeVisible();
+  const fontSize = (text: RegExp | string) =>
+    page
+      .getByRole('alert')
+      .filter({ hasText: text })
+      .evaluate((el) => getComputedStyle(el).fontSize);
+  const inDialog = await fontSize('Load failed');
   // It can still start a new plan (which a closing dialog would ignore).
   await welcome.getByRole('button', { name: /new plan/i }).click();
   await expect(page.getByRole('button', { name: /new plan/i })).toHaveCount(0);
   await expect(page.getByText(/Welcome to Axonometra/)).toBeVisible();
+  // The dialog's notifications are the size of the editor's own.
+  expect(inDialog).toBe(await fontSize(/Welcome to Axonometra/));
 });
 
 // Re-sweep 4 2026-09-30: the same bad file loaded twice stacked two identical
@@ -222,6 +230,12 @@ test.describe('on a phone held upright', () => {
     await page.getByRole('button', { name: /load from local save/i }).click();
     await expect(page.getByRole('button', { name: /new plan/i })).toBeVisible();
     await expect(page.getByText('No autosave found')).toBeVisible();
+    // Clear of the tool bar, as the editor's notifications are.
+    const note = await page
+      .getByRole('alert')
+      .filter({ hasText: 'No autosave found' })
+      .boundingBox();
+    expect(note?.x).toBeGreaterThanOrEqual(70);
   });
 
   test('a load that failed can be closed over the welcome dialog', async ({
