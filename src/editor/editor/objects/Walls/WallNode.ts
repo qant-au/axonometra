@@ -44,8 +44,10 @@ export class WallNode extends Graphics {
     this.pivot.set(size / 2, size / 2);
   }
   private onMouseDown(ev: FederatedPointerEvent) {
-    // In View the press belongs to the viewport, so a drag pans from anywhere.
-    if (this.inst.editor.getState().activeTool === Tool.View) return;
+    // In View the press belongs to the viewport, so a drag pans from anywhere;
+    // with the Measure tool it starts a measurement there, wall or not.
+    const tool = this.inst.editor.getState().activeTool;
+    if (tool === Tool.View || tool === Tool.Measure) return;
     ev.stopPropagation();
     if (ev.button !== 0) return;
     switch (this.inst.editor.getState().activeTool) {

@@ -141,8 +141,10 @@ export class Furniture extends Sprite {
     this.orientation = number;
   }
   private onMouseDown(ev: FederatedPointerEvent) {
-    // In View the press belongs to the viewport, so a drag pans from anywhere.
-    if (this.inst.editor.getState().activeTool === Tool.View) return;
+    // In View the press belongs to the viewport, so a drag pans from anywhere;
+    // with the Measure tool it starts a measurement there, wall or not.
+    const tool = this.inst.editor.getState().activeTool;
+    if (tool === Tool.View || tool === Tool.Measure) return;
     ev.stopPropagation();
     if (ev.button == 1) {
       this.zIndex++;

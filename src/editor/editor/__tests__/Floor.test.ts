@@ -110,6 +110,28 @@ describe('Wall shown length', () => {
   });
 });
 
+describe('Measure tool', () => {
+  // A measurement dragged from a wall never started: the wall kept the
+  // press from the plan, which is what starts one (sweep 2026-09-30).
+  it('lets a press on a wall, a wall point or an item reach the plan', () => {
+    const inst = fakeInstance({
+      editor: { getState: () => ({ activeTool: 3, snap: false }) }
+    });
+    const floor = new Floor(inst, room());
+    const wall = floor.getWallNodeSequence().getWall(1, 2)!;
+    const targets = [wall, wall.leftNode];
+    for (const target of targets) {
+      const ev = {
+        button: 0,
+        stopPropagation: vi.fn(),
+        global: { x: 0, y: 0 }
+      };
+      target.emit('pointerdown', ev as never);
+      expect(ev.stopPropagation).not.toHaveBeenCalled();
+    }
+  });
+});
+
 describe('Floor room areas', () => {
   const labels = (floor: InstanceType<typeof Floor>) =>
     floor
