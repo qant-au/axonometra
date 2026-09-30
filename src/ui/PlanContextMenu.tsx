@@ -87,7 +87,8 @@ export function PlanContextMenu() {
       />
       {anchor && (
         <ContextMenu
-          position={{ x: menu.x, y: menu.y }}
+          // An offset from the anchor, which already sits at the click.
+          position={{ x: 0, y: 0 }}
           anchorEl={anchor}
           onClose={close}
           items={items}
