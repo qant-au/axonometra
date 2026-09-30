@@ -1,6 +1,82 @@
 # Embedding Axonometra
 
-Axonometra can be mounted inside another web app via an `<iframe>` and driven over `postMessage`. This document describes the wire protocol, the URL parameters, the origin allowlist, and the security headers.
+There are two ways to put Axonometra in another web app:
+
+- **As a React component**, `@axonometra/editor`, for a React app. The editor runs in
+  your page and you talk to it through props and a ref.
+- **In an `<iframe>`**, driven over `postMessage`, for any page, or when the editor
+  should run on its own origin. The rest of this document, from [Quick start](#quick-start),
+  describes that: the wire protocol, the URL parameters, the origin allowlist and the
+  security headers.
+
+## As a React component
+
+```bash
+npm install @axonometra/editor react react-dom @mui/material @emotion/react @emotion/styled
+```
+
+```tsx
+import { useRef } from 'react';
+import { Axonometra, type AxonometraApi } from '@axonometra/editor';
+
+export function Planner({ file }: { file?: string }) {
+  const editor = useRef<AxonometraApi>(null);
+  return (
+    <div style={{ height: '80vh' }}>
+      <Axonometra
+        ref={editor}
+        initialScene={file}
+        onSave={(sceneText) => {
+          upload(sceneText);
+          return 'Saved';
+        }}
+      />
+    </div>
+  );
+}
+```
+
+The editor fills its container, draws nothing outside it and keeps no state outside
+itself, so several can share a page: each has its own plan, undo history, selection,
+clipboard, shortcuts and notifications. React 19, MUI 9 and Emotion 11 are peer
+dependencies; Pixi.js, three.js and the rest are ordinary dependencies, installed once.
+
+### Props
+
+| Prop                             | Default                   |                                                                                                                                           |
+| -------------------------------- | ------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| `initialScene`                   | none                      | A scene (text or object), or a plan v1/v2 file, to open with.                                                                             |
+| `readOnly`                       | `false`                   | The hand tool only: no toolbar, no edits.                                                                                                 |
+| `showWelcome`                    | on without `initialScene` | The welcome box: New plan, Load from disk.                                                                                                |
+| `keyboardScope`                  | `'root'`                  | Where the shortcuts listen. `'root'`: while focus is inside the editor. `'document'`: the whole page, for a page that is only the editor. |
+| `themeMode`, `onThemeModeChange` | `'light'`                 | Light or dark. Alt+Shift+D switches it and calls `onThemeModeChange`.                                                                     |
+| `theme`                          | Accurona's theme          | Your MUI theme, used instead.                                                                                                             |
+| `onSave`                         | download the file         | Ctrl/Cmd+S. Receives the scene file's text; a returned string is the message shown.                                                       |
+| `loadSaved`                      | none                      | Adds Load from local save to the welcome box; returns the text to open.                                                                   |
+| `onChange`                       | none                      | Called after each edit, undo and redo, with the API.                                                                                      |
+| `className`, `style`             |                           | On the editor's outermost element.                                                                                                        |
+
+### The API (ref)
+
+`load(file)` opens a scene or a plan v1/v2 file; `getScene()` and `getSceneText()`
+return the plan as an [Accurona scene](https://github.com/qant-au/accurona/blob/main/docs/scene-format.md);
+`exportGlb()` resolves to the building as a glTF binary; `setUnits(units)`, `undo()`,
+`redo()` and `notify({ message })` do what they say. `debug` exposes the editor's
+internals for tests and is not a stable API.
+
+### Content-Security-Policy
+
+The package needs no `'unsafe-eval'` (it loads `pixi.js/unsafe-eval` for you). It needs
+`style-src 'unsafe-inline'`, for Emotion, and `img-src` to allow wherever your bundler
+puts images, plus `data:` if it inlines small ones. Images load through `<img>`, never
+`fetch()`, so `connect-src` can stay `'self'`.
+
+### Today's limits
+
+- Dialogs, menus, the help panel and notifications open over the page, not inside the
+  editor's box, as MUI's do by default.
+- The iframe protocol below is not part of the component; talk to the component through
+  its props and ref.
 
 > **Status:** load, request-save and ready since v0.2.0. Signed plan loads and session binding were added after v0.3.0; see [Signed plans](#signed-plans).
 
@@ -170,4 +246,4 @@ The editor cannot sign what it sends, because anything in the browser can be rea
 - Streaming edits (`axo:diff`). Host gets snapshots via `axo:save`.
 - Hot-reloading the allowlist without a redeploy.
 
-File a TODO entry against `axo-` if you need any of these.
+Open an issue if you need any of these.

@@ -25,8 +25,8 @@ between minor versions; each change is recorded in [CHANGELOG.md](CHANGELOG.md).
 - **3D view.** Orbit, or walk through in first person with collision and storey
   changes. Save an image, or export the whole building as a `.glb` (glTF) file for
   Blender and other 3D tools.
-- **Embeddable.** An iframe and `postMessage` contract for host applications; see
-  [EMBEDDING.md](EMBEDDING.md).
+- **Embeddable.** A React component, `@axonometra/editor`, or an iframe and
+  `postMessage` contract; see [EMBEDDING.md](EMBEDDING.md).
 - **Keyboard accessible.** The toolbar and the canvas can both be driven from the
   keyboard (see below).
 
@@ -39,7 +39,27 @@ npm install
 npm run dev
 ```
 
-To embed Axonometra in another application, see [EMBEDDING.md](EMBEDDING.md). Plans are
+### In your own React app
+
+```bash
+npm install @axonometra/editor react react-dom @mui/material @emotion/react @emotion/styled
+```
+
+```tsx
+import { Axonometra } from '@axonometra/editor';
+
+export function Planner() {
+  return (
+    <div style={{ height: 600 }}>
+      <Axonometra onSave={(scene) => save(scene)} />
+    </div>
+  );
+}
+```
+
+The editor fills the box you give it, and several can share a page. React, MUI and
+Emotion are peer dependencies, so your app provides one copy of each. The props, the
+ref API and the iframe alternative are in [EMBEDDING.md](EMBEDDING.md). Plans are
 saved as [Accurona scenes](https://github.com/qant-au/accurona/blob/main/docs/scene-format.md), the file format Axonometra shares with
 [Reticulyne](https://github.com/qant-au/reticulyne). Files in the plan format Axonometra
 used before ([PLAN-FORMAT.md](PLAN-FORMAT.md)) still open, and save as scenes.
@@ -48,7 +68,8 @@ used before ([PLAN-FORMAT.md](PLAN-FORMAT.md)) still open, and save as scenes.
 
 ### Saving and loading
 
-- **Ctrl+S** (Cmd+S on macOS) saves the current plan to your browser's local storage.
+- **Ctrl+S** (Cmd+S on macOS) saves the current plan to your browser's local storage
+  (in the app; a host app decides with `onSave`).
 - The toolbar **Save** button downloads the plan as an `axonometra-plan-*.json` file, an
   Accurona scene. A scene opened from a file keeps everything Axonometra does not draw
   (Reticulyne's diagrams of the same devices, their properties and connections) when it is
@@ -79,7 +100,7 @@ WebGL, and three.js is only downloaded the first time the view is opened.
 
 ### Shortcuts
 
-Axonometra binds the shared linework keymap, the same one
+Axonometra binds the shared [Accurona](https://github.com/qant-au/accurona) keymap, the same one
 [Reticulyne](https://github.com/qant-au/reticulyne) binds, aligned with
 [Excalidraw](https://github.com/excalidraw/excalidraw): someone coming from either should
 not have to retrain. Press **?** (or the toolbar's **Keyboard shortcuts** button) for the
