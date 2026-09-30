@@ -215,8 +215,9 @@ export function Axonometra({
               dialogs (a snackbar's z-index drew them over one on a phone),
               though still over the side panels. On a phone a dialog is
               narrower than the screen and a notification showed at its
-              side, so there they hide while one is open; the welcome
-              dialog keeps them, as it reports a load that failed. */}
+              side, so there they hide while one is open, the non-modal
+              Help panel included; the welcome dialog keeps them, as it
+              reports a load that failed. */}
           <Box
             sx={(theme) => ({
               '& > .MuiStack-root': {
@@ -226,7 +227,7 @@ export function Axonometra({
                 zIndex: theme.zIndex.modal - 1
               },
               [theme.breakpoints.down('sm')]: {
-                [`body:has(.MuiDialog-root:not(.${KEEPS_NOTIFICATIONS})) & > .MuiStack-root`]:
+                [`body:has(.MuiDialog-root:not(.${KEEPS_NOTIFICATIONS}), [role="dialog"]:not(.MuiModal-root *)) & > .MuiStack-root`]:
                   { visibility: 'hidden' }
               }
             })}

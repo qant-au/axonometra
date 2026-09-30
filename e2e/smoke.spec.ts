@@ -111,6 +111,25 @@ test.describe('on a phone held upright', () => {
     await expect(note).toBeVisible();
   });
 
+  // Re-sweep 3 2026-09-30: the Help panel is not modal, and the welcome note
+  // stayed visible and clickable under it on a phone.
+  test('the welcome note hides under the Help panel', async ({ page }) => {
+    await page.goto('/');
+    await page.getByRole('button', { name: /new plan/i }).click();
+    // A CSS locator: a hidden note leaves the accessibility tree.
+    const note = page.locator('[role=alert]');
+    await expect(note).toBeVisible();
+    await page.getByRole('button', { name: 'Help', exact: true }).click();
+    const help = page.getByRole('dialog', { name: /^Help: / });
+    await expect(help).toBeVisible();
+    // Hidden, not dismissed: the note times out by itself, which a plain
+    // toBeHidden would also accept.
+    await expect(note).toHaveCSS('visibility', 'hidden');
+    await help.getByRole('button', { name: 'Close' }).click();
+    await expect(help).toHaveCount(0);
+    await expect(note).toHaveCSS('visibility', 'visible');
+  });
+
   test('the welcome dialog still shows a load that failed', async ({
     page
   }) => {
