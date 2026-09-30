@@ -80,3 +80,18 @@ describe('AddWallManager.checkStep', () => {
     });
   });
 });
+
+describe('AddWallManager ending a chain', () => {
+  // The Wall drawing mode notification stayed up after Escape ended the
+  // chain (sweep 2026-09-30).
+  it('takes the drawing hint down', () => {
+    const dismissToolHint = vi.fn();
+    const m = new AddWallManager(fakeInstance({ dismissToolHint }));
+    m.unset();
+    expect(dismissToolHint).not.toHaveBeenCalled();
+    m.previousNode = {} as never;
+    m.unset();
+    expect(dismissToolHint).toHaveBeenCalledOnce();
+    expect(m.previousNode).toBeUndefined();
+  });
+});

@@ -222,3 +222,18 @@ test('paste steps each copy off the last; a cut pastes back where it was', async
   await page.keyboard.press('ControlOrMeta+v');
   expect(await planState(page)).toEqual(before);
 });
+
+test('the wall drawing hint goes when Escape ends the chain', async ({
+  page
+}) => {
+  await start(page);
+  await addMenu(page, 'Draw wall');
+  await expect(page.getByText(/Wall drawing mode/)).toBeVisible();
+  await page.keyboard.press('Escape');
+  const { cx, cy } = await canvasCentre(page);
+  await page.mouse.click(cx, cy);
+  await page.waitForTimeout(300);
+  await page.mouse.click(cx + 200, cy);
+  await page.keyboard.press('Escape');
+  await expect(page.getByText(/Wall drawing mode/)).toHaveCount(0);
+});

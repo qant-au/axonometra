@@ -163,8 +163,7 @@ function AddMenu() {
             divider: true,
             onClick: () => {
               setTool(Tool.WallAdd);
-              inst.notifier.clear();
-              inst.notify({
+              inst.showToolHint({
                 title: '✏️ Wall drawing mode',
                 message:
                   'Click to draw walls. Double click on wall node to end sequence.',

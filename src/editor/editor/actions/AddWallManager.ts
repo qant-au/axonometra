@@ -58,8 +58,7 @@ export class AddWallManager {
 
     // double click. end chain
     if (this.previousNode.getId() === node.getId()) {
-      this.previousNode = undefined;
-      this.preview.set(undefined);
+      this.unset();
       return;
     }
 
@@ -76,9 +75,12 @@ export class AddWallManager {
   public updatePreview(ev: FederatedPointerEvent) {
     this.preview.updatePreview(ev, true);
   }
+  /** Ends the chain being drawn, and with it the drawing hint. */
   public unset() {
+    const ending = this.previousNode !== undefined;
     this.previousNode = undefined;
     this.preview.set(undefined);
+    if (ending) this.inst.dismissToolHint();
   }
   public resetTools() {
     this.inst.transformLayer.deselect();

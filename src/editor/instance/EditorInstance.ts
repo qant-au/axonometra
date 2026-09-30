@@ -141,6 +141,21 @@ export class EditorInstance {
     return (this.wallManager ??= new AddWallManager(this));
   }
 
+  /** The hint shown for the current tool, if one is up. */
+  private toolHint: number | undefined;
+
+  /** Shows the hint for a tool, in place of every other notification. */
+  showToolHint(options: NotifyOptions) {
+    this.notifier.clear();
+    this.toolHint = this.notifier.notify(options);
+  }
+
+  /** Takes the tool's hint down, when what it describes is over. */
+  dismissToolHint() {
+    if (this.toolHint !== undefined) this.notifier.dismiss(this.toolHint);
+    this.toolHint = undefined;
+  }
+
   /** A plan was loaded before the canvas was ready; frame it on setup. */
   frameOnSetup = false;
 
