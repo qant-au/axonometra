@@ -246,7 +246,9 @@ export function ToolNavbar() {
   };
 
   return (
-    <Box sx={{ position: 'absolute', top: 0, left: 0, bottom: 0 }}>
+    // Above the canvas: in dark mode its filter makes it a stacking context,
+    // which paints over an earlier positioned sibling with no z-index.
+    <Box sx={{ position: 'absolute', top: 0, left: 0, bottom: 0, zIndex: 1 }}>
       <Box sx={navbar}>
         <Box sx={{ flexGrow: 1 }}>
           <Stack sx={{ alignItems: 'center' }}>
