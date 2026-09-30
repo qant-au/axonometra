@@ -7,6 +7,14 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: ['./src/test/setup.ts'],
     // e2e/ is Playwright territory; vitest must not pick up its specs.
-    exclude: ['node_modules', 'dist', 'build', 'e2e', 'playwright-out']
+    exclude: [
+      'node_modules',
+      'dist',
+      'dist-lib',
+      'build',
+      'e2e',
+      'playwright-out',
+      '.consumer'
+    ]
   }
 });

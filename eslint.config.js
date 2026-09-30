@@ -10,7 +10,11 @@ module.exports = tseslint.config(
   {
     ignores: [
       'dist/**',
+      'dist-lib/**',
       'build/**',
+      // The package's consumer app (scripts/verify-consumer.mjs) and its build.
+      'e2e/fixtures/**',
+      '.consumer/**',
       'node_modules/**',
       'playwright-out/**',
       'playwright-report/**',

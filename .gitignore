@@ -45,3 +45,7 @@ scout-out/
 CLAUDE.md
 .claude/
 
+
+# library build
+/dist-lib
+/.consumer
