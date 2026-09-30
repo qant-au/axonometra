@@ -4,6 +4,7 @@ import {
   Point,
   findRooms,
   floorGeometry,
+  labelPoint,
   signedArea,
   wallOutlines,
   wallPieces
@@ -315,5 +316,28 @@ describe('floorInput (from a saved floor)', () => {
     ];
     const [o] = floorInput(floor, 0).openings;
     expect([o.start, o.end, o.sill, o.height]).toEqual([100, 190, 0, 240]);
+  });
+});
+
+describe('labelPoint', () => {
+  it('is the centroid of a rectangular room', () => {
+    near(labelPoint(findRooms(room, roomWalls)[0].polygon), 200, 150);
+  });
+
+  it('stays inside an L-shaped room whose centroid falls outside', () => {
+    // A thin L: 1000 wide along the top and down the left, 100 thick.
+    const poly: Point[] = [
+      { x: 0, y: 0 },
+      { x: 0, y: 1000 },
+      { x: 100, y: 1000 },
+      { x: 100, y: 100 },
+      { x: 1000, y: 100 },
+      { x: 1000, y: 0 }
+    ];
+    const p = labelPoint(poly);
+    const inside = (p.x < 100 && p.y < 1000) || (p.y < 100 && p.x < 1000);
+    expect(p.x).toBeGreaterThan(0);
+    expect(p.y).toBeGreaterThan(0);
+    expect(inside).toBe(true);
   });
 });

@@ -12,6 +12,7 @@ Expect breaking changes between minor versions until v1.0.0.
 ### Added
 
 - **Crossover with the network diagram.** A device in a Reticulyne diagram and an item on the floor plan are one scene object, linked by its id. The add panel lists, under "From the network diagram", the devices a diagram has that the plan does not (those with an Accurona element); placing one keeps its id, so the plan item and the diagram node stay one object, name, props and links included. The right-click menu on such an item names the diagrams it is in.
+- **Room areas on the 2D plan.** Each enclosed room shows its floor area in its middle: square metres (one decimal) for metric display units, square feet for imperial. The rooms are the ones the 3D view lays floor slabs on, measured to wall centre lines. They hide and show with the wall length labels.
 
 ### Fixed
 

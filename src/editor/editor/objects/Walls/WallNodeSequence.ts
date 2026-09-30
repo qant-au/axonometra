@@ -1,6 +1,7 @@
 import type { EditorInstance } from '../../../instance/EditorInstance';
 import { Container } from 'pixi.js';
 import { INodeSerializable } from '../../persistence/INodeSerializable';
+import { RoomLabels } from './RoomLabels';
 import { Wall } from './Wall';
 import { WallNode } from './WallNode';
 
@@ -8,10 +9,14 @@ export class WallNodeSequence extends Container {
   private wallNodes: Map<number, WallNode>;
   private wallNodeLinks: Map<number, number[]>;
   private walls: Wall[];
+  public readonly roomLabels: RoomLabels;
   constructor(private readonly inst: EditorInstance) {
     super();
     this.sortableChildren = true;
     this.walls = [];
+    this.roomLabels = new RoomLabels(this.inst);
+    this.roomLabels.zIndex = 997;
+    this.addChild(this.roomLabels);
     this.wallNodes = new Map<number, WallNode>();
     this.wallNodeLinks = new Map<number, number[]>();
     this.drawWalls();
@@ -170,6 +175,7 @@ export class WallNodeSequence extends Container {
     if (toBeRemoved != -1) {
       this.removeChild(this.walls[toBeRemoved]);
       this.walls.splice(toBeRemoved, 1);
+      this.roomLabels.update(this.wallNodes, this.walls);
     }
   }
 
@@ -194,5 +200,6 @@ export class WallNodeSequence extends Container {
     this.walls.forEach((wall) => {
       wall.drawLine();
     });
+    this.roomLabels.update(this.wallNodes, this.walls);
   }
 }

@@ -97,6 +97,60 @@ export function signedArea(poly: Point[]): number {
   return sum / 2;
 }
 
+/** Whether p lies inside the polygon (even-odd rule). */
+function contains(poly: Point[], p: Point): boolean {
+  let inside = false;
+  for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+    const a = poly[i];
+    const b = poly[j];
+    if (
+      a.y > p.y !== b.y > p.y &&
+      p.x < ((b.x - a.x) * (p.y - a.y)) / (b.y - a.y) + a.x
+    )
+      inside = !inside;
+  }
+  return inside;
+}
+
+/**
+ * Where to write a room's label: its centroid, or, when that falls outside
+ * (an L-shaped room), the middle of the widest stretch of room on the
+ * centroid's horizontal line.
+ */
+export function labelPoint(poly: Point[]): Point {
+  const area = signedArea(poly);
+  let cx = 0;
+  let cy = 0;
+  for (let i = 0; i < poly.length; i++) {
+    const p = poly[i];
+    const q = poly[(i + 1) % poly.length];
+    const c = cross(p, q);
+    cx += (p.x + q.x) * c;
+    cy += (p.y + q.y) * c;
+  }
+  const centroid = { x: cx / (6 * area), y: cy / (6 * area) };
+  if (contains(poly, centroid)) return centroid;
+
+  const y = centroid.y;
+  const xs: number[] = [];
+  for (let i = 0; i < poly.length; i++) {
+    const a = poly[i];
+    const b = poly[(i + 1) % poly.length];
+    if (a.y > y !== b.y > y)
+      xs.push(a.x + ((y - a.y) * (b.x - a.x)) / (b.y - a.y));
+  }
+  xs.sort((m, n) => m - n);
+  let best = centroid;
+  let widest = -1;
+  for (let i = 0; i + 1 < xs.length; i += 2) {
+    if (xs[i + 1] - xs[i] > widest) {
+      widest = xs[i + 1] - xs[i];
+      best = { x: (xs[i] + xs[i + 1]) / 2, y };
+    }
+  }
+  return best;
+}
+
 interface End {
   wall: GraphWall;
   /** unit direction from this node along the wall */

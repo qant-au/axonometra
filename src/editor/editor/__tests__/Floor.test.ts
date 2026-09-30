@@ -96,3 +96,28 @@ describe('Floor plan format v2', () => {
     expect(saved.furnitureArray[0]).toMatchObject({ heightM: 2, mountM: 0 });
   });
 });
+
+describe('Floor room areas', () => {
+  const labels = (floor: InstanceType<typeof Floor>) =>
+    floor
+      .getWallNodeSequence()
+      .roomLabels.children.map((t) => (t as unknown as { text: string }).text);
+
+  it("writes each room's area on the plan", () => {
+    // fakeInstance formats an area as its plan-unit number.
+    expect(labels(new Floor(fakeInstance(), room()))).toEqual(['120000']);
+  });
+
+  it('drops the label when a wall is removed and the room opens up', () => {
+    const floor = new Floor(fakeInstance(), room());
+    const wall = floor.getWallNodeSequence().getWall(1, 2)!;
+    floor.removeWall(wall);
+    expect(labels(floor)).toEqual([]);
+  });
+
+  it('hides room areas with the other labels', () => {
+    const floor = new Floor(fakeInstance(), room());
+    floor.setLabelVisibility(false);
+    expect(floor.getWallNodeSequence().roomLabels.visible).toBe(false);
+  });
+});

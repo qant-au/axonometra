@@ -108,6 +108,7 @@ export class Floor extends Container {
     for (const wall of this.wallNodeSequence.getWalls()) {
       wall.lengthLabel.visible = value;
     }
+    this.wallNodeSequence.roomLabels.visible = value;
   }
   public getFurniture() {
     return this.furnitureArray;

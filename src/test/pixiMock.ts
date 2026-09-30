@@ -55,6 +55,19 @@ class ContainerMock extends EventEmitterMock {
   width = 0;
   height = 0;
   destroyed = false;
+  // As in Pixi, x and y are position.x and position.y.
+  get x() {
+    return this.position.x;
+  }
+  set x(value: number) {
+    this.position.x = value;
+  }
+  get y() {
+    return this.position.y;
+  }
+  set y(value: number) {
+    this.position.y = value;
+  }
 
   addChild<T extends ContainerMock>(child: T): T {
     this.children.push(child);
@@ -123,6 +136,7 @@ class TextMock {
   constructor(opts?: { text?: string; style?: unknown } | string) {
     this.text = typeof opts === 'string' ? opts : (opts?.text ?? '');
   }
+  destroy(_opts?: unknown) {}
 }
 
 class TextStyleMock {

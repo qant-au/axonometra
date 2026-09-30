@@ -25,7 +25,7 @@ import {
   type HistoryStore
 } from '../../stores/HistoryStore';
 import { createUnitsStore, type UnitsStore } from '../../stores/UnitsStore';
-import { mmToPlan, planToMm } from '../../helpers/planLength';
+import { formatArea, mmToPlan, planToMm } from '../../helpers/planLength';
 import { snap } from '../../helpers/ViewportCoordinates';
 import { AddWallManager } from '../editor/actions/AddWallManager';
 import { createEditHistory, type EditHistory } from '../editor/history';
@@ -178,6 +178,11 @@ export class EditorInstance {
   /** A plan length in the display units, e.g. '2.7 m'. */
   formatLength(length: number, options?: { suffix?: boolean }): string {
     return formatLength(planToMm(length), this.units.getState().units, options);
+  }
+
+  /** A plan area in the display units' system, e.g. '12.5 m²' or '135 ft²'. */
+  formatArea(area: number): string {
+    return formatArea(area, this.units.getState().units);
   }
 
   /** Typed input in any unit (a bare number is in the display units), or null. */
