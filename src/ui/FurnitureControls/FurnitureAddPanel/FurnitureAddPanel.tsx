@@ -1,6 +1,7 @@
 import { Box, MenuItem, Select } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { FurnitureItem } from './FurnitureItem';
+import { DiagramObjects } from './DiagramObjects';
 import { useFurnitureStore } from '../../../stores/FurnitureStore';
 import { useInstance } from '../../../editor/instance/context';
 
@@ -30,6 +31,7 @@ export function FurnitureAddPanel() {
 
   return (
     <>
+      <DiagramObjects />
       <Select
         fullWidth
         size="small"

@@ -61,6 +61,19 @@ export interface FloorPlanStore {
 export function createFloorPlanStore(
   inst: EditorInstance
 ): StoreApi<FloorPlanStore> {
+  // A new item's id. An undo winds the counter back, so an id can be issued
+  // again for a different item: whatever scene object the old one was linked
+  // to (lw-055) must not carry over to it.
+  const nextFurnitureId = (
+    get: () => FloorPlanStore,
+    set: (partial: Partial<FloorPlanStore>) => void
+  ) => {
+    const furnitureId = get().furnitureId + 1;
+    set({ furnitureId });
+    inst.serializer?.forgetFurniture(furnitureId);
+    return furnitureId;
+  };
+
   return createStore<FloorPlanStore>()((set, get) => ({
     floors: [],
     currentFloor: 0,
@@ -152,8 +165,7 @@ export function createFloorPlanStore(
       attachedToLeft?: number,
       attachedToRight?: number
     ) => {
-      const furnitureId = get().furnitureId + 1;
-      set({ furnitureId });
+      const furnitureId = nextFurnitureId(get, set);
       get()
         .getCurrentFloor()
         .addFurniture(
@@ -176,19 +188,14 @@ export function createFloorPlanStore(
     },
 
     cloneFurniture: (source: Furniture) => {
-      const furnitureId = get().furnitureId + 1;
-      set({ furnitureId });
+      const furnitureId = nextFurnitureId(get, set);
       return get().getCurrentFloor().cloneFurniture(source, furnitureId);
     },
 
     cloneWall: (source: Wall) =>
       get()
         .getCurrentFloor()
-        .cloneWall(source, () => {
-          const furnitureId = get().furnitureId + 1;
-          set({ furnitureId });
-          return furnitureId;
-        }),
+        .cloneWall(source, () => nextFurnitureId(get, set)),
 
     removeFurniture: (id: number) => {
       get().getCurrentFloor().removeFurniture(id);

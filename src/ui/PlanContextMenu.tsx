@@ -4,6 +4,31 @@ import type { EditorInstance } from '../editor/instance/EditorInstance';
 import { useInstance } from '../editor/instance/context';
 import { useContextMenuStore } from '../editor/editor/selection/pointer';
 import type { SelectionRef } from '../editor/editor/selection/planOps';
+import { objectPlaces } from '../editor/editor/persistence/crossover';
+
+// lw-055: an item that is also a node in a network diagram says which ones.
+function diagramItems(
+  inst: EditorInstance,
+  furnitureId: number
+): ContextMenuItem[] {
+  const objectId = inst.serializer.objectIdOf(furnitureId);
+  if (!objectId) return [];
+  const diagrams = objectPlaces(inst.serializer.openedScene(), objectId)
+    .filter((place) => place.kind !== 'plan')
+    .map((place) => place.viewName);
+  if (!diagrams.length) return [];
+  return [
+    {
+      label: 'In the network diagram',
+      onClick: () =>
+        inst.notify({
+          title: 'In the network diagram',
+          message: diagrams.join(', '),
+          severity: 'info'
+        })
+    }
+  ];
+}
 
 function itemsFor(
   inst: EditorInstance,
@@ -60,7 +85,8 @@ function itemsFor(
     {
       label: 'Turn',
       onClick: () => transact(() => furniture.switchOrientation())
-    }
+    },
+    ...diagramItems(inst, ref.id)
   ];
 }
 

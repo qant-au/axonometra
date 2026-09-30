@@ -9,6 +9,14 @@ Expect breaking changes between minor versions until v1.0.0.
 
 ## [Unreleased]
 
+### Added
+
+- **Crossover with the network diagram.** A device in a Reticulyne diagram and an item on the floor plan are one scene object, linked by its id. The add panel lists, under "From the network diagram", the devices a diagram has that the plan does not (those with an Accurona element); placing one keeps its id, so the plan item and the diagram node stay one object, name, props and links included. The right-click menu on such an item names the diagrams it is in.
+
+### Fixed
+
+- An id reissued after an undo no longer takes over the scene object the undone item had.
+
 ## [0.4.0] - 2026-09-30
 
 ### Added
