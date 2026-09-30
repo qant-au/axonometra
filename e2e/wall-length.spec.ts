@@ -79,8 +79,9 @@ test('double-clicking a wall in Edit mode sets its length', async ({
   await expect(input).toHaveCount(0);
 
   const after = await wall(page);
-  // The label reads the drawn length less one 0.2 m wall thickness.
-  expect(after.length).toBeCloseTo(320, 5);
+  // The label reads the drawn length less the wall's own thickness: 16 cm
+  // for the interior wall drawn here.
+  expect(after.length).toBeCloseTo(316, 5);
   expect(after.mid.x).toBeCloseTo(before.mid.x, 5);
   expect(after.mid.y).toBeCloseTo(before.mid.y, 5);
 

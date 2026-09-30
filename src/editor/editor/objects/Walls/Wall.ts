@@ -137,12 +137,20 @@ export class Wall extends Graphics {
     this.leftNode.angle = theta;
     this.rightNode.angle = theta;
 
-    this.lengthLabel.update(this.length - WALL_THICKNESS);
+    this.lengthLabel.update(this.shownLength());
     this.lengthLabel.position.x = this.width / 2;
     this.lengthLabel.angle = 360 - theta;
 
     this.lengthLabel.position.y = 25;
     this.lengthLabel.zIndex = 998;
+  }
+
+  /**
+   * The length a person reads on the label and types in the length box:
+   * the centre line less this wall's own thickness (half at each end).
+   */
+  public shownLength() {
+    return this.length - this.thickness;
   }
 
   /** The context menu's Make exterior / Make interior. */

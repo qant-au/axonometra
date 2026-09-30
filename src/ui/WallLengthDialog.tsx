@@ -1,6 +1,5 @@
 import { Button, Stack, TextField } from '@mui/material';
 import { useEffect, useRef, useState } from 'react';
-import { WALL_THICKNESS } from '../editor/editor/constants';
 import { resizeAboutMidpoint } from '../editor/editor/keyboardHit';
 import type { Wall } from '../editor/editor/objects/Walls/Wall';
 import { useStore } from '../stores/EditorStore';
@@ -8,13 +7,13 @@ import { useInstance } from '../editor/instance/context';
 import { useUnitsStore } from '../stores/UnitsStore';
 import { AppDialog } from '@accurona/ui';
 
-// The wall label shows the drawn length less one wall thickness, so the typed
-// value is read the same way. The wall keeps its midpoint and direction.
+// The wall label shows the drawn length less the wall's thickness, so the
+// typed value is read the same way. The wall keeps its midpoint and direction.
 function LengthForm({ wall, close }: { wall: Wall; close: () => void }) {
   const inst = useInstance();
   const units = useUnitsStore((s) => s.units);
   const [value, setValue] = useState(
-    inst.formatLength(wall.length - WALL_THICKNESS, { suffix: false })
+    inst.formatLength(wall.shownLength(), { suffix: false })
   );
   // Accepts any unit ('2.7 m', '270 cm', 8'10"); a bare number is in `units`.
   const length = inst.parseLength(value);
@@ -29,7 +28,7 @@ function LengthForm({ wall, close }: { wall: Wall; close: () => void }) {
     const [a, b] = resizeAboutMidpoint(
       wall.leftNode,
       wall.rightNode,
-      length + WALL_THICKNESS
+      length + wall.thickness
     );
     inst.edits.transact(() => {
       wall.leftNode.position.set(a.x, a.y);

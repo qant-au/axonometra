@@ -97,6 +97,19 @@ describe('Floor plan format v2', () => {
   });
 });
 
+describe('Wall shown length', () => {
+  it("is the centre line less the wall's own thickness", () => {
+    // Wall 1-2 is 400 long. Interior walls are 16 thick, exterior 20; the
+    // label took off 20 for both (sweep 2026-09-30).
+    const wall = new Floor(fakeInstance(), room())
+      .getWallNodeSequence()
+      .getWall(1, 2)!;
+    expect(wall.shownLength()).toBe(384);
+    wall.setIsExterior(true);
+    expect(wall.shownLength()).toBe(380);
+  });
+});
+
 describe('Floor room areas', () => {
   const labels = (floor: InstanceType<typeof Floor>) =>
     floor
