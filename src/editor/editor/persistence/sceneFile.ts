@@ -270,7 +270,9 @@ export function planToScene(
       floor: ['name'],
       wall: ['layer']
     },
-    set: { units: plan.units as Scene['units'] }
+    // Always written, millimetres too: a scene opened with "units": "mm"
+    // saves with it, and a reader need not know the default.
+    set: { units: (plan.units ?? 'mm') as Scene['units'] }
   });
 }
 

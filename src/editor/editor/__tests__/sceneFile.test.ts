@@ -120,6 +120,14 @@ describe('plan <-> scene', () => {
     expect(scene.objects.find((o) => o.id === '9')!.element).toBe('window');
   });
 
+  it('writes units in millimetres too, so an opened "mm" is kept', () => {
+    const mm = { ...plan(), units: undefined };
+    expect(planToScene(mm, newContext(emptyScene('s'))).units).toBe('mm');
+    const opened = { ...emptyScene('s'), units: 'mm' as const };
+    const { plan: read, ctx } = sceneToPlan(opened);
+    expect(planToScene(read, ctx).units).toBe('mm');
+  });
+
   it('reads back exactly what it wrote', () => {
     const original = plan();
     const scene = planToScene(original, newContext(emptyScene('s')));
