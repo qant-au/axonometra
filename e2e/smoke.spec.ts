@@ -64,6 +64,32 @@ test('the toolbar stays visible and clickable in dark mode, after a reload too',
   ).toHaveAttribute('aria-pressed', 'true');
 });
 
+// Re-sweep 3 2026-09-30: a scene file with no id showed "Load failed" but
+// closed the welcome dialog too, leaving an empty plan and no New plan button.
+test('a load from the welcome dialog that fails leaves it open', async ({
+  page
+}) => {
+  await page.goto('/');
+  const welcome = page.getByRole('dialog');
+  await expect(
+    welcome.getByRole('button', { name: /new plan/i })
+  ).toBeVisible();
+  const scene = { format: 'accurona-scene', version: 1, icons: {} };
+  await welcome.locator('input[type=file]').setInputFiles({
+    name: 'bad-scene.json',
+    mimeType: 'application/json',
+    buffer: Buffer.from(JSON.stringify(scene))
+  });
+  await expect(page.getByText('Load failed')).toBeVisible();
+  await expect(
+    welcome.getByRole('button', { name: /new plan/i })
+  ).toBeVisible();
+  // It can still start a new plan (which a closing dialog would ignore).
+  await welcome.getByRole('button', { name: /new plan/i }).click();
+  await expect(page.getByRole('button', { name: /new plan/i })).toHaveCount(0);
+  await expect(page.getByText(/Welcome to Axonometra/)).toBeVisible();
+});
+
 test.describe('on a phone held upright', () => {
   test.use({ viewport: { width: 390, height: 844 } });
 

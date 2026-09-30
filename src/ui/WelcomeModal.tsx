@@ -30,10 +30,12 @@ export function WelcomeModal() {
 
   const loadFromDisk = async (e: ChangeEvent<HTMLInputElement>) => {
     const resultText = await readPlanFile(e.target.files?.[0]);
+    // The same file can be chosen again after a load that failed.
+    e.target.value = '';
 
-    if (resultText) {
-      const action = new LoadAction(inst, resultText);
-      action.execute();
+    // A load that failed leaves the dialog open, to try another file or
+    // start a new plan.
+    if (resultText && new LoadAction(inst, resultText).execute()) {
       setOpened(false);
     }
   };
@@ -101,8 +103,7 @@ export function WelcomeModal() {
                     });
                     return;
                   }
-                  inst.serializer.load(saved);
-                  setOpened(false);
+                  if (inst.serializer.load(saved)) setOpened(false);
                 }}
                 startIcon={<IconRotateClockwise />}
                 variant="text"
