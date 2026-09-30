@@ -122,6 +122,17 @@ describe('Serializer.load versions', () => {
     expect(new Serializer(inst).load(plan(3))).toBe(false);
     expect(inst.notifier.get()).toHaveLength(2);
   });
+
+  it('keeps a load error showing until it is closed', () => {
+    vi.useFakeTimers();
+    try {
+      expect(new Serializer(inst).load('{not json')).toBe(false);
+      vi.advanceTimersByTime(60_000);
+      expect(inst.notifier.get()).toHaveLength(1);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
 });
 
 describe('Serializer display units', () => {

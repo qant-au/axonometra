@@ -198,8 +198,13 @@ export class EditorInstance {
   /**
    * Shows a notification. One the same as a notification already showing
    * (the same bad file loaded twice) takes its place instead of stacking.
+   * An error stays until it is closed, unless the caller sets autoHide: it
+   * went after 4 s, before it could be read (sweep 2026-09-30).
    */
   notify(options: NotifyOptions) {
+    if (options.severity === 'error' && options.autoHide === undefined) {
+      options = { ...options, autoHide: false };
+    }
     const severity = options.severity ?? 'info';
     for (const n of this.notifier.get()) {
       if (
