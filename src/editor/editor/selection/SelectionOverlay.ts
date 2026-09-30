@@ -80,15 +80,20 @@ export class SelectionOverlay extends Graphics {
       if (ref.kind === 'wall') {
         const wall = plan.getWallNodeSeq().getWall(ref.left, ref.right);
         if (!wall) continue;
-        const a = this.toHere(wall.leftNode, 0, 0);
-        const b = this.toHere(wall.rightNode, 0, 0);
-        this.moveTo(a.x, a.y)
-          .lineTo(b.x, b.y)
-          .stroke({
-            width: wall.thickness + 6 / scale,
-            color: COLOUR,
-            alpha: 0.35
-          });
+        // The wall's own rectangle (Wall.drawLine), 3 px wider each side.
+        // Its nodes' (0, 0) is their corner, not their centre, which drew
+        // the band skewed and off the wall.
+        const pad = 3 / scale;
+        const corners = [
+          this.toHere(wall, 0, -pad),
+          this.toHere(wall, wall.length, -pad),
+          this.toHere(wall, wall.length, wall.thickness + pad),
+          this.toHere(wall, 0, wall.thickness + pad)
+        ];
+        this.poly(corners.flatMap((p) => [p.x, p.y])).fill({
+          color: COLOUR,
+          alpha: 0.35
+        });
         continue;
       }
       const furniture = plan.getObject(ref.id);
