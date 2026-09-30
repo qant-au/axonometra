@@ -4,7 +4,7 @@ import { Point } from '../../../../helpers/Point';
 import { Coord, LabelAxis, LABEL_OFFSET, Tool } from '../../constants';
 import { Furniture } from '../Furniture';
 import { Handle, HandleType } from './Handle';
-import { Label } from './Label';
+import { Label, readoutsOf } from './Label';
 
 // handles moving, resizing and rotating of objects.
 // can only work if its state is active.
@@ -93,6 +93,7 @@ export class TransformLayer extends Container {
     // A read-out, not a control: once the item is turned, a label can sit
     // over a handle, and it must not take the press meant for the handle.
     this.labels[axis].eventMode = 'none';
+    readoutsOf(this.inst).add(this.labels[axis]);
     this.border.addChild(this.labels[axis]);
   }
 

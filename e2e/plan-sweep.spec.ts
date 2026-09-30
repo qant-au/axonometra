@@ -289,6 +289,111 @@ test('a room area hides under a measurement across it', async ({ page }) => {
   await expect.poll(() => areaLabelShown(page)).toEqual([true]);
 });
 
+// The room area's box and the read-outs' boxes on screen (the selection's
+// size labels here), in floor coordinates; and where the area is on screen.
+const areaAndSizes = (page: Page) =>
+  page.evaluate(() => {
+    type Box = { x: number; y: number; width: number; height: number };
+    type Text = {
+      visible: boolean;
+      position: { x: number; y: number };
+      width: number;
+      height: number;
+      getBounds(): { minX: number; minY: number; maxX: number; maxY: number };
+    };
+    const floor = (
+      window as unknown as {
+        __axo: {
+          getPlan: () => {
+            getCurrentFloor: () => {
+              wallNodeSequence: { roomLabels: { children: Text[] } };
+              readoutBoxes: () => Box[];
+            };
+          };
+        };
+      }
+    ).__axo
+      .getPlan()
+      .getCurrentFloor();
+    const t = floor.wallNodeSequence.roomLabels.children[0];
+    const b = t.getBounds();
+    return {
+      area: {
+        x: t.position.x,
+        y: t.position.y,
+        width: t.width,
+        height: t.height
+      },
+      visible: t.visible,
+      screen: { x: (b.minX + b.maxX) / 2, y: (b.minY + b.maxY) / 2 },
+      sizes: floor.readoutBoxes()
+    };
+  });
+
+// Re-sweep 2 2026-09-30: with the moved access point still selected, its
+// "400 mm" size labels drew across the room area label.
+test('a room area hides under a selected item’s size labels', async ({
+  page
+}) => {
+  await loadFixture(page, 'comms-room.scene.json');
+  await page.getByRole('button', { name: 'Edit', exact: true }).click();
+  await expect.poll(async () => (await areaAndSizes(page)).visible).toBe(true);
+  // The access point sits in the middle; its area is written just above it.
+  const ap = await page.evaluate(() => {
+    const f = (
+      window as unknown as {
+        __axo: {
+          getPlan: () => {
+            getFurniture: () => Map<
+              number,
+              {
+                getBounds: () => {
+                  minX: number;
+                  minY: number;
+                  maxX: number;
+                  maxY: number;
+                };
+              }
+            >;
+          };
+        };
+      }
+    ).__axo
+      .getPlan()
+      .getFurniture()
+      .values()
+      .next().value!;
+    const b = f.getBounds();
+    return { x: (b.minX + b.maxX) / 2, y: (b.minY + b.maxY) / 2 };
+  });
+  const { screen } = await areaAndSizes(page);
+  // Drag it onto the area: the area moves below it, where the item's
+  // horizontal size label is drawn.
+  await page.mouse.move(ap.x, ap.y);
+  await page.mouse.down();
+  await page.mouse.move(ap.x, screen.y, { steps: 8 });
+  await page.mouse.up();
+  type Box = { x: number; y: number; width: number; height: number };
+  const overlap = (a: Box, b: Box) =>
+    a.x < b.x + b.width &&
+    b.x < a.x + a.width &&
+    a.y < b.y + b.height &&
+    b.y < a.y + a.height;
+  await expect
+    .poll(async () => {
+      const now = await areaAndSizes(page);
+      return {
+        sizes: now.sizes.length,
+        under: now.sizes.some((s) => overlap(s, now.area)),
+        visible: now.visible
+      };
+    })
+    .toEqual({ sizes: 2, under: true, visible: false });
+  // Deselected, the area shows again.
+  await page.keyboard.press('Escape');
+  await expect.poll(async () => (await areaAndSizes(page)).visible).toBe(true);
+});
+
 // Re-sweep 2026-09-30: a device placed from the network diagram landed in
 // the middle of the view, on top of the access point already there.
 test('a device from the network diagram is placed clear of the others', async ({
