@@ -198,8 +198,8 @@ export class KeyboardCursor {
       this.cancel();
       return;
     }
-    if (this.inst.addWallManager.previousNode) {
-      this.inst.addWallManager.unset();
+    const chain = this.inst.addWallManager.previousNode !== undefined;
+    if (this.inst.commands.endDrawing() && chain) {
       this.announce('Wall drawing ended.');
     }
   }

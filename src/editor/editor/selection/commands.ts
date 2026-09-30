@@ -3,6 +3,7 @@
 // view. Each edit changes the serialised plan (planOps.ts) and rebuilds it,
 // as undo does, inside one history step.
 import type { EditorInstance } from '../../instance/EditorInstance';
+import { ADD_TOOLS } from '../../../ui/Layout/toolbarTools';
 import { METER, TOOLBAR_WIDTH, Tool } from '../constants';
 import type { FloorPlanSerializable } from '../persistence/FloorPlanSerializable';
 import type { FloorSerializable } from '../persistence/FloorSerializable';
@@ -78,6 +79,21 @@ export function createSelectionCommands(inst: EditorInstance) {
   function takeSelectTool() {
     const state = inst.editor.getState();
     if (state.activeTool !== Tool.Edit) state.setTool(Tool.Edit);
+  }
+
+  /**
+   * Esc: ends a wall chain being drawn and puts the Add menu's drawing tool
+   * (wall, window or door) down for the Select tool, so the Add button goes
+   * out with it. True when there was something to end.
+   */
+  function endDrawing(): boolean {
+    const state = inst.editor.getState();
+    const chain = inst.addWallManager.previousNode !== undefined;
+    if (chain) inst.addWallManager.unset();
+    if (!ADD_TOOLS.includes(state.activeTool)) return chain;
+    inst.notifier.clear();
+    state.setTool(Tool.Edit);
+    return true;
   }
 
   /** After undo, redo or a rebuild, forget what no longer exists. */
@@ -297,6 +313,7 @@ export function createSelectionCommands(inst: EditorInstance) {
 
   return {
     currentFloorData,
+    endDrawing,
     freeSpot,
     pruneSelection,
     selectAll,

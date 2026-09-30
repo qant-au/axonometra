@@ -122,10 +122,7 @@ export function createKeymap(inst: EditorInstance) {
         return true;
       case 'escape': {
         inst.contextMenu.getState().close();
-        if (inst.addWallManager.previousNode) {
-          inst.addWallManager.unset();
-          return true;
-        }
+        if (inst.commands.endDrawing()) return true;
         const had = inst.selection.getState().refs.length > 0;
         inst.selection.getState().clear();
         return had;

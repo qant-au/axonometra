@@ -486,6 +486,44 @@ test('the toolbar shows the tool a key takes', async ({ page }) => {
   }
 });
 
+// Re-sweep 2 2026-09-30: after Esc the Add button stayed lit until another
+// tool was clicked, and it never said so to a screen reader.
+test('Esc puts the Add menu tool down, and the Add button goes out', async ({
+  page
+}) => {
+  await start(page);
+  const add = page.getByRole('button', { name: 'Add', exact: true });
+  const addBg = () => add.evaluate((b) => getComputedStyle(b).backgroundColor);
+  const idle = await addBg();
+  await expect(add).not.toHaveAttribute('aria-current');
+  const edit = page.getByRole('button', { name: 'Edit', exact: true });
+
+  for (const item of ['Add window', 'Add door', 'Draw wall']) {
+    await addMenu(page, item);
+    await expect(add).toHaveAttribute('aria-current', 'true');
+    await expect.poll(addBg).not.toBe(idle);
+    if (item === 'Draw wall') {
+      // Mid-chain: Esc ends the chain and the tool together.
+      const { cx, cy } = await canvasCentre(page);
+      await page.mouse.click(cx - 100, cy);
+      await page.waitForTimeout(300);
+      await page.mouse.click(cx + 100, cy);
+      await page.waitForTimeout(300);
+    }
+    await page.keyboard.press('Escape');
+    await expect(add).not.toHaveAttribute('aria-current');
+    await expect.poll(addBg).toBe(idle);
+    await expect(edit).toHaveAttribute('aria-pressed', 'true');
+  }
+
+  // By key, too.
+  await page.getByRole('application', { name: 'Floor plan' }).focus();
+  await page.keyboard.press('w');
+  await expect(add).toHaveAttribute('aria-current', 'true');
+  await page.keyboard.press('Escape');
+  await expect(add).not.toHaveAttribute('aria-current');
+});
+
 const planState = (page: Page) =>
   page.evaluate(() => {
     const plan = (

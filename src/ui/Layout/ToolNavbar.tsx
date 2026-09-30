@@ -1,4 +1,11 @@
-import { ChangeEvent, Suspense, lazy, useRef, useState } from 'react';
+import {
+  ChangeEvent,
+  Suspense,
+  lazy,
+  useEffect,
+  useRef,
+  useState
+} from 'react';
 import { Box, Stack, Tooltip } from '@mui/material';
 import {
   IconArmchair,
@@ -139,6 +146,14 @@ function AddMenu() {
   const setTool = useStore((s) => s.setTool);
   const drawing = ADD_TOOLS.includes(useStore((s) => s.activeTool));
   const [drawerOpened, setDrawerOpened] = useState(false);
+  // The menu button is Accurona's; it says which of its tools is on the way
+  // View, Edit and Erase say theirs are pressed.
+  const addButton = useRef<HTMLSpanElement>(null);
+  useEffect(() => {
+    const button = addButton.current?.querySelector('button');
+    if (drawing) button?.setAttribute('aria-current', 'true');
+    else button?.removeAttribute('aria-current');
+  }, [drawing]);
   const getCategories = useFurnitureStore((s) => s.getCategories);
 
   return (
@@ -157,6 +172,7 @@ function AddMenu() {
       </SidePanel>
       <Box
         component="span"
+        ref={addButton}
         data-active={drawing || undefined}
         sx={{
           display: 'inline-flex',
