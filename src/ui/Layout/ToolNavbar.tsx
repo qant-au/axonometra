@@ -278,6 +278,8 @@ export function ToolNavbar() {
     const resultText = await readPlanFile(e.target.files?.[0], (options) =>
       inst.notify(options)
     );
+    // The same file can be chosen again, as in the welcome dialog.
+    e.target.value = '';
     if (!resultText) {
       return;
     }
