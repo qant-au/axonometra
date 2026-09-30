@@ -29,7 +29,9 @@ export function WelcomeModal() {
   );
 
   const loadFromDisk = async (e: ChangeEvent<HTMLInputElement>) => {
-    const resultText = await readPlanFile(e.target.files?.[0]);
+    const resultText = await readPlanFile(e.target.files?.[0], (options) =>
+      inst.notify(options)
+    );
     // The same file can be chosen again after a load that failed.
     e.target.value = '';
 

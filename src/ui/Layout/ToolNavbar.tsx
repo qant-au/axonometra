@@ -275,7 +275,9 @@ export function ToolNavbar() {
   ));
 
   const handleChange = async (e: ChangeEvent<HTMLInputElement>) => {
-    const resultText = await readPlanFile(e.target.files?.[0]);
+    const resultText = await readPlanFile(e.target.files?.[0], (options) =>
+      inst.notify(options)
+    );
     if (!resultText) {
       return;
     }
