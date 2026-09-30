@@ -172,6 +172,42 @@ for (const name of ['comms-room.scene.json', 'row-of-32-items.scene.json']) {
   });
 }
 
+// Re-sweep 2 2026-09-30: fitted to the 32-item row, the view is zoomed so far
+// out that the grid's 10 cm lines ran together into dense bands. There the
+// metre lines alone are drawn; zoomed back in, the full grid returns.
+test('zoomed far out, the grid draws its metre lines only', async ({
+  page
+}) => {
+  await loadFixture(page, 'row-of-32-items.scene.json');
+  const grid = () =>
+    page.evaluate(() => {
+      const main = (
+        window as unknown as {
+          __axo: {
+            getMain: () => {
+              scale: { x: number };
+              bkgPattern: { visible: boolean };
+              metreGrid: { visible: boolean };
+            };
+          };
+        }
+      ).__axo.getMain();
+      return {
+        coarse: main.scale.x < 0.5,
+        pattern: main.bkgPattern.visible,
+        metres: main.metreGrid.visible
+      };
+    });
+  await expect
+    .poll(grid)
+    .toEqual({ coarse: true, pattern: false, metres: true });
+  await page.getByRole('application', { name: 'Floor plan' }).focus();
+  await page.keyboard.press('ControlOrMeta+0');
+  await expect
+    .poll(grid)
+    .toEqual({ coarse: false, pattern: true, metres: false });
+});
+
 // Re-sweep 2026-09-30: the area label sat under the item in the middle of a
 // loaded room, hidden. It moves to a clear spot in the room instead.
 test('a loaded room shows its area clear of the items in it', async ({

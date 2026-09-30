@@ -2,6 +2,7 @@ import type { EditorInstance } from '../instance/EditorInstance';
 import { IViewportOptions, Viewport } from 'pixi-viewport';
 import {
   FederatedPointerEvent,
+  Graphics,
   isMobile,
   Point,
   Texture,
@@ -22,6 +23,7 @@ import { Preview } from './actions/MeasureToolManager';
 import { SelectionOverlay } from './selection/SelectionOverlay';
 import { refsInRect } from './selection/planOps';
 import { interpretWheel } from './wheel';
+import { GRID_MINOR_MIN_ZOOM, metreLines } from './grid';
 import { isTypingTarget } from '@accurona/core';
 
 // A press that moves less than this, in screen pixels, is a click, not a
@@ -33,6 +35,9 @@ export class Main extends Viewport {
   transformLayer!: TransformLayer;
   addWallManager!: AddWallManager;
   bkgPattern!: TilingSprite;
+  /** Zoomed out past GRID_MINOR_MIN_ZOOM: the metre lines alone, drawn. */
+  metreGrid!: Graphics;
+  private metreGridFor = '';
   /** setup() has run: the plugins are on and the plan is drawn. */
   ready = false;
   public pointer!: Pointer;
@@ -176,6 +181,10 @@ export class Main extends Viewport {
     this.bkgPattern.position.set(-padX, -padY);
     this.center = new Point(this.worldWidth / 2, this.worldHeight / 2);
     this.addChild(this.bkgPattern);
+    this.metreGrid = new Graphics();
+    this.metreGrid.eventMode = 'none';
+    this.addChild(this.metreGrid);
+    this.onRender = () => this.drawGrid();
 
     this.floorPlan = this.inst.getFloorPlanView();
     this.addChild(this.floorPlan);
@@ -202,6 +211,43 @@ export class Main extends Viewport {
     // A plan loaded before the canvas was ready is framed now.
     if (this.inst.frameOnSetup) this.inst.frameAll();
   }
+  /**
+   * The grid pattern's 10 cm lines run together into bands when zoomed far
+   * out, so there the pattern gives way to the metre lines, drawn a screen
+   * pixel wide over just the part of the plan on screen.
+   */
+  private drawGrid() {
+    const zoom = this.scale.x;
+    const coarse = zoom < GRID_MINOR_MIN_ZOOM;
+    this.bkgPattern.visible = !coarse;
+    this.metreGrid.visible = coarse;
+    if (!coarse) return;
+    const view = {
+      x: this.left,
+      y: this.top,
+      width: this.worldScreenWidth,
+      height: this.worldScreenHeight
+    };
+    const key = [zoom, view.x, view.y, view.width, view.height].join();
+    if (key === this.metreGridFor) return;
+    this.metreGridFor = key;
+    const bounds = {
+      x: this.bkgPattern.x,
+      y: this.bkgPattern.y,
+      width: this.bkgPattern.width,
+      height: this.bkgPattern.height
+    };
+    const { xs, ys } = metreLines(view, bounds);
+    const top = Math.max(view.y, bounds.y);
+    const bottom = Math.min(view.y + view.height, bounds.y + bounds.height);
+    const left = Math.max(view.x, bounds.x);
+    const right = Math.min(view.x + view.width, bounds.x + bounds.width);
+    const g = this.metreGrid.clear();
+    for (const x of xs) g.moveTo(x, top).lineTo(x, bottom);
+    for (const y of ys) g.moveTo(left, y).lineTo(right, y);
+    g.stroke({ width: 1 / zoom, color: 0x808080, alpha: 0.6 });
+  }
+
   private updatePreview(ev: FederatedPointerEvent) {
     this.addWallManager.updatePreview(ev);
     this.preview.updatePreview(ev);
