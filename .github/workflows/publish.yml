@@ -1,6 +1,7 @@
 # A release: push a v* tag matching package.json's version. Lints, tests,
-# builds the library and publishes @axonometra/editor to npm with provenance.
-# Needs an npm automation token in the NPM_TOKEN secret.
+# builds the library and publishes @axonometra/editor to npm with provenance,
+# through npm Trusted Publishing: no token, the package trusts this workflow
+# on npmjs.com.
 name: Publish
 
 on:
@@ -31,6 +32,5 @@ jobs:
       - run: npm run lint
       - run: npx vitest run
       - run: npm run build:lib
+      - run: npm install -g npm@^11.5.1
       - run: npm publish --provenance --access public --ignore-scripts
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
