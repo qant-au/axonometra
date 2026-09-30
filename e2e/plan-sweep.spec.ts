@@ -308,6 +308,43 @@ test('a device from the network diagram is placed clear of the others', async ({
   expect(covered).toEqual([]);
 });
 
+// Re-sweep 2026-09-30: L / 6, D, W and M took their tools, but no toolbar
+// button showed it. Measure is pressed; the Add button lights for the tools
+// in its menu, as View, Edit and Erase do for theirs.
+test('the toolbar shows the tool a key takes', async ({ page }) => {
+  await start(page);
+  const canvas = page.getByRole('application', { name: 'Floor plan' });
+  await canvas.focus();
+  const tool = () =>
+    page.evaluate(
+      () =>
+        (
+          window as unknown as {
+            __axo: { getStore: () => { activeTool: number } };
+          }
+        ).__axo.getStore().activeTool
+    );
+  const addBg = () =>
+    page
+      .getByRole('button', { name: 'Add', exact: true })
+      .evaluate((b) => getComputedStyle(b).backgroundColor);
+  const idle = await addBg();
+  const measure = page.getByRole('button', { name: 'Measure tool' });
+  await expect(measure).toHaveAttribute('aria-pressed', 'false');
+
+  await page.keyboard.press('m');
+  await expect(measure).toHaveAttribute('aria-pressed', 'true');
+  for (const key of ['l', '6', 'd', 'w']) {
+    await page.keyboard.press('v');
+    await expect.poll(addBg).toBe(idle);
+    const before = await tool();
+    await page.keyboard.press(key);
+    expect(await tool()).not.toBe(before);
+    await expect.poll(addBg).not.toBe(idle);
+    await expect(measure).toHaveAttribute('aria-pressed', 'false');
+  }
+});
+
 const planState = (page: Page) =>
   page.evaluate(() => {
     const plan = (

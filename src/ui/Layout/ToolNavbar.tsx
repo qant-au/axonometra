@@ -45,6 +45,7 @@ import { useHistoryStore } from '../../stores/HistoryStore';
 import { useInstance } from '../../editor/instance/context';
 import { ToggleLabelAction } from '../../editor/editor/actions/ToggleLabelAction';
 import { NavbarLink } from '../NavbarLink';
+import { ADD_TOOLS } from './toolbarTools';
 
 const FurnitureAddPanel = lazy(() =>
   import('../FurnitureControls/FurnitureAddPanel/FurnitureAddPanel').then(
@@ -136,6 +137,7 @@ function UnitsMenu() {
 function AddMenu() {
   const inst = useInstance();
   const setTool = useStore((s) => s.setTool);
+  const drawing = ADD_TOOLS.includes(useStore((s) => s.activeTool));
   const [drawerOpened, setDrawerOpened] = useState(false);
   const getCategories = useFurnitureStore((s) => s.getCategories);
 
@@ -153,62 +155,74 @@ function AddMenu() {
           <FurnitureAddPanel />
         </Suspense>
       </SidePanel>
-      <ToolMenu
-        name="Add"
-        icon={<IconPlus />}
-        offset={22}
-        items={[
-          {
-            label: 'Add furniture',
-            icon: <IconArmchair size={18} />,
-            onClick: () => {
-              inst.notifier.clear();
-              setDrawerOpened(true);
+      <Box
+        component="span"
+        data-active={drawing || undefined}
+        sx={{
+          display: 'inline-flex',
+          ...(drawing && {
+            '& .MuiButton-root': { bgcolor: 'primary.main' },
+            '& .MuiButton-root svg': { color: 'primary.contrastText' }
+          })
+        }}
+      >
+        <ToolMenu
+          name="Add"
+          icon={<IconPlus />}
+          offset={22}
+          items={[
+            {
+              label: 'Add furniture',
+              icon: <IconArmchair size={18} />,
+              onClick: () => {
+                inst.notifier.clear();
+                setDrawerOpened(true);
+              }
+            },
+            {
+              label: 'Draw wall',
+              icon: <IconBorderLeft size={18} />,
+              divider: true,
+              onClick: () => {
+                setTool(Tool.WallAdd);
+                inst.showToolHint({
+                  title: '✏️ Wall drawing mode',
+                  message:
+                    'Click to draw walls. Double click on wall node to end sequence.',
+                  severity: 'info'
+                });
+              }
+            },
+            {
+              label: 'Add window',
+              icon: <IconWindow size={18} />,
+              onClick: () => {
+                setTool(Tool.FurnitureAddWindow);
+                inst.notifier.clear();
+                inst.notify({
+                  title: '🪟 Add window',
+                  message: 'Click on wall to add window',
+                  severity: 'info'
+                });
+              }
+            },
+            {
+              label: 'Add door',
+              icon: <IconDoor size={18} />,
+              onClick: () => {
+                setTool(Tool.FurnitureAddDoor);
+                inst.notifier.clear();
+                inst.notify({
+                  title: '🚪 Add door',
+                  message:
+                    'Click on wall to add door. Right click to change orientation',
+                  severity: 'info'
+                });
+              }
             }
-          },
-          {
-            label: 'Draw wall',
-            icon: <IconBorderLeft size={18} />,
-            divider: true,
-            onClick: () => {
-              setTool(Tool.WallAdd);
-              inst.showToolHint({
-                title: '✏️ Wall drawing mode',
-                message:
-                  'Click to draw walls. Double click on wall node to end sequence.',
-                severity: 'info'
-              });
-            }
-          },
-          {
-            label: 'Add window',
-            icon: <IconWindow size={18} />,
-            onClick: () => {
-              setTool(Tool.FurnitureAddWindow);
-              inst.notifier.clear();
-              inst.notify({
-                title: '🪟 Add window',
-                message: 'Click on wall to add window',
-                severity: 'info'
-              });
-            }
-          },
-          {
-            label: 'Add door',
-            icon: <IconDoor size={18} />,
-            onClick: () => {
-              setTool(Tool.FurnitureAddDoor);
-              inst.notifier.clear();
-              inst.notify({
-                title: '🚪 Add door',
-                message:
-                  'Click on wall to add door. Right click to change orientation',
-                severity: 'info'
-              });
-            }
-          }
-        ]}
-      />
+          ]}
+        />
+      </Box>
     </>
   );
 }
@@ -317,6 +331,7 @@ export function ToolNavbar() {
             <NavbarLink
               icon={IconRuler2}
               label="Measure tool"
+              active={activeTool === Tool.Measure}
               onClick={() => {
                 setTool(Tool.Measure);
                 inst.notifier.clear();
