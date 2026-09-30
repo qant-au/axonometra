@@ -16,7 +16,7 @@ import { FloorPlan } from './objects/FloorPlan';
 import { TransformLayer } from './objects/TransformControls/TransformLayer';
 import { AddNodeAction } from './actions/AddNodeAction';
 import { AddWallManager } from './actions/AddWallManager';
-import { Tool } from './constants';
+import { MIN_ZOOM, Tool } from './constants';
 import { Pointer } from './Pointer';
 import { Preview } from './actions/MeasureToolManager';
 import { SelectionOverlay } from './selection/SelectionOverlay';
@@ -33,6 +33,8 @@ export class Main extends Viewport {
   transformLayer!: TransformLayer;
   addWallManager!: AddWallManager;
   bkgPattern!: TilingSprite;
+  /** setup() has run: the plugins are on and the plan is drawn. */
+  ready = false;
   public pointer!: Pointer;
   public preview: Preview;
   public selectionOverlay!: SelectionOverlay;
@@ -140,10 +142,21 @@ export class Main extends Viewport {
     // plugins onto a torn-down viewport (whose transform is now null) — v7's
     // clamp plugin reads viewport.x and would throw.
     if (this.destroyed) return;
+    // The view may go half a world past each edge, so a plan drawn near the
+    // origin (a scene from another tool starts at 0, 0) can still be centred,
+    // and may zoom out far enough to take the whole world in.
+    const padX = this.worldWidth / 2;
+    const padY = this.worldHeight / 2;
     this.panWith(this.inst.editor.getState().activeTool)
-      .clamp({ direction: 'all' })
+      .clamp({
+        left: -padX,
+        top: -padY,
+        right: this.worldWidth + padX,
+        bottom: this.worldHeight + padY,
+        underflow: 'center'
+      })
       .pinch()
-      .clampZoom({ minScale: 1.0, maxScale: 6.0 });
+      .clampZoom({ minScale: MIN_ZOOM, maxScale: 6.0 });
     this.keyTarget = this.inst.keyTarget;
     this.keyTarget.addEventListener('keydown', this.onSpaceDown);
     this.keyTarget.addEventListener('keyup', this.onSpaceUp);
@@ -155,11 +168,13 @@ export class Main extends Viewport {
         this.panWith(state.activeTool);
       }
     });
+    // The grid covers everywhere the view can go.
     this.bkgPattern = new TilingSprite({
       texture: loadedTexture(patternUrl) ?? Texture.WHITE,
-      width: this.worldWidth ?? 0,
-      height: this.worldHeight ?? 0
+      width: this.worldWidth + 2 * padX,
+      height: this.worldHeight + 2 * padY
     });
+    this.bkgPattern.position.set(-padX, -padY);
     this.center = new Point(this.worldWidth / 2, this.worldHeight / 2);
     this.addChild(this.bkgPattern);
 
@@ -181,6 +196,10 @@ export class Main extends Viewport {
     this.on('pointermove', this.updatePreview);
     this.on('pointerup', this.updateEnd);
     this.on('pointerupoutside', this.updateEnd);
+
+    this.ready = true;
+    // A plan loaded before the canvas was ready is framed now.
+    if (this.inst.frameOnSetup) this.inst.frameAll();
   }
   private updatePreview(ev: FederatedPointerEvent) {
     this.addWallManager.updatePreview(ev);

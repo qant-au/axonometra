@@ -39,7 +39,7 @@ import { ChangeFloorAction } from '../../editor/editor/actions/ChangeFloorAction
 import { LoadAction } from '../../editor/editor/actions/LoadAction';
 import { readPlanFile } from '../../helpers/readPlanFile';
 import { SaveAction } from '../../editor/editor/actions/SaveAction';
-import { Tool } from '../../editor/editor/constants';
+import { TOOLBAR_WIDTH, Tool } from '../../editor/editor/constants';
 import { PrintAction } from '../../editor/editor/actions/PrintAction';
 import { useHistoryStore } from '../../stores/HistoryStore';
 import { useInstance } from '../../editor/instance/context';
@@ -69,7 +69,7 @@ import { useFurnitureStore } from '../../stores/FurnitureStore';
 const navbar = {
   boxSizing: 'border-box',
   height: '100%',
-  width: 70,
+  width: TOOLBAR_WIDTH,
   p: 2,
   display: 'flex',
   flexDirection: 'column',

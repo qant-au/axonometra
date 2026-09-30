@@ -141,6 +141,15 @@ export class EditorInstance {
     return (this.wallManager ??= new AddWallManager(this));
   }
 
+  /** A plan was loaded before the canvas was ready; frame it on setup. */
+  frameOnSetup = false;
+
+  /** Fits the whole floor in the view, now or once the canvas is ready. */
+  frameAll() {
+    this.frameOnSetup = !this.main?.ready;
+    if (!this.frameOnSetup) this.commands.fitAll();
+  }
+
   /** Where the keyboard shortcuts listen (config.keyboardScope). */
   /** <Axonometra> hands over its outermost element and its callbacks. */
   setRoot(root: HTMLElement | null) {

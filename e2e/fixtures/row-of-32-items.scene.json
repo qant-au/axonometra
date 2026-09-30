@@ -1,0 +1,377 @@
+{
+  "format": "accurona-scene",
+  "version": 1,
+  "id": "round1",
+  "title": "Round 1 elements",
+  "units": "mm",
+  "objects": [
+    {
+      "id": "o-car",
+      "name": "car",
+      "element": "car"
+    },
+    {
+      "id": "o-station-wagon",
+      "name": "station-wagon",
+      "element": "station-wagon"
+    },
+    {
+      "id": "o-ute",
+      "name": "ute",
+      "element": "ute"
+    },
+    {
+      "id": "o-van",
+      "name": "van",
+      "element": "van"
+    },
+    {
+      "id": "o-4wd",
+      "name": "4wd",
+      "element": "4wd"
+    },
+    {
+      "id": "o-motorbike",
+      "name": "motorbike",
+      "element": "motorbike"
+    },
+    {
+      "id": "o-bicycle",
+      "name": "bicycle",
+      "element": "bicycle"
+    },
+    {
+      "id": "o-trailer-box",
+      "name": "trailer-box",
+      "element": "trailer-box"
+    },
+    {
+      "id": "o-ev-charger-wall",
+      "name": "ev-charger-wall",
+      "element": "ev-charger-wall"
+    },
+    {
+      "id": "o-ev-charger-pedestal",
+      "name": "ev-charger-pedestal",
+      "element": "ev-charger-pedestal"
+    },
+    {
+      "id": "o-bbq",
+      "name": "bbq",
+      "element": "bbq"
+    },
+    {
+      "id": "o-bbq-kettle",
+      "name": "bbq-kettle",
+      "element": "bbq-kettle"
+    },
+    {
+      "id": "o-bbq-built-in",
+      "name": "bbq-built-in",
+      "element": "bbq-built-in"
+    },
+    {
+      "id": "o-smoker",
+      "name": "smoker",
+      "element": "smoker"
+    },
+    {
+      "id": "o-cooktop-2",
+      "name": "cooktop-2",
+      "element": "cooktop-2"
+    },
+    {
+      "id": "o-cooktop-grill",
+      "name": "cooktop-grill",
+      "element": "cooktop-grill"
+    },
+    {
+      "id": "o-cooktop-wok",
+      "name": "cooktop-wok",
+      "element": "cooktop-wok"
+    },
+    {
+      "id": "o-cable-tray-bend-22",
+      "name": "cable-tray-bend-22",
+      "element": "cable-tray-bend-22"
+    },
+    {
+      "id": "o-cable-tray-bend-45",
+      "name": "cable-tray-bend-45",
+      "element": "cable-tray-bend-45"
+    },
+    {
+      "id": "o-cable-tray-bend-90",
+      "name": "cable-tray-bend-90",
+      "element": "cable-tray-bend-90"
+    },
+    {
+      "id": "o-monitor-24",
+      "name": "monitor-24",
+      "element": "monitor-24"
+    },
+    {
+      "id": "o-monitor-34-ultrawide",
+      "name": "monitor-34-ultrawide",
+      "element": "monitor-34-ultrawide"
+    },
+    {
+      "id": "o-monitor-49-ultrawide",
+      "name": "monitor-49-ultrawide",
+      "element": "monitor-49-ultrawide"
+    },
+    {
+      "id": "o-display-wall-55",
+      "name": "display-wall-55",
+      "element": "display-wall-55"
+    },
+    {
+      "id": "o-display-wall-86",
+      "name": "display-wall-86",
+      "element": "display-wall-86"
+    },
+    {
+      "id": "o-plant-pot",
+      "name": "plant-pot",
+      "element": "plant-pot"
+    },
+    {
+      "id": "o-tree",
+      "name": "tree",
+      "element": "tree"
+    },
+    {
+      "id": "o-palm-tree",
+      "name": "palm-tree",
+      "element": "palm-tree"
+    },
+    {
+      "id": "o-shrub",
+      "name": "shrub",
+      "element": "shrub"
+    },
+    {
+      "id": "o-toilet",
+      "name": "toilet",
+      "element": "toilet"
+    },
+    {
+      "id": "o-toilet-wall-hung",
+      "name": "toilet-wall-hung",
+      "element": "toilet-wall-hung"
+    },
+    {
+      "id": "o-bar-stool",
+      "name": "bar-stool",
+      "element": "bar-stool"
+    }
+  ],
+  "views": [
+    {
+      "id": "plan",
+      "kind": "plan",
+      "name": "Floor plan",
+      "floors": [
+        {
+          "id": "g",
+          "nodes": [],
+          "walls": []
+        }
+      ],
+      "placements": [
+        {
+          "object": "o-car",
+          "floor": "g",
+          "x": 3000,
+          "y": 3000
+        },
+        {
+          "object": "o-station-wagon",
+          "floor": "g",
+          "x": 9000,
+          "y": 3000
+        },
+        {
+          "object": "o-ute",
+          "floor": "g",
+          "x": 15000,
+          "y": 3000
+        },
+        {
+          "object": "o-van",
+          "floor": "g",
+          "x": 21000,
+          "y": 3000
+        },
+        {
+          "object": "o-4wd",
+          "floor": "g",
+          "x": 27000,
+          "y": 3000
+        },
+        {
+          "object": "o-motorbike",
+          "floor": "g",
+          "x": 33000,
+          "y": 3000
+        },
+        {
+          "object": "o-bicycle",
+          "floor": "g",
+          "x": 39000,
+          "y": 3000
+        },
+        {
+          "object": "o-trailer-box",
+          "floor": "g",
+          "x": 45000,
+          "y": 3000
+        },
+        {
+          "object": "o-ev-charger-wall",
+          "floor": "g",
+          "x": 3000,
+          "y": 10000
+        },
+        {
+          "object": "o-ev-charger-pedestal",
+          "floor": "g",
+          "x": 9000,
+          "y": 10000
+        },
+        {
+          "object": "o-bbq",
+          "floor": "g",
+          "x": 15000,
+          "y": 10000
+        },
+        {
+          "object": "o-bbq-kettle",
+          "floor": "g",
+          "x": 21000,
+          "y": 10000
+        },
+        {
+          "object": "o-bbq-built-in",
+          "floor": "g",
+          "x": 27000,
+          "y": 10000
+        },
+        {
+          "object": "o-smoker",
+          "floor": "g",
+          "x": 33000,
+          "y": 10000
+        },
+        {
+          "object": "o-cooktop-2",
+          "floor": "g",
+          "x": 39000,
+          "y": 10000
+        },
+        {
+          "object": "o-cooktop-grill",
+          "floor": "g",
+          "x": 45000,
+          "y": 10000
+        },
+        {
+          "object": "o-cooktop-wok",
+          "floor": "g",
+          "x": 3000,
+          "y": 17000
+        },
+        {
+          "object": "o-cable-tray-bend-22",
+          "floor": "g",
+          "x": 9000,
+          "y": 17000
+        },
+        {
+          "object": "o-cable-tray-bend-45",
+          "floor": "g",
+          "x": 15000,
+          "y": 17000
+        },
+        {
+          "object": "o-cable-tray-bend-90",
+          "floor": "g",
+          "x": 21000,
+          "y": 17000
+        },
+        {
+          "object": "o-monitor-24",
+          "floor": "g",
+          "x": 27000,
+          "y": 17000
+        },
+        {
+          "object": "o-monitor-34-ultrawide",
+          "floor": "g",
+          "x": 33000,
+          "y": 17000
+        },
+        {
+          "object": "o-monitor-49-ultrawide",
+          "floor": "g",
+          "x": 39000,
+          "y": 17000
+        },
+        {
+          "object": "o-display-wall-55",
+          "floor": "g",
+          "x": 45000,
+          "y": 17000
+        },
+        {
+          "object": "o-display-wall-86",
+          "floor": "g",
+          "x": 3000,
+          "y": 24000
+        },
+        {
+          "object": "o-plant-pot",
+          "floor": "g",
+          "x": 9000,
+          "y": 24000
+        },
+        {
+          "object": "o-tree",
+          "floor": "g",
+          "x": 15000,
+          "y": 24000
+        },
+        {
+          "object": "o-palm-tree",
+          "floor": "g",
+          "x": 21000,
+          "y": 24000
+        },
+        {
+          "object": "o-shrub",
+          "floor": "g",
+          "x": 27000,
+          "y": 24000
+        },
+        {
+          "object": "o-toilet",
+          "floor": "g",
+          "x": 33000,
+          "y": 24000
+        },
+        {
+          "object": "o-toilet-wall-hung",
+          "floor": "g",
+          "x": 39000,
+          "y": 24000
+        },
+        {
+          "object": "o-bar-stool",
+          "floor": "g",
+          "x": 45000,
+          "y": 24000
+        }
+      ]
+    }
+  ]
+}

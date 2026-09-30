@@ -137,6 +137,7 @@ export class Serializer {
       const { plan, ctx } = sceneToPlan(result.scene);
       this.apply(plan);
       this.context = ctx;
+      this.inst.frameAll();
       return true;
     }
     const plan = validatePlanShape(raw);
@@ -161,6 +162,7 @@ export class Serializer {
     }
     this.apply(plan);
     this.context = newContext();
+    this.inst.frameAll();
     return true;
   }
 

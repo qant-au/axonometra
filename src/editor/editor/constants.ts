@@ -13,6 +13,11 @@ export const WINDOW_SILL = 0.9 * METER;
 
 export const LABEL_OFFSET = 10;
 
+// The furthest the view zooms out: the whole 50 m world on a laptop screen.
+export const MIN_ZOOM = 0.2;
+// The tool bar down the left of the editor, over the plan (ToolNavbar).
+export const TOOLBAR_WIDTH = 70;
+
 // AddWallManager rejects new nodes within this distance of an existing node
 // or the previous node in the current chain.
 export const SNAP_THRESHOLD = 0.3 * METER;

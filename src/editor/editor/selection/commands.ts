@@ -3,7 +3,7 @@
 // view. Each edit changes the serialised plan (planOps.ts) and rebuilds it,
 // as undo does, inside one history step.
 import type { EditorInstance } from '../../instance/EditorInstance';
-import { METER, Tool } from '../constants';
+import { METER, TOOLBAR_WIDTH, Tool } from '../constants';
 import type { FloorPlanSerializable } from '../persistence/FloorPlanSerializable';
 import type { FloorSerializable } from '../persistence/FloorSerializable';
 import {
@@ -27,6 +27,23 @@ export const COPY_OFFSET = 0.5 * METER;
 /** One arrow press moves the selection 10 cm; with Shift, a metre. */
 export const NUDGE_STEP = 10;
 export const NUDGE_STEP_LARGE = METER;
+
+/**
+ * How to show a box of the plan on a screen whose left `left` pixels are
+ * covered (the tool bar): the zoom that fits it, with a margin, in what is
+ * left, and how many screen pixels right of the screen's centre it goes.
+ */
+export function fitView(
+  box: Rect,
+  screen: { width: number; height: number; left: number }
+): { scale: number; shift: number } {
+  const margin = 0.5 * METER;
+  const width = Math.max(box.width, METER) + 2 * margin;
+  const height = Math.max(box.height, METER) + 2 * margin;
+  const free = Math.max(screen.width - screen.left, 1);
+  const scale = Math.min(free / width, screen.height / height);
+  return { scale, shift: screen.left / 2 };
+}
 
 /** The selection commands of one editor. */
 export function createSelectionCommands(inst: EditorInstance) {
@@ -217,12 +234,16 @@ export function createSelectionCommands(inst: EditorInstance) {
   function fitRect(box: Rect | undefined) {
     if (!box) return false;
     const main = inst.getMain();
-    const margin = 0.5 * METER;
-    const width = Math.max(box.width, METER) + 2 * margin;
-    const height = Math.max(box.height, METER) + 2 * margin;
-    main.fit(false, width, height);
+    const view = fitView(box, {
+      width: main.screenWidth,
+      height: main.screenHeight,
+      left: inst.config.readOnly ? 0 : TOOLBAR_WIDTH
+    });
+    main.setZoom(view.scale, true);
     clampZoom();
-    main.moveCenter(box.x + box.width / 2, box.y + box.height / 2);
+    // The zoom may have been clamped: centre with the scale it ended at.
+    const offset = view.shift / main.scale.x;
+    main.moveCenter(box.x + box.width / 2 - offset, box.y + box.height / 2);
     return true;
   }
 
