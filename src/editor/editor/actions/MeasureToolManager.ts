@@ -4,6 +4,7 @@ import { euclideanDistance } from '../../../helpers/EuclideanDistance';
 import { Point } from '../../../helpers/Point';
 
 import { Label } from '../objects/TransformControls/Label';
+import { INTERIOR_WALL_THICKNESS } from '../constants';
 
 export class Preview {
   public preview: Graphics;
@@ -43,8 +44,9 @@ export class Preview {
       this.startPoint.y,
       newY
     );
+    // A wall being drawn reads as its label will: new walls are interior.
     if (isWall) {
-      length -= 20;
+      length -= INTERIOR_WALL_THICKNESS;
     }
     this.sizeLabel.update(length);
     this.sizeLabel.position.x = Math.abs(newX + this.startPoint.x) / 2;
