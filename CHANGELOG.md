@@ -9,6 +9,8 @@ Expect breaking changes between minor versions until v1.0.0.
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-10-01
+
 ### Added
 
 - **Crossover with the network diagram.** A device in a Reticulyne diagram and an item on the floor plan are one scene object, linked by its id. The add panel lists, under "From the network diagram", the devices a diagram has that the plan does not (those with an Accurona element); placing one keeps its id, so the plan item and the diagram node stay one object, name, props and links included. The right-click menu on such an item names the diagrams it is in.
@@ -29,6 +31,16 @@ Expect breaking changes between minor versions until v1.0.0.
 - Pressing and dragging an item moves it, from anywhere on it.
 - A measurement can start on a wall, a wall point or an item.
 - On a phone every tool fits on screen, and notifications stay clear of the toolbar.
+- A room's area moves clear of the item in its middle, and hides under a measurement or a selected item's size labels; the measurement draws over the plan.
+- Esc puts the wall, window, door and measure tools down; the toolbar shows the tool a key takes.
+- The grid stays evenly spaced and equally dark at every zoom, and shows only metre lines when zoomed far out.
+- A device from the network diagram lands clear of other items.
+- Errors ("Load failed", "Unsupported file", "File too large") reach the screen and stay until closed; a failed load keeps the welcome dialog open, where its notification can be read by a screen reader and closed. The same bad file twice shows one notification.
+- The toolbar's Load takes the same file twice.
+- Dialogs open over notifications; on a phone notifications hide while a dialog is open.
+- No Pixi deprecation warning on every load.
+- The 3D view reads "1 piece of furniture" and "1 wall".
+- Built on `@accurona/core`, `@accurona/ui` and `@accurona/elements` 0.2.0.
 
 ## [0.4.0] - 2026-09-30
 
@@ -182,7 +194,9 @@ Initial Axonometra release after the fork from
 - Upstream-only assets and the thesis PDF.
 - Unused dependencies; moved `@types/*` to `devDependencies`.
 
-[Unreleased]: https://github.com/qant-au/axonometra/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/qant-au/axonometra/compare/v0.5.0...HEAD
+[0.5.0]: https://github.com/qant-au/axonometra/compare/v0.4.0...v0.5.0
+[0.4.0]: https://github.com/qant-au/axonometra/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/qant-au/axonometra/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/qant-au/axonometra/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/qant-au/axonometra/releases/tag/v0.1.0
