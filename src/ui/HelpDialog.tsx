@@ -18,13 +18,14 @@ import {
 import { Tool } from '../editor/editor/constants';
 import { FloatingPanel } from '../vendor/accurona-ui';
 
-const helpAddWall = '/help/add-wall.gif';
-const helpDelete = '/help/delete.gif';
-const helpEditFurniture = '/help/edit-furniture.gif';
-const helpEditWall = '/help/edit-walls.gif';
-const helpAddWindow = '/help/add-window.gif';
-const helpAddDoor = '/help/add-door.gif';
-const helpMeasure = '/help/measure-tool.gif';
+// Imported, not fetched from /help/: the bundler ships them with the code.
+import helpAddWall from '../res/help/add-wall.gif';
+import helpDelete from '../res/help/delete.gif';
+import helpEditFurniture from '../res/help/edit-furniture.gif';
+import helpEditWall from '../res/help/edit-walls.gif';
+import helpAddWindow from '../res/help/add-window.gif';
+import helpAddDoor from '../res/help/add-door.gif';
+import helpMeasure from '../res/help/measure-tool.gif';
 
 interface IHelpBody {
   title: string;

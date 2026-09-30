@@ -8,6 +8,9 @@ import {
   TilingSprite
 } from 'pixi.js';
 import { getPreloadImageUrls } from '../../res/catalog';
+// Imported, not fetched from /: the bundler ships it with the code, so it
+// loads wherever the editor is hosted.
+import patternUrl from '../../res/pattern.svg';
 import { FloorPlan } from './objects/FloorPlan';
 import { TransformLayer } from './objects/TransformControls/TransformLayer';
 import { AddNodeAction } from './actions/AddNodeAction';
@@ -57,7 +60,7 @@ export class Main extends Viewport {
     // A failed image must not leave the editor half-built: setup() wires the
     // tools, so it runs whether or not every preload arrived. A missing icon
     // shows as a placeholder instead.
-    Assets.load(['./pattern.svg', ...getPreloadImageUrls()])
+    Assets.load([patternUrl, ...getPreloadImageUrls()])
       .catch((error: unknown) => console.error('Preload failed:', error))
       .finally(() => this.setup());
     this.preview = new Preview(this.inst);
@@ -153,7 +156,7 @@ export class Main extends Viewport {
         this.panWith(state.activeTool);
       }
     });
-    this.bkgPattern = TilingSprite.from('./pattern.svg', {
+    this.bkgPattern = TilingSprite.from(patternUrl, {
       width: this.worldWidth ?? 0,
       height: this.worldHeight ?? 0
     });
