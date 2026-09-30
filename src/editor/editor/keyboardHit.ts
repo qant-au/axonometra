@@ -2,7 +2,7 @@
 // Pure functions over plain coordinates so they can be tested without Pixi.
 import { planToMm } from '../../helpers/planLength';
 import { Point } from '../../helpers/Point';
-import { formatLength, type LengthUnit } from '../../vendor/accurona-core';
+import { formatLength, type LengthUnit } from '@accurona/core';
 
 export interface NodeLike {
   x: number;

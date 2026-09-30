@@ -1,6 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 180" width="360" height="360" preserveAspectRatio="none" stroke-linejoin="round" stroke-linecap="round">
-  <ellipse cx="90" cy="90" rx="89.25" ry="89.25" fill="#f7f5f1" stroke="#2b2b2b" stroke-width="1.5"/>
-  <circle cx="90" cy="90" r="80" fill="none" stroke="#8a857c" stroke-width="0.75"/>
-  <circle cx="90" cy="90" r="22" fill="#e4dfd6" stroke="#8a857c" stroke-width="0.75"/>
-  <circle cx="140" cy="90" r="8" fill="#5b6770" stroke="#8a857c" stroke-width="0.75"/>
-</svg>

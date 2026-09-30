@@ -1,6 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 140 140" width="280" height="280" preserveAspectRatio="none" stroke-linejoin="round" stroke-linecap="round">
-  <polygon points="0.75,0.75 139.25,0.75 139.25,50 135.04,62.17 129.01,73.86 121.98,84.97 114,95.42 105.12,105.12 95.42,114 84.97,121.98 73.86,129.01 62.17,135.04 50,139.25 0.75,139.25" fill="#f7f5f1" stroke="#2b2b2b" stroke-width="1.5"/>
-  <polygon points="126.75,8.75 126.18,20.32 124.48,31.77 121.67,43 117.77,53.91 112.82,64.37 106.86,74.31 99.97,83.61 92.19,92.19 83.61,99.97 74.31,106.86 64.37,112.82 53.91,117.77 43,121.67 31.77,124.48 20.32,126.18 8.75,126.75 8.75,8.75" fill="#d6e8f5" stroke="#2b2b2b" stroke-width="0.75"/>
-  <circle cx="42.75" cy="42.75" r="2.5" fill="#f7f5f1" stroke="#8a857c" stroke-width="0.75"/>
-  <circle cx="18.75" cy="18.75" r="2" fill="#c9ced3" stroke="#2b2b2b" stroke-width="0.75"/>
-</svg>

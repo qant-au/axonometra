@@ -3,7 +3,7 @@
 // toolbar tooltips and this handler all read the same table.
 import { createElement } from 'react';
 import { IconDeviceFloppy } from '@tabler/icons-react';
-import { keymapFor, resolveAction } from '../vendor/accurona-core';
+import { keymapFor, resolveAction } from '@accurona/core';
 import { SaveAction } from './editor/actions/SaveAction';
 import type { EditorInstance } from './instance/EditorInstance';
 import { Tool } from './editor/constants';

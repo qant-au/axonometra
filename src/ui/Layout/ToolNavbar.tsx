@@ -29,10 +29,10 @@ import {
   IconCheck,
   IconKeyboard
 } from '@tabler/icons-react';
-import type { LengthUnit } from '../../vendor/accurona-core';
+import type { LengthUnit } from '@accurona/core';
 import { useUnitsStore } from '../../stores/UnitsStore';
 import { SetUnitsAction } from '../../editor/editor/actions/SetUnitsAction';
-import { SidePanel, ToolMenu } from '../../vendor/accurona-ui';
+import { SidePanel, ToolMenu } from '@accurona/ui';
 import { useStore } from '../../stores/EditorStore';
 import { useFloorPlanStore } from '../../stores/FloorPlanStore';
 import { ChangeFloorAction } from '../../editor/editor/actions/ChangeFloorAction';

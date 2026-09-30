@@ -1,8 +1,4 @@
 STAGE*-REVIEW.md
-# Vendored from qant-au/accurona by scripts/sync-elements.mjs; keep byte-identical.
-src/res/catalog/elements/
-src/vendor/
-
 # The library build and the consumer app built from it.
 dist-lib/
 .consumer/

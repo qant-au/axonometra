@@ -1,0 +1,36 @@
+# A release: push a v* tag matching package.json's version. Lints, tests,
+# builds the library and publishes @axonometra/editor to npm with provenance.
+# Needs an npm automation token in the NPM_TOKEN secret.
+name: Publish
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          registry-url: https://registry.npmjs.org
+      - name: The tag matches package.json
+        run: |
+          expected="v$(node -p "require('./package.json').version")"
+          if [ "$expected" != "$GITHUB_REF_NAME" ]; then
+            echo "Tag $GITHUB_REF_NAME does not match package.json ($expected)." >&2
+            exit 1
+          fi
+      - run: npm ci
+      - run: npm run lint
+      - run: npx vitest run
+      - run: npm run build:lib
+      - run: npm publish --provenance --access public --ignore-scripts
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

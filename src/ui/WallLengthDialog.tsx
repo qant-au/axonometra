@@ -6,7 +6,7 @@ import type { Wall } from '../editor/editor/objects/Walls/Wall';
 import { useStore } from '../stores/EditorStore';
 import { useInstance } from '../editor/instance/context';
 import { useUnitsStore } from '../stores/UnitsStore';
-import { AppDialog } from '../vendor/accurona-ui';
+import { AppDialog } from '@accurona/ui';
 
 // The wall label shows the drawn length less one wall thickness, so the typed
 // value is read the same way. The wall keeps its midpoint and direction.

@@ -4,7 +4,7 @@ import {
   validateScene,
   type PlanView,
   type Scene
-} from '../../../vendor/accurona-core';
+} from '@accurona/core';
 import type { FloorPlanSerializable } from '../persistence/FloorPlanSerializable';
 import { newContext, planToScene, sceneToPlan } from '../persistence/sceneFile';
 

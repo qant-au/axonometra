@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { resolveAction } from '../../vendor/accurona-core';
+import { resolveAction } from '@accurona/core';
 import { KEYMAP, TOOL_FOR_ACTION } from '../keymap';
 import { Tool } from '../editor/constants';
 

@@ -15,8 +15,8 @@ import {
   createLineworkTheme,
   NotificationHost,
   type NotifyOptions
-} from '../vendor/accurona-ui';
-import type { LengthUnit, Scene } from '../vendor/accurona-core';
+} from '@accurona/ui';
+import type { LengthUnit, Scene } from '@accurona/core';
 import {
   EditorInstance,
   type ThemeMode

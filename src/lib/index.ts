@@ -5,4 +5,4 @@ export {
   type AxonometraProps
 } from './Axonometra';
 export type { ThemeMode } from '../editor/instance/EditorInstance';
-export type { LengthUnit, Scene } from '../vendor/accurona-core';
+export type { LengthUnit, Scene } from '@accurona/core';

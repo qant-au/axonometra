@@ -10,7 +10,7 @@ vi.mock('../../../helpers/isMobile', () => ({ isMobile: false }));
 
 // Notifications surface from remove() when a connected node can't be deleted.
 const showNotification = vi.fn();
-vi.mock('../../../vendor/accurona-ui', () => ({
+vi.mock('@accurona/ui', () => ({
   notify: showNotification
 }));
 

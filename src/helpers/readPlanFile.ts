@@ -1,4 +1,4 @@
-import { notify } from '../vendor/accurona-ui';
+import { notify } from '@accurona/ui';
 
 const MAX_BYTES = 5 * 1024 * 1024;
 // Browsers frequently report an empty MIME type for `.json` files, so the

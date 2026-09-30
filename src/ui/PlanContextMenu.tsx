@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ContextMenu, type ContextMenuItem } from '../vendor/accurona-ui';
+import { ContextMenu, type ContextMenuItem } from '@accurona/ui';
 import type { EditorInstance } from '../editor/instance/EditorInstance';
 import { useInstance } from '../editor/instance/context';
 import { useContextMenuStore } from '../editor/editor/selection/pointer';

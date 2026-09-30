@@ -1,5 +1,5 @@
 import type { EditorInstance } from '../../instance/EditorInstance';
-import type { LengthUnit } from '../../../vendor/accurona-core';
+import type { LengthUnit } from '@accurona/core';
 import { Action } from './Action';
 
 // Display units change how lengths read, not the plan's geometry, so this is

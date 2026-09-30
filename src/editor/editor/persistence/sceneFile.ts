@@ -20,7 +20,7 @@ import {
   type Scene,
   type SceneObject,
   type Wall as SceneWall
-} from '../../../vendor/accurona-core';
+} from '@accurona/core';
 import { getPlacementDefaults } from '../../../res/catalog';
 import { INTERIOR_WALL_THICKNESS, METER, WALL_THICKNESS } from '../constants';
 import {

@@ -1,8 +1,7 @@
 // The built-in catalogue. Furniture and equipment come from the shared element
-// library (qant-au/accurona), vendored into ./elements by
-// scripts/sync-elements.mjs; doors and windows are still local
+// library, @accurona/elements; doors and windows are still local
 // (wall-fittings.json and ./images).
-import manifest from './elements/manifest.json';
+import manifest from '@accurona/elements/manifest.json';
 import wallFittings from './wall-fittings.json';
 import type { Category, FurnitureData } from '../../stores/FurnitureStore';
 
@@ -22,11 +21,15 @@ interface ElementEntry {
 
 const elements = manifest.elements as ElementEntry[];
 
-const elementImages = import.meta.glob('./elements/plan/*.svg', {
-  eager: true,
-  query: '?url',
-  import: 'default'
-}) as Record<string, string>;
+// A glob cannot go through the package's exports, so it names the files.
+const elementImages = import.meta.glob(
+  '/node_modules/@accurona/elements/dist/plan/*.svg',
+  {
+    eager: true,
+    query: '?url',
+    import: 'default'
+  }
+) as Record<string, string>;
 
 const localImages = import.meta.glob('./images/*.svg', {
   eager: true,
@@ -132,7 +135,9 @@ export function resolveCatalogImage(imagePath: string): string {
   const placeholder = localImages['./images/placeholder.svg'];
   if (!SAFE_IMAGE_PATH.test(imagePath)) return placeholder;
   return (
-    elementImages[`./elements/plan/${imagePath}.svg`] ??
+    elementImages[
+      `/node_modules/@accurona/elements/dist/plan/${imagePath}.svg`
+    ] ??
     localImages[`./images/${imagePath}.svg`] ??
     placeholder
   );

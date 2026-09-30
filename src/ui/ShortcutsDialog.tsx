@@ -3,8 +3,8 @@ import {
   AXONOMETRA_WALK_KEYS,
   DIFFERENCES,
   shortcutSections
-} from '../vendor/accurona-core';
-import { KeyboardShortcutsDialog } from '../vendor/accurona-ui';
+} from '@accurona/core';
+import { KeyboardShortcutsDialog } from '@accurona/ui';
 import { KEYMAP } from '../editor/keymap';
 import { useStore } from '../stores/EditorStore';
 

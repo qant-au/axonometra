@@ -40,7 +40,7 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import saveAs from 'file-saver';
 import { timestamp } from '../editor/editor/actions/SaveAction';
 import { METER } from '../editor/editor/constants';
-import { AppDialog } from '../vendor/accurona-ui';
+import { AppDialog } from '@accurona/ui';
 import type { FloorPlanSerializable } from '../editor/editor/persistence/FloorPlanSerializable';
 import { useInstance } from '../editor/instance/context';
 import { sceneModel } from '../editor/scene3d/sceneModel';

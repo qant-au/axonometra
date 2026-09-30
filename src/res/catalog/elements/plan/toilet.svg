@@ -1,9 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 70" width="80" height="140" preserveAspectRatio="none" stroke-linejoin="round" stroke-linecap="round">
-  <polygon points="8,12 32,12 33,31.6 36.45,34 38.07,38.58 38.9,43.49 38.9,48.51 38.07,53.42 36.45,58 34.12,62.06 31.17,65.42 27.73,67.93 23.95,69.48 20,70 16.05,69.48 12.27,67.93 8.83,65.42 5.88,62.06 3.55,58 1.93,53.42 1.1,48.51 1.1,43.49 1.93,38.58 3.55,34 7,31.6" fill="#f7f5f1" stroke="#2b2b2b" stroke-width="1.5"/>
-  <ellipse cx="20.1" cy="46" rx="14.5" ry="19" fill="#f7f5f1" stroke="#8a857c" stroke-width="0.75"/>
-  <ellipse cx="20.1" cy="47" rx="10" ry="14" fill="#d6e8f5" stroke="#8a857c" stroke-width="0.75"/>
-  <polyline points="11.1,24 29.1,24" fill="none" stroke="#2b2b2b" stroke-width="0.75"/>
-  <rect x="0" y="0" width="40" height="18" rx="3" fill="#f7f5f1" stroke="#2b2b2b" stroke-width="1.5"/>
-  <circle cx="16" cy="9" r="2.5" fill="none" stroke="#8a857c" stroke-width="0.75"/>
-  <circle cx="24" cy="9" r="2.5" fill="none" stroke="#8a857c" stroke-width="0.75"/>
-</svg>

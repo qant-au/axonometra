@@ -3,7 +3,7 @@ import {
   isSceneDocument,
   serializeScene,
   validateScene
-} from '../../../vendor/accurona-core';
+} from '@accurona/core';
 import { DEFAULT_UNITS } from '../../../stores/UnitsStore';
 import type { EditorInstance } from '../../instance/EditorInstance';
 import {

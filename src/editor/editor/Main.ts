@@ -22,7 +22,7 @@ import { Preview } from './actions/MeasureToolManager';
 import { SelectionOverlay } from './selection/SelectionOverlay';
 import { refsInRect } from './selection/planOps';
 import { interpretWheel } from './wheel';
-import { isTypingTarget } from '../../vendor/accurona-core';
+import { isTypingTarget } from '@accurona/core';
 
 // A press that moves less than this, in screen pixels, is a click, not a
 // marquee.

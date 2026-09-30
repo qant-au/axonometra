@@ -16,7 +16,7 @@ import {
   IconZoomIn
 } from '@tabler/icons-react';
 import { Tool } from '../editor/editor/constants';
-import { FloatingPanel } from '../vendor/accurona-ui';
+import { FloatingPanel } from '@accurona/ui';
 
 // Imported, not fetched from /help/: the bundler ships them with the code.
 import helpAddWall from '../res/help/add-wall.gif';

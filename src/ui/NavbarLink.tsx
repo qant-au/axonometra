@@ -1,5 +1,5 @@
 import { type Icon as TablerIcon } from '@tabler/icons-react';
-import { ToolButton } from '../vendor/accurona-ui';
+import { ToolButton } from '@accurona/ui';
 
 interface NavbarLinkProps {
   icon: TablerIcon;

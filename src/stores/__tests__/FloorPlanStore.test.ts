@@ -6,7 +6,7 @@ import type { EditorInstance } from '../../editor/instance/EditorInstance';
 // Floors are Pixi containers; the store only ever calls a handful of their
 // methods, so a plain fake stands in and no Pixi mock is needed.
 const showNotification = vi.fn();
-vi.mock('../../vendor/accurona-ui', () => ({
+vi.mock('@accurona/ui', () => ({
   notify: showNotification
 }));
 
