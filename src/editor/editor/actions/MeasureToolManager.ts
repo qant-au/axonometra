@@ -3,7 +3,7 @@ import { Graphics, FederatedPointerEvent } from 'pixi.js';
 import { euclideanDistance } from '../../../helpers/EuclideanDistance';
 import { Point } from '../../../helpers/Point';
 
-import { Label } from '../objects/TransformControls/Label';
+import { Label, readoutsOf } from '../objects/TransformControls/Label';
 import { INTERIOR_WALL_THICKNESS } from '../constants';
 
 export class Preview {
@@ -18,6 +18,7 @@ export class Preview {
     this.sizeLabel = new Label(this.inst);
     this.sizeLabel.visible = false;
     this.preview.addChild(this.sizeLabel);
+    readoutsOf(this.inst).add(this.sizeLabel);
   }
 
   public set(value: Point | undefined) {

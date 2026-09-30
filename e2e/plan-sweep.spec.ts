@@ -253,6 +253,42 @@ test('a measurement draws over the room areas', async ({ page }) => {
   expect(order.measure).toBeGreaterThan(order.plan);
 });
 
+const areaLabelShown = (page: Page) =>
+  page.evaluate(() =>
+    (
+      window as unknown as {
+        __axo: {
+          getPlan: () => {
+            getCurrentFloor: () => {
+              wallNodeSequence: {
+                roomLabels: { children: { visible: boolean }[] };
+              };
+            };
+          };
+        };
+      }
+    ).__axo
+      .getPlan()
+      .getCurrentFloor()
+      .wallNodeSequence.roomLabels.children.map((t) => t.visible)
+  );
+
+// Re-sweep 2 2026-09-30: the measurement's white box covered the area label
+// but for the tops of its glyphs, which showed above it. The area now hides
+// under the measurement and comes back when it ends.
+test('a room area hides under a measurement across it', async ({ page }) => {
+  await start(page);
+  const { cx, cy } = await drawRoom(page);
+  await expect.poll(() => areaLabelShown(page)).toEqual([true]);
+  await page.getByRole('button', { name: 'Measure tool' }).click();
+  await page.mouse.move(cx - 100, cy);
+  await page.mouse.down();
+  await page.mouse.move(cx + 100, cy, { steps: 6 });
+  await expect.poll(() => areaLabelShown(page)).toEqual([false]);
+  await page.mouse.up();
+  await expect.poll(() => areaLabelShown(page)).toEqual([true]);
+});
+
 // Re-sweep 2026-09-30: a device placed from the network diagram landed in
 // the middle of the view, on top of the access point already there.
 test('a device from the network diagram is placed clear of the others', async ({

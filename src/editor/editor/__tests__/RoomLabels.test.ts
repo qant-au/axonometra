@@ -5,7 +5,8 @@ vi.mock('pixi.js', async () => {
   return createPixiMock();
 });
 
-const { clearSpot } = await import('../objects/Walls/RoomLabels');
+const { clearSpot, RoomLabels } = await import('../objects/Walls/RoomLabels');
+const { fakeInstance } = await import('../../../test/fakeInstance');
 
 // Re-sweep 2026-09-30: room areas draw under the furniture, so a loaded
 // plan with an item in the middle of its room showed no area at all.
@@ -44,5 +45,62 @@ describe('clearSpot', () => {
   it('stays in the middle when the whole room is covered', () => {
     const rug = { x: -10, y: -10, width: 420, height: 320 };
     expect(clearSpot(room, at, size, [rug])).toEqual({ x: 170, y: 140 });
+  });
+});
+
+// Re-sweep 2026-09-30: a measurement's or a selected item's length, drawn
+// over a room's area, left the tops of the area's glyphs showing round its
+// white box.
+describe('RoomLabels.hideUnder', () => {
+  const node = (id: number, x: number, y: number) => ({
+    x,
+    y,
+    getId: () => id
+  });
+  const nodes = [
+    node(1, 0, 0),
+    node(2, 400, 0),
+    node(3, 400, 300),
+    node(4, 0, 300)
+  ];
+  const walls = [
+    [0, 1],
+    [1, 2],
+    [2, 3],
+    [3, 0]
+  ].map(([a, b]) => ({ leftNode: nodes[a], rightNode: nodes[b] }));
+
+  function labels() {
+    const l = new RoomLabels(fakeInstance());
+    l.update(
+      new Map(nodes.map((n) => [n.getId(), n])) as never,
+      walls as never
+    );
+    return l;
+  }
+  const areaText = (l: InstanceType<typeof RoomLabels>) =>
+    l.children[0] as unknown as {
+      visible: boolean;
+      position: { x: number; y: number };
+    };
+
+  it('hides a room area a read-out covers, even at its edge', () => {
+    const l = labels();
+    const text = areaText(l);
+    // The pixi mock's text is 50 x 16; a read-out one pixel into its top.
+    const { x, y } = text.position;
+    l.hideUnder([{ x: x - 20, y: y - 15, width: 90, height: 16 }]);
+    expect(text.visible).toBe(false);
+  });
+
+  it('shows it again when the read-out goes or lies clear', () => {
+    const l = labels();
+    const text = areaText(l);
+    const { x, y } = text.position;
+    l.hideUnder([{ x: x - 20, y: y - 15, width: 90, height: 16 }]);
+    l.hideUnder([]);
+    expect(text.visible).toBe(true);
+    l.hideUnder([{ x: x, y: y + 40, width: 90, height: 16 }]);
+    expect(text.visible).toBe(true);
   });
 });

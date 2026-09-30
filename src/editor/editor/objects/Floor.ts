@@ -12,6 +12,16 @@ import { Wall } from './Walls/Wall';
 import { WallNode } from './Walls/WallNode';
 import { WallNodeSequence } from './Walls/WallNodeSequence';
 import type { Box } from './Walls/RoomLabels';
+import { readoutsOf } from './TransformControls/Label';
+
+/** On screen: it and every container above it are visible. */
+function shown(object: Container): boolean {
+  if (!object.parent) return false;
+  for (let o: Container | null = object; o; o = o.parent) {
+    if (!o.visible) return false;
+  }
+  return true;
+}
 
 export class Floor extends Container {
   public furnitureArray: Map<number, Furniture>;
@@ -34,9 +44,13 @@ export class Floor extends Container {
     // is seen (and printed) over its area, not behind it.
     this.wallNodeSequence.roomLabels.zIndex = -1;
     this.addChild(this.wallNodeSequence.roomLabels);
-    // ...and move off any item that would hide them.
-    this.onRender = () =>
-      this.wallNodeSequence.roomLabels.place(this.itemBoxes());
+    // ...and move off any item that would hide them, and hide under a
+    // measurement or size read-out drawn over them.
+    this.onRender = () => {
+      const labels = this.wallNodeSequence.roomLabels;
+      labels.place(this.itemBoxes());
+      labels.hideUnder(this.readoutBoxes());
+    };
     this.sortableChildren = true;
     if (floorData) {
       const nodeLinks = new Map<number, number[]>(floorData.wallNodeLinks);
@@ -127,17 +141,31 @@ export class Floor extends Container {
     const boxes: Box[] = [];
     for (const item of this.furnitureArray.values()) {
       if (item.parent !== this) continue; // a door or window, in its wall
-      const b = item.getBounds();
-      const a = this.toLocal({ x: b.minX, y: b.minY });
-      const c = this.toLocal({ x: b.maxX, y: b.maxY });
-      boxes.push({
-        x: Math.round(Math.min(a.x, c.x)),
-        y: Math.round(Math.min(a.y, c.y)),
-        width: Math.round(Math.abs(c.x - a.x)),
-        height: Math.round(Math.abs(c.y - a.y))
-      });
+      boxes.push(this.localBox(item));
     }
     return boxes;
+  }
+
+  /** The read-outs on screen now (a measurement, a size), in this floor's coordinates. */
+  public readoutBoxes(): Box[] {
+    const boxes: Box[] = [];
+    for (const label of readoutsOf(this.inst)) {
+      if (!shown(label)) continue;
+      boxes.push(this.localBox(label));
+    }
+    return boxes;
+  }
+
+  private localBox(object: Container): Box {
+    const b = object.getBounds();
+    const a = this.toLocal({ x: b.minX, y: b.minY });
+    const c = this.toLocal({ x: b.maxX, y: b.maxY });
+    return {
+      x: Math.round(Math.min(a.x, c.x)),
+      y: Math.round(Math.min(a.y, c.y)),
+      width: Math.round(Math.abs(c.x - a.x)),
+      height: Math.round(Math.abs(c.y - a.y))
+    };
   }
 
   private getExteriorWalls() {

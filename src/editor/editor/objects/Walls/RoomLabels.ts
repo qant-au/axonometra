@@ -144,4 +144,21 @@ export class RoomLabels extends Container {
       text.position.set(spot.x, spot.y);
     }
   }
+
+  /**
+   * Hides each label that a read-out (boxes in plan coordinates) covers: the
+   * read-out's white box is a line high, so the taller area glyphs showed
+   * round its edges. Called every frame, after `place`.
+   */
+  public hideUnder(readouts: Box[]) {
+    for (const { text } of this.rooms) {
+      const box = {
+        x: text.position.x,
+        y: text.position.y,
+        width: text.width,
+        height: text.height
+      };
+      text.visible = !readouts.some((r) => overlaps(box, r));
+    }
+  }
 }
