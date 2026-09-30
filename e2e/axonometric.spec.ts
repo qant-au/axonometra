@@ -55,6 +55,12 @@ test('shows the plan in an axonometric view that can be turned', async ({
   const drawing = page.getByRole('img', {
     name: /Axonometric view of floor 0/
   });
+  // Re-sweep 2 2026-09-30: the Turn buttons' icons read as two unnamed
+  // images ahead of the drawing. The drawing is the dialog's one image.
+  await expect(page.getByRole('dialog').getByRole('img')).toHaveCount(1);
+  await expect(page.getByRole('dialog').getByRole('img')).toHaveAccessibleName(
+    /Axonometric view of floor 0/
+  );
   await expect(drawing).toHaveAttribute(
     'aria-label',
     /3 walls and 1 piece of furniture, turned 0 degrees/

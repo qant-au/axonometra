@@ -67,7 +67,7 @@ export function AxonometricView({ opened, onClose }: Props) {
               aria-label="Turn left"
               onClick={() => setTurns((t) => (t + 3) % 4)}
             >
-              <IconRotate2 />
+              <IconRotate2 aria-hidden />
             </IconButton>
           </Tooltip>
           <Tooltip title="Turn right">
@@ -75,7 +75,7 @@ export function AxonometricView({ opened, onClose }: Props) {
               aria-label="Turn right"
               onClick={() => setTurns((t) => (t + 1) % 4)}
             >
-              <IconRotateClockwise2 />
+              <IconRotateClockwise2 aria-hidden />
             </IconButton>
           </Tooltip>
         </Stack>
