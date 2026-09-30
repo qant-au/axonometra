@@ -11,7 +11,7 @@ const { fakeInstance } = await import('../../../test/fakeInstance');
 // The length shown beside the line, as fakeInstance formats it.
 const shown = (preview: InstanceType<typeof Preview>) =>
   (
-    preview.getReference().children[0] as unknown as {
+    preview.getReference().children.find((c) => 'text' in c) as unknown as {
       text: { text: string };
     }
   ).text.text;

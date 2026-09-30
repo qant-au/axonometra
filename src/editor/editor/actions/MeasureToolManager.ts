@@ -1,5 +1,5 @@
 import type { EditorInstance } from '../../instance/EditorInstance';
-import { Graphics, FederatedPointerEvent } from 'pixi.js';
+import { Container, Graphics, FederatedPointerEvent } from 'pixi.js';
 import { euclideanDistance } from '../../../helpers/EuclideanDistance';
 import { Point } from '../../../helpers/Point';
 
@@ -7,14 +7,18 @@ import { Label, readoutsOf } from '../objects/TransformControls/Label';
 import { INTERIOR_WALL_THICKNESS } from '../constants';
 
 export class Preview {
-  public preview: Graphics;
+  /** The line and its length. A Graphics may not hold children in Pixi 8. */
+  public preview: Container;
+  private line: Graphics;
   public startPoint: Point | undefined;
   private sizeLabel: Label;
   public constructor(private readonly inst: EditorInstance) {
     this.startPoint = undefined;
-    this.preview = new Graphics();
+    this.preview = new Container();
     // Follows the mouse like the cursor; never a hit target.
     this.preview.eventMode = 'none';
+    this.line = new Graphics();
+    this.preview.addChild(this.line);
     this.sizeLabel = new Label(this.inst);
     this.sizeLabel.visible = false;
     this.preview.addChild(this.sizeLabel);
@@ -23,7 +27,7 @@ export class Preview {
 
   public set(value: Point | undefined) {
     this.startPoint = value;
-    this.preview.clear();
+    this.line.clear();
     this.sizeLabel.visible = false;
   }
 
@@ -33,7 +37,7 @@ export class Preview {
     }
     const newX = this.inst.viewportX(ev.global.x);
     const newY = this.inst.viewportY(ev.global.y);
-    this.preview
+    this.line
       .clear()
       .moveTo(this.startPoint.x, this.startPoint.y)
       .lineTo(newX, newY)

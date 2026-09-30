@@ -1,5 +1,5 @@
 import type { EditorInstance } from '../../instance/EditorInstance';
-import { Graphics, FederatedPointerEvent, Sprite, Texture } from 'pixi.js';
+import { Container, FederatedPointerEvent, Sprite, Texture } from 'pixi.js';
 import { loadedTexture, loadTexture } from '../textures';
 import { resolveCatalogImage } from '../../../api/api-client';
 import { FurnitureData } from '../../../stores/FurnitureStore';
@@ -24,7 +24,7 @@ export class Furniture extends Sprite {
     private readonly inst: EditorInstance,
     data: FurnitureData,
     id: number,
-    attachedTo?: Graphics,
+    attachedTo?: Container,
     attachedToLeft?: number,
     attachedToRight?: number,
     orientation = 0

@@ -1,5 +1,5 @@
 import type { EditorInstance } from '../../../instance/EditorInstance';
-import { Graphics, FederatedPointerEvent } from 'pixi.js';
+import { Container, Graphics, FederatedPointerEvent } from 'pixi.js';
 import { getDoor, getWindow } from '../../../../api/api-client';
 import { euclideanDistance } from '../../../../helpers/EuclideanDistance';
 import { Point } from '../../../../helpers/Point';
@@ -17,7 +17,10 @@ import { Label } from '../TransformControls/Label';
 import { wallRef } from '../../selection/planOps';
 import { WallNode } from './WallNode';
 
-export class Wall extends Graphics {
+export class Wall extends Container {
+  /** The wall itself. A Graphics may not hold children in Pixi 8, and a
+   * wall holds its length label and its doors and windows. */
+  private body = new Graphics();
   leftNode: WallNode;
   rightNode: WallNode;
   length!: number;
@@ -43,6 +46,7 @@ export class Wall extends Graphics {
   ) {
     super();
     this.sortableChildren = true;
+    this.addChild(this.body);
 
     this.eventMode = 'static';
     this.leftNode = leftNode;
@@ -120,7 +124,7 @@ export class Wall extends Graphics {
   }
 
   public drawLine() {
-    this.clear();
+    this.body.clear();
     [this.x1, this.y1, this.x2, this.y2] = this.setLineCoords();
 
     let theta = Math.atan2(this.y2 - this.y1, this.x2 - this.x1); // aflu unghiul sa pot roti
@@ -128,7 +132,8 @@ export class Wall extends Graphics {
     if (theta < 0) theta = 360 + theta; // range [0, 360)
     this.length = euclideanDistance(this.x1, this.x2, this.y1, this.y2);
 
-    this.rect(0, 0, this.length, this.thickness)
+    this.body
+      .rect(0, 0, this.length, this.thickness)
       .fill(0x000000)
       .stroke({ width: 1, color: WALL_COLOR });
     this.position.set(this.x1, this.y1);

@@ -13,7 +13,10 @@ export class TransformLayer extends Container {
   private points: Point[];
   private handles: Handle[];
   private labels: Label[];
-  private border: Graphics;
+  /** Sits on the item, turned with it: the outline, handles and size labels. */
+  private border: Container;
+  /** A Graphics may not hold children in Pixi 8, so the outline is its own. */
+  private outline: Graphics;
   private borderOffset: number;
 
   // private dragging:boolean;
@@ -25,7 +28,9 @@ export class TransformLayer extends Container {
     this.labels = [];
     this.visible = false;
     this.target = null;
-    this.border = new Graphics();
+    this.border = new Container();
+    this.outline = new Graphics();
+    this.border.addChild(this.outline);
     this.borderOffset = 2;
     // this.dragging = false;
 
@@ -162,13 +167,13 @@ export class TransformLayer extends Container {
   private drawBorder() {
     const target = this.target;
     if (!target) return;
-    this.border.clear();
+    this.outline.clear();
     const globals = target.getGlobalPosition();
     const x = this.inst.viewportX(globals.x - this.borderOffset, false);
     const y = this.inst.viewportY(globals.y - this.borderOffset, false);
     const w = target.width + 2 * this.borderOffset;
     const h = target.height + 2 * this.borderOffset;
-    this.border
+    this.outline
       .rect(0, 0, w, h)
       .stroke({ width: 3, color: 0x000000, alpha: 1, alignment: 0 });
 

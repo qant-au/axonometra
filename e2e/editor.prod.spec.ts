@@ -107,7 +107,13 @@ test('doors and windows draw their images, not black shapes, and nothing is eval
   page.on('pageerror', (e) => problems.push(`pageerror: ${e.message}`));
   page.on('console', (m) => {
     // Chrome reports a refused texture upload as a warning.
-    if (m.type() === 'error' || /texImage2D|WebGL: INVALID/.test(m.text()))
+    // A Pixi deprecation opens a collapsed group and warns with only a stack
+    // trace (re-sweep 2 2026-09-30: a Graphics given children, every load).
+    if (
+      m.type() === 'error' ||
+      /texImage2D|WebGL: INVALID|Deprecation/.test(m.text()) ||
+      (m.type() === 'warning' && /^\s+at /.test(m.text()))
+    )
       problems.push(`console ${m.type()}: ${m.text()}`);
   });
 
