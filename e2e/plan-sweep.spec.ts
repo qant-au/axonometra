@@ -186,12 +186,14 @@ test('zoomed far out, the grid draws its metre lines only', async ({
           __axo: {
             getMain: () => {
               scale: { x: number };
-              bkgPattern: { visible: boolean };
-              metreGrid: { visible: boolean };
+              bkgPattern?: { visible: boolean };
+              metreGrid?: { visible: boolean };
             };
           };
         }
       ).__axo.getMain();
+      // Not yet set up: the canvas is still loading.
+      if (!main.bkgPattern || !main.metreGrid) return null;
       return {
         coarse: main.scale.x < 0.5,
         pattern: main.bkgPattern.visible,
@@ -434,6 +436,7 @@ const areaAndSizes = (page: Page) =>
       .getPlan()
       .getCurrentFloor();
     const t = floor.wallNodeSequence.roomLabels.children[0];
+    if (!t) return null; // the plan is still loading
     const b = t.getBounds();
     return {
       area: {
@@ -455,7 +458,7 @@ test('a room area hides under a selected item’s size labels', async ({
 }) => {
   await loadFixture(page, 'comms-room.scene.json');
   await page.getByRole('button', { name: 'Edit', exact: true }).click();
-  await expect.poll(async () => (await areaAndSizes(page)).visible).toBe(true);
+  await expect.poll(async () => (await areaAndSizes(page))?.visible).toBe(true);
   // The access point sits in the middle; its area is written just above it.
   const ap = await page.evaluate(() => {
     const f = (
@@ -484,7 +487,7 @@ test('a room area hides under a selected item’s size labels', async ({
     const b = f.getBounds();
     return { x: (b.minX + b.maxX) / 2, y: (b.minY + b.maxY) / 2 };
   });
-  const { screen } = await areaAndSizes(page);
+  const { screen } = (await areaAndSizes(page))!;
   // Drag it onto the area: the area moves below it, where the item's
   // horizontal size label is drawn.
   await page.mouse.move(ap.x, ap.y);
@@ -499,7 +502,7 @@ test('a room area hides under a selected item’s size labels', async ({
     b.y < a.y + a.height;
   await expect
     .poll(async () => {
-      const now = await areaAndSizes(page);
+      const now = (await areaAndSizes(page))!;
       return {
         sizes: now.sizes.length,
         under: now.sizes.some((s) => overlap(s, now.area)),
@@ -509,7 +512,7 @@ test('a room area hides under a selected item’s size labels', async ({
     .toEqual({ sizes: 2, under: true, visible: false });
   // Deselected, the area shows again.
   await page.keyboard.press('Escape');
-  await expect.poll(async () => (await areaAndSizes(page)).visible).toBe(true);
+  await expect.poll(async () => (await areaAndSizes(page))?.visible).toBe(true);
 });
 
 // Re-sweep 2026-09-30: a device placed from the network diagram landed in
