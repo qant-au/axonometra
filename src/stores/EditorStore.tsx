@@ -25,6 +25,8 @@ export interface EditorStore {
   shortcutsOpen: boolean;
   /** The Find box (Ctrl/Cmd + F). */
   findOpen: boolean;
+  /** The welcome dialog, which shows the notifications while it is open. */
+  welcomeOpen: boolean;
   theme: ThemeMode;
   setMode: (mode: ToolMode) => void;
   setTool: (tool: Tool) => void;
@@ -32,6 +34,7 @@ export interface EditorStore {
   setLengthEditWall: (wall: Wall | null) => void;
   setShortcutsOpen: (open: boolean) => void;
   setFindOpen: (open: boolean) => void;
+  setWelcomeOpen: (open: boolean) => void;
   /** Alt + Shift + D. The host can remember it (onThemeModeChange). */
   toggleTheme: () => void;
 }
@@ -46,6 +49,7 @@ export function createEditorStore(inst: EditorInstance): StoreApi<EditorStore> {
     lengthEditWall: null,
     shortcutsOpen: false,
     findOpen: false,
+    welcomeOpen: false,
     theme: inst.config.themeMode,
     setMode: (mode: ToolMode) => {
       set(() => ({
@@ -71,6 +75,9 @@ export function createEditorStore(inst: EditorInstance): StoreApi<EditorStore> {
     },
     setFindOpen: (open: boolean) => {
       set(() => ({ findOpen: open }));
+    },
+    setWelcomeOpen: (open: boolean) => {
+      set(() => ({ welcomeOpen: open }));
     },
     toggleTheme: () => {
       set((state) => {

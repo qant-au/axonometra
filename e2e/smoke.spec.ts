@@ -81,6 +81,14 @@ test('a load from the welcome dialog that fails leaves it open', async ({
     buffer: Buffer.from(JSON.stringify(scene))
   });
   await expect(page.getByText('Load failed')).toBeVisible();
+  // A screen reader reaches it: the dialog hides the rest of the page, so
+  // the notification must be inside it (getByRole skips aria-hidden).
+  await expect(
+    page.getByRole('alert').filter({ hasText: 'Load failed' })
+  ).toBeVisible();
+  // An error stays until it is closed; it used to go after 4 s.
+  await page.waitForTimeout(4500);
+  await expect(page.getByText('Load failed')).toBeVisible();
   await expect(
     welcome.getByRole('button', { name: /new plan/i })
   ).toBeVisible();

@@ -1,5 +1,6 @@
-import { ChangeEvent, useRef, useState } from 'react';
+import { ChangeEvent, useEffect, useRef, useState } from 'react';
 import { Box, Button, Dialog, DialogContent, Stack } from '@mui/material';
+import { NotificationHost } from '@accurona/ui';
 import {
   IconDatabase,
   IconPlus,
@@ -9,6 +10,7 @@ import { LoadAction } from '../editor/editor/actions/LoadAction';
 import AxonometraLogo from '../res/axonometra-logo.svg';
 import { useInstance } from '../editor/instance/context';
 import { readPlanFile } from '../helpers/readPlanFile';
+import { useStore } from '../stores/EditorStore';
 
 /** A dialog that leaves the notifications showing on a phone (Axonometra). */
 export const KEEPS_NOTIFICATIONS = 'axo-keeps-notifications';
@@ -18,6 +20,11 @@ export function WelcomeModal() {
   // The host keeps the last save (EditorConfig.loadSaved), if it does.
   const { loadSaved } = inst.config;
   const [opened, setOpened] = useState(true);
+  const setWelcomeOpen = useStore((s) => s.setWelcomeOpen);
+  useEffect(() => {
+    setWelcomeOpen(opened);
+    return () => setWelcomeOpen(false);
+  }, [opened, setWelcomeOpen]);
   const fileRef = useRef<HTMLInputElement>(null);
   const image = (
     <Box
@@ -115,6 +122,12 @@ export function WelcomeModal() {
             )}
           </Stack>
         </DialogContent>
+        {/* The dialog hides everything outside it from screen readers, so
+            the notifications it raises (a load that failed) are shown here,
+            inside it, while it is open; the editor's own host steps aside.
+            Only one host is ever rendered, so each notification is one
+            element. */}
+        {opened && <NotificationHost notifier={inst.notifier} />}
       </Dialog>
     </>
   );

@@ -27,7 +27,7 @@ import {
   EditorInstance,
   type ThemeMode
 } from '../editor/instance/EditorInstance';
-import { EditorInstanceContext } from '../editor/instance/context';
+import { EditorInstanceContext, useInstance } from '../editor/instance/context';
 import { SetUnitsAction } from '../editor/editor/actions/SetUnitsAction';
 import { PageLayout } from '../ui/Layout/PageLayout';
 import { KEEPS_NOTIFICATIONS } from '../ui/WelcomeModal';
@@ -138,6 +138,15 @@ function Themed({
   return <ThemeProvider theme={theme ?? own}>{children}</ThemeProvider>;
 }
 
+// The editor's notifications, except while the welcome dialog is open: it
+// shows them inside itself, and one host at a time keeps each notification
+// a single element.
+function EditorNotifications() {
+  const inst = useInstance();
+  const welcomeOpen = useStore((s) => s.welcomeOpen);
+  return welcomeOpen ? null : <NotificationHost notifier={inst.notifier} />;
+}
+
 export function Axonometra({
   initialScene,
   readOnly = false,
@@ -216,9 +225,10 @@ export function Axonometra({
               though still over the side panels. On a phone a dialog is
               narrower than the screen and a notification showed at its
               side, so there they hide while one is open, the non-modal
-              Help panel included; the welcome dialog keeps them, as it
-              reports a load that failed, and while it is the only dialog
-              open they go over it, where they can be closed. */}
+              Help panel included. The welcome dialog, which reports a load
+              that failed, shows them inside itself, where a screen reader
+              can reach them and they can be closed, so this host steps
+              aside while it is open. */}
           <Box
             sx={(theme) => ({
               '& > .MuiStack-root': {
@@ -227,15 +237,13 @@ export function Axonometra({
                   : `calc(100% - ${TOOLBAR_WIDTH + 32}px)`,
                 zIndex: theme.zIndex.modal - 1
               },
-              [`body:has(.MuiDialog-root.${KEEPS_NOTIFICATIONS}):not(:has(.MuiDialog-root:not(.${KEEPS_NOTIFICATIONS}), [role="dialog"]:not(.MuiModal-root *))) & > .MuiStack-root`]:
-                { zIndex: theme.zIndex.modal + 1 },
               [theme.breakpoints.down('sm')]: {
                 [`body:has(.MuiDialog-root:not(.${KEEPS_NOTIFICATIONS}), [role="dialog"]:not(.MuiModal-root *)) & > .MuiStack-root`]:
                   { visibility: 'hidden' }
               }
             })}
           >
-            <NotificationHost notifier={inst.notifier} />
+            <EditorNotifications />
           </Box>
           <PageLayout />
         </ScopedCssBaseline>
