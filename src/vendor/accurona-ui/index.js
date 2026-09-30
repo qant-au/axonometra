@@ -5,7 +5,7 @@ export { ContextMenu } from './ContextMenu.js';
 export { FloatingPanel } from './FloatingPanel.js';
 export { KeyboardShortcutsDialog } from './KeyboardShortcutsDialog.js';
 export { NotificationHost } from './NotificationHost.js';
-export { clearNotifications, dismissNotification, getNotifications, notify, subscribeNotifications } from './notifications.js';
+export { clearNotifications, createNotifier, defaultNotifier, dismissNotification, getNotifications, notify, subscribeNotifications } from './notifications.js';
 export { Panel, PanelHeader, PanelSection } from './Panel.js';
 export { SidePanel } from './SidePanel.js';
 export { Surface } from './Surface.js';

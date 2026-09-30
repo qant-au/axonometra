@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 185 480" width="370" height="960" preserveAspectRatio="none" stroke-linejoin="round" stroke-linecap="round">
+  <rect x="0" y="62" width="20" height="66" rx="4" fill="#5b6770" stroke="#8a857c" stroke-width="0.75"/>
+  <rect x="165" y="62" width="20" height="66" rx="4" fill="#5b6770" stroke="#8a857c" stroke-width="0.75"/>
+  <rect x="0" y="352" width="20" height="66" rx="4" fill="#5b6770" stroke="#8a857c" stroke-width="0.75"/>
+  <rect x="165" y="352" width="20" height="66" rx="4" fill="#5b6770" stroke="#8a857c" stroke-width="0.75"/>
+  <polygon points="14,1 171,1 181,11 181,440 173,467 153,479 32,479 12,467 4,440 4,11" fill="#f7f5f1" stroke="#2b2b2b" stroke-width="1.5"/>
+  <rect x="18" y="456" width="30" height="9" rx="3" fill="#d6e8f5" stroke="#8a857c" stroke-width="0.75"/>
+  <rect x="137" y="456" width="30" height="9" rx="3" fill="#d6e8f5" stroke="#8a857c" stroke-width="0.75"/>
+  <rect x="0" y="292" width="15" height="9" rx="3" fill="#f7f5f1" stroke="#2b2b2b" stroke-width="1.5"/>
+  <rect x="170" y="292" width="15" height="9" rx="3" fill="#f7f5f1" stroke="#2b2b2b" stroke-width="1.5"/>
+  <polygon points="16,60 169,60 171,300 159,330 26,330 14,300" fill="#e4dfd6" stroke="#2b2b2b" stroke-width="1.5"/>
+  <polygon points="20,65 169,65 170,92 19,92" fill="#d6e8f5" stroke="#8a857c" stroke-width="0.75"/>
+  <polygon points="16,242 169,242 161,326 24,326" fill="#d6e8f5" stroke="#8a857c" stroke-width="0.75"/>
+  <polyline points="28,100 28,260" fill="none" stroke="#8a857c" stroke-width="0.75"/>
+  <polyline points="157,100 157,260" fill="none" stroke="#8a857c" stroke-width="0.75"/>
+</svg>
