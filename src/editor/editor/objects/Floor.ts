@@ -29,6 +29,10 @@ export class Floor extends Container {
     this.wallNodeSequence = new WallNodeSequence(this.inst);
     this.addChild(this.wallNodeSequence);
     this.wallNodeSequence.zIndex = 1002;
+    // Room areas sit under the furniture, so an item in the middle of a room
+    // is seen (and printed) over its area, not behind it.
+    this.wallNodeSequence.roomLabels.zIndex = -1;
+    this.addChild(this.wallNodeSequence.roomLabels);
     this.sortableChildren = true;
     if (floorData) {
       const nodeLinks = new Map<number, number[]>(floorData.wallNodeLinks);

@@ -14,9 +14,8 @@ export class WallNodeSequence extends Container {
     super();
     this.sortableChildren = true;
     this.walls = [];
+    // Kept up to date here; drawn by the Floor, under its furniture.
     this.roomLabels = new RoomLabels(this.inst);
-    this.roomLabels.zIndex = 997;
-    this.addChild(this.roomLabels);
     this.wallNodes = new Map<number, WallNode>();
     this.wallNodeLinks = new Map<number, number[]>();
     this.drawWalls();

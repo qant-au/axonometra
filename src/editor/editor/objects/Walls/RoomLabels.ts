@@ -22,6 +22,8 @@ export class RoomLabels extends Container {
 
   constructor(private readonly inst: EditorInstance) {
     super();
+    // Read-outs only: a press on a label reaches whatever lies beneath it.
+    this.eventMode = 'none';
   }
 
   public update(wallNodes: Map<number, WallNode>, walls: Wall[]) {

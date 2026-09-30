@@ -115,6 +115,17 @@ describe('Floor room areas', () => {
     expect(labels(floor)).toEqual([]);
   });
 
+  it('takes no presses and draws under the furniture', () => {
+    // An item in the middle of a room could not be clicked while its area
+    // label lay over it (sweep 2026-09-30).
+    const floor = new Floor(fakeInstance(), room());
+    const labels = floor.getWallNodeSequence().roomLabels;
+    expect(labels.eventMode).toBe('none');
+    expect(labels.parent).toBe(floor);
+    // Furniture draws at zIndex 0 and up; walls at 1002.
+    expect(labels.zIndex).toBeLessThan(0);
+  });
+
   it('hides room areas with the other labels', () => {
     const floor = new Floor(fakeInstance(), room());
     floor.setLabelVisibility(false);
