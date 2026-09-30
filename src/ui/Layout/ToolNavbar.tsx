@@ -1,6 +1,5 @@
 import { ChangeEvent, Suspense, lazy, useRef, useState } from 'react';
 import { Box, Stack, Tooltip } from '@mui/material';
-import classes from './ToolNavbar.module.css';
 import {
   IconArmchair,
   IconBorderLeft,
@@ -33,11 +32,7 @@ import {
 import type { LengthUnit } from '../../vendor/accurona-core';
 import { useUnitsStore } from '../../stores/UnitsStore';
 import { SetUnitsAction } from '../../editor/editor/actions/SetUnitsAction';
-import {
-  clearNotifications,
-  SidePanel,
-  ToolMenu
-} from '../../vendor/accurona-ui';
+import { SidePanel, ToolMenu } from '../../vendor/accurona-ui';
 import { useStore } from '../../stores/EditorStore';
 import { useFloorPlanStore } from '../../stores/FloorPlanStore';
 import { ChangeFloorAction } from '../../editor/editor/actions/ChangeFloorAction';
@@ -68,6 +63,28 @@ const ThreeDView = lazy(() =>
 );
 import { DeleteFloorAction } from '../../editor/editor/actions/DeleteFloorAction';
 import { useFurnitureStore } from '../../stores/FurnitureStore';
+
+// The toolbar runs the full height of the editor. Taller than the editor, it
+// scrolls itself rather than pushing Save and Load out of reach.
+const navbar = {
+  boxSizing: 'border-box',
+  height: '100%',
+  width: 70,
+  p: 2,
+  display: 'flex',
+  flexDirection: 'column',
+  overflowY: 'auto'
+} as const;
+
+// The current-floor number, sized like a tool button.
+const floorNumber = {
+  width: 40,
+  height: 40,
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  color: 'text.secondary'
+} as const;
 
 const modes = [
   { icon: IconEye, label: 'View', tool: Tool.View },
@@ -136,7 +153,7 @@ function AddMenu() {
             label: 'Add furniture',
             icon: <IconArmchair size={18} />,
             onClick: () => {
-              clearNotifications();
+              inst.notifier.clear();
               setDrawerOpened(true);
             }
           },
@@ -146,7 +163,7 @@ function AddMenu() {
             divider: true,
             onClick: () => {
               setTool(Tool.WallAdd);
-              clearNotifications();
+              inst.notifier.clear();
               inst.notify({
                 title: '✏️ Wall drawing mode',
                 message:
@@ -160,7 +177,7 @@ function AddMenu() {
             icon: <IconWindow size={18} />,
             onClick: () => {
               setTool(Tool.FurnitureAddWindow);
-              clearNotifications();
+              inst.notifier.clear();
               inst.notify({
                 title: '🪟 Add window',
                 message: 'Click on wall to add window',
@@ -173,7 +190,7 @@ function AddMenu() {
             icon: <IconDoor size={18} />,
             onClick: () => {
               setTool(Tool.FurnitureAddDoor);
-              clearNotifications();
+              inst.notifier.clear();
               inst.notify({
                 title: '🚪 Add door',
                 message:
@@ -213,7 +230,7 @@ export function ToolNavbar() {
       active={index === active}
       onClick={() => {
         // The previous tool's hint (e.g. wall drawing) no longer applies.
-        clearNotifications();
+        inst.notifier.clear();
         setTool(link.tool);
       }}
     />
@@ -229,18 +246,18 @@ export function ToolNavbar() {
   };
 
   return (
-    <div style={{ position: 'absolute' }}>
-      <Box className={classes.navbar}>
-        <Box className={classes.sectionGrow}>
+    <Box sx={{ position: 'absolute', top: 0, left: 0, bottom: 0 }}>
+      <Box sx={navbar}>
+        <Box sx={{ flexGrow: 1 }}>
           <Stack sx={{ alignItems: 'center' }}>
             <AddMenu />
             {toolModes}
           </Stack>
         </Box>
-        <Box className={classes.sectionGrow}>
+        <Box sx={{ flexGrow: 1 }}>
           <Stack sx={{ alignItems: 'center' }}>
             <Tooltip title="Current floor" placement="right" arrow>
-              <div className={classes.link}>{floor}</div>
+              <Box sx={floorNumber}>{floor}</Box>
             </Tooltip>
 
             <NavbarLink
@@ -269,7 +286,7 @@ export function ToolNavbar() {
             />
           </Stack>
         </Box>
-        <Box className={classes.sectionGrow}>
+        <Box sx={{ flexGrow: 1 }}>
           <Stack sx={{ alignItems: 'center' }}>
             <NavbarLink
               icon={IconArrowBackUp}
@@ -292,7 +309,7 @@ export function ToolNavbar() {
               label="Measure tool"
               onClick={() => {
                 setTool(Tool.Measure);
-                clearNotifications();
+                inst.notifier.clear();
                 inst.notify({
                   title: '📐 Measure tool',
                   message: 'Click and drag to measure areas'
@@ -305,7 +322,7 @@ export function ToolNavbar() {
               onClick={() => {
                 const next = !snap;
                 setSnap(next);
-                clearNotifications();
+                inst.notifier.clear();
                 inst.notify({
                   message: 'Snap to grid now ' + (next ? 'On' : 'Off'),
                   icon: next ? <IconTable /> : <IconTableOff />
@@ -318,7 +335,7 @@ export function ToolNavbar() {
               onClick={() => {
                 const action = new ToggleLabelAction(inst);
                 action.execute();
-                clearNotifications();
+                inst.notifier.clear();
                 inst.notify({
                   message: 'Toggled size labels',
                   icon: <IconTag />
@@ -359,7 +376,7 @@ export function ToolNavbar() {
             />
           </Stack>
         </Box>
-        <Box className={classes.section}>
+        <Box sx={{ flexGrow: 0 }}>
           <Stack sx={{ alignItems: 'center' }}>
             <NavbarLink
               icon={IconPrinter}
@@ -394,6 +411,6 @@ export function ToolNavbar() {
           </Stack>
         </Box>
       </Box>
-    </div>
+    </Box>
   );
 }

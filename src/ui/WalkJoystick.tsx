@@ -1,5 +1,5 @@
 import { PointerEvent, useRef, useState } from 'react';
-import classes from './ThreeDView.module.css';
+import { Box } from '@mui/material';
 
 /** How far the knob travels from the centre, in pixels. */
 const REACH = 40;
@@ -45,18 +45,37 @@ export function WalkJoystick({
   };
 
   return (
-    <div
-      className={classes.joystick}
+    <Box
+      sx={{
+        position: 'absolute',
+        left: 24,
+        bottom: 24,
+        width: 120,
+        height: 120,
+        borderRadius: '50%',
+        background: 'rgb(0 0 0 / 12%)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        touchAction: 'none'
+      }}
       aria-hidden
       onPointerDown={down}
       onPointerMove={track}
       onPointerUp={up}
       onPointerCancel={up}
     >
-      <div
-        className={classes.knob}
+      <Box
+        sx={{
+          width: 48,
+          height: 48,
+          borderRadius: '50%',
+          background: 'rgb(255 255 255 / 85%)',
+          boxShadow: '0 1px 4px rgb(0 0 0 / 30%)',
+          pointerEvents: 'none'
+        }}
         style={{ transform: `translate(${knob.x}px, ${knob.y}px)` }}
       />
-    </div>
+    </Box>
   );
 }

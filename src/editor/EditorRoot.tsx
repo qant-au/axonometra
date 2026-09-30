@@ -1,4 +1,5 @@
-import { useRef, useEffect } from 'react';
+import { useEffect, useId, useRef } from 'react';
+import { Box } from '@mui/material';
 // Pixi 8 compiles shaders and uniform uploads with new Function() unless
 // this module is loaded first. The container's CSP has no 'unsafe-eval'
 // (docker/nginx.conf), so without it the canvas never starts there.
@@ -11,13 +12,26 @@ import { FloorPlan } from './editor/objects/FloorPlan';
 import { useStore } from '../stores/EditorStore';
 import { useInstance } from './instance/context';
 import { KeyboardCursor } from './editor/KeyboardCursor';
-import classes from './EditorRoot.module.css';
+
+// Read by screen readers, not shown.
+const srOnly = {
+  position: 'absolute',
+  width: '1px',
+  height: '1px',
+  p: 0,
+  m: '-1px',
+  overflow: 'hidden',
+  clip: 'rect(0, 0, 0, 0)',
+  whiteSpace: 'nowrap',
+  border: 0
+} as const;
 
 export function EditorRoot() {
   const inst = useInstance();
   const ref = useRef<HTMLDivElement>(null);
   const dark = useStore((s) => s.theme) === 'dark';
   const liveRef = useRef<HTMLDivElement>(null);
+  const helpId = useId();
   useEffect(() => {
     // v8 Application.init is async. React StrictMode mounts this effect twice;
     // `cancelled` lets a teardown that fires before init resolves throw away
@@ -26,6 +40,10 @@ export function EditorRoot() {
     let app: Application | null = null;
     let view: HTMLCanvasElement | null = null;
     const wrapper = ref.current;
+    // Read once: the host decides it, and the listener must come off where it
+    // went on.
+    const keyTarget = inst.keyTarget;
+    let resizeObserver: ResizeObserver | undefined;
     const live = liveRef.current;
     const keyboardCursor = new KeyboardCursor(
       inst,
@@ -73,11 +91,16 @@ export function EditorRoot() {
         autoDensity: true,
         background: 0xebebeb,
         antialias: true,
-        resizeTo: window
+        // The container, not the window: the editor is as big as its host
+        // makes it. A ResizeObserver below follows it, since Pixi only
+        // listens for the window resizing.
+        resizeTo: wrapper ?? window
       })
       .then(() => {
         if (cancelled) {
-          created.destroy(true, true);
+          // Textures are not destroyed: Pixi caches them for the whole page,
+          // and another editor may be drawing with them.
+          created.destroy(true, { children: true });
           return;
         }
         app = created;
@@ -126,12 +149,20 @@ export function EditorRoot() {
           };
         }
 
-        document.addEventListener('keydown', handleKeydown);
+        keyTarget.addEventListener('keydown', handleKeydown as EventListener);
+        if (wrapper) {
+          resizeObserver = new ResizeObserver(() => {
+            created.resize();
+            main.resize(created.screen.width, created.screen.height);
+          });
+          resizeObserver.observe(wrapper);
+        }
       });
 
     return () => {
       cancelled = true;
-      document.removeEventListener('keydown', handleKeydown);
+      keyTarget.removeEventListener('keydown', handleKeydown as EventListener);
+      resizeObserver?.disconnect();
       wrapper?.removeEventListener(
         'pointerdown',
         inst.edits.beginGesture,
@@ -161,21 +192,38 @@ export function EditorRoot() {
       if (import.meta.env.DEV) {
         delete (window as unknown as { __axo?: unknown }).__axo;
       }
-      if (app) app.destroy(true, true);
+      if (app) app.destroy(true, { children: true });
     };
   }, [inst]);
 
   return (
     <>
-      <div
+      <Box
         ref={ref}
-        className={dark ? `${classes.canvas} ${classes.dark}` : classes.canvas}
+        sx={{
+          width: '100%',
+          height: '100%',
+          // The wrapper takes keyboard focus (see KeyboardCursor). The ring
+          // is inset so it stays visible against the edges the canvas fills.
+          '&:focus-visible': {
+            outline: '3px solid',
+            outlineColor: 'primary.main',
+            outlineOffset: -3
+          },
+          // Inline, the canvas left a text-baseline gap under it.
+          '& canvas': {
+            display: 'block',
+            // Dark mode inverts the drawing, as Excalidraw does: the plan
+            // keeps its contrast and every colour on it turns with one rule.
+            filter: dark ? 'invert(93%) hue-rotate(180deg)' : undefined
+          }
+        }}
         tabIndex={0}
         role="application"
         aria-label="Floor plan"
-        aria-describedby="axo-canvas-help"
+        aria-describedby={helpId}
       />
-      <p id="axo-canvas-help" className={classes.srOnly}>
+      <Box component="p" id={helpId} sx={srOnly}>
         Arrow keys move the cursor by 10 centimetres, or 1 metre with Shift.
         Enter or Space uses the selected tool at the cursor. In Edit mode, Enter
         picks up a wall point, wall or piece of furniture; move it with the
@@ -183,8 +231,8 @@ export function EditorRoot() {
         mode, Control Enter on a wall opens a box to type its length. Escape
         also ends wall drawing. Control Z undoes. Question mark lists every
         keyboard shortcut.
-      </p>
-      <div ref={liveRef} className={classes.srOnly} aria-live="polite" />
+      </Box>
+      <Box ref={liveRef} sx={srOnly} aria-live="polite" />
     </>
   );
 }

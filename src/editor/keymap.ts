@@ -4,7 +4,7 @@
 import { createElement } from 'react';
 import { IconDeviceFloppy } from '@tabler/icons-react';
 import { keymapFor, resolveAction } from '../vendor/accurona-core';
-import { clearNotifications } from '../vendor/accurona-ui';
+import { SaveAction } from './editor/actions/SaveAction';
 import type { EditorInstance } from './instance/EditorInstance';
 import { Tool } from './editor/constants';
 import { NUDGE_STEP, NUDGE_STEP_LARGE } from './editor/selection/commands';
@@ -66,9 +66,14 @@ export function createKeymap(inst: EditorInstance) {
   }
 
   function save() {
-    localStorage.setItem('autosave', inst.serializer.sceneText());
+    const { onSave } = inst.config;
+    if (!onSave) {
+      new SaveAction(inst).execute();
+      return;
+    }
+    const message = onSave(inst.serializer.sceneText());
     inst.notify({
-      message: 'Saved to Local Storage!',
+      message: message || 'Saved',
       severity: 'success',
       icon: createElement(IconDeviceFloppy)
     });
@@ -86,7 +91,7 @@ export function createKeymap(inst: EditorInstance) {
       // A read-only embed has one tool, the hand; the Select tool would let
       // the plan be dragged about.
       if (ctx.readonly) return false;
-      clearNotifications();
+      inst.notifier.clear();
       editor.setTool(tool);
       return true;
     }

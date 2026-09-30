@@ -6,7 +6,11 @@
 import type { Renderer } from 'pixi.js';
 import type { StoreApi } from 'zustand/vanilla';
 import { formatLength, parseLength } from '../../vendor/accurona-core';
-import { notify, type NotifyOptions } from '../../vendor/accurona-ui';
+import {
+  createNotifier,
+  type Notifier,
+  type NotifyOptions
+} from '../../vendor/accurona-ui';
 import { createEditorStore, type EditorStore } from '../../stores/EditorStore';
 import {
   createFloorPlanStore,
@@ -46,9 +50,28 @@ import {
 } from '../editor/selection/SelectionStore';
 import { createKeymap, type Keymap } from '../keymap';
 
+export type ThemeMode = 'light' | 'dark';
+
 export interface EditorConfig {
   /** A read-only view: the hand tool only, no edits. */
   readOnly: boolean;
+  /**
+   * Where the keyboard shortcuts listen: the editor (keys pressed while
+   * focus is inside it) or the whole document.
+   */
+  keyboardScope: 'root' | 'document';
+  /** The mode the editor starts in; Alt + Shift + D switches it. */
+  themeMode: ThemeMode;
+  onThemeModeChange?: (mode: ThemeMode) => void;
+  /**
+   * Ctrl/Cmd + S. Receives the scene file's text; a returned string is the
+   * message shown. Without it, Ctrl/Cmd + S downloads the file.
+   */
+  onSave?: (sceneText: string) => string | void;
+  /** The welcome box: New plan, Load from disk. */
+  showWelcome: boolean;
+  /** The welcome box's Load from local save; the button shows only with it. */
+  loadSaved?: () => string | null;
 }
 
 export class EditorInstance {
@@ -76,6 +99,11 @@ export class EditorInstance {
   transformDragging = false;
 
   /** Set while the canvas is mounted. */
+  /** This editor's notifications, shown by its own NotificationHost. */
+  readonly notifier: Notifier = createNotifier();
+  /** The editor's outermost element, set by <Axonometra>. */
+  root: HTMLElement | null = null;
+
   main: Main | null = null;
   floorPlanView: FloorPlan | null = null;
   renderer: Renderer | null = null;
@@ -84,7 +112,13 @@ export class EditorInstance {
   private wallManager: AddWallManager | undefined;
 
   constructor(config: Partial<EditorConfig> = {}) {
-    this.config = { readOnly: false, ...config };
+    this.config = {
+      readOnly: false,
+      keyboardScope: 'root',
+      themeMode: 'light',
+      showWelcome: true,
+      ...config
+    };
     this.editor = createEditorStore(this);
     this.plan = createFloorPlanStore(this);
     this.selection = createSelectionStore();
@@ -107,6 +141,24 @@ export class EditorInstance {
     return (this.wallManager ??= new AddWallManager(this));
   }
 
+  /** Where the keyboard shortcuts listen (config.keyboardScope). */
+  /** <Axonometra> hands over its outermost element and its callbacks. */
+  setRoot(root: HTMLElement | null) {
+    this.root = root;
+  }
+
+  setCallbacks(
+    callbacks: Pick<EditorConfig, 'onSave' | 'loadSaved' | 'onThemeModeChange'>
+  ) {
+    Object.assign(this.config, callbacks);
+  }
+
+  get keyTarget(): Document | HTMLElement {
+    return this.config.keyboardScope === 'document' || !this.root
+      ? document
+      : this.root;
+  }
+
   getMain(): Main {
     if (!this.main) throw new Error('The editor canvas is not mounted');
     return this.main;
@@ -120,7 +172,7 @@ export class EditorInstance {
   }
 
   notify(options: NotifyOptions) {
-    notify(options);
+    this.notifier.notify(options);
   }
 
   /** A plan length in the display units, e.g. '2.7 m'. */

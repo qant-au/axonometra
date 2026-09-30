@@ -1,5 +1,6 @@
 import { ReactNode, useEffect, useMemo, useRef, useState } from 'react';
 import {
+  Box,
   Button,
   FormControlLabel,
   IconButton,
@@ -65,7 +66,6 @@ import {
 } from '../editor/scene3d/walkControls';
 import { getItemHeights } from '../res/catalog';
 import { getItemModel } from '../res/catalog/models';
-import classes from './ThreeDView.module.css';
 import { WalkJoystick } from './WalkJoystick';
 
 interface Props {
@@ -214,7 +214,6 @@ export function ThreeDView({ opened, onClose }: Props) {
       preserveDrawingBuffer: true
     });
     renderer.setPixelRatio(window.devicePixelRatio);
-    renderer.domElement.className = classes.canvas;
     renderer.domElement.tabIndex = 0;
     renderer.domElement.setAttribute('role', 'img');
     host.appendChild(renderer.domElement);
@@ -429,8 +428,8 @@ export function ThreeDView({ opened, onClose }: Props) {
     <AppDialog open={opened} onClose={onClose} fullScreen title="3D view">
       <Stack
         direction="row"
-        className={classes.controls}
         sx={{
+          flex: 'none',
           justifyContent: 'space-between',
           alignItems: 'center',
           flexWrap: 'wrap',
@@ -584,25 +583,41 @@ export function ThreeDView({ opened, onClose }: Props) {
       </Stack>
       {empty ? (
         <Typography
-          className={classes.message}
-          sx={{ color: 'text.secondary', textAlign: 'center' }}
+          sx={{ mt: '20vh', color: 'text.secondary', textAlign: 'center' }}
         >
           Draw some walls on this floor to see them here.
         </Typography>
       ) : noWebGl ? (
         <Typography
-          className={classes.message}
-          sx={{ color: 'text.secondary', textAlign: 'center' }}
+          sx={{ mt: '20vh', color: 'text.secondary', textAlign: 'center' }}
         >
           The 3D view needs WebGL, which this browser does not provide.
         </Typography>
       ) : (
         <>
-          <div ref={setHost} className={classes.stage}>
+          <Box
+            ref={setHost}
+            sx={{
+              flex: 1,
+              minHeight: 0,
+              position: 'relative',
+              // three.js's own canvas.
+              '& > canvas': {
+                display: 'block',
+                width: '100%',
+                height: '100%',
+                '&:focus-visible': {
+                  outline: '2px solid',
+                  outlineColor: 'primary.main',
+                  outlineOffset: 2
+                }
+              }
+            }}
+          >
             {walking && coarse && !teleport && (
               <WalkJoystick onChange={(x, y) => walk.current?.setStick(x, y)} />
             )}
-          </div>
+          </Box>
           <Typography variant="body2" sx={{ color: 'text.secondary' }}>
             {!walking
               ? 'Drag to turn, right-drag or arrow keys to move, scroll to zoom.'

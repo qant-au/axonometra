@@ -1,7 +1,10 @@
 /** handling current tool state, mainly */
 import { useStore as useZustand } from 'zustand';
 import { createStore, type StoreApi } from 'zustand/vanilla';
-import type { EditorInstance } from '../editor/instance/EditorInstance';
+import type {
+  EditorInstance,
+  ThemeMode
+} from '../editor/instance/EditorInstance';
 import { useInstance } from '../editor/instance/context';
 import { Tool } from '../editor/editor/constants';
 import type { Wall } from '../editor/editor/objects/Walls/Wall';
@@ -29,21 +32,11 @@ export interface EditorStore {
   setLengthEditWall: (wall: Wall | null) => void;
   setShortcutsOpen: (open: boolean) => void;
   setFindOpen: (open: boolean) => void;
-  /** Alt + Shift + D. Remembered on this device. */
+  /** Alt + Shift + D. The host can remember it (onThemeModeChange). */
   toggleTheme: () => void;
 }
 
-export type ThemeMode = 'light' | 'dark';
-
-const THEME_KEY = 'axonometra-theme';
-
-function storedTheme(): ThemeMode {
-  try {
-    return localStorage.getItem(THEME_KEY) === 'dark' ? 'dark' : 'light';
-  } catch {
-    return 'light';
-  }
-}
+export type { ThemeMode } from '../editor/instance/EditorInstance';
 
 export function createEditorStore(inst: EditorInstance): StoreApi<EditorStore> {
   return createStore<EditorStore>()((set) => ({
@@ -53,7 +46,7 @@ export function createEditorStore(inst: EditorInstance): StoreApi<EditorStore> {
     lengthEditWall: null,
     shortcutsOpen: false,
     findOpen: false,
-    theme: storedTheme(),
+    theme: inst.config.themeMode,
     setMode: (mode: ToolMode) => {
       set(() => ({
         mode: mode
@@ -82,11 +75,7 @@ export function createEditorStore(inst: EditorInstance): StoreApi<EditorStore> {
     toggleTheme: () => {
       set((state) => {
         const theme: ThemeMode = state.theme === 'dark' ? 'light' : 'dark';
-        try {
-          localStorage.setItem(THEME_KEY, theme);
-        } catch {
-          // Not stored here (a private window); it still switches.
-        }
+        inst.config.onThemeModeChange?.(theme);
         return { theme };
       });
     }

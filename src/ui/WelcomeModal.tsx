@@ -12,6 +12,8 @@ import { readPlanFile } from '../helpers/readPlanFile';
 
 export function WelcomeModal() {
   const inst = useInstance();
+  // The host keeps the last save (EditorConfig.loadSaved), if it does.
+  const { loadSaved } = inst.config;
   const [opened, setOpened] = useState(true);
   const fileRef = useRef<HTMLInputElement>(null);
   const image = (
@@ -83,25 +85,27 @@ export function WelcomeModal() {
             >
               Load from disk
             </Button>
-            <Button
-              onClick={() => {
-                const saved = localStorage.getItem('autosave');
-                if (saved == null) {
-                  inst.notify({
-                    title: 'No autosave found',
-                    message: 'There is no local autosave to load.',
-                    severity: 'warning'
-                  });
-                  return;
-                }
-                inst.serializer.load(saved);
-                setOpened(false);
-              }}
-              startIcon={<IconRotateClockwise />}
-              variant="text"
-            >
-              Load from local save
-            </Button>
+            {loadSaved && (
+              <Button
+                onClick={() => {
+                  const saved = loadSaved();
+                  if (saved == null) {
+                    inst.notify({
+                      title: 'No autosave found',
+                      message: 'There is no local autosave to load.',
+                      severity: 'warning'
+                    });
+                    return;
+                  }
+                  inst.serializer.load(saved);
+                  setOpened(false);
+                }}
+                startIcon={<IconRotateClockwise />}
+                variant="text"
+              >
+                Load from local save
+              </Button>
+            )}
           </Stack>
         </DialogContent>
       </Dialog>

@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import {
+  Box,
   FormControlLabel,
   IconButton,
   Stack,
@@ -11,7 +12,6 @@ import { IconRotate2, IconRotateClockwise2 } from '@tabler/icons-react';
 import { projectScene } from '../editor/axonometric/axonometric';
 import { sceneFromPlan } from '../editor/axonometric/sceneFromPlan';
 import { useInstance } from '../editor/instance/context';
-import classes from './AxonometricView.module.css';
 import { AppDialog } from '../vendor/accurona-ui';
 
 interface Props {
@@ -54,8 +54,11 @@ export function AxonometricView({ opened, onClose }: Props) {
     >
       <Stack
         direction="row"
-        className={classes.controls}
-        sx={{ justifyContent: 'space-between', alignItems: 'center' }}
+        sx={{
+          flex: 'none',
+          justifyContent: 'space-between',
+          alignItems: 'center'
+        }}
       >
         <Stack direction="row" spacing={1}>
           <Tooltip title="Turn left">
@@ -89,14 +92,25 @@ export function AxonometricView({ opened, onClose }: Props) {
       </Stack>
       {wallCount === 0 ? (
         <Typography
-          className={classes.empty}
-          sx={{ color: 'text.secondary', textAlign: 'center' }}
+          sx={{ mt: '20vh', color: 'text.secondary', textAlign: 'center' }}
         >
           Draw some walls on this floor to see them here.
         </Typography>
       ) : (
-        <svg
-          className={classes.drawing}
+        <Box
+          component="svg"
+          sx={{
+            flex: 1,
+            minHeight: 0,
+            width: '100%',
+            background: '#fafaf8',
+            '& polygon': {
+              stroke: '#5f5a50',
+              strokeWidth: 1,
+              strokeLinejoin: 'round',
+              vectorEffect: 'non-scaling-stroke'
+            }
+          }}
           viewBox={projection.viewBox.join(' ')}
           role="img"
           aria-label={label}
@@ -108,7 +122,7 @@ export function AxonometricView({ opened, onClose }: Props) {
               fill={face.fill}
             />
           ))}
-        </svg>
+        </Box>
       )}
     </AppDialog>
   );

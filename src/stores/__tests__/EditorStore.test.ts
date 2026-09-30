@@ -8,7 +8,8 @@ import { createEditorStore, ToolMode } from '../EditorStore';
 // so the store tests don't depend on the Pixi side.
 const resetTools = vi.fn();
 const useStore = createEditorStore({
-  addWallManager: { resetTools }
+  addWallManager: { resetTools },
+  config: { themeMode: 'light' }
 } as unknown as EditorInstance);
 
 const initial = useStore.getState();

@@ -40,6 +40,8 @@ export class Main extends Viewport {
     add: boolean;
   } | null = null;
   private spaceHeld = false;
+  // Space listens where the editor's other keys do (EditorInstance.keyTarget).
+  private keyTarget?: Document | HTMLElement;
   constructor(
     private readonly inst: EditorInstance,
     options: IViewportOptions
@@ -77,8 +79,8 @@ export class Main extends Viewport {
 
   public override destroy(options?: Parameters<Viewport['destroy']>[0]) {
     this.unsubscribeTool?.();
-    window.removeEventListener('keydown', this.onSpaceDown);
-    window.removeEventListener('keyup', this.onSpaceUp);
+    this.keyTarget?.removeEventListener('keydown', this.onSpaceDown);
+    this.keyTarget?.removeEventListener('keyup', this.onSpaceUp);
     window.removeEventListener('blur', this.onSpaceUp);
     super.destroy(options);
   }
@@ -94,12 +96,13 @@ export class Main extends Viewport {
     this.panWith(this.inst.editor.getState().activeTool);
   }
 
-  private readonly onSpaceDown = (e: KeyboardEvent) => {
+  private readonly onSpaceDown = (event: Event) => {
+    const e = event as KeyboardEvent;
     if (e.code !== 'Space' || e.repeat || isTypingTarget(e.target)) return;
     this.setSpaceHeld(true);
   };
 
-  private readonly onSpaceUp = (e: KeyboardEvent | FocusEvent) => {
+  private readonly onSpaceUp = (e: Event) => {
     if (e instanceof KeyboardEvent && e.code !== 'Space') return;
     this.setSpaceHeld(false);
   };
@@ -139,8 +142,9 @@ export class Main extends Viewport {
       .clamp({ direction: 'all' })
       .pinch()
       .clampZoom({ minScale: 1.0, maxScale: 6.0 });
-    window.addEventListener('keydown', this.onSpaceDown);
-    window.addEventListener('keyup', this.onSpaceUp);
+    this.keyTarget = this.inst.keyTarget;
+    this.keyTarget.addEventListener('keydown', this.onSpaceDown);
+    this.keyTarget.addEventListener('keyup', this.onSpaceUp);
     window.addEventListener('blur', this.onSpaceUp);
     this.unsubscribeTool = this.inst.editor.subscribe((state, previous) => {
       if (state.activeTool !== previous.activeTool) {
