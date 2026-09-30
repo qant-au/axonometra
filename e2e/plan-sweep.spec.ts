@@ -272,6 +272,99 @@ test('the grid lines are evenly spaced, and never packed, at any zoom', async ({
   }
 });
 
+// Re-sweep 4 2026-09-30: below full size the grid is drawn line by line,
+// and those lines were darker than the pattern's at full size (10 cm lines
+// 37 levels below the paper against 27), so the grid darkened the moment the
+// zoom dropped under 1x. In light and dark mode each kind of line carries
+// the same ink on both sides of 1x.
+test('the grid is as dark just below full size as at it', async ({ page }) => {
+  await start(page);
+  // How far the 10 cm and the metre lines are from the paper, summed across
+  // each line and per screen pixel, on a row of the empty plan clear of the
+  // horizontal lines.
+  const ink = async () => {
+    await page.waitForTimeout(300);
+    const { box } = await canvasCentre(page);
+    const width = 400;
+    const height = 30;
+    const luma = await lumaIn(page, {
+      x: box.x + 200,
+      y: box.y + 150,
+      width,
+      height
+    });
+    const scale = Math.sqrt(luma.length / (width * height));
+    const w = width * scale;
+    // The paper is the commonest shade, lighter or darker than the lines.
+    const counts = new Map<number, number>();
+    for (const v of luma) {
+      const k = Math.round(v);
+      counts.set(k, (counts.get(k) ?? 0) + 1);
+    }
+    const paper = [...counts].sort((a, b) => b[1] - a[1])[0][0];
+    for (let y = 0; y < height * scale; y++) {
+      const row = luma
+        .slice(y * w, (y + 1) * w)
+        .map((v) => Math.abs(v - paper));
+      // Most of a row on a horizontal line is off the paper: try the next.
+      if (row.filter((d) => d > 2).length > w / 2) continue;
+      const sums: number[] = [];
+      let sum = 0;
+      for (const d of [...row, 0]) {
+        if (d > 2) sum += d;
+        else if (sum) {
+          sums.push(sum / scale);
+          sum = 0;
+        }
+      }
+      sums.sort((a, b) => a - b);
+      return {
+        minor: sums[Math.floor(sums.length / 2)],
+        metre: sums[sums.length - 1]
+      };
+    }
+    throw new Error('every row is on a horizontal grid line');
+  };
+  const setZoom = (zoom: number) =>
+    page.evaluate((z) => {
+      (
+        window as unknown as {
+          __axo: {
+            getMain: () => { setZoom: (z: number, c: boolean) => void };
+          };
+        }
+      ).__axo
+        .getMain()
+        .setZoom(z, true);
+    }, zoom);
+  for (const mode of ['light', 'dark']) {
+    if (mode === 'dark') {
+      await page.getByRole('application', { name: 'Floor plan' }).focus();
+      await page.keyboard.press('Alt+Shift+D');
+      await expect
+        .poll(() =>
+          page.evaluate(() => localStorage.getItem('axonometra-theme'))
+        )
+        .toBe('dark');
+    }
+    await setZoom(1);
+    const full = await ink();
+    for (const zoom of [0.999, 0.93]) {
+      await setZoom(zoom);
+      const below = await ink();
+      const at = `${mode}, 1x ${JSON.stringify(full)}, ${zoom}x ${JSON.stringify(below)}`;
+      expect(
+        Math.abs(below.minor - full.minor),
+        `10 cm, ${at}`
+      ).toBeLessThanOrEqual(4);
+      expect(
+        Math.abs(below.metre - full.metre),
+        `metre, ${at}`
+      ).toBeLessThanOrEqual(4);
+    }
+  }
+});
+
 // Re-sweep 2026-09-30: the area label sat under the item in the middle of a
 // loaded room, hidden. It moves to a clear spot in the room instead.
 test('a loaded room shows its area clear of the items in it', async ({

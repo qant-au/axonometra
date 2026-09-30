@@ -267,8 +267,10 @@ export class Main extends Viewport {
       }
       g.stroke({ width: 1 / zoom, color: 0x808080, alpha });
     };
-    if (zoom >= GRID_MINOR_MIN_ZOOM) draw(GRID_MINOR_STEP, 0.35);
-    draw(METER, 0.6);
+    // As dark as the pattern draws its lines at full size, so the grid does
+    // not darken as the zoom drops below it.
+    if (zoom >= GRID_MINOR_MIN_ZOOM) draw(GRID_MINOR_STEP, 0.25);
+    draw(METER, 0.63);
   }
 
   private updatePreview(ev: FederatedPointerEvent) {
