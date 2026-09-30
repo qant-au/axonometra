@@ -707,6 +707,26 @@ test('Esc puts the Add menu tool down, and the Add button goes out', async ({
   await expect(add).not.toHaveAttribute('aria-current');
 });
 
+// Re-sweep 3 2026-09-30: Esc put the wall, window and door tools down, but
+// the Measure tool stayed pressed.
+test('Esc puts the Measure tool down', async ({ page }) => {
+  await start(page);
+  const measure = page.getByRole('button', { name: 'Measure tool' });
+  const edit = page.getByRole('button', { name: 'Edit', exact: true });
+  await measure.click();
+  await expect(measure).toHaveAttribute('aria-pressed', 'true');
+  await page.keyboard.press('Escape');
+  await expect(measure).toHaveAttribute('aria-pressed', 'false');
+  await expect(edit).toHaveAttribute('aria-pressed', 'true');
+
+  // By key, too.
+  await page.getByRole('application', { name: 'Floor plan' }).focus();
+  await page.keyboard.press('m');
+  await expect(measure).toHaveAttribute('aria-pressed', 'true');
+  await page.keyboard.press('Escape');
+  await expect(measure).toHaveAttribute('aria-pressed', 'false');
+});
+
 const planState = (page: Page) =>
   page.evaluate(() => {
     const plan = (

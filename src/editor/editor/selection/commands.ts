@@ -83,14 +83,15 @@ export function createSelectionCommands(inst: EditorInstance) {
 
   /**
    * Esc: ends a wall chain being drawn and puts the Add menu's drawing tool
-   * (wall, window or door) down for the Select tool, so the Add button goes
-   * out with it. True when there was something to end.
+   * (wall, window or door), or the Measure tool, down for the Select tool,
+   * so its button goes out with it. True when there was something to end.
    */
   function endDrawing(): boolean {
     const state = inst.editor.getState();
     const chain = inst.addWallManager.previousNode !== undefined;
     if (chain) inst.addWallManager.unset();
-    if (!ADD_TOOLS.includes(state.activeTool)) return chain;
+    const tool = state.activeTool;
+    if (!ADD_TOOLS.includes(tool) && tool !== Tool.Measure) return chain;
     inst.notifier.clear();
     state.setTool(Tool.Edit);
     return true;

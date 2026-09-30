@@ -175,6 +175,8 @@ export class Main extends Viewport {
       if (state.activeTool !== previous.activeTool) {
         // A new tool starts with pan and zoom working.
         this.pause = false;
+        // Esc may put the Measure tool down mid-measurement.
+        if (previous.activeTool === Tool.Measure) this.preview.set(undefined);
         this.panWith(state.activeTool);
       }
     });

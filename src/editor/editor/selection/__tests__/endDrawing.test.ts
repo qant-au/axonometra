@@ -43,7 +43,14 @@ describe('Esc ends drawing', () => {
     expect(state.activeTool).toBe(Tool.Edit);
   });
 
-  it.each([Tool.View, Tool.Edit, Tool.Remove, Tool.Measure])(
+  // Re-sweep 3 2026-09-30: the Measure tool stayed pressed after Esc.
+  it('puts the Measure tool down for the Select tool', () => {
+    const { state, commands } = editor(Tool.Measure);
+    expect(commands.endDrawing()).toBe(true);
+    expect(state.activeTool).toBe(Tool.Edit);
+  });
+
+  it.each([Tool.View, Tool.Edit, Tool.Remove])(
     'leaves tool %s on, and says there was nothing to end',
     (tool) => {
       const { state, commands } = editor(tool);
