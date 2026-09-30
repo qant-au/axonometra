@@ -1,3 +1,4 @@
+import type { EditorInstance } from '../instance/EditorInstance';
 import { IViewportOptions, Viewport } from 'pixi-viewport';
 import {
   Assets,
@@ -8,20 +9,14 @@ import {
 } from 'pixi.js';
 import { getPreloadImageUrls } from '../../res/catalog';
 import { FloorPlan } from './objects/FloorPlan';
-import { getFloorPlan } from '../EditorRoot';
 import { TransformLayer } from './objects/TransformControls/TransformLayer';
-import { useStore } from '../../stores/EditorStore';
 import { AddNodeAction } from './actions/AddNodeAction';
 import { AddWallManager } from './actions/AddWallManager';
-import { viewportX, viewportY } from '../../helpers/ViewportCoordinates';
 import { Tool } from './constants';
 import { Pointer } from './Pointer';
 import { Preview } from './actions/MeasureToolManager';
 import { SelectionOverlay } from './selection/SelectionOverlay';
 import { refsInRect } from './selection/planOps';
-import { currentFloorData, selectRefs } from './selection/commands';
-import { rightPressed } from './selection/pointer';
-import { useSelectionStore } from './selection/SelectionStore';
 import { interpretWheel } from './wheel';
 import { isTypingTarget } from '../../vendor/accurona-core';
 
@@ -45,7 +40,10 @@ export class Main extends Viewport {
     add: boolean;
   } | null = null;
   private spaceHeld = false;
-  constructor(options: IViewportOptions) {
+  constructor(
+    private readonly inst: EditorInstance,
+    options: IViewportOptions
+  ) {
     super(options);
 
     // v8 Texture.from/TilingSprite.from only resolve a URL once it's been
@@ -60,7 +58,7 @@ export class Main extends Viewport {
     Assets.load(['./pattern.svg', ...getPreloadImageUrls()])
       .catch((error: unknown) => console.error('Preload failed:', error))
       .finally(() => this.setup());
-    this.preview = new Preview();
+    this.preview = new Preview(this.inst);
     this.addChild(this.preview.getReference());
     this.cursor = 'none';
   }
@@ -93,7 +91,7 @@ export class Main extends Viewport {
     if (this.floorPlan) this.floorPlan.interactiveChildren = !held;
     if (this.transformLayer) this.transformLayer.interactiveChildren = !held;
     this.cursor = held ? 'grab' : 'none';
-    this.panWith(useStore.getState().activeTool);
+    this.panWith(this.inst.editor.getState().activeTool);
   }
 
   private readonly onSpaceDown = (e: KeyboardEvent) => {
@@ -137,14 +135,14 @@ export class Main extends Viewport {
     // plugins onto a torn-down viewport (whose transform is now null) — v7's
     // clamp plugin reads viewport.x and would throw.
     if (this.destroyed) return;
-    this.panWith(useStore.getState().activeTool)
+    this.panWith(this.inst.editor.getState().activeTool)
       .clamp({ direction: 'all' })
       .pinch()
       .clampZoom({ minScale: 1.0, maxScale: 6.0 });
     window.addEventListener('keydown', this.onSpaceDown);
     window.addEventListener('keyup', this.onSpaceUp);
     window.addEventListener('blur', this.onSpaceUp);
-    this.unsubscribeTool = useStore.subscribe((state, previous) => {
+    this.unsubscribeTool = this.inst.editor.subscribe((state, previous) => {
       if (state.activeTool !== previous.activeTool) {
         // A new tool starts with pan and zoom working.
         this.pause = false;
@@ -158,19 +156,19 @@ export class Main extends Viewport {
     this.center = new Point(this.worldWidth / 2, this.worldHeight / 2);
     this.addChild(this.bkgPattern);
 
-    this.floorPlan = getFloorPlan();
+    this.floorPlan = this.inst.getFloorPlanView();
     this.addChild(this.floorPlan);
 
-    this.transformLayer = TransformLayer.Instance;
+    this.transformLayer = this.inst.transformLayer;
     this.addChild(this.transformLayer);
 
-    this.addWallManager = AddWallManager.Instance;
+    this.addWallManager = this.inst.addWallManager;
     this.addChild(this.addWallManager.preview.getReference());
 
-    this.selectionOverlay = new SelectionOverlay();
+    this.selectionOverlay = new SelectionOverlay(this.inst);
     this.addChild(this.selectionOverlay);
 
-    this.pointer = new Pointer();
+    this.pointer = new Pointer(this.inst);
     this.addChild(this.pointer);
     this.on('pointerdown', this.checkTools);
     this.on('pointermove', this.updatePreview);
@@ -202,7 +200,7 @@ export class Main extends Viewport {
     const moved = Math.hypot(ev.global.x - start.sx, ev.global.y - start.sy);
     if (moved < MARQUEE_SLOP) return;
     const here = this.toWorld(ev.global);
-    const floor = currentFloorData();
+    const floor = this.inst.commands.currentFloorData();
     if (!floor) return;
     const refs = refsInRect(floor, {
       x: Math.min(start.x, here.x),
@@ -210,7 +208,7 @@ export class Main extends Viewport {
       width: Math.abs(here.x - start.x),
       height: Math.abs(here.y - start.y)
     });
-    selectRefs(refs, start.add);
+    this.inst.commands.selectRefs(refs, start.add);
   }
   // Pan and zoom are paused while a wall or measurement is being pressed
   // out; every release resumes them (except wall drawing on touch, which
@@ -218,32 +216,32 @@ export class Main extends Viewport {
   // too: a pause that was never lifted left pan and zoom dead in every tool.
   private updateEnd(ev: FederatedPointerEvent) {
     this.endMarquee(ev);
-    const tool = useStore.getState().activeTool;
+    const tool = this.inst.editor.getState().activeTool;
     if (tool === Tool.Measure) this.preview.set(undefined);
     if (!(tool === Tool.WallAdd && isMobile)) this.pause = false;
   }
   private checkTools(ev: FederatedPointerEvent) {
     ev.stopPropagation();
     if (ev.button == 2) {
-      rightPressed(null, ev);
+      this.inst.pointer.rightPressed(null, ev);
       return;
     }
     // Space + drag is a pan, whatever the tool.
     if (this.spaceHeld) return;
     const point = { x: 0, y: 0 };
-    switch (useStore.getState().activeTool) {
+    switch (this.inst.editor.getState().activeTool) {
       case Tool.WallAdd: {
         this.pause = true;
-        point.x = viewportX(ev.global.x);
-        point.y = viewportY(ev.global.y);
-        const action = new AddNodeAction(undefined, point);
+        point.x = this.inst.viewportX(ev.global.x);
+        point.y = this.inst.viewportY(ev.global.y);
+        const action = new AddNodeAction(this.inst, undefined, point);
         action.execute();
         break;
       }
       case Tool.Edit: {
         // A press on the empty plan: deselect (Shift keeps the selection,
         // for an additive marquee) and start a marquee.
-        if (!ev.shiftKey) useSelectionStore.getState().clear();
+        if (!ev.shiftKey) this.inst.selection.getState().clear();
         const world = this.toWorld(ev.global);
         this.marqueeStart = {
           x: world.x,
@@ -256,8 +254,8 @@ export class Main extends Viewport {
       }
       case Tool.Measure:
         this.pause = true;
-        point.x = viewportX(ev.global.x);
-        point.y = viewportY(ev.global.y);
+        point.x = this.inst.viewportX(ev.global.x);
+        point.y = this.inst.viewportY(ev.global.y);
         this.preview.set(point);
         break;
     }

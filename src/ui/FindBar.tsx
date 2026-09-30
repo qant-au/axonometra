@@ -1,12 +1,10 @@
 import { useMemo } from 'react';
 import { Autocomplete, Paper, TextField } from '@mui/material';
 import { useStore } from '../stores/EditorStore';
-import { useFloorPlanStore } from '../stores/FloorPlanStore';
+import { useInstance } from '../editor/instance/context';
 import { getItemName } from '../res/catalog';
 import { Tool } from '../editor/editor/constants';
 import { ChangeFloorAction } from '../editor/editor/actions/ChangeFloorAction';
-import { useSelectionStore } from '../editor/editor/selection/SelectionStore';
-import { fitSelection } from '../editor/editor/selection/commands';
 
 interface Found {
   key: string;
@@ -18,10 +16,11 @@ interface Found {
 // Ctrl/Cmd + F: find a placed item by name on any floor. Choosing one goes
 // to its floor, selects it and brings it into view.
 function FindBox() {
+  const inst = useInstance();
   const setOpen = useStore((s) => s.setFindOpen);
   const options = useMemo(() => {
     const found: Found[] = [];
-    useFloorPlanStore.getState().floors.forEach((floor, index) => {
+    inst.plan.getState().floors.forEach((floor, index) => {
       for (const [id, item] of floor?.getFurniture() ?? []) {
         found.push({
           key: `${index}:${id}`,
@@ -34,16 +33,16 @@ function FindBox() {
     return found.sort(
       (a, b) => a.floor - b.floor || a.label.localeCompare(b.label)
     );
-  }, []);
+  }, [inst]);
 
   const choose = (item: Found | null) => {
     setOpen(false);
     if (!item) return;
-    const by = item.floor - useFloorPlanStore.getState().currentFloor;
-    if (by !== 0) new ChangeFloorAction(by).execute();
-    useStore.getState().setTool(Tool.Edit);
-    useSelectionStore.getState().set([{ kind: 'furniture', id: item.id }]);
-    fitSelection();
+    const by = item.floor - inst.plan.getState().currentFloor;
+    if (by !== 0) new ChangeFloorAction(inst, by).execute();
+    inst.editor.getState().setTool(Tool.Edit);
+    inst.selection.getState().set([{ kind: 'furniture', id: item.id }]);
+    inst.commands.fitSelection();
   };
 
   return (

@@ -1,7 +1,5 @@
+import type { EditorInstance } from '../../instance/EditorInstance';
 import { Container, DestroyOptions } from 'pixi.js';
-import { notify } from '../../../vendor/accurona-ui';
-import { useFloorPlanStore } from '../../../stores/FloorPlanStore';
-import { rendererHolder } from '../../EditorRoot';
 import { timestamp } from '../actions/SaveAction';
 
 // View for the floor plan model. The model itself lives in useFloorPlanStore;
@@ -10,11 +8,11 @@ import { timestamp } from '../actions/SaveAction';
 export class FloorPlan extends Container {
   private unsubscribe: () => void;
 
-  constructor() {
+  constructor(private readonly inst: EditorInstance) {
     super();
-    this.unsubscribe = useFloorPlanStore.subscribe(() => this.syncFromStore());
+    this.unsubscribe = this.inst.plan.subscribe(() => this.syncFromStore());
     // Materialise floor 0 so a fresh editor has something to draw on.
-    useFloorPlanStore.getState().getCurrentFloor();
+    this.inst.plan.getState().getCurrentFloor();
     this.syncFromStore();
   }
 
@@ -27,7 +25,7 @@ export class FloorPlan extends Container {
   // longer active (or were removed from the plan) get detached — the store
   // holds them, so they are not destroyed here.
   private syncFromStore() {
-    const { floors, currentFloor } = useFloorPlanStore.getState();
+    const { floors, currentFloor } = this.inst.plan.getState();
     const active = floors[currentFloor];
     for (const child of [...this.children]) {
       if (child !== active) {
@@ -42,9 +40,9 @@ export class FloorPlan extends Container {
   public print() {
     // v8: extract via the live app renderer (a separate renderer can't read
     // this scene's GPU resources). extract.canvas sizes itself to the bounds.
-    const renderer = rendererHolder.current;
+    const renderer = this.inst.renderer;
     if (!renderer) {
-      notify({
+      this.inst.notify({
         title: 'Export failed',
         message: 'Editor is not ready.',
         severity: 'error'
@@ -54,7 +52,7 @@ export class FloorPlan extends Container {
     const canvas = renderer.extract.canvas(this) as HTMLCanvasElement;
     canvas.toBlob((blob) => {
       if (!blob) {
-        notify({
+        this.inst.notify({
           title: 'Export failed',
           message: 'Could not generate plan image.',
           severity: 'error'

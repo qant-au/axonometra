@@ -10,103 +10,115 @@
 // covers every click tool and every drag) or a `transact()` block for edits
 // that start outside the canvas (toolbar, furniture drawer, async catalog
 // lookups). Nothing is recorded unless the plan actually changed.
-import { useFloorPlanStore } from '../../stores/FloorPlanStore';
-import { Snapshot, useHistoryStore } from '../../stores/HistoryStore';
-import { AddWallManager } from './actions/AddWallManager';
-import { FloorPlanSerializable } from './persistence/FloorPlanSerializable';
-import { serializer } from './persistence/Serializer';
+//
+// Each editor has its own history (EditorInstance.edits).
+import type { Snapshot } from '../../stores/HistoryStore';
+import type { EditorInstance } from '../instance/EditorInstance';
+import type { FloorPlanSerializable } from './persistence/FloorPlanSerializable';
 
-let depth = 0;
-let before: Snapshot | undefined;
-let gestureOpen = false;
+export interface EditHistory {
+  snapshot(): Snapshot;
+  /** Run an edit as one undo step. Nested calls fold into the outermost. */
+  transact<T>(fn: () => T): T;
+  /** Bound, so it can be an event listener. */
+  beginGesture: () => void;
+  /** Bound, so it can be an event listener. */
+  endGesture: () => void;
+  /**
+   * Rebuilds the whole plan from data, keeping the active floor. Undo uses
+   * it, and so do the selection edits (paste, delete, nudge), which change
+   * the serialised plan and hand it back here.
+   */
+  applyPlan(plan: FloorPlanSerializable, floor: number): void;
+  undo(): boolean;
+  redo(): boolean;
+  /** Forget all history, e.g. when a different plan is loaded. */
+  reset(): void;
+}
 
-export function snapshot(): Snapshot {
-  return {
-    plan: serializer.serialize(),
-    currentFloor: useFloorPlanStore.getState().currentFloor
+export function createEditHistory(inst: EditorInstance): EditHistory {
+  let depth = 0;
+  let before: Snapshot | undefined;
+  let gestureOpen = false;
+
+  const snapshot = (): Snapshot => ({
+    plan: inst.serializer.serialize(),
+    currentFloor: inst.plan.getState().currentFloor
+  });
+
+  const open = () => {
+    if (depth++ === 0) before = snapshot();
   };
-}
 
-function open() {
-  if (depth++ === 0) before = snapshot();
-}
+  const close = () => {
+    if (depth === 0) return;
+    if (--depth > 0) return;
+    const start = before;
+    before = undefined;
+    if (start && start.plan !== inst.serializer.serialize()) {
+      inst.history.getState().push(start);
+    }
+  };
 
-function close() {
-  if (depth === 0) return;
-  if (--depth > 0) return;
-  const start = before;
-  before = undefined;
-  if (start && start.plan !== serializer.serialize()) {
-    useHistoryStore.getState().push(start);
-  }
-}
+  const applyPlan = (plan: FloorPlanSerializable, floor: number) => {
+    // Anything holding a reference into the old floors goes stale.
+    inst.addWallManager.resetTools();
+    inst.plan.getState().setPlan(plan);
+    const { floors, visibleLabels } = inst.plan.getState();
+    const currentFloor = Math.max(0, Math.min(floor, floors.length - 1));
+    inst.plan.setState({ currentFloor });
+    floors[currentFloor]?.setLabelVisibility(visibleLabels);
+  };
 
-/** Run an edit as one undo step. Nested calls fold into the outermost. */
-export function transact<T>(fn: () => T): T {
-  open();
-  try {
-    return fn();
-  } finally {
-    close();
-  }
-}
+  const restore = (target: Snapshot) =>
+    applyPlan(
+      JSON.parse(target.plan) as FloorPlanSerializable,
+      target.currentFloor
+    );
 
-// A lost pointerup (window blur mid-drag) must not leave a gesture half-open
-// forever, so gestures use a flag rather than stacking on `depth`.
-export function beginGesture() {
-  if (gestureOpen) return;
-  gestureOpen = true;
-  open();
-}
-
-export function endGesture() {
-  if (!gestureOpen) return;
-  gestureOpen = false;
-  close();
-}
-
-/**
- * Rebuilds the whole plan from data, keeping the active floor. Undo uses it,
- * and so do the selection edits (paste, delete, nudge), which change the
- * serialised plan and hand it back here.
- */
-export function applyPlan(plan: FloorPlanSerializable, floor: number) {
-  // Anything holding a reference into the old floors goes stale.
-  AddWallManager.Instance.resetTools();
-  useFloorPlanStore.getState().setPlan(plan);
-  const { floors, visibleLabels } = useFloorPlanStore.getState();
-  const currentFloor = Math.max(0, Math.min(floor, floors.length - 1));
-  useFloorPlanStore.setState({ currentFloor });
-  floors[currentFloor]?.setLabelVisibility(visibleLabels);
-}
-
-function restore(target: Snapshot) {
-  applyPlan(
-    JSON.parse(target.plan) as FloorPlanSerializable,
-    target.currentFloor
-  );
-}
-
-export function undo(): boolean {
-  if (depth > 0) return false;
-  const target = useHistoryStore.getState().takeUndo(snapshot());
-  if (!target) return false;
-  restore(target);
-  return true;
-}
-
-export function redo(): boolean {
-  if (depth > 0) return false;
-  const target = useHistoryStore.getState().takeRedo(snapshot());
-  if (!target) return false;
-  restore(target);
-  return true;
-}
-
-/** Forget all history, e.g. when a different plan is loaded. */
-export function resetHistory() {
-  depth = 0;
-  before = undefined;
-  gestureOpen = false;
-  useHistoryStore.getState().clear();
+  return {
+    snapshot,
+    transact<T>(fn: () => T): T {
+      open();
+      try {
+        return fn();
+      } finally {
+        close();
+      }
+    },
+    // A lost pointerup (window blur mid-drag) must not leave a gesture
+    // half-open forever, so gestures use a flag rather than stacking on
+    // `depth`.
+    beginGesture: () => {
+      if (gestureOpen) return;
+      gestureOpen = true;
+      open();
+    },
+    endGesture: () => {
+      if (!gestureOpen) return;
+      gestureOpen = false;
+      close();
+    },
+    applyPlan,
+    undo() {
+      if (depth > 0) return false;
+      const target = inst.history.getState().takeUndo(snapshot());
+      if (!target) return false;
+      restore(target);
+      return true;
+    },
+    redo() {
+      if (depth > 0) return false;
+      const target = inst.history.getState().takeRedo(snapshot());
+      if (!target) return false;
+      restore(target);
+      return true;
+    },
+    reset() {
+      depth = 0;
+      before = undefined;
+      gestureOpen = false;
+      inst.history.getState().clear();
+    }
+  };
 }

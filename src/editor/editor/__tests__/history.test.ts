@@ -1,5 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { useHistoryStore } from '../../../stores/HistoryStore';
+import { createHistoryStore } from '../../../stores/HistoryStore';
+import type { EditorInstance } from '../../instance/EditorInstance';
+import { createEditHistory } from '../history';
+
+const useHistoryStore = createHistoryStore();
 
 // The plan is modelled as a string the Serializer "reads", and setPlan as a
 // write-back into that string, so the tests exercise history.ts alone: no
@@ -13,16 +17,12 @@ const plan = vi.hoisted(() => ({
   setLabelVisibility: vi.fn()
 }));
 
-vi.mock('../persistence/Serializer', () => ({
-  serializer: { serialize: () => plan.current }
-}));
-
-vi.mock('../actions/AddWallManager', () => ({
-  AddWallManager: { Instance: { resetTools: plan.resetTools } }
-}));
-
-vi.mock('../../../stores/FloorPlanStore', () => ({
-  useFloorPlanStore: {
+// The editor the history belongs to, with the plan as that string.
+const inst = {
+  serializer: { serialize: () => plan.current },
+  addWallManager: { resetTools: plan.resetTools },
+  history: useHistoryStore,
+  plan: {
     getState: () => ({
       currentFloor: plan.currentFloor,
       visibleLabels: true,
@@ -40,16 +40,16 @@ vi.mock('../../../stores/FloorPlanStore', () => ({
       plan.currentFloor = s.currentFloor;
     }
   }
-}));
+} as unknown as EditorInstance;
 
-import {
+const {
   beginGesture,
   endGesture,
   redo,
-  resetHistory,
+  reset: resetHistory,
   transact,
   undo
-} from '../history';
+} = createEditHistory(inst);
 
 // Plans in these tests are JSON so restore() can parse them back.
 const doc = (id: string, floors = 1) => JSON.stringify({ id, floors });

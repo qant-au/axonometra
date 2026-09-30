@@ -1,32 +1,29 @@
+import type { EditorInstance } from '../../instance/EditorInstance';
 import { FederatedPointerEvent } from 'pixi.js';
 import { euclideanDistance } from '../../../helpers/EuclideanDistance';
 import { Point } from '../../../helpers/Point';
 
 import { SNAP_THRESHOLD } from '../constants';
-import { useFloorPlanStore } from '../../../stores/FloorPlanStore';
 
-import { TransformLayer } from '../objects/TransformControls/TransformLayer';
 import { WallNode } from '../objects/Walls/WallNode';
 import { AddWallAction } from './AddWallAction';
 import { Preview } from './MeasureToolManager';
 
 // tracks current action data
 export class AddWallManager {
-  private static instance: AddWallManager | undefined;
-
   public previousNode: WallNode | undefined;
 
   public preview: Preview;
 
-  private constructor() {
+  constructor(private readonly inst: EditorInstance) {
     this.previousNode = undefined;
-    this.preview = new Preview();
+    this.preview = new Preview(this.inst);
   }
 
   // checks if step is valid
   public checkStep(coords: Point) {
     if (this.previousNode == undefined) {
-      for (const [_id, node] of useFloorPlanStore
+      for (const [_id, node] of this.inst.plan
         .getState()
         .getWallNodeSeq()
         .getWallNodes()) {
@@ -67,7 +64,7 @@ export class AddWallManager {
     }
 
     //new node on screen
-    const wallAction = new AddWallAction(this.previousNode, node);
+    const wallAction = new AddWallAction(this.inst, this.previousNode, node);
     wallAction.execute();
     this.preview.set(node.position);
 
@@ -83,17 +80,12 @@ export class AddWallManager {
     this.previousNode = undefined;
     this.preview.set(undefined);
   }
-  public static get Instance() {
-    return this.instance || (this.instance = new this());
-  }
-
   public resetTools() {
-    TransformLayer.Instance.deselect();
+    this.inst.transformLayer.deselect();
     this.unset();
   }
 
   public dispose() {
     this.unset();
-    AddWallManager.instance = undefined;
   }
 }

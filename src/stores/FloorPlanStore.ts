@@ -1,6 +1,8 @@
 /** the floor plan model — floors, the active floor, and the furniture counter */
-import { create } from 'zustand';
-import { notify } from '../vendor/accurona-ui';
+import { useStore as useZustand } from 'zustand';
+import { createStore, type StoreApi } from 'zustand/vanilla';
+import type { EditorInstance } from '../editor/instance/EditorInstance';
+import { useInstance } from '../editor/instance/context';
 import { Floor } from '../editor/editor/objects/Floor';
 import { Furniture } from '../editor/editor/objects/Furniture';
 import { Wall } from '../editor/editor/objects/Walls/Wall';
@@ -9,7 +11,6 @@ import { WallNodeSequence } from '../editor/editor/objects/Walls/WallNodeSequenc
 import { FloorPlanSerializable } from '../editor/editor/persistence/FloorPlanSerializable';
 import { Point } from '../helpers/Point';
 import { FurnitureData } from './FurnitureStore';
-import { useSelectionStore } from '../editor/editor/selection/SelectionStore';
 
 export interface FloorPlanStore {
   /**
@@ -57,154 +58,169 @@ export interface FloorPlanStore {
   getFurniture: () => Map<number, Furniture>;
 }
 
-export const useFloorPlanStore = create<FloorPlanStore>()((set, get) => ({
-  floors: [],
-  currentFloor: 0,
-  furnitureId: 0,
-  visibleLabels: true,
+export function createFloorPlanStore(
+  inst: EditorInstance
+): StoreApi<FloorPlanStore> {
+  return createStore<FloorPlanStore>()((set, get) => ({
+    floors: [],
+    currentFloor: 0,
+    furnitureId: 0,
+    visibleLabels: true,
 
-  // Floors are created lazily rather than in the store initialiser: the
-  // initialiser runs at import time, and `new Floor()` builds Pixi objects.
-  getCurrentFloor: () => {
-    const { floors, currentFloor } = get();
-    const existing = floors[currentFloor];
-    if (existing) return existing;
-    const floor = new Floor();
-    const next = floors.slice();
-    next[currentFloor] = floor;
-    set({ floors: next });
-    return floor;
-  },
+    // Floors are created lazily rather than in the store initialiser: the
+    // initialiser runs at import time, and `new Floor()` builds Pixi objects.
+    getCurrentFloor: () => {
+      const { floors, currentFloor } = get();
+      const existing = floors[currentFloor];
+      if (existing) return existing;
+      const floor = new Floor(inst);
+      const next = floors.slice();
+      next[currentFloor] = floor;
+      set({ floors: next });
+      return floor;
+    },
 
-  changeFloor: (by: number) => {
-    const previous = get().getCurrentFloor();
-    const { floors, currentFloor, visibleLabels } = get();
-    const target = currentFloor + by;
-    // Floor 0 is the ground floor; there is no basement.
-    if (target < 0) return;
-    // The selection is on the floor being left.
-    useSelectionStore.getState().clear();
-    const next = floors.slice();
-    if (next[target] == null) {
-      next[target] = new Floor(undefined, previous);
-    }
-    next[target].setLabelVisibility(visibleLabels);
-    set({ floors: next, currentFloor: target });
-  },
+    changeFloor: (by: number) => {
+      const previous = get().getCurrentFloor();
+      const { floors, currentFloor, visibleLabels } = get();
+      const target = currentFloor + by;
+      // Floor 0 is the ground floor; there is no basement.
+      if (target < 0) return;
+      // The selection is on the floor being left.
+      inst.selection.getState().clear();
+      const next = floors.slice();
+      if (next[target] == null) {
+        next[target] = new Floor(inst, undefined, previous);
+      }
+      next[target].setLabelVisibility(visibleLabels);
+      set({ floors: next, currentFloor: target });
+    },
 
-  // removes the current floor
-  removeFloor: () => {
-    const { floors, currentFloor, visibleLabels } = get();
-    if (floors.length < 2) {
-      notify({
-        title: 'Floor removal not permitted',
-        message:
-          'This floor is the only floor in the plan. You cannot have a plan with no floors. Create a new floor before deleting.',
-        severity: 'error'
+    // removes the current floor
+    removeFloor: () => {
+      const { floors, currentFloor, visibleLabels } = get();
+      if (floors.length < 2) {
+        inst.notify({
+          title: 'Floor removal not permitted',
+          message:
+            'This floor is the only floor in the plan. You cannot have a plan with no floors. Create a new floor before deleting.',
+          severity: 'error'
+        });
+        return;
+      }
+      inst.selection.getState().clear();
+      floors[currentFloor]?.reset();
+      const next = floors.slice();
+      next.splice(currentFloor, 1);
+      const target = Math.min(currentFloor, next.length - 1);
+      next[target].setLabelVisibility(visibleLabels);
+      set({ floors: next, currentFloor: target });
+    },
+
+    toggleLabels: () => {
+      const visibleLabels = !get().visibleLabels;
+      set({ visibleLabels });
+      get().getCurrentFloor().setLabelVisibility(visibleLabels);
+    },
+
+    // Replaces the whole model from a validated plan. Resets first so the
+    // WallNodeSequence id counter is zeroed before the new floors claim ids.
+    setPlan: (plan: FloorPlanSerializable) => {
+      get().reset();
+      const floors = plan.floors.map((floorData) => new Floor(inst, floorData));
+      floors[0]?.getWallNodeSequence().setId(plan.wallNodeId);
+      set({
+        floors,
+        furnitureId: plan.furnitureId,
+        currentFloor: 0
       });
-      return;
-    }
-    useSelectionStore.getState().clear();
-    floors[currentFloor]?.reset();
-    const next = floors.slice();
-    next.splice(currentFloor, 1);
-    const target = Math.min(currentFloor, next.length - 1);
-    next[target].setLabelVisibility(visibleLabels);
-    set({ floors: next, currentFloor: target });
-  },
+    },
 
-  toggleLabels: () => {
-    const visibleLabels = !get().visibleLabels;
-    set({ visibleLabels });
-    get().getCurrentFloor().setLabelVisibility(visibleLabels);
-  },
+    // Drops every floor. Called on load and on editor unmount; Floor.reset()
+    // also zeroes the wall point id counter.
+    reset: () => {
+      for (const floor of get().floors) {
+        floor.reset();
+      }
+      set({ floors: [], currentFloor: 0, furnitureId: 0 });
+    },
 
-  // Replaces the whole model from a validated plan. Resets first so the
-  // WallNodeSequence id counter is zeroed before the new floors claim ids.
-  setPlan: (plan: FloorPlanSerializable) => {
-    get().reset();
-    const floors = plan.floors.map((floorData) => new Floor(floorData));
-    floors[0]?.getWallNodeSequence().setId(plan.wallNodeId);
-    set({
-      floors,
-      furnitureId: plan.furnitureId,
-      currentFloor: 0
-    });
-  },
+    addFurniture: (
+      obj: FurnitureData,
+      attachedTo?: Wall,
+      coords?: Point,
+      attachedToLeft?: number,
+      attachedToRight?: number
+    ) => {
+      const furnitureId = get().furnitureId + 1;
+      set({ furnitureId });
+      get()
+        .getCurrentFloor()
+        .addFurniture(
+          obj,
+          furnitureId,
+          attachedTo,
+          coords,
+          attachedToLeft,
+          attachedToRight
+        );
+    },
 
-  // Drops every floor. Called on load and on editor unmount; Floor.reset()
-  // also zeroes the static WallNodeSequence id counter.
-  reset: () => {
-    for (const floor of get().floors) {
-      floor.reset();
-    }
-    set({ floors: [], currentFloor: 0, furnitureId: 0 });
-  },
+    setFurniturePosition: (
+      id: number,
+      x: number,
+      y: number,
+      angle?: number
+    ) => {
+      get().getCurrentFloor().setFurniturePosition(id, x, y, angle);
+    },
 
-  addFurniture: (
-    obj: FurnitureData,
-    attachedTo?: Wall,
-    coords?: Point,
-    attachedToLeft?: number,
-    attachedToRight?: number
-  ) => {
-    const furnitureId = get().furnitureId + 1;
-    set({ furnitureId });
-    get()
-      .getCurrentFloor()
-      .addFurniture(
-        obj,
-        furnitureId,
-        attachedTo,
-        coords,
-        attachedToLeft,
-        attachedToRight
-      );
-  },
+    cloneFurniture: (source: Furniture) => {
+      const furnitureId = get().furnitureId + 1;
+      set({ furnitureId });
+      return get().getCurrentFloor().cloneFurniture(source, furnitureId);
+    },
 
-  setFurniturePosition: (id: number, x: number, y: number, angle?: number) => {
-    get().getCurrentFloor().setFurniturePosition(id, x, y, angle);
-  },
+    cloneWall: (source: Wall) =>
+      get()
+        .getCurrentFloor()
+        .cloneWall(source, () => {
+          const furnitureId = get().furnitureId + 1;
+          set({ furnitureId });
+          return furnitureId;
+        }),
 
-  cloneFurniture: (source: Furniture) => {
-    const furnitureId = get().furnitureId + 1;
-    set({ furnitureId });
-    return get().getCurrentFloor().cloneFurniture(source, furnitureId);
-  },
+    removeFurniture: (id: number) => {
+      get().getCurrentFloor().removeFurniture(id);
+    },
 
-  cloneWall: (source: Wall) =>
-    get()
-      .getCurrentFloor()
-      .cloneWall(source, () => {
-        const furnitureId = get().furnitureId + 1;
-        set({ furnitureId });
-        return furnitureId;
-      }),
+    getObject: (id: number) => get().getCurrentFloor().getObject(id),
 
-  removeFurniture: (id: number) => {
-    get().getCurrentFloor().removeFurniture(id);
-  },
+    redrawWalls: () => {
+      get().getCurrentFloor().redrawWalls();
+    },
 
-  getObject: (id: number) => get().getCurrentFloor().getObject(id),
+    removeWallNode: (nodeId: number) => {
+      get().getCurrentFloor().removeWallNode(nodeId);
+    },
 
-  redrawWalls: () => {
-    get().getCurrentFloor().redrawWalls();
-  },
+    removeWall: (wall: Wall) => {
+      get().getCurrentFloor().removeWall(wall);
+    },
 
-  removeWallNode: (nodeId: number) => {
-    get().getCurrentFloor().removeWallNode(nodeId);
-  },
+    addNodeToWall: (wall: Wall, coords: Point) =>
+      get().getCurrentFloor().addNodeToWall(wall, coords),
 
-  removeWall: (wall: Wall) => {
-    get().getCurrentFloor().removeWall(wall);
-  },
+    addNode: (x: number, y: number) => get().getCurrentFloor().addNode(x, y),
 
-  addNodeToWall: (wall: Wall, coords: Point) =>
-    get().getCurrentFloor().addNodeToWall(wall, coords),
+    getWallNodeSeq: () => get().getCurrentFloor().getWallNodeSequence(),
 
-  addNode: (x: number, y: number) => get().getCurrentFloor().addNode(x, y),
+    getFurniture: () => get().getCurrentFloor().getFurniture()
+  }));
+}
 
-  getWallNodeSeq: () => get().getCurrentFloor().getWallNodeSequence(),
-
-  getFurniture: () => get().getCurrentFloor().getFurniture()
-}));
+export function useFloorPlanStore<T>(
+  selector: (state: FloorPlanStore) => T
+): T {
+  return useZustand(useInstance().plan, selector);
+}

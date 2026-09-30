@@ -1,3 +1,4 @@
+import type { EditorInstance } from '../../instance/EditorInstance';
 import {
   Assets,
   Graphics,
@@ -7,12 +8,9 @@ import {
 } from 'pixi.js';
 import { resolveCatalogImage } from '../../../api/api-client';
 import { FurnitureData } from '../../../stores/FurnitureStore';
-import { useStore } from '../../../stores/EditorStore';
 import { DeleteFurnitureAction } from '../actions/DeleteFurnitureAction';
-import { pressSelect, rightPressed } from '../selection/pointer';
 import { INTERIOR_WALL_THICKNESS, METER, Tool } from '../constants';
 import { IFurnitureSerializable } from '../persistence/IFurnitureSerializable';
-import { TransformLayer } from './TransformControls/TransformLayer';
 
 export class Furniture extends Sprite {
   private id: number; // each furniture piece knows its own index in the plan. uuids?
@@ -28,6 +26,7 @@ export class Furniture extends Sprite {
   public heightM?: number;
   public mountM?: number;
   constructor(
+    private readonly inst: EditorInstance,
     data: FurnitureData,
     id: number,
     attachedTo?: Graphics,
@@ -131,14 +130,14 @@ export class Furniture extends Sprite {
   public switchOrientation() {
     this.applyStep(this.orientation, false);
     this.orientation = (this.orientation + 1) % 4;
-    TransformLayer.Instance.update();
+    this.inst.transformLayer.update();
   }
 
   // Right-click opens the context menu (Turn is in it); a right drag still
   // pans, so the menu waits for the release (selection/pointer.ts).
   private onRightDown(ev: FederatedPointerEvent) {
     ev.stopPropagation();
-    rightPressed({ kind: 'furniture', id: this.id }, ev);
+    this.inst.pointer.rightPressed({ kind: 'furniture', id: this.id }, ev);
   }
   private setOrientation(number: number) {
     for (let i = 0; i < number; i++) {
@@ -148,20 +147,23 @@ export class Furniture extends Sprite {
   }
   private onMouseDown(ev: FederatedPointerEvent) {
     // In View the press belongs to the viewport, so a drag pans from anywhere.
-    if (useStore.getState().activeTool === Tool.View) return;
+    if (this.inst.editor.getState().activeTool === Tool.View) return;
     ev.stopPropagation();
     if (ev.button == 1) {
       this.zIndex++;
     }
     // Right-click turns the item (onRightDown); it must not also erase it.
     if (ev.button === 2) return;
-    switch (useStore.getState().activeTool) {
+    switch (this.inst.editor.getState().activeTool) {
       case Tool.Edit:
-        pressSelect({ kind: 'furniture', id: this.id }, ev.shiftKey);
+        this.inst.pointer.pressSelect(
+          { kind: 'furniture', id: this.id },
+          ev.shiftKey
+        );
         break;
 
       case Tool.Remove: {
-        const action = new DeleteFurnitureAction(this.id);
+        const action = new DeleteFurnitureAction(this.inst, this.id);
         action.execute();
         break;
       }
@@ -170,7 +172,7 @@ export class Furniture extends Sprite {
 
   private onMouseMove() {
     //todo update doar la mousedown=true
-    TransformLayer.Instance.update();
+    this.inst.transformLayer.update();
   }
 
   public serialize() {

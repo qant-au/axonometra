@@ -1,9 +1,10 @@
-import { useFloorPlanStore } from '../../../stores/FloorPlanStore';
+import type { EditorInstance } from '../../instance/EditorInstance';
 import { Action } from './Action';
-import { transact } from '../history';
 
 export class DeleteFloorAction implements Action {
+  constructor(private readonly inst: EditorInstance) {}
+
   public execute(): void {
-    transact(() => useFloorPlanStore.getState().removeFloor());
+    this.inst.edits.transact(() => this.inst.plan.getState().removeFloor());
   }
 }

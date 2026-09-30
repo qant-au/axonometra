@@ -1,25 +1,27 @@
 import { useState } from 'react';
 import { ContextMenu, type ContextMenuItem } from '../vendor/accurona-ui';
-import { useStore } from '../stores/EditorStore';
-import { useFloorPlanStore } from '../stores/FloorPlanStore';
-import { embedConfig } from '../embed/embedConfig';
-import { transact } from '../editor/editor/history';
+import type { EditorInstance } from '../editor/instance/EditorInstance';
+import { useInstance } from '../editor/instance/context';
 import { useContextMenuStore } from '../editor/editor/selection/pointer';
-import {
-  copySelection,
-  cutSelection,
-  deleteSelection,
-  duplicateSelection,
-  fitAll,
-  hasClipboard,
-  paste,
-  selectAll
-} from '../editor/editor/selection/commands';
 import type { SelectionRef } from '../editor/editor/selection/planOps';
 
-function itemsFor(ref: SelectionRef | null): ContextMenuItem[] {
+function itemsFor(
+  inst: EditorInstance,
+  ref: SelectionRef | null
+): ContextMenuItem[] {
+  const {
+    copySelection,
+    cutSelection,
+    deleteSelection,
+    duplicateSelection,
+    fitAll,
+    hasClipboard,
+    paste,
+    selectAll
+  } = inst.commands;
+  const transact = inst.edits.transact;
   const view: ContextMenuItem = { label: 'Fit everything', onClick: fitAll };
-  if (embedConfig.readonly) return [view];
+  if (inst.config.readOnly) return [view];
   if (ref === null) {
     return [
       ...(hasClipboard() ? [{ label: 'Paste', onClick: () => paste() }] : []),
@@ -33,7 +35,7 @@ function itemsFor(ref: SelectionRef | null): ContextMenuItem[] {
     { label: 'Duplicate', onClick: () => duplicateSelection() },
     { label: 'Delete', onClick: () => deleteSelection() }
   ];
-  const plan = useFloorPlanStore.getState();
+  const plan = inst.plan.getState();
   if (ref.kind === 'wall') {
     const wall = plan.getWallNodeSeq().getWall(ref.left, ref.right);
     if (!wall) return edit;
@@ -41,7 +43,7 @@ function itemsFor(ref: SelectionRef | null): ContextMenuItem[] {
       ...edit,
       {
         label: 'Edit length',
-        onClick: () => useStore.getState().setLengthEditWall(wall)
+        onClick: () => inst.editor.getState().setLengthEditWall(wall)
       },
       {
         // Was a bare right-click before the menu.
@@ -65,11 +67,12 @@ function itemsFor(ref: SelectionRef | null): ContextMenuItem[] {
 // The right-click menu on the plan (shared keymap: right-click opens it). A
 // point-sized anchor at the click gives the menu somewhere to open from.
 export function PlanContextMenu() {
+  const inst = useInstance();
   const menu = useContextMenuStore((s) => s.menu);
   const close = useContextMenuStore((s) => s.close);
   const [anchor, setAnchor] = useState<HTMLElement | null>(null);
   if (!menu) return null;
-  const items = itemsFor(menu.ref).map((item) => ({
+  const items = itemsFor(inst, menu.ref).map((item) => ({
     ...item,
     onClick: () => {
       close();

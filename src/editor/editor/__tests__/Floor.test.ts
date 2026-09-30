@@ -13,17 +13,9 @@ vi.mock('../../../api/api-client', () => ({
   getWindow: () => Promise.resolve([]),
   resolveCatalogImage: (id: string) => `/${id}.svg`
 }));
-vi.mock('../../../stores/EditorStore', () => ({
-  useStore: { getState: () => ({ activeTool: 0, snap: false }) }
-}));
-vi.mock('../../../stores/FloorPlanStore', () => ({
-  useFloorPlanStore: { getState: () => ({ redrawWalls: vi.fn() }) }
-}));
-vi.mock('../../EditorRoot', () => ({
-  getMain: () => ({ scale: { x: 1, y: 1 }, corner: { x: 0, y: 0 } })
-}));
 
 const { Floor } = await import('../objects/Floor');
+const { fakeInstance } = await import('../../../test/fakeInstance');
 const { FloorSerializable } = await import('../persistence/FloorSerializable');
 
 // A square room: nodes 1-4, walls 1-2, 2-3, 3-4, 4-1. Two are exterior.
@@ -51,7 +43,7 @@ describe('Floor plan format v2', () => {
       [1, 2],
       [2, 3]
     ];
-    const floor = new Floor(data);
+    const floor = new Floor(fakeInstance(), data);
     const exterior = floor
       .getWallNodeSequence()
       .getExteriorWalls()
@@ -60,14 +52,18 @@ describe('Floor plan format v2', () => {
       [1, 2],
       [2, 3]
     ]);
-    expect(new Floor(floor.serialize()).serialize().exteriorWalls).toEqual([
+    expect(
+      new Floor(fakeInstance(), floor.serialize()).serialize().exteriorWalls
+    ).toEqual([
       [1, 2],
       [2, 3]
     ]);
   });
 
   it('writes no v2 keys when there is nothing to record', () => {
-    const json = JSON.parse(JSON.stringify(new Floor(room()).serialize()));
+    const json = JSON.parse(
+      JSON.stringify(new Floor(fakeInstance(), room()).serialize())
+    );
     expect(Object.keys(json).sort()).toEqual([
       'furnitureArray',
       'wallNodeLinks',
@@ -94,7 +90,7 @@ describe('Floor plan format v2', () => {
         mountM: 0
       }
     ];
-    const saved = new Floor(data).serialize();
+    const saved = new Floor(fakeInstance(), data).serialize();
     expect(saved.wallHeightM).toBe(3.2);
     expect(saved.elevationM).toBe(3.5);
     expect(saved.furnitureArray[0]).toMatchObject({ heightM: 2, mountM: 0 });

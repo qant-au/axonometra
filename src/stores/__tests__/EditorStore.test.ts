@@ -1,14 +1,15 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { Tool } from '../../editor/editor/constants';
 
-// setTool calls AddWallManager.Instance.resetTools() — stub that out so the
-// store tests don't depend on the Pixi-side singleton.
-const resetTools = vi.fn();
-vi.mock('../../editor/editor/actions/AddWallManager', () => ({
-  AddWallManager: { Instance: { resetTools } }
-}));
+import type { EditorInstance } from '../../editor/instance/EditorInstance';
+import { createEditorStore, ToolMode } from '../EditorStore';
 
-const { useStore, ToolMode } = await import('../EditorStore');
+// setTool calls the editor's AddWallManager.resetTools() — a stub stands in
+// so the store tests don't depend on the Pixi side.
+const resetTools = vi.fn();
+const useStore = createEditorStore({
+  addWallManager: { resetTools }
+} as unknown as EditorInstance);
 
 const initial = useStore.getState();
 

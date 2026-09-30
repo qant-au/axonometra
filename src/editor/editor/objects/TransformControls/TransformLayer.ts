@@ -1,7 +1,6 @@
+import type { EditorInstance } from '../../../instance/EditorInstance';
 import { Container, Graphics } from 'pixi.js';
 import { Point } from '../../../../helpers/Point';
-import { viewportX, viewportY } from '../../../../helpers/ViewportCoordinates';
-import { useStore } from '../../../../stores/EditorStore';
 import { Coord, LabelAxis, LABEL_OFFSET, Tool } from '../../constants';
 import { Furniture } from '../Furniture';
 import { Handle, HandleType } from './Handle';
@@ -16,12 +15,10 @@ export class TransformLayer extends Container {
   private labels: Label[];
   private border: Graphics;
   private borderOffset: number;
-  public static dragging: boolean;
-  private static instance: TransformLayer | undefined;
 
   // private dragging:boolean;
   // private dragStartCoord:Point;
-  private constructor() {
+  constructor(private readonly inst: EditorInstance) {
     super();
     this.points = [];
     this.handles = [];
@@ -50,10 +47,6 @@ export class TransformLayer extends Container {
 
     this.addLabel(LabelAxis.Horizontal);
     this.addLabel(LabelAxis.Vertical);
-  }
-
-  public static get Instance() {
-    return this.instance || (this.instance = new this()); // TODO obfuscate
   }
 
   private computePoints() {
@@ -87,7 +80,7 @@ export class TransformLayer extends Container {
   }
 
   private addHandle(type: HandleType) {
-    const handle = new Handle({
+    const handle = new Handle(this.inst, {
       type: type,
       pos: { x: 0, y: 0 }
     });
@@ -96,7 +89,7 @@ export class TransformLayer extends Container {
   }
 
   private addLabel(axis: LabelAxis) {
-    this.labels[axis] = new Label();
+    this.labels[axis] = new Label(this.inst);
     // A read-out, not a control: once the item is turned, a label can sit
     // over a handle, and it must not take the press meant for the handle.
     this.labels[axis].eventMode = 'none';
@@ -109,7 +102,7 @@ export class TransformLayer extends Container {
    */
   public show(t: Furniture) {
     // guards preventing selection unless edit mode is enabled
-    if (useStore.getState().activeTool != Tool.Edit) {
+    if (this.inst.editor.getState().activeTool != Tool.Edit) {
       return;
     }
     if (this.target === t) {
@@ -170,8 +163,8 @@ export class TransformLayer extends Container {
     if (!target) return;
     this.border.clear();
     const globals = target.getGlobalPosition();
-    const x = viewportX(globals.x - this.borderOffset, false);
-    const y = viewportY(globals.y - this.borderOffset, false);
+    const x = this.inst.viewportX(globals.x - this.borderOffset, false);
+    const y = this.inst.viewportY(globals.y - this.borderOffset, false);
     const w = target.width + 2 * this.borderOffset;
     const h = target.height + 2 * this.borderOffset;
     this.border
@@ -203,7 +196,6 @@ export class TransformLayer extends Container {
     this.points = [];
     this.handles = [];
     this.labels = [];
-    TransformLayer.instance = undefined;
   }
 
   /**

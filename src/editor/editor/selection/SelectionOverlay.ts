@@ -4,12 +4,9 @@
 //
 // It reads the live objects every frame, so an outline follows a wall being
 // dragged; the selection itself is ids (SelectionStore).
+import type { EditorInstance } from '../../instance/EditorInstance';
 import { Graphics, Point, Ticker } from 'pixi.js';
-import { useFloorPlanStore } from '../../../stores/FloorPlanStore';
-import { useStore } from '../../../stores/EditorStore';
 import { Tool } from '../constants';
-import { TransformLayer } from '../objects/TransformControls/TransformLayer';
-import { useSelectionStore } from './SelectionStore';
 import type { Rect } from './planOps';
 
 const COLOUR = 0x1c7ed6;
@@ -19,19 +16,19 @@ export class SelectionOverlay extends Graphics {
   private unsubscribe: (() => void)[] = [];
   private readonly tick = () => this.redraw();
 
-  constructor() {
+  constructor(private readonly inst: EditorInstance) {
     super();
     // Drawn, never hit: presses belong to what is underneath.
     this.eventMode = 'none';
     this.zIndex = 2000;
     this.unsubscribe.push(
-      useSelectionStore.subscribe(() => this.syncTransformLayer()),
-      useFloorPlanStore.subscribe(() => this.syncTransformLayer()),
-      useStore.subscribe((state, previous) => {
+      this.inst.selection.subscribe(() => this.syncTransformLayer()),
+      this.inst.plan.subscribe(() => this.syncTransformLayer()),
+      this.inst.editor.subscribe((state, previous) => {
         if (state.activeTool === previous.activeTool) return;
         // The selection belongs to the Select tool.
         if (state.activeTool !== Tool.Edit)
-          useSelectionStore.getState().clear();
+          this.inst.selection.getState().clear();
         this.syncTransformLayer();
       })
     );
@@ -49,18 +46,18 @@ export class SelectionOverlay extends Graphics {
   }
 
   private single() {
-    const { refs } = useSelectionStore.getState();
+    const { refs } = this.inst.selection.getState();
     const only = refs.length === 1 ? refs[0] : undefined;
     return only?.kind === 'furniture'
-      ? useFloorPlanStore.getState().getObject(only.id)
+      ? this.inst.plan.getState().getObject(only.id)
       : undefined;
   }
 
   // One piece of furniture selected with the Select tool shows its handles.
   private syncTransformLayer() {
-    const layer = TransformLayer.Instance;
+    const layer = this.inst.transformLayer;
     const furniture = this.single();
-    if (furniture && useStore.getState().activeTool === Tool.Edit) {
+    if (furniture && this.inst.editor.getState().activeTool === Tool.Edit) {
       layer.show(furniture);
     } else {
       layer.deselect();
@@ -76,9 +73,9 @@ export class SelectionOverlay extends Graphics {
     if (!this.parent || this.destroyed) return;
     const scale = this.parent.scale.x || 1;
     const width = 2 / scale;
-    const { refs } = useSelectionStore.getState();
+    const { refs } = this.inst.selection.getState();
     const single = this.single();
-    const plan = useFloorPlanStore.getState();
+    const plan = this.inst.plan.getState();
     for (const ref of refs) {
       if (ref.kind === 'wall') {
         const wall = plan.getWallNodeSeq().getWall(ref.left, ref.right);

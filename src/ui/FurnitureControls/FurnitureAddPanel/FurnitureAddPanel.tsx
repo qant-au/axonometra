@@ -2,9 +2,10 @@ import { Box, MenuItem, Select } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { FurnitureItem } from './FurnitureItem';
 import { useFurnitureStore } from '../../../stores/FurnitureStore';
-import { notify } from '../../../vendor/accurona-ui';
+import { useInstance } from '../../../editor/instance/context';
 
 export function FurnitureAddPanel() {
+  const inst = useInstance();
   const categories = useFurnitureStore((s) => s.categories);
   // The user's pick, falling back to the first category until they choose.
   const [pickedCategory, setCategory] = useState('');
@@ -14,18 +15,18 @@ export function FurnitureAddPanel() {
   // when a category is selected by user, load its furniture elements from API
   useEffect(() => {
     if (category) {
-      useFurnitureStore.getState().getCurrentFurnitureData(category);
+      inst.furniture.getState().getCurrentFurnitureData(category);
     }
-  }, [category]);
+  }, [inst, category]);
 
   useEffect(() => {
     if (!categories[0]?._id) {
-      notify({
+      inst.notify({
         message: 'Check your internet connection',
         severity: 'warning'
       });
     }
-  }, [categories]);
+  }, [inst, categories]);
 
   return (
     <>

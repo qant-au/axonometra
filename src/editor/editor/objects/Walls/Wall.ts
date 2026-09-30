@@ -1,12 +1,9 @@
+import type { EditorInstance } from '../../../instance/EditorInstance';
 import { Graphics, FederatedPointerEvent } from 'pixi.js';
 import { getDoor, getWindow } from '../../../../api/api-client';
 import { euclideanDistance } from '../../../../helpers/EuclideanDistance';
 import { Point } from '../../../../helpers/Point';
 
-import { viewportX, viewportY } from '../../../../helpers/ViewportCoordinates';
-
-import { useStore } from '../../../../stores/EditorStore';
-import { useFloorPlanStore } from '../../../../stores/FloorPlanStore';
 import { AddFurnitureAction } from '../../actions/AddFurnitureAction';
 import { AddNodeAction } from '../../actions/AddNodeAction';
 import { DeleteWallAction } from '../../actions/DeleteWallAction';
@@ -18,7 +15,6 @@ import {
 } from '../../constants';
 import { Label } from '../TransformControls/Label';
 import { wallRef } from '../../selection/planOps';
-import { pressSelect, rightPressed } from '../../selection/pointer';
 import { WallNode } from './WallNode';
 
 export class Wall extends Graphics {
@@ -40,7 +36,11 @@ export class Wall extends Graphics {
   startLeftNode: Point;
   startRightNode: Point;
 
-  constructor(leftNode: WallNode, rightNode: WallNode) {
+  constructor(
+    private readonly inst: EditorInstance,
+    leftNode: WallNode,
+    rightNode: WallNode
+  ) {
     super();
     this.sortableChildren = true;
 
@@ -52,7 +52,7 @@ export class Wall extends Graphics {
     this.startLeftNode = { x: 0, y: 0 };
     this.startRightNode = { x: 0, y: 0 };
     this.setLineCoords();
-    this.lengthLabel = new Label(0);
+    this.lengthLabel = new Label(this.inst, 0);
 
     this.addChild(this.lengthLabel);
     this.thickness = INTERIOR_WALL_THICKNESS;
@@ -154,7 +154,7 @@ export class Wall extends Graphics {
   // right drag still pans, so the menu waits for the release.
   private onRightDown(ev: FederatedPointerEvent) {
     ev.stopPropagation();
-    rightPressed(this.ref(), ev);
+    this.inst.pointer.rightPressed(this.ref(), ev);
   }
 
   public ref() {
@@ -168,19 +168,19 @@ export class Wall extends Graphics {
     // Both points in plan coordinates, so the wall follows the mouse at any
     // zoom (mixing screen and plan units only worked at 100%).
     const delta = {
-      x: viewportX(ev.global.x) - this.mouseStartPoint.x,
-      y: viewportY(ev.global.y) - this.mouseStartPoint.y
+      x: this.inst.viewportX(ev.global.x) - this.mouseStartPoint.x,
+      y: this.inst.viewportY(ev.global.y) - this.mouseStartPoint.y
     };
     this.leftNode.x = this.startLeftNode.x + delta.x;
     this.leftNode.y = this.startLeftNode.y + delta.y;
     this.rightNode.x = this.startRightNode.x + delta.x;
     this.rightNode.y = this.startRightNode.y + delta.y;
-    useFloorPlanStore.getState().redrawWalls();
+    this.inst.plan.getState().redrawWalls();
   }
 
   // Double-click in Edit mode opens the dialog for typing the wall's length.
   private onClick(ev: FederatedPointerEvent) {
-    const state = useStore.getState();
+    const state = this.inst.editor.getState();
     if (ev.detail !== 2 || state.activeTool !== Tool.Edit) return;
     ev.stopPropagation();
     state.setLengthEditWall(this);
@@ -193,32 +193,33 @@ export class Wall extends Graphics {
 
   private onMouseDown(ev: FederatedPointerEvent) {
     // In View the press belongs to the viewport, so a drag pans from anywhere.
-    if (useStore.getState().activeTool === Tool.View) return;
+    if (this.inst.editor.getState().activeTool === Tool.View) return;
     ev.stopPropagation();
     // Right-click is onRightDown's (exterior toggle); a right press must not
     // also split the wall, erase it or start a drag.
     if (ev.button !== 0) return;
 
     const coords = {
-      x: viewportX(ev.global.x),
-      y: viewportY(ev.global.y)
+      x: this.inst.viewportX(ev.global.x),
+      y: this.inst.viewportY(ev.global.y)
     };
     const localCoords = ev.getLocalPosition(this);
 
-    const state = useStore.getState();
+    const state = this.inst.editor.getState();
 
     if (state.activeTool == Tool.Remove) {
-      const action = new DeleteWallAction(this);
+      const action = new DeleteWallAction(this.inst, this);
       action.execute();
     }
 
     if (state.activeTool == Tool.WallAdd) {
-      const addNode = new AddNodeAction(this, coords);
+      const addNode = new AddNodeAction(this.inst, this, coords);
       addNode.execute();
     }
     if (state.activeTool == Tool.FurnitureAddWindow) {
       getWindow().then((res) => {
         const action = new AddFurnitureAction(
+          this.inst,
           res[0],
           this,
           { x: localCoords.x, y: 0 },
@@ -232,6 +233,7 @@ export class Wall extends Graphics {
     if (state.activeTool == Tool.FurnitureAddDoor) {
       getDoor().then((res) => {
         const action = new AddFurnitureAction(
+          this.inst,
           res[0],
           this,
           { x: localCoords.x, y: 0 },
@@ -243,12 +245,12 @@ export class Wall extends Graphics {
     }
 
     if (state.activeTool == Tool.Edit && !this.dragging) {
-      pressSelect(this.ref(), ev.shiftKey);
+      this.inst.pointer.pressSelect(this.ref(), ev.shiftKey);
       // Alt + drag: a copy stays where the wall was, and this one moves on.
-      if (ev.altKey) useFloorPlanStore.getState().cloneWall(this);
+      if (ev.altKey) this.inst.plan.getState().cloneWall(this);
       this.dragging = true;
-      this.mouseStartPoint.x = viewportX(ev.global.x);
-      this.mouseStartPoint.y = viewportY(ev.global.y);
+      this.mouseStartPoint.x = this.inst.viewportX(ev.global.x);
+      this.mouseStartPoint.y = this.inst.viewportY(ev.global.y);
       this.startLeftNode.x = this.leftNode.position.x;
       this.startLeftNode.y = this.leftNode.position.y;
 

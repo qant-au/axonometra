@@ -1,13 +1,16 @@
-import { useFloorPlanStore } from '../../../stores/FloorPlanStore';
+import type { EditorInstance } from '../../instance/EditorInstance';
 import { Action } from './Action';
 
 export class DeleteWallNodeAction implements Action {
   private id: number;
-  constructor(id: number) {
+  constructor(
+    private readonly inst: EditorInstance,
+    id: number
+  ) {
     this.id = id;
   }
 
   public execute(): void {
-    useFloorPlanStore.getState().removeWallNode(this.id);
+    this.inst.plan.getState().removeWallNode(this.id);
   }
 }

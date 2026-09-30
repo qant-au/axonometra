@@ -1,9 +1,7 @@
-import { useFloorPlanStore } from '../../../stores/FloorPlanStore';
+import type { EditorInstance } from '../../instance/EditorInstance';
 import { Wall } from '../objects/Walls/Wall';
 import { WallNode } from '../objects/Walls/WallNode';
 import { Action } from './Action';
-import { AddWallManager } from './AddWallManager';
-import { useStore } from '../../../stores/EditorStore';
 import { snap } from '../../../helpers/ViewportCoordinates';
 import { Point } from '../../../helpers/Point';
 // Add node to the plan. if clicked on screen, just add it. otherwise, add it to the wall.
@@ -11,7 +9,11 @@ export class AddNodeAction implements Action {
   private wall!: Wall;
   private coords!: Point;
 
-  constructor(wall?: Wall, coords?: Point) {
+  constructor(
+    private readonly inst: EditorInstance,
+    wall?: Wall,
+    coords?: Point
+  ) {
     if (wall) {
       this.wall = wall;
     }
@@ -22,9 +24,9 @@ export class AddNodeAction implements Action {
 
   public execute() {
     let node: WallNode | undefined;
-    const plan = useFloorPlanStore.getState();
+    const plan = this.inst.plan.getState();
 
-    if (useStore.getState().snap == true) {
+    if (this.inst.editor.getState().snap == true) {
       this.coords.x = snap(this.coords.x);
       this.coords.y = snap(this.coords.y);
     }
@@ -34,12 +36,12 @@ export class AddNodeAction implements Action {
         return;
       }
     } else {
-      if (!AddWallManager.Instance.checkStep(this.coords)) {
+      if (!this.inst.addWallManager.checkStep(this.coords)) {
         return;
       }
       node = plan.addNode(this.coords.x, this.coords.y);
     }
     if (!node) return;
-    AddWallManager.Instance.step(node);
+    this.inst.addWallManager.step(node);
   }
 }

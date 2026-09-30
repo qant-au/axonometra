@@ -21,7 +21,8 @@ vi.mock('../../api/api-client', () => ({
   getCategoryInfo
 }));
 
-const { useFurnitureStore } = await import('../FurnitureStore');
+const { createFurnitureStore } = await import('../FurnitureStore');
+const useFurnitureStore = createFurnitureStore();
 const initial = useFurnitureStore.getState();
 
 describe('FurnitureStore', () => {

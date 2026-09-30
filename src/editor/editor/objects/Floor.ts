@@ -1,9 +1,9 @@
+import type { EditorInstance } from '../../instance/EditorInstance';
 import { Container } from 'pixi.js';
 import { euclideanDistance } from '../../../helpers/EuclideanDistance';
 import { Point } from '../../../helpers/Point';
 import { getCorrespondingY } from '../../../helpers/Slope';
 import { FurnitureData } from '../../../stores/FurnitureStore';
-import { getMain } from '../../EditorRoot';
 import { MISCLICK_THRESHOLD } from '../constants';
 import { FloorSerializable } from '../persistence/FloorSerializable';
 
@@ -18,11 +18,15 @@ export class Floor extends Container {
   /** Plan format v2; absent means the defaults. Kept so they survive a save. */
   public wallHeightM?: number;
   public elevationM?: number;
-  constructor(floorData?: FloorSerializable, previousFloor?: Floor) {
+  constructor(
+    private readonly inst: EditorInstance,
+    floorData?: FloorSerializable,
+    previousFloor?: Floor
+  ) {
     super();
 
     this.furnitureArray = new Map<number, Furniture>();
-    this.wallNodeSequence = new WallNodeSequence();
+    this.wallNodeSequence = new WallNodeSequence(this.inst);
     this.addChild(this.wallNodeSequence);
     this.wallNodeSequence.zIndex = 1002;
     this.sortableChildren = true;
@@ -54,6 +58,7 @@ export class Floor extends Container {
               )
             : null;
         const object = new Furniture(
+          this.inst,
           furnitureData,
           fur.id,
           attachedTo ?? undefined,
@@ -132,6 +137,7 @@ export class Floor extends Container {
     attachedToRight?: number
   ) {
     const object = new Furniture(
+      this.inst,
       obj,
       id,
       attachedTo,
@@ -146,7 +152,7 @@ export class Floor extends Container {
     } else {
       // In the middle of what is on screen, so the person sees it arrive,
       // wherever they have panned or zoomed to.
-      const main = getMain();
+      const main = this.inst.getMain();
       this.addChild(object);
       object.position.set(
         Math.round(main.center.x - object.width / 2),
@@ -174,6 +180,7 @@ export class Floor extends Container {
     if (data.mountM != null) furnitureData.mountM = data.mountM;
     const wall = source.isAttached ? (onWall ?? (source.parent as Wall)) : null;
     const copy = new Furniture(
+      this.inst,
       furnitureData,
       id,
       wall ?? undefined,

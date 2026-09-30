@@ -1,5 +1,5 @@
+import type { EditorInstance } from '../../instance/EditorInstance';
 import saveAs from 'file-saver';
-import { serializer } from '../persistence/Serializer';
 import { Action } from './Action';
 
 export function timestamp() {
@@ -12,9 +12,11 @@ export function timestamp() {
 }
 
 export class SaveAction implements Action {
+  constructor(private readonly inst: EditorInstance) {}
+
   public execute() {
     // An Accurona scene: the one file format of Axonometra and Reticulyne.
-    const data = serializer.sceneText();
+    const data = this.inst.serializer.sceneText();
     const blob = new Blob([data], { type: 'application/json;charset=utf-8' });
     saveAs(blob, `axonometra-plan-${timestamp()}.json`);
   }

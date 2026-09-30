@@ -1,4 +1,4 @@
-import { notify } from '../../../../vendor/accurona-ui';
+import type { EditorInstance } from '../../../instance/EditorInstance';
 import { Container } from 'pixi.js';
 import { INodeSerializable } from '../../persistence/INodeSerializable';
 import { Wall } from './Wall';
@@ -8,8 +8,7 @@ export class WallNodeSequence extends Container {
   private wallNodes: Map<number, WallNode>;
   private wallNodeLinks: Map<number, number[]>;
   private walls: Wall[];
-  private static wallNodeId: number = 0;
-  constructor() {
+  constructor(private readonly inst: EditorInstance) {
     super();
     this.sortableChildren = true;
     this.walls = [];
@@ -19,7 +18,7 @@ export class WallNodeSequence extends Container {
   }
 
   public setId(id: number) {
-    WallNodeSequence.wallNodeId = id;
+    this.inst.wallNodeId = id;
   }
 
   public getExteriorWalls(): Wall[] {
@@ -27,7 +26,7 @@ export class WallNodeSequence extends Container {
   }
 
   public getWallNodeId() {
-    return WallNodeSequence.wallNodeId;
+    return this.inst.wallNodeId;
   }
   public contains(id: number) {
     return this.wallNodes.has(id);
@@ -69,7 +68,7 @@ export class WallNodeSequence extends Container {
     this.walls = [];
 
     this.wallNodeLinks.clear();
-    WallNodeSequence.wallNodeId = 0;
+    this.inst.wallNodeId = 0;
   }
   public remove(id: number) {
     //TODO only remove if connected to 2 points.
@@ -100,7 +99,7 @@ export class WallNodeSequence extends Container {
       // removed links need not be remembered here.
       // this.wallNodeLinks[id].length = 0;
     } else {
-      notify({
+      this.inst.notify({
         title: 'Not permitted',
         severity: 'error',
         message:
@@ -110,13 +109,13 @@ export class WallNodeSequence extends Container {
   }
 
   public getNewNodeId() {
-    WallNodeSequence.wallNodeId += 1;
-    return WallNodeSequence.wallNodeId;
+    this.inst.wallNodeId += 1;
+    return this.inst.wallNodeId;
   }
 
   public addNode(x: number, y: number, id?: number) {
     const nodeId = id ?? this.getNewNodeId();
-    const node = new WallNode(x, y, nodeId);
+    const node = new WallNode(this.inst, x, y, nodeId);
     this.wallNodes.set(nodeId, node);
     this.wallNodeLinks.set(nodeId, []);
     this.addChild(node);
@@ -141,7 +140,7 @@ export class WallNodeSequence extends Container {
     const rightNode = this.wallNodes.get(rightNodeId);
     if (!leftNode || !rightNode) return undefined;
     links.push(rightNodeId);
-    const wall = new Wall(leftNode, rightNode);
+    const wall = new Wall(this.inst, leftNode, rightNode);
     this.walls.push(wall);
     this.addChild(wall);
     this.drawWalls();

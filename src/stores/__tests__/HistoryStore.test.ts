@@ -1,5 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { HISTORY_LIMIT, useHistoryStore } from '../HistoryStore';
+import { HISTORY_LIMIT, createHistoryStore } from '../HistoryStore';
+
+const useHistoryStore = createHistoryStore();
 
 const snap = (plan: string, currentFloor = 0) => ({ plan, currentFloor });
 

@@ -1,6 +1,8 @@
 /** handling current tool state, mainly */
-import { create } from 'zustand';
-import { AddWallManager } from '../editor/editor/actions/AddWallManager';
+import { useStore as useZustand } from 'zustand';
+import { createStore, type StoreApi } from 'zustand/vanilla';
+import type { EditorInstance } from '../editor/instance/EditorInstance';
+import { useInstance } from '../editor/instance/context';
 import { Tool } from '../editor/editor/constants';
 import type { Wall } from '../editor/editor/objects/Walls/Wall';
 
@@ -43,48 +45,55 @@ function storedTheme(): ThemeMode {
   }
 }
 
-export const useStore = create<EditorStore>()((set) => ({
-  mode: ToolMode.FurnitureMode,
-  activeTool: Tool.View,
-  snap: true,
-  lengthEditWall: null,
-  shortcutsOpen: false,
-  findOpen: false,
-  theme: storedTheme(),
-  setMode: (mode: ToolMode) => {
-    set(() => ({
-      mode: mode
-    }));
-  },
-  setTool: (tool: Tool) => {
-    set(() => ({
-      activeTool: tool
-    }));
-    AddWallManager.Instance.resetTools();
-  },
-  setSnap: (snap: boolean) => {
-    set(() => ({
-      snap: snap
-    }));
-  },
-  setLengthEditWall: (wall: Wall | null) => {
-    set(() => ({ lengthEditWall: wall }));
-  },
-  setShortcutsOpen: (open: boolean) => {
-    set(() => ({ shortcutsOpen: open }));
-  },
-  setFindOpen: (open: boolean) => {
-    set(() => ({ findOpen: open }));
-  },
-  toggleTheme: () => {
-    set((state) => {
-      const theme: ThemeMode = state.theme === 'dark' ? 'light' : 'dark';
-      try {
-        localStorage.setItem(THEME_KEY, theme);
-      } catch {
-        // Not stored here (a private window); it still switches.
-      }
-      return { theme };
-    });
-  }
-}));
+export function createEditorStore(inst: EditorInstance): StoreApi<EditorStore> {
+  return createStore<EditorStore>()((set) => ({
+    mode: ToolMode.FurnitureMode,
+    activeTool: Tool.View,
+    snap: true,
+    lengthEditWall: null,
+    shortcutsOpen: false,
+    findOpen: false,
+    theme: storedTheme(),
+    setMode: (mode: ToolMode) => {
+      set(() => ({
+        mode: mode
+      }));
+    },
+    setTool: (tool: Tool) => {
+      set(() => ({
+        activeTool: tool
+      }));
+      inst.addWallManager.resetTools();
+    },
+    setSnap: (snap: boolean) => {
+      set(() => ({
+        snap: snap
+      }));
+    },
+    setLengthEditWall: (wall: Wall | null) => {
+      set(() => ({ lengthEditWall: wall }));
+    },
+    setShortcutsOpen: (open: boolean) => {
+      set(() => ({ shortcutsOpen: open }));
+    },
+    setFindOpen: (open: boolean) => {
+      set(() => ({ findOpen: open }));
+    },
+    toggleTheme: () => {
+      set((state) => {
+        const theme: ThemeMode = state.theme === 'dark' ? 'light' : 'dark';
+        try {
+          localStorage.setItem(THEME_KEY, theme);
+        } catch {
+          // Not stored here (a private window); it still switches.
+        }
+        return { theme };
+      });
+    }
+  }));
+}
+
+/** The editor's tool state, read in a component. */
+export function useStore<T>(selector: (state: EditorStore) => T): T {
+  return useZustand(useInstance().editor, selector);
+}

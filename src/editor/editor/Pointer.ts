@@ -1,13 +1,13 @@
+import type { EditorInstance } from '../instance/EditorInstance';
 import { Container, Graphics, FederatedPointerEvent } from 'pixi.js';
-import { snap, viewportX, viewportY } from '../../helpers/ViewportCoordinates';
-import { useStore } from '../../stores/EditorStore';
+import { snap } from '../../helpers/ViewportCoordinates';
 
 export class Pointer extends Container {
   private graphic: Graphics;
   // Drawn around the dot while the keyboard cursor is in use, so it can be
   // found on the plan; the mouse brings back the bare dot.
   private ring: Graphics;
-  constructor() {
+  constructor(private readonly inst: EditorInstance) {
     super();
     // The cursor sits exactly under the mouse, so if it could be hit it would
     // take every press meant for what is beneath it: wall points and
@@ -42,9 +42,9 @@ export class Pointer extends Container {
 
   public update(ev: FederatedPointerEvent) {
     this.ring.visible = false;
-    let worldX = viewportX(ev.global.x);
-    let worldY = viewportY(ev.global.y);
-    if (useStore.getState().snap) {
+    let worldX = this.inst.viewportX(ev.global.x);
+    let worldY = this.inst.viewportY(ev.global.y);
+    if (this.inst.editor.getState().snap) {
       worldX = snap(worldX);
       worldY = snap(worldY);
     }

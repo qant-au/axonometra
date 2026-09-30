@@ -1,8 +1,10 @@
-import { useFloorPlanStore } from '../../../stores/FloorPlanStore';
+import type { EditorInstance } from '../../instance/EditorInstance';
 import { Action } from './Action';
 
 export class ToggleLabelAction implements Action {
+  constructor(private readonly inst: EditorInstance) {}
+
   public execute() {
-    useFloorPlanStore.getState().toggleLabels();
+    this.inst.plan.getState().toggleLabels();
   }
 }

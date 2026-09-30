@@ -5,13 +5,17 @@ import {
   safeParsePlan,
   validatePlanShape
 } from '../persistence/FloorPlanSerializable';
-import { useFloorPlanStore } from '../../../stores/FloorPlanStore';
-import { useUnitsStore } from '../../../stores/UnitsStore';
+import { EditorInstance } from '../../instance/EditorInstance';
 import type { Floor } from '../objects/Floor';
 
 // Serializer is pure JSON.stringify over what Floor.serialize() returns, so we
 // seed the store with fake Floors and assert the output shape. No Pixi mock is
-// required — the Serializer never touches Floor's Pixi side.
+// required — the Serializer never touches Floor's Pixi side. Each test has
+// its own editor.
+let inst = new EditorInstance();
+beforeEach(() => {
+  inst = new EditorInstance();
+});
 
 function makeFakeFloor(opts: {
   wallNodeId: number;
@@ -30,17 +34,17 @@ function makeFakeFloor(opts: {
 }
 
 function seedPlan(floors: Floor[], furnitureId: number) {
-  useFloorPlanStore.setState({ floors, furnitureId, currentFloor: 0 });
+  inst.plan.setState({ floors, furnitureId, currentFloor: 0 });
 }
 
 describe('Serializer', () => {
   beforeEach(() => {
-    useFloorPlanStore.setState({ floors: [], furnitureId: 0, currentFloor: 0 });
+    inst.plan.setState({ floors: [], furnitureId: 0, currentFloor: 0 });
   });
 
   it('produces a JSON string with floors, furnitureId, wallNodeId, version', () => {
     seedPlan([makeFakeFloor({ wallNodeId: 4 })], 9);
-    const out = new Serializer().serialize();
+    const out = new Serializer(inst).serialize();
     const parsed = safeParsePlan(out) as Record<string, unknown>;
     expect(parsed.furnitureId).toBe(9);
     expect(parsed.wallNodeId).toBe(4);
@@ -63,7 +67,7 @@ describe('Serializer', () => {
       ],
       0
     );
-    const out = new Serializer().serialize();
+    const out = new Serializer(inst).serialize();
     const validated = validatePlanShape(safeParsePlan(out));
     expect(validated).not.toBeNull();
     expect(validated?.furnitureId).toBe(0);
@@ -80,7 +84,7 @@ describe('Serializer', () => {
       ],
       0
     );
-    const parsed = JSON.parse(new Serializer().serialize());
+    const parsed = JSON.parse(new Serializer(inst).serialize());
     expect(parsed.floors.length).toBe(3);
   });
 });
@@ -89,23 +93,23 @@ describe('Serializer.load versions', () => {
   const setPlan = vi.fn();
   beforeEach(() => {
     setPlan.mockClear();
-    useFloorPlanStore.setState({ setPlan });
+    inst.plan.setState({ setPlan });
   });
   const plan = (version?: number) =>
     JSON.stringify({ version, floors: [], furnitureId: 0, wallNodeId: 0 });
 
   it('loads version 1 and version 2 plans', () => {
-    expect(new Serializer().load(plan(1))).toBe(true);
-    expect(new Serializer().load(plan(2))).toBe(true);
+    expect(new Serializer(inst).load(plan(1))).toBe(true);
+    expect(new Serializer(inst).load(plan(2))).toBe(true);
     expect(setPlan).toHaveBeenCalledTimes(2);
   });
 
   it('treats a plan with no version as version 1', () => {
-    expect(new Serializer().load(plan())).toBe(true);
+    expect(new Serializer(inst).load(plan())).toBe(true);
   });
 
   it('refuses a version it does not know', () => {
-    expect(new Serializer().load(plan(3))).toBe(false);
+    expect(new Serializer(inst).load(plan(3))).toBe(false);
     expect(setPlan).not.toHaveBeenCalled();
   });
 });
@@ -113,8 +117,8 @@ describe('Serializer.load versions', () => {
 describe('Serializer display units', () => {
   const setPlan = vi.fn();
   beforeEach(() => {
-    useFloorPlanStore.setState({ setPlan, floors: [], currentFloor: 0 });
-    useUnitsStore.setState({ units: 'mm' });
+    inst.plan.setState({ setPlan, floors: [], currentFloor: 0 });
+    inst.units.setState({ units: 'mm' });
   });
   const plan = (units?: unknown) =>
     JSON.stringify({
@@ -128,23 +132,27 @@ describe('Serializer display units', () => {
   it('writes units only when they are not the default', () => {
     seedPlan([makeFakeFloor({ wallNodeId: 0 })], 0);
     const saved = () =>
-      (safeParsePlan(new Serializer().serialize()) as Record<string, unknown>)
-        .units;
+      (
+        safeParsePlan(new Serializer(inst).serialize()) as Record<
+          string,
+          unknown
+        >
+      ).units;
     expect(saved()).toBeUndefined();
-    useUnitsStore.setState({ units: 'm' });
+    inst.units.setState({ units: 'm' });
     expect(saved()).toBe('m');
   });
 
   it('restores the units on load, falling back to millimetres', () => {
-    new Serializer().load(plan('cm'));
-    expect(useUnitsStore.getState().units).toBe('cm');
-    new Serializer().load(plan('ft-in'));
-    expect(useUnitsStore.getState().units).toBe('ft-in');
-    new Serializer().load(plan());
-    expect(useUnitsStore.getState().units).toBe('mm');
-    useUnitsStore.setState({ units: 'm' });
-    new Serializer().load(plan('furlongs'));
-    expect(useUnitsStore.getState().units).toBe('mm');
+    new Serializer(inst).load(plan('cm'));
+    expect(inst.units.getState().units).toBe('cm');
+    new Serializer(inst).load(plan('ft-in'));
+    expect(inst.units.getState().units).toBe('ft-in');
+    new Serializer(inst).load(plan());
+    expect(inst.units.getState().units).toBe('mm');
+    inst.units.setState({ units: 'm' });
+    new Serializer(inst).load(plan('furlongs'));
+    expect(inst.units.getState().units).toBe('mm');
   });
 });
 
@@ -152,7 +160,7 @@ describe('Serializer scene files', () => {
   const setPlan = vi.fn();
   beforeEach(() => {
     setPlan.mockClear();
-    useFloorPlanStore.setState({ setPlan });
+    inst.plan.setState({ setPlan });
   });
 
   it('opens a scene and saves back the scene it opened', () => {
@@ -164,7 +172,7 @@ describe('Serializer scene files', () => {
       objects: [{ id: 'fw', element: 'firewall', props: { ip: '10.0.0.1' } }],
       views: [{ id: 'plan', kind: 'plan', name: 'Plan', floors: [{ id: 'g' }] }]
     };
-    const serializer = new Serializer();
+    const serializer = new Serializer(inst);
     expect(serializer.load(JSON.stringify(scene))).toBe(true);
     expect(setPlan).toHaveBeenCalledTimes(1);
     // The store is mocked, so save what setPlan received.
@@ -192,12 +200,12 @@ describe('Serializer scene files', () => {
       id: 'x',
       objects: [{ id: 'a', colour: 'red' }]
     };
-    expect(new Serializer().load(JSON.stringify(bad))).toBe(false);
+    expect(new Serializer(inst).load(JSON.stringify(bad))).toBe(false);
     expect(setPlan).not.toHaveBeenCalled();
   });
 
   it('opens a plan v2 file and saves it as a scene', () => {
-    const serializer = new Serializer();
+    const serializer = new Serializer(inst);
     expect(
       serializer.load(
         JSON.stringify({

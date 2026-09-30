@@ -1,6 +1,8 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { useSelectionStore } from '../SelectionStore';
+import { createSelectionStore } from '../SelectionStore';
 import { wallRef } from '../planOps';
+
+const useSelectionStore = createSelectionStore();
 
 const desk = { kind: 'furniture' as const, id: 1 };
 

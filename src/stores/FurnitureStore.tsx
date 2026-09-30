@@ -1,4 +1,6 @@
-import { create } from 'zustand';
+import { useStore as useZustand } from 'zustand';
+import { createStore, type StoreApi } from 'zustand/vanilla';
+import { useInstance } from '../editor/instance/context';
 import { getCategoriesRequest, getCategoryInfo } from '../api/api-client';
 
 export interface Category {
@@ -30,19 +32,27 @@ export interface FurnitureStore {
   getCurrentFurnitureData: (categoryId: string) => void;
 }
 
-export const useFurnitureStore = create<FurnitureStore>()((set) => ({
-  categories: [],
-  currentFurnitureData: [],
-  getCategories: async () => {
-    const res = await (await getCategoriesRequest()).json();
-    set(() => ({
-      categories: res
-    }));
-  },
-  getCurrentFurnitureData: async (categoryId: string) => {
-    const res = await (await getCategoryInfo(categoryId)).json();
-    set(() => ({
-      currentFurnitureData: res
-    }));
-  }
-}));
+export function createFurnitureStore(): StoreApi<FurnitureStore> {
+  return createStore<FurnitureStore>()((set) => ({
+    categories: [],
+    currentFurnitureData: [],
+    getCategories: async () => {
+      const res = await (await getCategoriesRequest()).json();
+      set(() => ({
+        categories: res
+      }));
+    },
+    getCurrentFurnitureData: async (categoryId: string) => {
+      const res = await (await getCategoryInfo(categoryId)).json();
+      set(() => ({
+        currentFurnitureData: res
+      }));
+    }
+  }));
+}
+
+export function useFurnitureStore<T>(
+  selector: (state: FurnitureStore) => T
+): T {
+  return useZustand(useInstance().furniture, selector);
+}

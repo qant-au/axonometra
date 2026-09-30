@@ -1,17 +1,19 @@
+import type { EditorInstance } from '../../../instance/EditorInstance';
 import { Graphics, FederatedPointerEvent } from 'pixi.js';
 import { INTERIOR_WALL_THICKNESS, NODE_COLOR, Tool } from '../../constants';
-import { useStore } from '../../../../stores/EditorStore';
-import { AddWallManager } from '../../actions/AddWallManager';
 import { DeleteWallNodeAction } from '../../actions/DeleteWallNodeAction';
 import { INodeSerializable } from '../../persistence/INodeSerializable';
-import { useFloorPlanStore } from '../../../../stores/FloorPlanStore';
-import { viewportX, viewportY } from '../../../../helpers/ViewportCoordinates';
 import { isMobile } from '../../../../helpers/isMobile';
 export class WallNode extends Graphics {
   private dragging!: boolean;
   private id: number;
 
-  constructor(x: number, y: number, nodeId: number) {
+  constructor(
+    private readonly inst: EditorInstance,
+    x: number,
+    y: number,
+    nodeId: number
+  ) {
     super();
     this.eventMode = 'static';
     this.id = nodeId;
@@ -43,20 +45,20 @@ export class WallNode extends Graphics {
   }
   private onMouseDown(ev: FederatedPointerEvent) {
     // In View the press belongs to the viewport, so a drag pans from anywhere.
-    if (useStore.getState().activeTool === Tool.View) return;
+    if (this.inst.editor.getState().activeTool === Tool.View) return;
     ev.stopPropagation();
     if (ev.button !== 0) return;
-    switch (useStore.getState().activeTool) {
+    switch (this.inst.editor.getState().activeTool) {
       case Tool.Edit:
         this.dragging = true;
         break;
       case Tool.Remove: {
-        const action = new DeleteWallNodeAction(this.id);
+        const action = new DeleteWallNodeAction(this.inst, this.id);
         action.execute();
         break;
       }
       case Tool.WallAdd:
-        AddWallManager.Instance.step(this);
+        this.inst.addWallManager.step(this);
         break;
     }
   }
@@ -66,16 +68,16 @@ export class WallNode extends Graphics {
     }
     const currentPoint = { x: ev.global.x, y: ev.global.y };
 
-    this.x = viewportX(currentPoint.x);
-    this.y = viewportY(currentPoint.y);
+    this.x = this.inst.viewportX(currentPoint.x);
+    this.y = this.inst.viewportY(currentPoint.y);
 
-    useFloorPlanStore.getState().redrawWalls();
+    this.inst.plan.getState().redrawWalls();
   }
 
   public setPosition(x: number, y: number) {
-    this.x = viewportX(x);
-    this.y = viewportY(y);
-    useFloorPlanStore.getState().redrawWalls();
+    this.x = this.inst.viewportX(x);
+    this.y = this.inst.viewportY(y);
+    this.inst.plan.getState().redrawWalls();
   }
 
   private onMouseUp() {

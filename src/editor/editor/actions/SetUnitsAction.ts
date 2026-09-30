@@ -1,5 +1,4 @@
-import { useFloorPlanStore } from '../../../stores/FloorPlanStore';
-import { useUnitsStore } from '../../../stores/UnitsStore';
+import type { EditorInstance } from '../../instance/EditorInstance';
 import type { LengthUnit } from '../../../vendor/accurona-core';
 import { Action } from './Action';
 
@@ -7,13 +6,16 @@ import { Action } from './Action';
 // not an undo step. Every floor's wall labels are redrawn in the new units.
 export class SetUnitsAction implements Action {
   private units: LengthUnit;
-  constructor(units: LengthUnit) {
+  constructor(
+    private readonly inst: EditorInstance,
+    units: LengthUnit
+  ) {
     this.units = units;
   }
 
   public execute() {
-    useUnitsStore.getState().setUnits(this.units);
-    for (const floor of useFloorPlanStore.getState().floors) {
+    this.inst.units.getState().setUnits(this.units);
+    for (const floor of this.inst.plan.getState().floors) {
       floor?.redrawWalls();
     }
   }

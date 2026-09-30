@@ -41,7 +41,7 @@ import { timestamp } from '../editor/editor/actions/SaveAction';
 import { METER } from '../editor/editor/constants';
 import { AppDialog } from '../vendor/accurona-ui';
 import type { FloorPlanSerializable } from '../editor/editor/persistence/FloorPlanSerializable';
-import { serializer } from '../editor/editor/persistence/Serializer';
+import { useInstance } from '../editor/instance/context';
 import { sceneModel } from '../editor/scene3d/sceneModel';
 import { buildGroup } from '../editor/scene3d/threeScene';
 import { exportGlb } from '../editor/scene3d/exportGlb';
@@ -65,7 +65,6 @@ import {
 } from '../editor/scene3d/walkControls';
 import { getItemHeights } from '../res/catalog';
 import { getItemModel } from '../res/catalog/models';
-import { useFloorPlanStore } from '../stores/FloorPlanStore';
 import classes from './ThreeDView.module.css';
 import { WalkJoystick } from './WalkJoystick';
 
@@ -124,10 +123,11 @@ export function ThreeDView({ opened, onClose }: Props) {
   const stage = useRef<Stage | null>(null);
 
   // The plan cannot change while the dialog is open, so read it once.
+  const inst = useInstance();
   const [plan] = useState(
-    () => JSON.parse(serializer.serialize()) as FloorPlanSerializable
+    () => JSON.parse(inst.serializer.serialize()) as FloorPlanSerializable
   );
-  const [current] = useState(() => useFloorPlanStore.getState().currentFloor);
+  const [current] = useState(() => inst.plan.getState().currentFloor);
   const [walkFloor, setWalkFloor] = useState(current);
   const walking = mode === 'walk';
   const model = useMemo(

@@ -1,15 +1,19 @@
-import { useFloorPlanStore } from '../../../stores/FloorPlanStore';
+import type { EditorInstance } from '../../instance/EditorInstance';
 import { Action } from './Action';
-import { transact } from '../history';
 
 export class ChangeFloorAction implements Action {
   private by: number;
-  constructor(by: number) {
+  constructor(
+    private readonly inst: EditorInstance,
+    by: number
+  ) {
     this.by = by;
   }
 
   public execute() {
     // Going up past the top floor creates one, which is an edit.
-    transact(() => useFloorPlanStore.getState().changeFloor(this.by));
+    this.inst.edits.transact(() =>
+      this.inst.plan.getState().changeFloor(this.by)
+    );
   }
 }

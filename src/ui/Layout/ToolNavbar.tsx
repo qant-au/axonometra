@@ -35,7 +35,6 @@ import { useUnitsStore } from '../../stores/UnitsStore';
 import { SetUnitsAction } from '../../editor/editor/actions/SetUnitsAction';
 import {
   clearNotifications,
-  notify,
   SidePanel,
   ToolMenu
 } from '../../vendor/accurona-ui';
@@ -48,8 +47,7 @@ import { SaveAction } from '../../editor/editor/actions/SaveAction';
 import { Tool } from '../../editor/editor/constants';
 import { PrintAction } from '../../editor/editor/actions/PrintAction';
 import { useHistoryStore } from '../../stores/HistoryStore';
-import { redo, undo } from '../../editor/editor/history';
-import { pruneSelection } from '../../editor/editor/selection/commands';
+import { useInstance } from '../../editor/instance/context';
 import { ToggleLabelAction } from '../../editor/editor/actions/ToggleLabelAction';
 import { NavbarLink } from '../NavbarLink';
 
@@ -87,6 +85,7 @@ const UNIT_NAMES: { unit: LengthUnit; label: string }[] = [
 
 // How lengths are shown and typed; saved with the plan.
 function UnitsMenu() {
+  const inst = useInstance();
   const units = useUnitsStore((s) => s.units);
   return (
     <ToolMenu
@@ -102,13 +101,14 @@ function UnitsMenu() {
             <Box sx={{ width: 18 }} />
           ),
         divider: unit === 'in',
-        onClick: () => new SetUnitsAction(unit).execute()
+        onClick: () => new SetUnitsAction(inst, unit).execute()
       }))}
     />
   );
 }
 
 function AddMenu() {
+  const inst = useInstance();
   const setTool = useStore((s) => s.setTool);
   const [drawerOpened, setDrawerOpened] = useState(false);
   const getCategories = useFurnitureStore((s) => s.getCategories);
@@ -147,7 +147,7 @@ function AddMenu() {
             onClick: () => {
               setTool(Tool.WallAdd);
               clearNotifications();
-              notify({
+              inst.notify({
                 title: '✏️ Wall drawing mode',
                 message:
                   'Click to draw walls. Double click on wall node to end sequence.',
@@ -161,7 +161,7 @@ function AddMenu() {
             onClick: () => {
               setTool(Tool.FurnitureAddWindow);
               clearNotifications();
-              notify({
+              inst.notify({
                 title: '🪟 Add window',
                 message: 'Click on wall to add window',
                 severity: 'info'
@@ -174,7 +174,7 @@ function AddMenu() {
             onClick: () => {
               setTool(Tool.FurnitureAddDoor);
               clearNotifications();
-              notify({
+              inst.notify({
                 title: '🚪 Add door',
                 message:
                   'Click on wall to add door. Right click to change orientation',
@@ -189,6 +189,7 @@ function AddMenu() {
 }
 
 export function ToolNavbar() {
+  const inst = useInstance();
   // Follows the tool, however it was chosen (toolbar or keyboard).
   const activeTool = useStore((s) => s.activeTool);
   const active = modes.findIndex((m) => m.tool === activeTool);
@@ -223,7 +224,7 @@ export function ToolNavbar() {
     if (!resultText) {
       return;
     }
-    const action = new LoadAction(resultText);
+    const action = new LoadAction(inst, resultText);
     action.execute();
   };
 
@@ -246,7 +247,7 @@ export function ToolNavbar() {
               icon={IconStairsUp}
               label="Go to next floor"
               onClick={() => {
-                const action = new ChangeFloorAction(1);
+                const action = new ChangeFloorAction(inst, 1);
                 action.execute();
               }}
             />
@@ -254,7 +255,7 @@ export function ToolNavbar() {
               icon={IconStairsDown}
               label="Go to previous floor"
               onClick={() => {
-                const action = new ChangeFloorAction(-1);
+                const action = new ChangeFloorAction(inst, -1);
                 action.execute();
               }}
             />
@@ -262,7 +263,7 @@ export function ToolNavbar() {
               icon={IconSquareX}
               label="Delete floor"
               onClick={() => {
-                const action = new DeleteFloorAction();
+                const action = new DeleteFloorAction(inst);
                 action.execute();
               }}
             />
@@ -275,7 +276,7 @@ export function ToolNavbar() {
               label="Undo"
               disabled={!canUndo}
               onClick={() => {
-                if (undo()) pruneSelection();
+                if (inst.edits.undo()) inst.commands.pruneSelection();
               }}
             />
             <NavbarLink
@@ -283,7 +284,7 @@ export function ToolNavbar() {
               label="Redo"
               disabled={!canRedo}
               onClick={() => {
-                if (redo()) pruneSelection();
+                if (inst.edits.redo()) inst.commands.pruneSelection();
               }}
             />
             <NavbarLink
@@ -292,7 +293,7 @@ export function ToolNavbar() {
               onClick={() => {
                 setTool(Tool.Measure);
                 clearNotifications();
-                notify({
+                inst.notify({
                   title: '📐 Measure tool',
                   message: 'Click and drag to measure areas'
                 });
@@ -305,7 +306,7 @@ export function ToolNavbar() {
                 const next = !snap;
                 setSnap(next);
                 clearNotifications();
-                notify({
+                inst.notify({
                   message: 'Snap to grid now ' + (next ? 'On' : 'Off'),
                   icon: next ? <IconTable /> : <IconTableOff />
                 });
@@ -315,10 +316,10 @@ export function ToolNavbar() {
               icon={IconDimensions}
               label="Toggle size labels"
               onClick={() => {
-                const action = new ToggleLabelAction();
+                const action = new ToggleLabelAction(inst);
                 action.execute();
                 clearNotifications();
-                notify({
+                inst.notify({
                   message: 'Toggled size labels',
                   icon: <IconTag />
                 });
@@ -364,7 +365,7 @@ export function ToolNavbar() {
               icon={IconPrinter}
               label="Save plan image"
               onClick={() => {
-                const action = new PrintAction();
+                const action = new PrintAction(inst);
                 action.execute();
               }}
             />
@@ -372,7 +373,7 @@ export function ToolNavbar() {
               icon={IconDeviceFloppy}
               label="Save plan"
               onClick={() => {
-                const action = new SaveAction();
+                const action = new SaveAction(inst);
                 action.execute();
               }}
             />

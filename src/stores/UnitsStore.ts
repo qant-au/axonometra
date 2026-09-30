@@ -1,5 +1,7 @@
 /** the plan's display units: how lengths are shown and typed, never how they are stored */
-import { create } from 'zustand';
+import { useStore as useZustand } from 'zustand';
+import { createStore, type StoreApi } from 'zustand/vanilla';
+import { useInstance } from '../editor/instance/context';
 import type { LengthUnit } from '../vendor/accurona-core';
 
 export const DEFAULT_UNITS: LengthUnit = 'mm';
@@ -9,7 +11,13 @@ export interface UnitsStore {
   setUnits: (units: LengthUnit) => void;
 }
 
-export const useUnitsStore = create<UnitsStore>()((set) => ({
-  units: DEFAULT_UNITS,
-  setUnits: (units: LengthUnit) => set({ units })
-}));
+export function createUnitsStore(): StoreApi<UnitsStore> {
+  return createStore<UnitsStore>()((set) => ({
+    units: DEFAULT_UNITS,
+    setUnits: (units: LengthUnit) => set({ units })
+  }));
+}
+
+export function useUnitsStore<T>(selector: (state: UnitsStore) => T): T {
+  return useZustand(useInstance().units, selector);
+}

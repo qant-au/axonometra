@@ -1,9 +1,8 @@
+import type { EditorInstance } from '../../instance/EditorInstance';
 import { Point } from '../../../helpers/Point';
 import { FurnitureData } from '../../../stores/FurnitureStore';
-import { useFloorPlanStore } from '../../../stores/FloorPlanStore';
 import { Wall } from '../objects/Walls/Wall';
 import { Action } from './Action';
-import { transact } from '../history';
 
 export class AddFurnitureAction implements Action {
   obj: FurnitureData;
@@ -13,6 +12,7 @@ export class AddFurnitureAction implements Action {
   attachedToRight?: number;
 
   constructor(
+    private readonly inst: EditorInstance,
     obj: FurnitureData,
     attachedTo?: Wall,
     coords?: Point,
@@ -29,8 +29,8 @@ export class AddFurnitureAction implements Action {
   // Doors and windows are added after an async catalog lookup, which can
   // resolve after the canvas gesture has closed, so this records itself.
   public execute() {
-    transact(() =>
-      useFloorPlanStore
+    this.inst.edits.transact(() =>
+      this.inst.plan
         .getState()
         .addFurniture(
           this.obj,

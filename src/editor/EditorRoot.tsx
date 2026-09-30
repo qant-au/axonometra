@@ -3,53 +3,18 @@ import { useRef, useEffect } from 'react';
 // this module is loaded first. The container's CSP has no 'unsafe-eval'
 // (docker/nginx.conf), so without it the canvas never starts there.
 import 'pixi.js/unsafe-eval';
-import { Application, Renderer } from 'pixi.js';
+import { Application } from 'pixi.js';
 import { Main } from './editor/Main';
 import { IViewportOptions } from 'pixi-viewport';
 import { METER } from './editor/constants';
 import { FloorPlan } from './editor/objects/FloorPlan';
-import { TransformLayer } from './editor/objects/TransformControls/TransformLayer';
-import { AddWallManager } from './editor/actions/AddWallManager';
 import { useStore } from '../stores/EditorStore';
-import { useFloorPlanStore } from '../stores/FloorPlanStore';
-import { beginGesture, endGesture, resetHistory } from './editor/history';
-import { handleKeydown as handleKeymap } from './keymap';
-import { rightReleased } from './editor/selection/pointer';
-import { useSelectionStore } from './editor/selection/SelectionStore';
-import { embedConfig } from '../embed/embedConfig';
+import { useInstance } from './instance/context';
 import { KeyboardCursor } from './editor/KeyboardCursor';
 import classes from './EditorRoot.module.css';
 
-// Holder for the active Main instance. Non-React Pixi consumers
-// (ViewportCoordinates, Floor) read mainHolder.current via getMain()
-// after mount; the holder is cleared on unmount so a remount (HMR,
-// StrictMode, embed-mode toggle) doesn't reuse a destroyed Viewport.
-export const mainHolder: { current: Main | null } = { current: null };
-
-// Holder for the active renderer. FloorPlan.print() extracts the plan via the
-// live app renderer — a separate renderer can't read the scene's GPU resources.
-export const rendererHolder: { current: Renderer | null } = { current: null };
-
-// Holder for the active FloorPlan view. The plan *model* lives in
-// useFloorPlanStore and needs no holder; this is only for the handful of
-// consumers that need the display object itself (Main, print()).
-export const floorPlanHolder: { current: FloorPlan | null } = { current: null };
-
-export function getMain(): Main {
-  if (!mainHolder.current) {
-    throw new Error('EditorRoot is not mounted');
-  }
-  return mainHolder.current;
-}
-
-export function getFloorPlan(): FloorPlan {
-  if (!floorPlanHolder.current) {
-    throw new Error('EditorRoot is not mounted');
-  }
-  return floorPlanHolder.current;
-}
-
 export function EditorRoot() {
+  const inst = useInstance();
   const ref = useRef<HTMLDivElement>(null);
   const dark = useStore((s) => s.theme) === 'dark';
   const liveRef = useRef<HTMLDivElement>(null);
@@ -62,25 +27,29 @@ export function EditorRoot() {
     let view: HTMLCanvasElement | null = null;
     const wrapper = ref.current;
     const live = liveRef.current;
-    const keyboardCursor = new KeyboardCursor((message) => {
-      if (live) live.textContent = message;
-    }, embedConfig.readonly);
+    const keyboardCursor = new KeyboardCursor(
+      inst,
+      (message) => {
+        if (live) live.textContent = message;
+      },
+      inst.config.readOnly
+    );
     const handleCanvasKeydown = (e: KeyboardEvent) => {
-      if (!mainHolder.current) return;
+      if (!inst.main) return;
       if (keyboardCursor.handleKey(e)) e.preventDefault();
     };
     // Only keyboard focus brings up the keyboard cursor. A mouse press also
     // focuses the canvas, and showing the cursor then moved the view and put
     // a crosshair where the person clicked; the first key press places it.
     const handleCanvasFocus = (e: FocusEvent) => {
-      if (!mainHolder.current) return;
+      if (!inst.main) return;
       if ((e.target as HTMLElement).matches(':focus-visible')) {
         keyboardCursor.focus();
       }
     };
     const handleCanvasBlur = () => keyboardCursor.blur();
     const handleCanvasPointerDown = () => keyboardCursor.pointerPressed();
-    const handleWheel = (e: WheelEvent) => mainHolder.current?.handleWheel(e);
+    const handleWheel = (e: WheelEvent) => inst.main?.handleWheel(e);
 
     const handleContextMenu = (e: Event) => {
       e.preventDefault();
@@ -88,9 +57,9 @@ export function EditorRoot() {
     // Every key the shared keymap binds (./keymap.ts). The canvas's keyboard
     // cursor sees a key first when the canvas has focus.
     const handleKeydown = (e: KeyboardEvent) => {
-      if (!mainHolder.current) return;
-      handleKeymap(e, {
-        readonly: embedConfig.readonly,
+      if (!inst.main) return;
+      inst.keymap.handleKeydown(e, {
+        readonly: inst.config.readOnly,
         editLengthAtCursor: () => keyboardCursor.editLength()
       });
     };
@@ -112,7 +81,7 @@ export function EditorRoot() {
           return;
         }
         app = created;
-        rendererHolder.current = created.renderer;
+        inst.renderer = created.renderer;
         view = created.canvas;
         view.addEventListener('contextmenu', handleContextMenu);
         // Not passive: the wheel's default (page scroll, browser zoom on
@@ -126,22 +95,22 @@ export function EditorRoot() {
           worldHeight: 50 * METER,
           events: created.renderer.events
         };
-        floorPlanHolder.current = new FloorPlan();
-        const main = new Main(viewportSettings);
-        mainHolder.current = main;
+        inst.floorPlanView = new FloorPlan(inst);
+        const main = new Main(inst, viewportSettings);
+        inst.main = main;
 
         ref.current!.appendChild(view);
         // Every canvas pointer gesture is at most one undo step. Capture phase
         // on the wrapper so this runs before Pixi (whose handlers stop
         // propagation); pointerup lands on window wherever the drag ends.
-        wrapper?.addEventListener('pointerdown', beginGesture, true);
+        wrapper?.addEventListener('pointerdown', inst.edits.beginGesture, true);
         wrapper?.addEventListener('pointerdown', handleCanvasPointerDown, true);
         wrapper?.addEventListener('keydown', handleCanvasKeydown);
         wrapper?.addEventListener('focus', handleCanvasFocus);
         wrapper?.addEventListener('blur', handleCanvasBlur);
-        window.addEventListener('pointerup', endGesture);
-        window.addEventListener('pointerup', rightReleased);
-        window.addEventListener('pointercancel', endGesture);
+        window.addEventListener('pointerup', inst.edits.endGesture);
+        window.addEventListener('pointerup', inst.pointer.rightReleased);
+        window.addEventListener('pointercancel', inst.edits.endGesture);
         created.start();
         created.stage.addChild(main);
 
@@ -150,10 +119,10 @@ export function EditorRoot() {
         // bundles don't expose it.
         if (import.meta.env.DEV) {
           (window as unknown as { __axo: unknown }).__axo = {
-            getMain,
-            getPlan: () => useFloorPlanStore.getState(),
-            getStore: () => useStore.getState(),
-            getSelection: () => useSelectionStore.getState()
+            getMain: () => inst.getMain(),
+            getPlan: () => inst.plan.getState(),
+            getStore: () => inst.editor.getState(),
+            getSelection: () => inst.selection.getState()
           };
         }
 
@@ -163,7 +132,11 @@ export function EditorRoot() {
     return () => {
       cancelled = true;
       document.removeEventListener('keydown', handleKeydown);
-      wrapper?.removeEventListener('pointerdown', beginGesture, true);
+      wrapper?.removeEventListener(
+        'pointerdown',
+        inst.edits.beginGesture,
+        true
+      );
       wrapper?.removeEventListener(
         'pointerdown',
         handleCanvasPointerDown,
@@ -173,32 +146,24 @@ export function EditorRoot() {
       wrapper?.removeEventListener('focus', handleCanvasFocus);
       wrapper?.removeEventListener('blur', handleCanvasBlur);
       keyboardCursor.blur();
-      window.removeEventListener('pointerup', endGesture);
-      window.removeEventListener('pointerup', rightReleased);
-      useSelectionStore.getState().clear();
-      window.removeEventListener('pointercancel', endGesture);
-      resetHistory();
+      window.removeEventListener('pointerup', inst.edits.endGesture);
+      window.removeEventListener('pointerup', inst.pointer.rightReleased);
+      window.removeEventListener('pointercancel', inst.edits.endGesture);
       if (view) {
         view.removeEventListener('contextmenu', handleContextMenu);
         view.removeEventListener('wheel', handleWheel);
       }
-      // Drop the plan model and dispose the remaining singletons before
-      // app.destroy so their static .instance refs reset; a remount then
+      // Drop the plan model and the tools before app.destroy, so a remount
       // builds fresh objects against the new Application. The FloorPlan
       // container is not destroyed here — app.destroy cascades to it, and
       // that cascade is what runs its store unsubscribe.
-      useFloorPlanStore.getState().reset();
-      TransformLayer.Instance.dispose();
-      AddWallManager.Instance.dispose();
-      floorPlanHolder.current = null;
-      mainHolder.current = null;
-      rendererHolder.current = null;
+      inst.dispose();
       if (import.meta.env.DEV) {
         delete (window as unknown as { __axo?: unknown }).__axo;
       }
       if (app) app.destroy(true, true);
     };
-  }, []);
+  }, [inst]);
 
   return (
     <>

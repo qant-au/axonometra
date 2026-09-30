@@ -1,4 +1,4 @@
-import { useFloorPlanStore } from '../../../stores/FloorPlanStore';
+import type { EditorInstance } from '../../instance/EditorInstance';
 import { WallNode } from '../objects/Walls/WallNode';
 import { Action } from './Action';
 
@@ -7,13 +7,17 @@ export class AddWallAction implements Action {
   private leftNode: number;
   private rightNode: number;
 
-  constructor(left: WallNode, right: WallNode) {
+  constructor(
+    private readonly inst: EditorInstance,
+    left: WallNode,
+    right: WallNode
+  ) {
     this.leftNode = left.getId();
     this.rightNode = right.getId();
   }
 
   public execute() {
-    return useFloorPlanStore
+    return this.inst.plan
       .getState()
       .getWallNodeSeq()
       .addWall(this.leftNode, this.rightNode);

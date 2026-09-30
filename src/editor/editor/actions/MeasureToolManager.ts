@@ -1,7 +1,7 @@
+import type { EditorInstance } from '../../instance/EditorInstance';
 import { Graphics, FederatedPointerEvent } from 'pixi.js';
 import { euclideanDistance } from '../../../helpers/EuclideanDistance';
 import { Point } from '../../../helpers/Point';
-import { viewportX, viewportY } from '../../../helpers/ViewportCoordinates';
 
 import { Label } from '../objects/TransformControls/Label';
 
@@ -9,12 +9,12 @@ export class Preview {
   public preview: Graphics;
   public startPoint: Point | undefined;
   private sizeLabel: Label;
-  public constructor() {
+  public constructor(private readonly inst: EditorInstance) {
     this.startPoint = undefined;
     this.preview = new Graphics();
     // Follows the mouse like the cursor; never a hit target.
     this.preview.eventMode = 'none';
-    this.sizeLabel = new Label();
+    this.sizeLabel = new Label(this.inst);
     this.sizeLabel.visible = false;
     this.preview.addChild(this.sizeLabel);
   }
@@ -29,8 +29,8 @@ export class Preview {
     if (this.startPoint === undefined) {
       return;
     }
-    const newX = viewportX(ev.global.x);
-    const newY = viewportY(ev.global.y);
+    const newX = this.inst.viewportX(ev.global.x);
+    const newY = this.inst.viewportY(ev.global.y);
     this.preview
       .clear()
       .moveTo(this.startPoint.x, this.startPoint.y)

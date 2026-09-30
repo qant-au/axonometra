@@ -10,6 +10,7 @@ import {
 import { IconRotate2, IconRotateClockwise2 } from '@tabler/icons-react';
 import { projectScene } from '../editor/axonometric/axonometric';
 import { sceneFromPlan } from '../editor/axonometric/sceneFromPlan';
+import { useInstance } from '../editor/instance/context';
 import classes from './AxonometricView.module.css';
 import { AppDialog } from '../vendor/accurona-ui';
 
@@ -25,7 +26,8 @@ export function AxonometricView({ opened, onClose }: Props) {
 
   // Mounted only while open, and the plan cannot change underneath the
   // dialog, so the scene is read once.
-  const [scene] = useState(sceneFromPlan);
+  const inst = useInstance();
+  const [scene] = useState(() => sceneFromPlan(inst));
   const shown = allFloors
     ? scene.floors
     : scene.floors.slice(scene.current, scene.current + 1);

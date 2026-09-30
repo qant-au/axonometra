@@ -1,12 +1,10 @@
+import type { EditorInstance } from '../../../instance/EditorInstance';
 import { Graphics, FederatedPointerEvent } from 'pixi.js';
 import { isMobile } from '../../../../helpers/isMobile';
 import { HANDLE_MOBILE_SCALE, WALL_THICKNESS } from '../../constants';
 import { Point } from '../../../../helpers/Point';
-import { viewportX, viewportY } from '../../../../helpers/ViewportCoordinates';
 import { Furniture } from '../Furniture';
 import { Wall } from '../Walls/Wall';
-import { TransformLayer } from './TransformLayer';
-import { useFloorPlanStore } from '../../../../stores/FloorPlanStore';
 
 /** Smallest width or depth a resize can reach, in plan units (cm). */
 const MIN_SIZE = 10;
@@ -45,7 +43,10 @@ export class Handle extends Graphics {
   private targetCentreLocal: Point = { x: 0, y: 0 };
   private startSize: Point = { x: 0, y: 0 };
   localCoords: { x: number; y: number };
-  constructor(handleConfig: IHandleConfig) {
+  constructor(
+    private readonly inst: EditorInstance,
+    handleConfig: IHandleConfig
+  ) {
     super();
     this.eventMode = 'static';
     if (handleConfig.color) {
@@ -116,12 +117,12 @@ export class Handle extends Graphics {
   }
 
   private onMouseDown(ev: FederatedPointerEvent) {
-    if (TransformLayer.dragging) {
+    if (this.inst.transformDragging) {
       return;
     }
     // Alt + drag: a copy stays where the item was, and this one moves on.
     if (this.type === HandleType.Move && ev.altKey) {
-      useFloorPlanStore.getState().cloneFurniture(this.target);
+      this.inst.plan.getState().cloneFurniture(this.target);
     }
     this.mouseStartPoint.x = ev.global.x;
     this.mouseStartPoint.y = ev.global.y; // unde se afla target la mousedown
@@ -138,20 +139,20 @@ export class Handle extends Graphics {
     this.targetStartCenterPoint.y = centre.y;
     this.startRotaton = this.target.rotation;
     this.startSize = { x: this.target.width, y: this.target.height };
-    TransformLayer.dragging = true;
+    this.inst.transformDragging = true;
     this.active = true;
     // this.target.setSmartPivot(0);
     ev.stopPropagation();
   }
 
   private onMouseUp(ev: FederatedPointerEvent) {
-    TransformLayer.dragging = false;
+    this.inst.transformDragging = false;
     this.active = false;
     ev.stopPropagation();
   }
 
   private onMouseMove(ev: FederatedPointerEvent) {
-    if (!this.active || !TransformLayer.dragging) {
+    if (!this.active || !this.inst.transformDragging) {
       return;
     }
     // unde se afla mouse-ul acum
@@ -216,8 +217,12 @@ export class Handle extends Graphics {
           y: this.mouseEndPoint.y - this.mouseStartPoint.y
         };
         if (!this.target.xLocked) {
-          this.target.position.x = viewportX(this.targetStartPoint.x + delta.x);
-          this.target.position.y = viewportY(this.targetStartPoint.y + delta.y);
+          this.target.position.x = this.inst.viewportX(
+            this.targetStartPoint.x + delta.x
+          );
+          this.target.position.y = this.inst.viewportY(
+            this.targetStartPoint.y + delta.y
+          );
         } else {
           const amount = (delta.x + delta.y) * 0.8;
           const parentWall = this.target.parent as unknown as Wall;
@@ -239,7 +244,7 @@ export class Handle extends Graphics {
             this.target.position.x = this.localCoords.x + amount;
           }
 
-          // this.target.position.x = viewportX(this.targetStartPoint.x) + delta.x;
+          // this.target.position.x = this.inst.viewportX(this.targetStartPoint.x) + delta.x;
         }
 
         break;
@@ -247,7 +252,7 @@ export class Handle extends Graphics {
     }
     // Redraw the box, handles and size labels round the item as it changes;
     // otherwise they only caught up when the mouse next crossed furniture.
-    TransformLayer.Instance.update();
+    this.inst.transformLayer.update();
   }
 
   /** The mouse's movement since the press, in plan units, along the item's axes. */

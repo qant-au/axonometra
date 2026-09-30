@@ -21,33 +21,22 @@ vi.mock('../../../api/api-client', () => ({
   getDoor: () => Promise.resolve([]),
   getWindow: () => Promise.resolve([])
 }));
-vi.mock('../../../stores/EditorStore', () => ({
-  useStore: { getState: () => ({ activeTool: 0, snap: false }) }
-}));
-vi.mock('../../../stores/FloorPlanStore', () => ({
-  useFloorPlanStore: { getState: () => ({ redrawWalls: vi.fn() }) }
-}));
-vi.mock('../../EditorRoot', () => ({
-  getMain: () => ({
-    scale: { x: 1, y: 1 },
-    corner: { x: 0, y: 0 }
-  })
-}));
 
 const { WallNodeSequence } = await import('../objects/Walls/WallNodeSequence');
+const { fakeInstance } = await import('../../../test/fakeInstance');
+
+// Each test is its own editor, so wall point ids start from 0.
+const newSequence = () =>
+  new WallNodeSequence(fakeInstance({ notify: showNotification }));
 
 describe('WallNodeSequence', () => {
   beforeEach(() => {
     showNotification.mockClear();
-    // Reset the static wallNodeId counter so each test starts from id 0.
-    // setId is a public method that just assigns the static; we don't need a
-    // real instance to reach it but constructing one is cheap.
-    new WallNodeSequence().setId(0);
   });
 
   describe('addNode', () => {
     it('assigns sequential ids when no id is provided', () => {
-      const seq = new WallNodeSequence();
+      const seq = newSequence();
       const a = seq.addNode(0, 0);
       const b = seq.addNode(100, 0);
       expect(a.getId()).toBe(1);
@@ -57,7 +46,7 @@ describe('WallNodeSequence', () => {
     });
 
     it('reuses an explicit id when provided', () => {
-      const seq = new WallNodeSequence();
+      const seq = newSequence();
       seq.addNode(0, 0, 42);
       expect(seq.contains(42)).toBe(true);
       // Subsequent auto-id starts from the static counter, not the explicit id.
@@ -65,7 +54,7 @@ describe('WallNodeSequence', () => {
     });
 
     it('initialises an empty link list for each new node', () => {
-      const seq = new WallNodeSequence();
+      const seq = newSequence();
       seq.addNode(0, 0);
       const links = seq.getWallNodeLinks().get(1);
       expect(links).toEqual([]);
@@ -74,13 +63,13 @@ describe('WallNodeSequence', () => {
 
   describe('addWall', () => {
     it('returns undefined when both endpoints are the same node', () => {
-      const seq = new WallNodeSequence();
+      const seq = newSequence();
       seq.addNode(0, 0);
       expect(seq.addWall(1, 1)).toBeUndefined();
     });
 
     it('returns undefined when adding a duplicate wall', () => {
-      const seq = new WallNodeSequence();
+      const seq = newSequence();
       seq.addNode(0, 0);
       seq.addNode(100, 0);
       expect(seq.addWall(1, 2)).toBeDefined();
@@ -89,7 +78,7 @@ describe('WallNodeSequence', () => {
     });
 
     it('normalises endpoint order — addWall(2,1) is the same as addWall(1,2)', () => {
-      const seq = new WallNodeSequence();
+      const seq = newSequence();
       seq.addNode(0, 0);
       seq.addNode(100, 0);
       expect(seq.addWall(2, 1)).toBeDefined();
@@ -97,7 +86,7 @@ describe('WallNodeSequence', () => {
     });
 
     it('records the link on the left node', () => {
-      const seq = new WallNodeSequence();
+      const seq = newSequence();
       seq.addNode(0, 0);
       seq.addNode(100, 0);
       seq.addWall(1, 2);
@@ -107,14 +96,14 @@ describe('WallNodeSequence', () => {
 
   describe('remove', () => {
     it('removes an isolated node from both maps', () => {
-      const seq = new WallNodeSequence();
+      const seq = newSequence();
       seq.addNode(0, 0);
       seq.remove(1);
       expect(seq.contains(1)).toBe(false);
     });
 
     it('does not remove a node that has walls attached, and surfaces a notification', () => {
-      const seq = new WallNodeSequence();
+      const seq = newSequence();
       seq.addNode(0, 0);
       seq.addNode(100, 0);
       seq.addWall(1, 2);
@@ -127,7 +116,7 @@ describe('WallNodeSequence', () => {
     });
 
     it('is a no-op when the node id is unknown', () => {
-      const seq = new WallNodeSequence();
+      const seq = newSequence();
       expect(() => seq.remove(999)).not.toThrow();
       expect(showNotification).not.toHaveBeenCalled();
     });
@@ -135,7 +124,7 @@ describe('WallNodeSequence', () => {
 
   describe('removeWall', () => {
     it('removes the wall and the link', () => {
-      const seq = new WallNodeSequence();
+      const seq = newSequence();
       seq.addNode(0, 0);
       seq.addNode(100, 0);
       seq.addWall(1, 2);
@@ -145,7 +134,7 @@ describe('WallNodeSequence', () => {
     });
 
     it('is a no-op when the link does not exist', () => {
-      const seq = new WallNodeSequence();
+      const seq = newSequence();
       seq.addNode(0, 0);
       expect(() => seq.removeWall(1, 999)).not.toThrow();
     });
@@ -153,7 +142,7 @@ describe('WallNodeSequence', () => {
 
   describe('load', () => {
     it('round-trips nodes and links', () => {
-      const seq = new WallNodeSequence();
+      const seq = newSequence();
       seq.load(
         [
           { id: 1, x: 0, y: 0 },
@@ -175,7 +164,7 @@ describe('WallNodeSequence', () => {
 
   describe('reset', () => {
     it('clears nodes, walls, links, and the static id counter', () => {
-      const seq = new WallNodeSequence();
+      const seq = newSequence();
       seq.addNode(0, 0);
       seq.addNode(100, 0);
       seq.addWall(1, 2);

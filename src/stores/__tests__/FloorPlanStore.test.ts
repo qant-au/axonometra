@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { FloorSerializable } from '../../editor/editor/persistence/FloorSerializable';
 import type { Floor } from '../../editor/editor/objects/Floor';
+import type { EditorInstance } from '../../editor/instance/EditorInstance';
 
 // Floors are Pixi containers; the store only ever calls a handful of their
 // methods, so a plain fake stands in and no Pixi mock is needed.
@@ -25,7 +26,11 @@ vi.mock('../../editor/editor/objects/Floor', () => ({
     reset = vi.fn();
     setLabelVisibility = vi.fn();
     previousFloor: Floor | undefined;
-    constructor(_floorData?: FloorSerializable, previousFloor?: Floor) {
+    constructor(
+      _inst: unknown,
+      _floorData?: FloorSerializable,
+      previousFloor?: Floor
+    ) {
       this.previousFloor = previousFloor;
       created.push(this as unknown as FakeFloor);
     }
@@ -40,7 +45,13 @@ vi.mock('../../editor/editor/objects/Floor', () => ({
   }
 }));
 
-const { useFloorPlanStore } = await import('../FloorPlanStore');
+const { createFloorPlanStore } = await import('../FloorPlanStore');
+const { createSelectionStore } =
+  await import('../../editor/editor/selection/SelectionStore');
+const useFloorPlanStore = createFloorPlanStore({
+  selection: createSelectionStore(),
+  notify: showNotification
+} as unknown as EditorInstance);
 
 const initial = useFloorPlanStore.getState();
 

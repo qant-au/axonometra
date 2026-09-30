@@ -1,5 +1,5 @@
+import type { EditorInstance } from '../../../instance/EditorInstance';
 import { Container, Sprite, Text, TextStyle, Texture } from 'pixi.js';
-import { formatPlanLength } from '../../../../helpers/planLength';
 import { Point } from '../../../../helpers/Point';
 import { LABEL_COLOR, LABEL_FONT, LABEL_FONT_SIZE } from '../../constants';
 
@@ -12,7 +12,10 @@ export class Label extends Container {
     align: 'center'
   });
   textBkg: Sprite = new Sprite(Texture.WHITE);
-  constructor(sizeInPixels?: number) {
+  constructor(
+    private readonly inst: EditorInstance,
+    sizeInPixels?: number
+  ) {
     super();
     if (!sizeInPixels) {
       sizeInPixels = 0;
@@ -27,7 +30,7 @@ export class Label extends Container {
   }
 
   public update(sizeInPixels: number) {
-    this.text.text = formatPlanLength(Math.abs(sizeInPixels));
+    this.text.text = this.inst.formatLength(Math.abs(sizeInPixels));
     this.textBkg.width = this.text.width;
     this.textBkg.height = this.text.height;
   }

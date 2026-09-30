@@ -6,26 +6,20 @@
 // rather than going through Pixi's pointer hit testing, and each tool calls
 // the same Action classes the pointer handlers use, so the result of a key
 // press matches the result of a click.
-import { getMain } from '../EditorRoot';
-import { useStore } from '../../stores/EditorStore';
-import { useFloorPlanStore } from '../../stores/FloorPlanStore';
-import { useUnitsStore } from '../../stores/UnitsStore';
+import type { EditorInstance } from '../instance/EditorInstance';
 import { Point } from '../../helpers/Point';
 import { snap } from '../../helpers/ViewportCoordinates';
 import { getDoorFitting, getWindowFitting } from '../../res/catalog';
 import { METER, Tool } from './constants';
 import { AddFurnitureAction } from './actions/AddFurnitureAction';
 import { AddNodeAction } from './actions/AddNodeAction';
-import { AddWallManager } from './actions/AddWallManager';
 import { DeleteFurnitureAction } from './actions/DeleteFurnitureAction';
 import { DeleteWallAction } from './actions/DeleteWallAction';
 import { DeleteWallNodeAction } from './actions/DeleteWallNodeAction';
-import { beginGesture, endGesture, transact } from './history';
 import { describePoint, nodeAt, wallAt } from './keyboardHit';
 import { Furniture } from './objects/Furniture';
 import { Wall } from './objects/Walls/Wall';
 import { WallNode } from './objects/Walls/WallNode';
-import { useSelectionStore } from './selection/SelectionStore';
 
 // One press moves one grid cell (10 cm); Shift moves a metre.
 export const CURSOR_STEP = 10;
@@ -51,6 +45,7 @@ export class KeyboardCursor {
   private grab: Grab | null = null;
 
   constructor(
+    private readonly inst: EditorInstance,
     private announce: (message: string) => void,
     private readonly readonly: boolean
   ) {}
@@ -58,14 +53,14 @@ export class KeyboardCursor {
   /** Put the cursor in the middle of the view the first time it is used. */
   public focus() {
     if (!this.placed) {
-      const center = getMain().center;
+      const center = this.inst.getMain().center;
       this.cursor = { x: snap(center.x), y: snap(center.y) };
       this.placed = true;
     }
     this.active = true;
     this.showCursor();
     this.announce(
-      `Cursor at ${describePoint(this.cursor, useUnitsStore.getState().units)}.`
+      `Cursor at ${describePoint(this.cursor, this.inst.units.getState().units)}.`
     );
   }
 
@@ -90,7 +85,8 @@ export class KeyboardCursor {
       const arrow = e.key.startsWith('Arrow');
       // With something selected, the arrows nudge it; with nothing, the
       // first arrow brings the cursor up, as it always has.
-      if (!arrow || useSelectionStore.getState().refs.length > 0) return false;
+      if (!arrow || this.inst.selection.getState().refs.length > 0)
+        return false;
       this.focus();
     }
     const step = e.shiftKey ? CURSOR_STEP_LARGE : CURSOR_STEP;
@@ -125,7 +121,7 @@ export class KeyboardCursor {
    */
   public editLength(): boolean {
     if (!this.active || this.readonly) return false;
-    const state = useStore.getState();
+    const state = this.inst.editor.getState();
     if (state.activeTool !== Tool.Edit || this.grab) return true;
     const wall = this.wallHere();
     if (!wall) {
@@ -143,10 +139,10 @@ export class KeyboardCursor {
         item.obj.x += dx;
         item.obj.y += dy;
       }
-      useFloorPlanStore.getState().redrawWalls();
+      this.inst.plan.getState().redrawWalls();
     }
     this.showCursor();
-    const where = describePoint(this.cursor, useUnitsStore.getState().units);
+    const where = describePoint(this.cursor, this.inst.units.getState().units);
     this.announce(
       this.grab
         ? `Moving ${this.grab.label} to ${where}.`
@@ -155,7 +151,7 @@ export class KeyboardCursor {
   }
 
   private showCursor() {
-    const main = getMain();
+    const main = this.inst.getMain();
     main.pointer?.position.set(this.cursor.x, this.cursor.y);
     main.pointer?.showKeyboardRing(true);
     const { x, y } = this.cursor;
@@ -174,7 +170,7 @@ export class KeyboardCursor {
       this.drop();
       return;
     }
-    switch (useStore.getState().activeTool) {
+    switch (this.inst.editor.getState().activeTool) {
       case Tool.WallAdd:
         this.addWall();
         break;
@@ -202,8 +198,8 @@ export class KeyboardCursor {
       this.cancel();
       return;
     }
-    if (AddWallManager.Instance.previousNode) {
-      AddWallManager.Instance.unset();
+    if (this.inst.addWallManager.previousNode) {
+      this.inst.addWallManager.unset();
       this.announce('Wall drawing ended.');
     }
   }
@@ -211,7 +207,7 @@ export class KeyboardCursor {
   // --- what is under the cursor -------------------------------------------
 
   private nodeHere(): WallNode | undefined {
-    const nodes = useFloorPlanStore
+    const nodes = this.inst.plan
       .getState()
       .getWallNodeSeq()
       .getWallNodes()
@@ -221,18 +217,15 @@ export class KeyboardCursor {
 
   private wallHere(): Wall | undefined {
     return wallAt(
-      useFloorPlanStore.getState().getWallNodeSeq().getWalls(),
+      this.inst.plan.getState().getWallNodeSeq().getWalls(),
       this.cursor
     );
   }
 
   private furnitureHere(): Furniture | undefined {
-    const global = getMain().toGlobal(this.cursor);
+    const global = this.inst.getMain().toGlobal(this.cursor);
     let hit: Furniture | undefined;
-    for (const furniture of useFloorPlanStore
-      .getState()
-      .getFurniture()
-      .values()) {
+    for (const furniture of this.inst.plan.getState().getFurniture().values()) {
       const local = furniture.toLocal(global);
       if (furniture.getLocalBounds().rectangle.contains(local.x, local.y)) {
         // Later furniture draws on top, so the last hit is the visible one.
@@ -245,27 +238,27 @@ export class KeyboardCursor {
   // --- tools ---------------------------------------------------------------
 
   private addWall() {
-    const seq = useFloorPlanStore.getState().getWallNodeSeq();
+    const seq = this.inst.plan.getState().getWallNodeSeq();
     const nodesBefore = seq.getWallNodes().size;
     const wallsBefore = seq.getWalls().length;
     const node = this.nodeHere();
-    transact(() => {
+    this.inst.edits.transact(() => {
       if (node) {
-        AddWallManager.Instance.step(node);
+        this.inst.addWallManager.step(node);
         return;
       }
       const wall = this.wallHere();
-      new AddNodeAction(wall, { ...this.cursor }).execute();
+      new AddNodeAction(this.inst, wall, { ...this.cursor }).execute();
     });
-    const after = useFloorPlanStore.getState().getWallNodeSeq();
-    const where = describePoint(this.cursor, useUnitsStore.getState().units);
+    const after = this.inst.plan.getState().getWallNodeSeq();
+    const where = describePoint(this.cursor, this.inst.units.getState().units);
     if (after.getWalls().length > wallsBefore) {
       this.announce(`Wall added, ending at ${where}.`);
     } else if (after.getWallNodes().size > nodesBefore) {
       this.announce(
         `Wall started at ${where}. Move and press Enter to continue.`
       );
-    } else if (node && !AddWallManager.Instance.previousNode) {
+    } else if (node && !this.inst.addWallManager.previousNode) {
       this.announce('Wall drawing ended.');
     } else if (node) {
       this.announce(`Wall continues from ${where}.`);
@@ -277,11 +270,13 @@ export class KeyboardCursor {
   // Each branch reports what actually happened: the plan can refuse a
   // delete (a wall point with walls attached), and says so with a toast.
   private remove() {
-    const plan = () => useFloorPlanStore.getState();
+    const plan = () => this.inst.plan.getState();
     const node = this.nodeHere();
     if (node) {
       const id = node.getId();
-      transact(() => new DeleteWallNodeAction(id).execute());
+      this.inst.edits.transact(() =>
+        new DeleteWallNodeAction(this.inst, id).execute()
+      );
       this.announce(
         plan().getWallNodeSeq().getWallNodes().has(id)
           ? 'This wall point still has walls attached. Delete the walls first.'
@@ -293,7 +288,9 @@ export class KeyboardCursor {
     if (furniture) {
       const id = furniture.getId();
       const name = this.furnitureName(furniture);
-      transact(() => new DeleteFurnitureAction(id).execute());
+      this.inst.edits.transact(() =>
+        new DeleteFurnitureAction(this.inst, id).execute()
+      );
       this.announce(
         plan().getFurniture().has(id)
           ? `${name} could not be deleted.`
@@ -303,7 +300,9 @@ export class KeyboardCursor {
     }
     const wall = this.wallHere();
     if (wall) {
-      transact(() => new DeleteWallAction(wall).execute());
+      this.inst.edits.transact(() =>
+        new DeleteWallAction(this.inst, wall).execute()
+      );
       this.announce(
         plan().getWallNodeSeq().getWalls().includes(wall)
           ? 'This wall could not be deleted.'
@@ -340,7 +339,7 @@ export class KeyboardCursor {
   }
 
   private startGrab(label: string, objs: { x: number; y: number }[]) {
-    beginGesture();
+    this.inst.edits.beginGesture();
     this.grab = {
       label,
       items: objs.map((obj) => ({ obj, x0: obj.x, y0: obj.y }))
@@ -353,9 +352,9 @@ export class KeyboardCursor {
   private drop() {
     const label = this.grab?.label;
     this.grab = null;
-    endGesture();
+    this.inst.edits.endGesture();
     this.announce(
-      `Put down ${label} at ${describePoint(this.cursor, useUnitsStore.getState().units)}.`
+      `Put down ${label} at ${describePoint(this.cursor, this.inst.units.getState().units)}.`
     );
   }
 
@@ -369,11 +368,11 @@ export class KeyboardCursor {
       item.obj.x = item.x0;
       item.obj.y = item.y0;
     }
-    useFloorPlanStore.getState().redrawWalls();
+    this.inst.plan.getState().redrawWalls();
     this.cursor = { x: this.cursor.x + dx, y: this.cursor.y + dy };
     this.showCursor();
     this.grab = null;
-    endGesture();
+    this.inst.edits.endGesture();
     this.announce(`Move cancelled. ${grab.label} is back where it was.`);
   }
 
@@ -383,8 +382,9 @@ export class KeyboardCursor {
       this.announce(`Place the cursor on a wall to add a ${kind}.`);
       return;
     }
-    const local = wall.toLocal(getMain().toGlobal(this.cursor));
+    const local = wall.toLocal(this.inst.getMain().toGlobal(this.cursor));
     new AddFurnitureAction(
+      this.inst,
       kind === 'door' ? getDoorFitting() : getWindowFitting(),
       wall,
       { x: local.x, y: 0 },

@@ -7,11 +7,11 @@ import {
 } from '@tabler/icons-react';
 import { LoadAction } from '../editor/editor/actions/LoadAction';
 import AxonometraLogo from '../res/axonometra-logo.svg';
-import { serializer } from '../editor/editor/persistence/Serializer';
-import { notify } from '../vendor/accurona-ui';
+import { useInstance } from '../editor/instance/context';
 import { readPlanFile } from '../helpers/readPlanFile';
 
 export function WelcomeModal() {
+  const inst = useInstance();
   const [opened, setOpened] = useState(true);
   const fileRef = useRef<HTMLInputElement>(null);
   const image = (
@@ -27,7 +27,7 @@ export function WelcomeModal() {
     const resultText = await readPlanFile(e.target.files?.[0]);
 
     if (resultText) {
-      const action = new LoadAction(resultText);
+      const action = new LoadAction(inst, resultText);
       action.execute();
       setOpened(false);
     }
@@ -43,7 +43,7 @@ export function WelcomeModal() {
   const startNewPlan = () => {
     if (!opened) return;
     setOpened(false);
-    notify(notification);
+    inst.notify(notification);
   };
   return (
     <>
@@ -87,14 +87,14 @@ export function WelcomeModal() {
               onClick={() => {
                 const saved = localStorage.getItem('autosave');
                 if (saved == null) {
-                  notify({
+                  inst.notify({
                     title: 'No autosave found',
                     message: 'There is no local autosave to load.',
                     severity: 'warning'
                   });
                   return;
                 }
-                serializer.load(saved);
+                inst.serializer.load(saved);
                 setOpened(false);
               }}
               startIcon={<IconRotateClockwise />}
