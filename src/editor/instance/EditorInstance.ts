@@ -195,7 +195,21 @@ export class EditorInstance {
     return this.floorPlanView;
   }
 
+  /**
+   * Shows a notification. One the same as a notification already showing
+   * (the same bad file loaded twice) takes its place instead of stacking.
+   */
   notify(options: NotifyOptions) {
+    const severity = options.severity ?? 'info';
+    for (const n of this.notifier.get()) {
+      if (
+        n.title === options.title &&
+        n.message === options.message &&
+        n.severity === severity
+      ) {
+        this.notifier.dismiss(n.id);
+      }
+    }
     this.notifier.notify(options);
   }
 

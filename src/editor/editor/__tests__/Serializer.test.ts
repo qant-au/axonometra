@@ -112,6 +112,16 @@ describe('Serializer.load versions', () => {
     expect(new Serializer(inst).load(plan(3))).toBe(false);
     expect(setPlan).not.toHaveBeenCalled();
   });
+
+  it('shows one notification for the same bad file loaded twice', () => {
+    expect(new Serializer(inst).load('{not json')).toBe(false);
+    expect(new Serializer(inst).load('{not json')).toBe(false);
+    expect(inst.notifier.get()).toHaveLength(1);
+    expect(inst.notifier.get()[0].title).toBe('Load failed');
+    // A different failure still shows beside it.
+    expect(new Serializer(inst).load(plan(3))).toBe(false);
+    expect(inst.notifier.get()).toHaveLength(2);
+  });
 });
 
 describe('Serializer display units', () => {

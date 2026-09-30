@@ -90,6 +90,27 @@ test('a load from the welcome dialog that fails leaves it open', async ({
   await expect(page.getByText(/Welcome to Axonometra/)).toBeVisible();
 });
 
+// Re-sweep 4 2026-09-30: the same bad file loaded twice stacked two identical
+// "Load failed" notifications.
+test('the same bad file loaded twice shows one notification', async ({
+  page
+}) => {
+  await page.goto('/');
+  const welcome = page.getByRole('dialog');
+  const file = {
+    name: 'bad-scene.json',
+    mimeType: 'application/json',
+    buffer: Buffer.from(
+      JSON.stringify({ format: 'accurona-scene', version: 1, icons: {} })
+    )
+  };
+  const input = welcome.locator('input[type=file]');
+  await input.setInputFiles(file);
+  await expect(page.getByText('Load failed')).toHaveCount(1);
+  await input.setInputFiles(file);
+  await expect(page.getByText('Load failed')).toHaveCount(1);
+});
+
 test.describe('on a phone held upright', () => {
   test.use({ viewport: { width: 390, height: 844 } });
 
