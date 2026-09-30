@@ -10,7 +10,13 @@ import {
   type CSSProperties,
   type Ref
 } from 'react';
-import { ScopedCssBaseline, ThemeProvider, type Theme } from '@mui/material';
+import {
+  Box,
+  ScopedCssBaseline,
+  ThemeProvider,
+  type Theme
+} from '@mui/material';
+import { TOOLBAR_WIDTH } from '../editor/editor/constants';
 import {
   createLineworkTheme,
   NotificationHost,
@@ -203,7 +209,19 @@ export function Axonometra({
             overflow: 'hidden'
           }}
         >
-          <NotificationHost notifier={inst.notifier} />
+          {/* Notifications keep clear of the tool bar, which a narrow
+              screen's full-width notification covered. */}
+          <Box
+            sx={{
+              '& > .MuiStack-root': {
+                maxWidth: readOnly
+                  ? undefined
+                  : `calc(100% - ${TOOLBAR_WIDTH + 32}px)`
+              }
+            }}
+          >
+            <NotificationHost notifier={inst.notifier} />
+          </Box>
           <PageLayout />
         </ScopedCssBaseline>
       </Themed>

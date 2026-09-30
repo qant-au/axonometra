@@ -63,3 +63,23 @@ test('the toolbar stays visible and clickable in dark mode, after a reload too',
     page.getByRole('button', { name: 'Edit', exact: true })
   ).toHaveAttribute('aria-pressed', 'true');
 });
+
+test.describe('on a phone held upright', () => {
+  test.use({ viewport: { width: 390, height: 844 } });
+
+  test('every tool fits on screen and the welcome note leaves them clear', async ({
+    page
+  }) => {
+    await page.goto('/');
+    await page.getByRole('button', { name: /new plan/i }).click();
+    const note = page.getByText(/Welcome to Axonometra/);
+    await expect(note).toBeVisible();
+    const load = (await page
+      .getByRole('button', { name: 'Load plan' })
+      .boundingBox())!;
+    expect(load.y + load.height).toBeLessThanOrEqual(844);
+    const toolbarRight = load.x + load.width;
+    const alert = (await page.getByRole('alert').boundingBox())!;
+    expect(alert.x).toBeGreaterThan(toolbarRight);
+  });
+});

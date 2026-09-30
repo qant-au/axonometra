@@ -64,6 +64,8 @@ const ThreeDView = lazy(() =>
 import { DeleteFloorAction } from '../../editor/editor/actions/DeleteFloorAction';
 import { useFurnitureStore } from '../../stores/FurnitureStore';
 
+const SHORT_SCREEN = '@media (max-height: 900px)';
+
 // The toolbar runs the full height of the editor. Taller than the editor, it
 // scrolls itself rather than pushing Save and Load out of reach.
 const navbar = {
@@ -73,13 +75,20 @@ const navbar = {
   p: 2,
   display: 'flex',
   flexDirection: 'column',
-  overflowY: 'auto'
+  overflowY: 'auto',
+  // On a short screen (a phone held upright is 844 px) the tools close up
+  // to 36 px, so all 21 fit, Load plan included, without scrolling.
+  [SHORT_SCREEN]: {
+    py: 1,
+    '& .MuiButton-root': { width: 36, height: 36 }
+  }
 } as const;
 
 // The current-floor number, sized like a tool button.
 const floorNumber = {
   width: 40,
   height: 40,
+  [SHORT_SCREEN]: { height: 36 },
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
