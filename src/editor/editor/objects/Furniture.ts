@@ -1,11 +1,6 @@
 import type { EditorInstance } from '../../instance/EditorInstance';
-import {
-  Assets,
-  Graphics,
-  FederatedPointerEvent,
-  Sprite,
-  Texture
-} from 'pixi.js';
+import { Graphics, FederatedPointerEvent, Sprite, Texture } from 'pixi.js';
+import { loadedTexture, loadTexture } from '../textures';
 import { resolveCatalogImage } from '../../../api/api-client';
 import { FurnitureData } from '../../../stores/FurnitureStore';
 import { DeleteFurnitureAction } from '../actions/DeleteFurnitureAction';
@@ -39,10 +34,10 @@ export class Furniture extends Sprite {
     // sprite is a blank of the right footprint; it keeps its size on the swap.
     // A failed load leaves a grey placeholder.
     const url = resolveCatalogImage(data.imagePath);
-    const cached = Assets.cache.has(url) ? Texture.from(url) : undefined;
+    const cached = loadedTexture(url);
     super(cached ?? Texture.WHITE);
     if (!cached) {
-      Assets.load<Texture>(url).then(
+      loadTexture(url).then(
         (texture) => {
           if (this.destroyed) return;
           const { width, height } = this;

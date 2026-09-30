@@ -1,16 +1,17 @@
 import type { EditorInstance } from '../instance/EditorInstance';
 import { IViewportOptions, Viewport } from 'pixi-viewport';
 import {
-  Assets,
   FederatedPointerEvent,
   isMobile,
   Point,
+  Texture,
   TilingSprite
 } from 'pixi.js';
 import { getPreloadImageUrls } from '../../res/catalog';
 // Imported, not fetched from /: the bundler ships it with the code, so it
 // loads wherever the editor is hosted.
 import patternUrl from '../../res/pattern.svg';
+import { loadedTexture, loadTexture } from './textures';
 import { FloorPlan } from './objects/FloorPlan';
 import { TransformLayer } from './objects/TransformControls/TransformLayer';
 import { AddNodeAction } from './actions/AddNodeAction';
@@ -51,16 +52,14 @@ export class Main extends Viewport {
   ) {
     super(options);
 
-    // v8 Texture.from/TilingSprite.from only resolve a URL once it's been
-    // loaded through Assets, so preload the background pattern and the
-    // door/window images (furniture icons load on first use), then build the
-    // scene. The load also defers setup() until after EditorRoot has added
-    // this viewport to the stage (clamp() reads the viewport's world
-    // transform). Replaces the removed-in-v7 Loader.shared.
+    // Preload the background pattern and the door/window images (furniture
+    // icons load on first use; see ./textures.ts), then build the scene. The
+    // load also defers setup() until after EditorRoot has added this viewport
+    // to the stage (clamp() reads the viewport's world transform).
     // A failed image must not leave the editor half-built: setup() wires the
     // tools, so it runs whether or not every preload arrived. A missing icon
     // shows as a placeholder instead.
-    Assets.load([patternUrl, ...getPreloadImageUrls()])
+    Promise.all([patternUrl, ...getPreloadImageUrls()].map(loadTexture))
       .catch((error: unknown) => console.error('Preload failed:', error))
       .finally(() => this.setup());
     this.preview = new Preview(this.inst);
@@ -156,7 +155,8 @@ export class Main extends Viewport {
         this.panWith(state.activeTool);
       }
     });
-    this.bkgPattern = TilingSprite.from(patternUrl, {
+    this.bkgPattern = new TilingSprite({
+      texture: loadedTexture(patternUrl) ?? Texture.WHITE,
       width: this.worldWidth ?? 0,
       height: this.worldHeight ?? 0
     });
