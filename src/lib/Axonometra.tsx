@@ -217,7 +217,8 @@ export function Axonometra({
               narrower than the screen and a notification showed at its
               side, so there they hide while one is open, the non-modal
               Help panel included; the welcome dialog keeps them, as it
-              reports a load that failed. */}
+              reports a load that failed, and while it is the only dialog
+              open they go over it, where they can be closed. */}
           <Box
             sx={(theme) => ({
               '& > .MuiStack-root': {
@@ -226,6 +227,8 @@ export function Axonometra({
                   : `calc(100% - ${TOOLBAR_WIDTH + 32}px)`,
                 zIndex: theme.zIndex.modal - 1
               },
+              [`body:has(.MuiDialog-root.${KEEPS_NOTIFICATIONS}):not(:has(.MuiDialog-root:not(.${KEEPS_NOTIFICATIONS}), [role="dialog"]:not(.MuiModal-root *))) & > .MuiStack-root`]:
+                { zIndex: theme.zIndex.modal + 1 },
               [theme.breakpoints.down('sm')]: {
                 [`body:has(.MuiDialog-root:not(.${KEEPS_NOTIFICATIONS}), [role="dialog"]:not(.MuiModal-root *)) & > .MuiStack-root`]:
                   { visibility: 'hidden' }

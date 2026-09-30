@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
 
 test('axonometra loads, renders the welcome modal, and mounts a canvas', async ({
   page
@@ -111,6 +111,34 @@ test('the same bad file loaded twice shows one notification', async ({
   await expect(page.getByText('Load failed')).toHaveCount(1);
 });
 
+// Re-sweep 4 2026-09-30: the "Load failed" note sat under the welcome
+// dialog's container and could not be closed while the dialog was open.
+async function closeLoadFailedOverWelcome(page: Page) {
+  await page.goto('/');
+  const welcome = page.getByRole('dialog');
+  await welcome.locator('input[type=file]').setInputFiles({
+    name: 'bad.json',
+    mimeType: 'application/json',
+    buffer: Buffer.from('{not json')
+  });
+  // CSS locators: the open dialog hides the rest of the page from the
+  // accessibility tree.
+  const note = page.locator('[role=alert]', { hasText: 'Load failed' });
+  await expect(note).toBeVisible();
+  // A real click, which fails while anything else is on top of the button.
+  await note.locator('button[aria-label=Close]').click({ timeout: 3000 });
+  await expect(note).toHaveCount(0);
+  await expect(
+    welcome.getByRole('button', { name: /new plan/i })
+  ).toBeVisible();
+}
+
+test('a load that failed can be closed over the welcome dialog', async ({
+  page
+}) => {
+  await closeLoadFailedOverWelcome(page);
+});
+
 test.describe('on a phone held upright', () => {
   test.use({ viewport: { width: 390, height: 844 } });
 
@@ -186,5 +214,11 @@ test.describe('on a phone held upright', () => {
     await page.getByRole('button', { name: /load from local save/i }).click();
     await expect(page.getByRole('button', { name: /new plan/i })).toBeVisible();
     await expect(page.getByText('No autosave found')).toBeVisible();
+  });
+
+  test('a load that failed can be closed over the welcome dialog', async ({
+    page
+  }) => {
+    await closeLoadFailedOverWelcome(page);
   });
 });
