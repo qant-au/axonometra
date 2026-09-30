@@ -325,6 +325,88 @@ test('a room area hides under a measurement across it', async ({ page }) => {
   await expect.poll(() => areaLabelShown(page)).toEqual([true]);
 });
 
+// The luminance of each pixel in a box of the screen, row by row, read from
+// a screenshot (a WebGL canvas cannot be read back from the page).
+async function lumaIn(
+  page: Page,
+  clip: { x: number; y: number; width: number; height: number }
+) {
+  const png = await page.screenshot({ clip });
+  return page.evaluate(async (b64) => {
+    const img = new Image();
+    img.src = `data:image/png;base64,${b64}`;
+    await img.decode();
+    const c = document.createElement('canvas');
+    c.width = img.width;
+    c.height = img.height;
+    const ctx = c.getContext('2d')!;
+    ctx.drawImage(img, 0, 0);
+    const d = ctx.getImageData(0, 0, c.width, c.height).data;
+    const out: number[] = [];
+    for (let i = 0; i < d.length; i += 4)
+      out.push(0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2]);
+    return out;
+  }, png.toString('base64'));
+}
+
+// Re-sweep 2 2026-09-30: the ten measurements the sweep started on a wall or
+// an item were captured but never pixel-checked. Each must draw its line and,
+// at the middle, its length on a white box.
+test('a measurement started on a wall or an item draws its line and length', async ({
+  page
+}) => {
+  await start(page);
+  const { cx, cy } = await drawRoom(page);
+  await addSofa(page);
+  await page.getByRole('button', { name: 'Measure tool' }).click();
+  const x0 = cx - 150;
+  const y0 = cy - 100;
+  const starts: [string, number, number][] = [
+    ['top wall', x0 + 60, y0],
+    ['top wall', x0 + 200, y0],
+    ['left wall', x0, y0 + 60],
+    ['right wall', x0 + 300, y0 + 140],
+    ['bottom wall', x0 + 120, y0 + 200],
+    ['sofa', cx, cy],
+    ['sofa', cx + 8, cy - 8],
+    ['sofa', cx - 8, cy + 8],
+    ['sofa', cx + 10, cy + 10],
+    ['sofa', cx - 10, cy - 5]
+  ];
+  const [dx, dy] = [180, 140];
+  const box = (x: number, y: number, w: number, h: number) => ({
+    x: Math.round(x - w / 2),
+    y: Math.round(y - h / 2),
+    width: w,
+    height: h
+  });
+  for (const [what, x, y] of starts) {
+    // Two points on the line clear of the label, and the label's middle.
+    const along = [0.2, 0.85].map((t) => box(x + dx * t, y + dy * t, 7, 7));
+    const label = box(x + dx / 2, y + dy / 2, 40, 12);
+    await page.mouse.move(x, y);
+    const before = await Promise.all(
+      [...along, label].map((c) => lumaIn(page, c))
+    );
+    await page.mouse.down();
+    await page.mouse.move(x + dx, y + dy, { steps: 12 });
+    const during = await Promise.all(
+      [...along, label].map((c) => lumaIn(page, c))
+    );
+    await page.mouse.up();
+    const darkened = (i: number) =>
+      during[i].filter((v, k) => before[i][k] - v > 60).length;
+    expect(darkened(0), `${what}: line near the start`).toBeGreaterThan(2);
+    expect(darkened(1), `${what}: line near the end`).toBeGreaterThan(2);
+    // The length: black text on a white box over the plan.
+    const whiteIn = (px: number[]) => px.filter((v) => v > 250).length;
+    const white = whiteIn(during[2]) - whiteIn(before[2]);
+    const ink = during[2].filter((v) => v < 90).length;
+    expect(white, `${what}: the length's white box`).toBeGreaterThan(100);
+    expect(ink, `${what}: the length's text`).toBeGreaterThan(10);
+  }
+});
+
 // The room area's box and the read-outs' boxes on screen (the selection's
 // size labels here), in floor coordinates; and where the area is on screen.
 const areaAndSizes = (page: Page) =>
