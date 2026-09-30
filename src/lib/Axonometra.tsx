@@ -30,6 +30,7 @@ import {
 import { EditorInstanceContext } from '../editor/instance/context';
 import { SetUnitsAction } from '../editor/editor/actions/SetUnitsAction';
 import { PageLayout } from '../ui/Layout/PageLayout';
+import { KEEPS_NOTIFICATIONS } from '../ui/WelcomeModal';
 import { useStore } from '../stores/EditorStore';
 
 export interface AxonometraApi {
@@ -212,7 +213,10 @@ export function Axonometra({
           {/* Notifications keep clear of the tool bar, which a narrow
               screen's full-width notification covered, and go under the
               dialogs (a snackbar's z-index drew them over one on a phone),
-              though still over the side panels. */}
+              though still over the side panels. On a phone a dialog is
+              narrower than the screen and a notification showed at its
+              side, so there they hide while one is open; the welcome
+              dialog keeps them, as it reports a load that failed. */}
           <Box
             sx={(theme) => ({
               '& > .MuiStack-root': {
@@ -220,6 +224,10 @@ export function Axonometra({
                   ? undefined
                   : `calc(100% - ${TOOLBAR_WIDTH + 32}px)`,
                 zIndex: theme.zIndex.modal - 1
+              },
+              [theme.breakpoints.down('sm')]: {
+                [`body:has(.MuiDialog-root:not(.${KEEPS_NOTIFICATIONS})) & > .MuiStack-root`]:
+                  { visibility: 'hidden' }
               }
             })}
           >

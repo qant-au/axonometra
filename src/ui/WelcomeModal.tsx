@@ -10,6 +10,9 @@ import AxonometraLogo from '../res/axonometra-logo.svg';
 import { useInstance } from '../editor/instance/context';
 import { readPlanFile } from '../helpers/readPlanFile';
 
+/** A dialog that leaves the notifications showing on a phone (Axonometra). */
+export const KEEPS_NOTIFICATIONS = 'axo-keeps-notifications';
+
 export function WelcomeModal() {
   const inst = useInstance();
   // The host keeps the last save (EditorConfig.loadSaved), if it does.
@@ -51,6 +54,7 @@ export function WelcomeModal() {
     <>
       <Dialog
         open={opened}
+        className={KEEPS_NOTIFICATIONS}
         fullWidth
         maxWidth="xs"
         slotProps={{

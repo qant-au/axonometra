@@ -103,5 +103,22 @@ test.describe('on a phone held upright', () => {
       [box.x + box.width / 2, box.y + box.height / 2]
     );
     expect(onTop).toBe(true);
+    // Re-sweep 2: nor does a strip of it show beside the dialog, which is
+    // narrower than the screen.
+    await expect(note).toBeHidden();
+    await dialog.getByRole('button', { name: 'Close' }).click();
+    await expect(dialog).toHaveCount(0);
+    await expect(note).toBeVisible();
+  });
+
+  test('the welcome dialog still shows a load that failed', async ({
+    page
+  }) => {
+    await page.goto('/');
+    await page.evaluate(() => localStorage.clear());
+    await page.reload();
+    await page.getByRole('button', { name: /load from local save/i }).click();
+    await expect(page.getByRole('button', { name: /new plan/i })).toBeVisible();
+    await expect(page.getByText('No autosave found')).toBeVisible();
   });
 });
