@@ -187,17 +187,17 @@ test('zoomed far out, the grid draws its metre lines only', async ({
             getMain: () => {
               scale: { x: number };
               bkgPattern?: { visible: boolean };
-              metreGrid?: { visible: boolean };
+              lineGrid?: { visible: boolean };
             };
           };
         }
       ).__axo.getMain();
       // Not yet set up: the canvas is still loading.
-      if (!main.bkgPattern || !main.metreGrid) return null;
+      if (!main.bkgPattern || !main.lineGrid) return null;
       return {
         coarse: main.scale.x < 0.5,
         pattern: main.bkgPattern.visible,
-        metres: main.metreGrid.visible
+        metres: main.lineGrid.visible
       };
     });
   await expect
@@ -208,6 +208,68 @@ test('zoomed far out, the grid draws its metre lines only', async ({
   await expect
     .poll(grid)
     .toEqual({ coarse: false, pattern: true, metres: false });
+});
+
+// Re-sweep 3 2026-09-30: at 0.51x (New plan, zoomed out three times) the
+// 10 cm lines drew 5 px apart with uneven 5/11/16 px gaps, the grid pattern's
+// texture dropping lines as it was drawn small. At no zoom are grid lines
+// under 8 px apart, and the gaps between them differ by a pixel at most.
+test('the grid lines are evenly spaced, and never packed, at any zoom', async ({
+  page
+}) => {
+  await start(page);
+  // The gaps, in screen pixels, between the vertical grid lines across a
+  // strip of the empty plan.
+  const gaps = async () => {
+    await page.waitForTimeout(300);
+    const { box } = await canvasCentre(page);
+    const width = 600;
+    const height = 40;
+    const luma = await lumaIn(page, {
+      x: box.x + 200,
+      y: box.y + 150,
+      width,
+      height
+    });
+    const scale = Math.sqrt(luma.length / (width * height));
+    const w = width * scale;
+    for (let y = 0; y < height * scale; y++) {
+      const row = luma.slice(y * w, (y + 1) * w);
+      const paper = Math.max(...row);
+      const dark: number[] = [];
+      for (let x = 0; x < w; x++) if (row[x] < paper - 12) dark.push(x);
+      // A row on a horizontal grid line is dark all along: try the next.
+      if (dark.length > w / 3) continue;
+      const starts = dark.filter((x, i) => i === 0 || x !== dark[i - 1] + 1);
+      return starts.slice(1).map((x, i) => Math.round((x - starts[i]) / scale));
+    }
+    return [];
+  };
+  const setZoom = (zoom: number) =>
+    page.evaluate((z) => {
+      (
+        window as unknown as {
+          __axo: {
+            getMain: () => { setZoom: (z: number, c: boolean) => void };
+          };
+        }
+      ).__axo
+        .getMain()
+        .setZoom(z, true);
+    }, zoom);
+  // The zoom-out key steps (1, 0.8, 0.64, 0.512, 0.41) and wheel zooms in
+  // between, where the 10 cm lines fall a fraction of a pixel apart.
+  for (const zoom of [1, 0.93, 0.87, 0.83, 0.8, 0.79, 0.64, 0.512, 0.41]) {
+    await setZoom(zoom);
+    const found = await gaps();
+    const at = `at ${zoom}x: ${found.join()}`;
+    expect(found.length, `lines ${at}`).toBeGreaterThan(1);
+    expect(Math.min(...found), `closest ${at}`).toBeGreaterThanOrEqual(8);
+    expect(
+      Math.max(...found) - Math.min(...found),
+      `uneven ${at}`
+    ).toBeLessThanOrEqual(1);
+  }
 });
 
 // Re-sweep 2026-09-30: the area label sat under the item in the middle of a

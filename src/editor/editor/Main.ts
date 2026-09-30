@@ -17,13 +17,19 @@ import { FloorPlan } from './objects/FloorPlan';
 import { TransformLayer } from './objects/TransformControls/TransformLayer';
 import { AddNodeAction } from './actions/AddNodeAction';
 import { AddWallManager } from './actions/AddWallManager';
-import { MIN_ZOOM, Tool } from './constants';
+import { METER, MIN_ZOOM, Tool } from './constants';
 import { Pointer } from './Pointer';
 import { Preview } from './actions/MeasureToolManager';
 import { SelectionOverlay } from './selection/SelectionOverlay';
 import { refsInRect } from './selection/planOps';
 import { interpretWheel } from './wheel';
-import { GRID_MINOR_MIN_ZOOM, metreLines } from './grid';
+import {
+  GRID_MINOR_MIN_ZOOM,
+  GRID_MINOR_STEP,
+  GRID_PATTERN_MIN_ZOOM,
+  gridLines,
+  toPixelCentre
+} from './grid';
 import { isTypingTarget } from '@accurona/core';
 
 // A press that moves less than this, in screen pixels, is a click, not a
@@ -35,9 +41,9 @@ export class Main extends Viewport {
   transformLayer!: TransformLayer;
   addWallManager!: AddWallManager;
   bkgPattern!: TilingSprite;
-  /** Zoomed out past GRID_MINOR_MIN_ZOOM: the metre lines alone, drawn. */
-  metreGrid!: Graphics;
-  private metreGridFor = '';
+  /** Zoomed out past GRID_PATTERN_MIN_ZOOM: the grid, drawn line by line. */
+  lineGrid!: Graphics;
+  private lineGridFor = '';
   /** setup() has run: the plugins are on and the plan is drawn. */
   ready = false;
   public pointer!: Pointer;
@@ -181,9 +187,9 @@ export class Main extends Viewport {
     this.bkgPattern.position.set(-padX, -padY);
     this.center = new Point(this.worldWidth / 2, this.worldHeight / 2);
     this.addChild(this.bkgPattern);
-    this.metreGrid = new Graphics();
-    this.metreGrid.eventMode = 'none';
-    this.addChild(this.metreGrid);
+    this.lineGrid = new Graphics();
+    this.lineGrid.eventMode = 'none';
+    this.addChild(this.lineGrid);
     this.onRender = () => this.drawGrid();
 
     this.floorPlan = this.inst.getFloorPlanView();
@@ -212,16 +218,18 @@ export class Main extends Viewport {
     if (this.inst.frameOnSetup) this.inst.frameAll();
   }
   /**
-   * The grid pattern's 10 cm lines run together into bands when zoomed far
-   * out, so there the pattern gives way to the metre lines, drawn a screen
-   * pixel wide over just the part of the plan on screen.
+   * Zoomed out, the grid pattern's texture drops some of its thin lines and
+   * leaves uneven gaps, so there the grid is drawn line by line, each a
+   * screen pixel wide on a whole pixel, over just the part of the plan on
+   * screen. The 10 cm lines go once they would be under GRID_MINOR_MIN_PX
+   * apart, where they run together into bands, leaving the metre lines.
    */
   private drawGrid() {
     const zoom = this.scale.x;
-    const coarse = zoom < GRID_MINOR_MIN_ZOOM;
-    this.bkgPattern.visible = !coarse;
-    this.metreGrid.visible = coarse;
-    if (!coarse) return;
+    const drawn = zoom < GRID_PATTERN_MIN_ZOOM;
+    this.bkgPattern.visible = !drawn;
+    this.lineGrid.visible = drawn;
+    if (!drawn) return;
     const view = {
       x: this.left,
       y: this.top,
@@ -229,23 +237,36 @@ export class Main extends Viewport {
       height: this.worldScreenHeight
     };
     const key = [zoom, view.x, view.y, view.width, view.height].join();
-    if (key === this.metreGridFor) return;
-    this.metreGridFor = key;
+    if (key === this.lineGridFor) return;
+    this.lineGridFor = key;
     const bounds = {
       x: this.bkgPattern.x,
       y: this.bkgPattern.y,
       width: this.bkgPattern.width,
       height: this.bkgPattern.height
     };
-    const { xs, ys } = metreLines(view, bounds);
     const top = Math.max(view.y, bounds.y);
     const bottom = Math.min(view.y + view.height, bounds.y + bounds.height);
     const left = Math.max(view.x, bounds.x);
     const right = Math.min(view.x + view.width, bounds.x + bounds.width);
-    const g = this.metreGrid.clear();
-    for (const x of xs) g.moveTo(x, top).lineTo(x, bottom);
-    for (const y of ys) g.moveTo(left, y).lineTo(right, y);
-    g.stroke({ width: 1 / zoom, color: 0x808080, alpha: 0.6 });
+    const g = this.lineGrid.clear();
+    const draw = (step: number, alpha: number) => {
+      const { xs, ys } = gridLines(view, bounds, step);
+      // The minor lines leave the metre lines to their own, darker pass.
+      const keep = (v: number) => step === METER || v % METER !== 0;
+      g.beginPath();
+      for (const x of xs.filter(keep)) {
+        const sx = toPixelCentre(x, view.x, zoom);
+        g.moveTo(sx, top).lineTo(sx, bottom);
+      }
+      for (const y of ys.filter(keep)) {
+        const sy = toPixelCentre(y, view.y, zoom);
+        g.moveTo(left, sy).lineTo(right, sy);
+      }
+      g.stroke({ width: 1 / zoom, color: 0x808080, alpha });
+    };
+    if (zoom >= GRID_MINOR_MIN_ZOOM) draw(GRID_MINOR_STEP, 0.35);
+    draw(METER, 0.6);
   }
 
   private updatePreview(ev: FederatedPointerEvent) {
