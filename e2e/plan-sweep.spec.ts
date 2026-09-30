@@ -238,6 +238,45 @@ test('the wall drawing hint goes when Escape ends the chain', async ({
   await expect(page.getByText(/Wall drawing mode/)).toHaveCount(0);
 });
 
+// Re-sweep 2026-09-30: a chain ended by a double click left the hint up.
+test('the wall drawing hint goes when a double click ends the chain', async ({
+  page
+}) => {
+  // The sweep's window and steps.
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await start(page);
+  await page.getByRole('button', { name: /close/i }).last().click();
+  await addMenu(page, 'Draw wall');
+  await page.keyboard.press('Escape');
+  await addMenu(page, 'Draw wall');
+  await expect(page.getByText(/Wall drawing mode/)).toBeVisible();
+  const { cx, cy } = await canvasCentre(page);
+  await page.mouse.click(cx - 150, cy + 100);
+  await page.waitForTimeout(300);
+  await page.mouse.dblclick(cx + 150, cy + 100);
+  // The hint hides itself after 4 s; it must go well before that.
+  await expect(page.getByText(/Wall drawing mode/)).toHaveCount(0, {
+    timeout: 1000
+  });
+  // The chain is over: the next click starts a new one, drawing no wall.
+  const walls = await page.evaluate(
+    () =>
+      (
+        window as unknown as {
+          __axo: {
+            getPlan: () => {
+              getWallNodeSeq: () => { getWalls: () => unknown[] };
+            };
+          };
+        }
+      ).__axo
+        .getPlan()
+        .getWallNodeSeq()
+        .getWalls().length
+  );
+  expect(walls).toBe(1);
+});
+
 test('a newly placed item moves with a press and drag anywhere on it', async ({
   page
 }) => {
