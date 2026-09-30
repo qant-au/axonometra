@@ -116,6 +116,29 @@ export class Handle extends Graphics {
     });
   }
 
+  public get kind() {
+    return this.type;
+  }
+
+  /**
+   * A drag of this handle that began with a press on the item itself, as
+   * pressing and dragging an item moves it. The press was not on the
+   * handle, so its release may not reach the handle either: any release
+   * ends it.
+   */
+  public begin(ev: FederatedPointerEvent) {
+    this.onMouseDown(ev);
+    if (!this.active) return;
+    window.addEventListener(
+      'pointerup',
+      () => {
+        this.inst.transformDragging = false;
+        this.active = false;
+      },
+      { once: true }
+    );
+  }
+
   private onMouseDown(ev: FederatedPointerEvent) {
     if (this.inst.transformDragging) {
       return;

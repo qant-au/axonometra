@@ -155,6 +155,10 @@ export class Furniture extends Sprite {
           { kind: 'furniture', id: this.id },
           ev.shiftKey
         );
+        // Press and drag moves it, as in Excalidraw: selecting it put the
+        // handles on it, and the drag is the move handle's. Shift + click
+        // only changes the selection.
+        if (!ev.shiftKey) this.inst.transformLayer.beginMove(ev);
         break;
 
       case Tool.Remove: {

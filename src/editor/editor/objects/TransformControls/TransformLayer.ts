@@ -1,5 +1,5 @@
 import type { EditorInstance } from '../../../instance/EditorInstance';
-import { Container, Graphics } from 'pixi.js';
+import { Container, FederatedPointerEvent, Graphics } from 'pixi.js';
 import { Point } from '../../../../helpers/Point';
 import { Coord, LabelAxis, LABEL_OFFSET, Tool } from '../../constants';
 import { Furniture } from '../Furniture';
@@ -183,6 +183,12 @@ export class TransformLayer extends Container {
       return target.rotation;
     }
     return target.parent?.rotation ?? 0;
+  }
+
+  /** Starts moving the item the handles are on, from a press on the item. */
+  public beginMove(ev: FederatedPointerEvent) {
+    if (!this.target) return;
+    this.handles.find((h) => h.kind === HandleType.Move)?.begin(ev);
   }
 
   public deselect() {

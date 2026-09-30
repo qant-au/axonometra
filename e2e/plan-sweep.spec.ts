@@ -237,3 +237,25 @@ test('the wall drawing hint goes when Escape ends the chain', async ({
   await page.keyboard.press('Escape');
   await expect(page.getByText(/Wall drawing mode/)).toHaveCount(0);
 });
+
+test('a newly placed item moves with a press and drag anywhere on it', async ({
+  page
+}) => {
+  await start(page);
+  await addSofa(page);
+  await page.getByRole('button', { name: 'Edit', exact: true }).click();
+  const { cx, cy } = await canvasCentre(page);
+  const [[x, y]] = (await planState(page)).furniture;
+  // Off its centre, where the move handle is: on the seat, not a handle.
+  await page.mouse.move(cx - 60, cy + 10);
+  await page.mouse.down();
+  await page.mouse.move(cx + 40, cy + 70, { steps: 10 });
+  await page.mouse.up();
+  // By the drag, to the 10 cm grid it snaps to.
+  const after = (await planState(page)).furniture;
+  expect(Math.abs(after[0][0] - (x + 100))).toBeLessThanOrEqual(10);
+  expect(Math.abs(after[0][1] - (y + 60))).toBeLessThanOrEqual(10);
+  // And the drag is over: moving the mouse again leaves it where it is.
+  await page.mouse.move(cx + 200, cy + 200, { steps: 5 });
+  expect((await planState(page)).furniture).toEqual(after);
+});

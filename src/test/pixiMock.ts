@@ -21,7 +21,8 @@ class EventEmitterMock {
     return this;
   }
   emit(event: string, ...args: unknown[]) {
-    for (const h of this.handlers.get(event) ?? []) h(...args);
+    // As eventemitter3 does, a listener runs with the emitter as `this`.
+    for (const h of this.handlers.get(event) ?? []) h.apply(this, args);
     return true;
   }
 }
