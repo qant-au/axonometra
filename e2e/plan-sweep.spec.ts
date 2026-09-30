@@ -222,6 +222,37 @@ test('a loaded room shows its area clear of the items in it', async ({
   await expect.poll(read).toEqual([{ text: '12 m²', covered: false }]);
 });
 
+// Re-sweep 2026-09-30: a measurement's line and length drew under the room
+// area label, which could overprint it.
+test('a measurement draws over the room areas', async ({ page }) => {
+  await start(page);
+  const { cx, cy } = await drawRoom(page);
+  await page.getByRole('button', { name: 'Measure tool' }).click();
+  await page.mouse.move(cx - 100, cy);
+  await page.mouse.down();
+  await page.mouse.move(cx + 100, cy, { steps: 6 });
+  const order = await page.evaluate(() => {
+    const main = (
+      window as unknown as {
+        __axo: {
+          getMain: () => {
+            children: unknown[];
+            preview: { preview: unknown };
+            floorPlan: unknown;
+          };
+        };
+      }
+    ).__axo.getMain();
+    return {
+      measure: main.children.indexOf(main.preview.preview),
+      plan: main.children.indexOf(main.floorPlan)
+    };
+  });
+  await page.mouse.up();
+  expect(order.plan).toBeGreaterThanOrEqual(0);
+  expect(order.measure).toBeGreaterThan(order.plan);
+});
+
 const planState = (page: Page) =>
   page.evaluate(() => {
     const plan = (

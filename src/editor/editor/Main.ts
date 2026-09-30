@@ -65,7 +65,6 @@ export class Main extends Viewport {
       .catch((error: unknown) => console.error('Preload failed:', error))
       .finally(() => this.setup());
     this.preview = new Preview(this.inst);
-    this.addChild(this.preview.getReference());
     this.cursor = 'none';
   }
 
@@ -186,6 +185,8 @@ export class Main extends Viewport {
 
     this.addWallManager = this.inst.addWallManager;
     this.addChild(this.addWallManager.preview.getReference());
+    // The measurement draws over the plan, its room areas included.
+    this.addChild(this.preview.getReference());
 
     this.selectionOverlay = new SelectionOverlay(this.inst);
     this.addChild(this.selectionOverlay);
