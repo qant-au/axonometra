@@ -12,6 +12,7 @@ import {
   deleteRefs,
   existingRefs,
   floorBounds,
+  freePasteStep,
   furnitureCorners,
   isEmptyFragment,
   moveRefs,
@@ -181,23 +182,39 @@ export function createSelectionCommands(inst: EditorInstance) {
     inst.selection.getState().set(added);
   }
 
-  /** Pastes under the pointer when it is over the plan, else beside the original. */
+  // How many steps the last paste of this clipboard went, so each paste of
+  // one copy lands a step further on: three pastes, three visible copies.
+  let pastes: { clip: Fragment | null; step: number } = {
+    clip: null,
+    step: -1
+  };
+
+  /**
+   * Pastes where it was copied from if that is free (after a Cut), else
+   * the first free step down and right of it; in the middle of the view if
+   * that is off screen.
+   */
   function paste(): boolean {
-    if (!inst.clipboard) return false;
-    const main = inst.getMain();
-    const pointer = main.pointer?.position;
-    const centre = fragmentCentre(inst.clipboard);
-    const onScreen =
-      pointer &&
-      pointer.x > main.left &&
-      pointer.x < main.right &&
-      pointer.y > main.top &&
-      pointer.y < main.bottom;
-    if (centre && onScreen) {
-      pasteAt(inst.clipboard, pointer.x - centre.x, pointer.y - centre.y);
-    } else {
-      pasteAt(inst.clipboard, COPY_OFFSET, COPY_OFFSET);
+    const clip = inst.clipboard;
+    const floor = currentFloorData();
+    if (!clip || !floor) return false;
+    if (pastes.clip !== clip) pastes = { clip, step: -1 };
+    pastes.step = freePasteStep(floor, clip, pastes.step + 1, COPY_OFFSET);
+    let dx = pastes.step * COPY_OFFSET;
+    let dy = dx;
+    const centre = fragmentCentre(clip);
+    const main = inst.main;
+    if (centre && main) {
+      const x = centre.x + dx;
+      const y = centre.y + dy;
+      const inView =
+        x > main.left && x < main.right && y > main.top && y < main.bottom;
+      if (!inView) {
+        dx = main.center.x - centre.x;
+        dy = main.center.y - centre.y;
+      }
     }
+    pasteAt(clip, dx, dy);
     return true;
   }
 

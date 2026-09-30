@@ -7,6 +7,7 @@ import {
   deleteRefs,
   existingRefs,
   floorBounds,
+  freePasteStep,
   moveRefs,
   pasteFragment,
   refsBounds,
@@ -171,6 +172,32 @@ describe('copy and paste', () => {
     expect([door.x, door.y]).toEqual([150, 0]);
     // The source is untouched.
     expect(fragment.nodes[0]).toEqual({ id: 1, x: 0, y: 0 });
+  });
+});
+
+describe('freePasteStep', () => {
+  const desk = { kind: 'furniture', id: 1 } as const;
+
+  it('steps a copy off the original, and each paste off the last', () => {
+    const p = plan();
+    const fragment = buildFragment(p.floors[0], [desk]);
+    // Step 0 is the desk itself.
+    expect(freePasteStep(p.floors[0], fragment, 0, 50)).toBe(1);
+    pasteFragment(p, 0, fragment, 50, 50);
+    expect(freePasteStep(p.floors[0], fragment, 0, 50)).toBe(2);
+  });
+
+  it('puts a cut back where it was', () => {
+    const p = plan();
+    const fragment = buildFragment(p.floors[0], [desk]);
+    deleteRefs(p.floors[0], [desk]);
+    expect(freePasteStep(p.floors[0], fragment, 0, 50)).toBe(0);
+  });
+
+  it('steps walls off their wall points', () => {
+    const floor = room();
+    const fragment = buildFragment(floor, allRefs(floor));
+    expect(freePasteStep(floor, fragment, 0, 50)).toBe(1);
   });
 });
 

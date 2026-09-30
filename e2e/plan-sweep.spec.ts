@@ -171,3 +171,54 @@ for (const name of ['comms-room.scene.json', 'row-of-32-items.scene.json']) {
     await expectAllInView(page);
   });
 }
+
+const planState = (page: Page) =>
+  page.evaluate(() => {
+    const plan = (
+      window as unknown as { __axo: Axo }
+    ).__axo.getPlan() as unknown as {
+      getWallNodeSeq: () => {
+        getWallNodes: () => Map<number, { x: number; y: number }>;
+      };
+      getFurniture: () => Map<number, { x: number; y: number }>;
+    };
+    const sort = (a: number[], b: number[]) => a[0] - b[0] || a[1] - b[1];
+    return {
+      nodes: [...plan.getWallNodeSeq().getWallNodes().values()]
+        .map((n) => [n.x, n.y])
+        .sort(sort),
+      furniture: [...plan.getFurniture().values()]
+        .map((f) => [Math.round(f.x), Math.round(f.y)])
+        .sort(sort)
+    };
+  });
+
+test('paste steps each copy off the last; a cut pastes back where it was', async ({
+  page
+}) => {
+  await start(page);
+  const { cx, cy } = await drawRoom(page);
+  await addSofa(page);
+  await page.getByRole('button', { name: 'Edit', exact: true }).click();
+  await page.mouse.click(cx, cy);
+  expect(await selection(page)).toEqual(['furniture']);
+  const [[x, y]] = (await planState(page)).furniture;
+
+  // The pointer stays on the sofa, where a person copied it from.
+  await page.keyboard.press('ControlOrMeta+c');
+  await page.keyboard.press('ControlOrMeta+v');
+  await page.keyboard.press('ControlOrMeta+v');
+  // Half a metre (50 px) down and right each time.
+  expect((await planState(page)).furniture).toEqual([
+    [x, y],
+    [x + 50, y + 50],
+    [x + 100, y + 100]
+  ]);
+
+  const before = await planState(page);
+  await page.keyboard.press('ControlOrMeta+a');
+  await page.keyboard.press('ControlOrMeta+x');
+  expect((await planState(page)).nodes).toEqual([]);
+  await page.keyboard.press('ControlOrMeta+v');
+  expect(await planState(page)).toEqual(before);
+});

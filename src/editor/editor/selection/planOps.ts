@@ -220,6 +220,36 @@ export function buildFragment(
   };
 }
 
+/**
+ * The first step, from `start` on, at which a fragment pasted `step` times
+ * that far down and right puts none of its wall points or free-standing
+ * items exactly where one already is: a copy there hid what was under it,
+ * as the sibling Reticulyne also refuses. Step 0 is where it was copied
+ * from, free again after a Cut.
+ */
+export function freePasteStep(
+  floor: FloorSerializable,
+  fragment: Fragment,
+  start: number,
+  step: number
+): number {
+  const key = (x: number, y: number) => `${Math.round(x)},${Math.round(y)}`;
+  const standing = (f: IFurnitureSerializable) => f.attachedToLeft == null;
+  const taken = new Set([
+    ...floor.wallNodes.map((n) => key(n.x, n.y)),
+    ...floor.furnitureArray.filter(standing).map((f) => key(f.x, f.y))
+  ]);
+  const points = [
+    ...fragment.nodes,
+    ...fragment.furniture.filter(standing)
+  ].map((p) => ({ x: p.x, y: p.y }));
+  for (let n = start; n < start + 200; n += 1) {
+    const d = n * step;
+    if (!points.some((p) => taken.has(key(p.x + d, p.y + d)))) return n;
+  }
+  return start;
+}
+
 export const isEmptyFragment = (fragment: Fragment) =>
   fragment.walls.length === 0 && fragment.furniture.length === 0;
 
