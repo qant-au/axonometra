@@ -210,15 +210,18 @@ export function Axonometra({
           }}
         >
           {/* Notifications keep clear of the tool bar, which a narrow
-              screen's full-width notification covered. */}
+              screen's full-width notification covered, and go under the
+              dialogs (a snackbar's z-index drew them over one on a phone),
+              though still over the side panels. */}
           <Box
-            sx={{
+            sx={(theme) => ({
               '& > .MuiStack-root': {
                 maxWidth: readOnly
                   ? undefined
-                  : `calc(100% - ${TOOLBAR_WIDTH + 32}px)`
+                  : `calc(100% - ${TOOLBAR_WIDTH + 32}px)`,
+                zIndex: theme.zIndex.modal - 1
               }
-            }}
+            })}
           >
             <NotificationHost notifier={inst.notifier} />
           </Box>

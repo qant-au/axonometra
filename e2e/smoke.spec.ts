@@ -82,4 +82,26 @@ test.describe('on a phone held upright', () => {
     const alert = (await page.getByRole('alert').boundingBox())!;
     expect(alert.x).toBeGreaterThan(toolbarRight);
   });
+
+  // Re-sweep 2026-09-30: the welcome note drew over the Keyboard shortcuts
+  // dialog. Dialogs sit above notifications.
+  test('a dialog opens over the welcome note', async ({ page }) => {
+    await page.goto('/');
+    await page.getByRole('button', { name: /new plan/i }).click();
+    const note = page.getByRole('alert');
+    await expect(note).toBeVisible();
+    const box = (await note.boundingBox())!;
+    await page.getByRole('button', { name: 'Keyboard shortcuts' }).click();
+    const dialog = page.getByRole('dialog', { name: 'Keyboard shortcuts' });
+    await expect(dialog).toBeVisible();
+    // Whatever is on top where the note is belongs to the dialog.
+    const onTop = await page.evaluate(
+      ([x, y]) => {
+        const el = document.elementFromPoint(x, y);
+        return !el?.closest('[role=alert]');
+      },
+      [box.x + box.width / 2, box.y + box.height / 2]
+    );
+    expect(onTop).toBe(true);
+  });
 });
