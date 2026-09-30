@@ -13,6 +13,7 @@ import {
   existingRefs,
   floorBounds,
   freePasteStep,
+  freePlaceStep,
   furnitureCorners,
   isEmptyFragment,
   moveRefs,
@@ -276,8 +277,27 @@ export function createSelectionCommands(inst: EditorInstance) {
     return fitRect(refsBounds(floor, refs));
   }
 
+  /**
+   * Where a new item of this size (plan units) goes: the middle of the view,
+   * or the first step down and right of it that covers no other item.
+   * Returns its top-left corner.
+   */
+  function freeSpot(width: number, height: number) {
+    const main = inst.getMain();
+    const box = {
+      x: Math.round(main.center.x - width / 2),
+      y: Math.round(main.center.y - height / 2),
+      width,
+      height
+    };
+    const floor = currentFloorData();
+    const d = floor ? freePlaceStep(floor, box, COPY_OFFSET) * COPY_OFFSET : 0;
+    return { x: box.x + d, y: box.y + d };
+  }
+
   return {
     currentFloorData,
+    freeSpot,
     pruneSelection,
     selectAll,
     selectRefs,

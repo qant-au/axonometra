@@ -176,6 +176,9 @@ export class Floor extends Container {
     if (attachedTo !== undefined && coords !== undefined) {
       attachedTo.addChild(object);
       object.position.set(coords.x, coords.y);
+    } else if (coords !== undefined) {
+      this.addChild(object);
+      object.position.set(coords.x, coords.y);
     } else {
       // In the middle of what is on screen, so the person sees it arrive,
       // wherever they have panned or zoomed to.

@@ -253,6 +253,61 @@ test('a measurement draws over the room areas', async ({ page }) => {
   expect(order.measure).toBeGreaterThan(order.plan);
 });
 
+// Re-sweep 2026-09-30: a device placed from the network diagram landed in
+// the middle of the view, on top of the access point already there.
+test('a device from the network diagram is placed clear of the others', async ({
+  page
+}) => {
+  await loadFixture(page, 'crossover.scene.json');
+  await addMenu(page, 'Add furniture');
+  await page
+    .getByTestId('diagram-objects')
+    .getByRole('button', { name: 'Core switch' })
+    .click();
+  await page.keyboard.press('Escape');
+  const boxes = await page.evaluate(() =>
+    [
+      ...(
+        window as unknown as {
+          __axo: {
+            getPlan: () => {
+              getFurniture: () => Map<
+                number,
+                {
+                  getBounds: () => {
+                    minX: number;
+                    minY: number;
+                    maxX: number;
+                    maxY: number;
+                  };
+                }
+              >;
+            };
+          };
+        }
+      ).__axo
+        .getPlan()
+        .getFurniture()
+        .values()
+    ].map((f) => {
+      const b = f.getBounds();
+      return [b.minX, b.minY, b.maxX, b.maxY];
+    })
+  );
+  expect(boxes).toHaveLength(4);
+  const placed = boxes[3];
+  const covered = boxes
+    .slice(0, 3)
+    .filter(
+      (b) =>
+        placed[0] < b[2] &&
+        b[0] < placed[2] &&
+        placed[1] < b[3] &&
+        b[1] < placed[3]
+    );
+  expect(covered).toEqual([]);
+});
+
 const planState = (page: Page) =>
   page.evaluate(() => {
     const plan = (

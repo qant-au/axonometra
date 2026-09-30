@@ -8,6 +8,7 @@ import {
   existingRefs,
   floorBounds,
   freePasteStep,
+  freePlaceStep,
   moveRefs,
   pasteFragment,
   refsBounds,
@@ -198,6 +199,29 @@ describe('freePasteStep', () => {
     const floor = room();
     const fragment = buildFragment(floor, allRefs(floor));
     expect(freePasteStep(floor, fragment, 0, 50)).toBe(1);
+  });
+});
+
+// Re-sweep 2026-09-30: a device placed from the network diagram went into the
+// middle of the view, on top of the item already there.
+describe('freePlaceStep', () => {
+  // The desk covers (100, 100) to (220, 160).
+  it('leaves a clear spot as it is', () => {
+    const box = { x: 250, y: 200, width: 40, height: 40 };
+    expect(freePlaceStep(room(), box, 50)).toBe(0);
+  });
+
+  it('steps off an item until nothing is covered', () => {
+    const box = { x: 140, y: 110, width: 40, height: 40 };
+    // Step 1, at (190, 160), just clears the desk.
+    expect(freePlaceStep(room(), box, 50)).toBe(1);
+    const onDesk = { x: 100, y: 100, width: 40, height: 40 };
+    expect(freePlaceStep(room(), onDesk, 50)).toBe(2);
+  });
+
+  it('ignores doors and windows, which sit in their walls', () => {
+    const box = { x: 150, y: -10, width: 40, height: 40 };
+    expect(freePlaceStep(room(), box, 50)).toBe(0);
   });
 });
 

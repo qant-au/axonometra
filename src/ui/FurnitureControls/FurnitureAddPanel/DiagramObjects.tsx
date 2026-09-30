@@ -8,6 +8,7 @@ import { AddFurnitureAction } from '../../../editor/editor/actions/AddFurnitureA
 import { placedOnlyElsewhere } from '../../../editor/editor/persistence/crossover';
 import { useInstance } from '../../../editor/instance/context';
 import { useFloorPlanStore } from '../../../stores/FloorPlanStore';
+import { METER } from '../../../editor/editor/constants';
 
 // lw-055: devices in a network diagram (Reticulyne) that are not on the floor
 // plan yet. Placing one keeps its scene object id, so the item on the plan and
@@ -52,7 +53,13 @@ export function DiagramObjects() {
             <Card key={object.id}>
               <CardActionArea
                 onClick={() => {
-                  new AddFurnitureAction(inst, data).execute();
+                  // Beside anything already in the middle of the view,
+                  // not on top of it.
+                  const at = inst.commands.freeSpot(
+                    data.width * METER,
+                    data.height * METER
+                  );
+                  new AddFurnitureAction(inst, data, undefined, at).execute();
                   serializer.linkFurniture(
                     inst.plan.getState().furnitureId,
                     object.id

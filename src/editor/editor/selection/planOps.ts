@@ -250,6 +250,34 @@ export function freePasteStep(
   return start;
 }
 
+/**
+ * How many steps down and right of `box` (in floor coordinates) an item
+ * must go to cover no free-standing item already there: 0 when it is clear
+ * where it is. The paste stepping, for a single new item.
+ */
+export function freePlaceStep(
+  floor: FloorSerializable,
+  box: Rect,
+  step: number
+): number {
+  const items = floor.furnitureArray
+    .filter((f) => f.attachedToLeft == null)
+    .flatMap((f) => boundsOf(furnitureCorners(floor, f)) ?? []);
+  const clear = (b: Rect) =>
+    !items.some(
+      (r) =>
+        b.x < r.x + r.width &&
+        r.x < b.x + b.width &&
+        b.y < r.y + r.height &&
+        r.y < b.y + b.height
+    );
+  for (let n = 0; n < 200; n += 1) {
+    const d = n * step;
+    if (clear({ ...box, x: box.x + d, y: box.y + d })) return n;
+  }
+  return 0;
+}
+
 export const isEmptyFragment = (fragment: Fragment) =>
   fragment.walls.length === 0 && fragment.furniture.length === 0;
 
