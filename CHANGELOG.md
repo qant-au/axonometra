@@ -17,6 +17,18 @@ Expect breaking changes between minor versions until v1.0.0.
 ### Fixed
 
 - An id reissued after an undo no longer takes over the scene object the undone item had.
+- Doors and windows draw their images again, not solid black shapes (their SVGs had no intrinsic size, which WebGL refuses).
+- No `script-src` eval report on every page load under a strict Content-Security-Policy: zod runs jitless.
+- Dark mode no longer hides the toolbar behind the plan.
+- A room's area label no longer takes the click or right-click meant for an item under it, and draws beneath the furniture.
+- Fit everything frames the whole plan beside the toolbar, zooming out as far as it needs; a loaded plan opens framed. The view may go half a world past each edge, so a scene drawn near the origin can be centred.
+- Paste steps each copy half a metre off the last instead of on top of the original; a cut pastes back where it was, and off-screen content pastes into the middle of the view.
+- The Wall drawing mode hint goes when the chain ends.
+- A selected wall is outlined on the wall, not as a skewed wedge beside it.
+- A wall's length label (and the length box) takes off the wall's own thickness, 16 cm for an interior wall rather than 20 cm. A scene saved in millimetres writes `"units": "mm"`.
+- Pressing and dragging an item moves it, from anywhere on it.
+- A measurement can start on a wall, a wall point or an item.
+- On a phone every tool fits on screen, and notifications stay clear of the toolbar.
 
 ## [0.4.0] - 2026-09-30
 
