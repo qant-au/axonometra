@@ -170,9 +170,12 @@ export function createKeymap(inst: EditorInstance) {
     }
   }
 
-  // A modal dialog or an open menu (MUI renders both as a Modal). The help
-  // panel is not modal and does not count.
-  const modalOpen = () => document.querySelector('.MuiModal-root') !== null;
+  // A modal dialog or an open menu (MUI renders both as a Modal) holds the
+  // focus while it is open. One that is fading out has handed it back, so a
+  // key pressed straight after closing it reaches the plan, and a dialog in
+  // another editor on the page does not count. The help panel is not modal.
+  const modalOpen = () =>
+    document.activeElement?.closest('.MuiModal-root') != null;
 
   /** The document keydown handler. */
   function handleKeydown(e: KeyboardEvent, ctx: KeymapContext) {
