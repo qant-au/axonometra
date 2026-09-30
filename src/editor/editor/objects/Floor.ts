@@ -11,6 +11,7 @@ import { Furniture } from './Furniture';
 import { Wall } from './Walls/Wall';
 import { WallNode } from './Walls/WallNode';
 import { WallNodeSequence } from './Walls/WallNodeSequence';
+import type { Box } from './Walls/RoomLabels';
 
 export class Floor extends Container {
   public furnitureArray: Map<number, Furniture>;
@@ -33,6 +34,9 @@ export class Floor extends Container {
     // is seen (and printed) over its area, not behind it.
     this.wallNodeSequence.roomLabels.zIndex = -1;
     this.addChild(this.wallNodeSequence.roomLabels);
+    // ...and move off any item that would hide them.
+    this.onRender = () =>
+      this.wallNodeSequence.roomLabels.place(this.itemBoxes());
     this.sortableChildren = true;
     if (floorData) {
       const nodeLinks = new Map<number, number[]>(floorData.wallNodeLinks);
@@ -116,6 +120,24 @@ export class Floor extends Container {
   }
   public getFurniture() {
     return this.furnitureArray;
+  }
+
+  /** The free-standing items' footprints, in this floor's coordinates. */
+  public itemBoxes(): Box[] {
+    const boxes: Box[] = [];
+    for (const item of this.furnitureArray.values()) {
+      if (item.parent !== this) continue; // a door or window, in its wall
+      const b = item.getBounds();
+      const a = this.toLocal({ x: b.minX, y: b.minY });
+      const c = this.toLocal({ x: b.maxX, y: b.maxY });
+      boxes.push({
+        x: Math.round(Math.min(a.x, c.x)),
+        y: Math.round(Math.min(a.y, c.y)),
+        width: Math.round(Math.abs(c.x - a.x)),
+        height: Math.round(Math.abs(c.y - a.y))
+      });
+    }
+    return boxes;
   }
 
   private getExteriorWalls() {

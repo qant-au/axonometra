@@ -172,6 +172,56 @@ for (const name of ['comms-room.scene.json', 'row-of-32-items.scene.json']) {
   });
 }
 
+// Re-sweep 2026-09-30: the area label sat under the item in the middle of a
+// loaded room, hidden. It moves to a clear spot in the room instead.
+test('a loaded room shows its area clear of the items in it', async ({
+  page
+}) => {
+  await loadFixture(page, 'comms-room.scene.json');
+  const read = () =>
+    page.evaluate(() => {
+      type B = { minX: number; minY: number; maxX: number; maxY: number };
+      const floor = (
+        window as unknown as {
+          __axo: {
+            getPlan: () => {
+              getCurrentFloor: () => {
+                wallNodeSequence: {
+                  roomLabels: {
+                    children: { text: string; getBounds: () => B }[];
+                  };
+                };
+                getFurniture: () => Map<
+                  number,
+                  { parent: unknown; getBounds: () => B }
+                >;
+              };
+            };
+          };
+        }
+      ).__axo
+        .getPlan()
+        .getCurrentFloor();
+      const items = [...floor.getFurniture().values()].map((f) =>
+        f.getBounds()
+      );
+      return floor.wallNodeSequence.roomLabels.children.map((t) => {
+        const b = t.getBounds();
+        return {
+          text: t.text,
+          covered: items.some(
+            (i) =>
+              b.minX < i.maxX &&
+              i.minX < b.maxX &&
+              b.minY < i.maxY &&
+              i.minY < b.maxY
+          )
+        };
+      });
+    });
+  await expect.poll(read).toEqual([{ text: '12 m²', covered: false }]);
+});
+
 const planState = (page: Page) =>
   page.evaluate(() => {
     const plan = (

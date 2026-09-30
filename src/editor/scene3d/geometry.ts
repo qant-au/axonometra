@@ -98,7 +98,7 @@ export function signedArea(poly: Point[]): number {
 }
 
 /** Whether p lies inside the polygon (even-odd rule). */
-function contains(poly: Point[], p: Point): boolean {
+export function contains(poly: Point[], p: Point): boolean {
   let inside = false;
   for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
     const a = poly[i];
