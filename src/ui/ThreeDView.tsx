@@ -1,3 +1,4 @@
+import { wallsAndFurniture } from '../helpers/counted';
 import { ReactNode, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Box,
@@ -414,10 +415,10 @@ export function ThreeDView({ opened, onClose }: Props) {
       }.`
     : '';
   const label = walking
-    ? `3D walk-through of floor ${walkFloor}: ${model.wallCount} walls and ${model.furnitureCount} pieces of furniture.`
+    ? `3D walk-through of floor ${walkFloor}: ${wallsAndFurniture(model.wallCount, model.furnitureCount)}.`
     : `3D view of ${
         allFloors ? `all ${plan.floors.length} floors` : `floor ${current}`
-      }: ${model.wallCount} walls and ${model.furnitureCount} pieces of furniture${
+      }: ${wallsAndFurniture(model.wallCount, model.furnitureCount)}${
         model.hiddenCount ? ` (${model.hiddenCount} more above the cut)` : ''
       }${cutaway ? ', walls cut away' : ''}.`;
   useEffect(() => {

@@ -13,6 +13,7 @@ import { projectScene } from '../editor/axonometric/axonometric';
 import { sceneFromPlan } from '../editor/axonometric/sceneFromPlan';
 import { useInstance } from '../editor/instance/context';
 import { AppDialog } from '@accurona/ui';
+import { wallsAndFurniture } from '../helpers/counted';
 
 interface Props {
   opened: boolean;
@@ -41,7 +42,7 @@ export function AxonometricView({ opened, onClose }: Props) {
   const furnitureCount = shown.reduce((n, f) => n + f.furniture.length, 0);
   const label = `Axonometric view of ${
     allFloors ? `all ${scene.floors.length} floors` : `floor ${scene.current}`
-  }: ${wallCount} walls and ${furnitureCount} pieces of furniture, turned ${
+  }: ${wallsAndFurniture(wallCount, furnitureCount)}, turned ${
     turns * 90
   } degrees.`;
 

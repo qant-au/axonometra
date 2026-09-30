@@ -63,13 +63,13 @@ test('draw walls, add furniture, save and load, under the container CSP', async 
   await drawer.getByAltText('Server rack 42U, 600 × 1200').click();
   await page.keyboard.press('Escape');
 
-  expect(await openThreeD(page)).toMatch(/2 walls and 1 pieces of furniture/);
+  expect(await openThreeD(page)).toMatch(/2 walls and 1 piece of furniture/);
 
   // Save to the browser, reload, and load it back.
   await page.keyboard.press('ControlOrMeta+s');
   await page.reload();
   await page.getByRole('button', { name: /load from local save/i }).click();
-  expect(await openThreeD(page)).toMatch(/2 walls and 1 pieces of furniture/);
+  expect(await openThreeD(page)).toMatch(/2 walls and 1 piece of furniture/);
 
   expect(problems).toEqual([]);
 });

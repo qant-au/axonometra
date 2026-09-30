@@ -57,7 +57,7 @@ test('shows the plan in an axonometric view that can be turned', async ({
   });
   await expect(drawing).toHaveAttribute(
     'aria-label',
-    /3 walls and 1 pieces of furniture, turned 0 degrees/
+    /3 walls and 1 piece of furniture, turned 0 degrees/
   );
   // Slab, three walls and the door: every box shows a top and a side or two.
   expect(await drawing.locator('polygon').count()).toBeGreaterThanOrEqual(10);
