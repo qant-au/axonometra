@@ -150,11 +150,11 @@ persistence layer exposes two helpers:
 Both live in
 [`FloorPlanSerializable.ts`](./src/editor/editor/persistence/FloorPlanSerializable.ts).
 
-`FloorPlan.load` calls both in sequence and surfaces an error
+`Serializer.load` calls both in sequence and surfaces an error
 notification if either step fails. Hosts integrating via
-[`EMBEDDING.md`](./EMBEDDING.md) see this as a silent rejection: the
-editor stays on the previously-loaded plan and toasts the error
-in-frame.
+[`EMBEDDING.md`](./EMBEDDING.md) get an `axo:error` reply
+(`invalid-plan`): the editor stays on the previously-loaded plan and
+toasts the error in-frame.
 
 ## Versioning policy
 
@@ -177,7 +177,7 @@ back to a placeholder texture.
 
 ## Out of scope
 
-- The catalog manifest (`src/res/catalog/elements/manifest.json` and
+- The catalog manifest (`@accurona/elements/manifest.json` and
   `src/res/catalog/wall-fittings.json`) — that ships with the
   build and is not part of the plan payload.
 - UI state (selected tool, snap mode, viewport position). The plan
