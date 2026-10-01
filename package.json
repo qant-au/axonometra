@@ -1,7 +1,7 @@
 {
   "name": "@axonometra/editor",
   "description": "Axonometra: an open-source floor planner for the browser, with a 3D view, as a React component.",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "license": "MIT AND Apache-2.0",
   "repository": {
     "type": "git",
