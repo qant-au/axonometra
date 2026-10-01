@@ -2,6 +2,9 @@ import type { EditorInstance } from '../../instance/EditorInstance';
 import { Container, DestroyOptions } from 'pixi.js';
 import { timestamp } from '../actions/SaveAction';
 
+// Clear space around the plan in a saved plan image, in plan units (px).
+const PRINT_MARGIN = 40;
+
 // View for the floor plan model. The model itself lives in useFloorPlanStore;
 // this container only mirrors the active floor into the scene graph and owns
 // the one operation that genuinely needs a live display object: print().
@@ -49,7 +52,13 @@ export class FloorPlan extends Container {
       });
       return;
     }
-    const canvas = renderer.extract.canvas(this) as HTMLCanvasElement;
+    // The bounds alone crop tight to the outermost item, so a wall label or a
+    // piece of furniture on the edge touches the image border: pad them.
+    const frame = this.getLocalBounds().rectangle.clone().pad(PRINT_MARGIN);
+    const canvas = renderer.extract.canvas({
+      target: this,
+      frame
+    }) as HTMLCanvasElement;
     canvas.toBlob((blob) => {
       if (!blob) {
         this.inst.notify({
