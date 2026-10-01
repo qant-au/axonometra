@@ -9,6 +9,10 @@ Expect breaking changes between minor versions until v1.0.0.
 
 ## [Unreleased]
 
+### Changed
+
+- **Built on Accurona 0.3.** `@accurona/core`, `@accurona/elements` and `@accurona/ui` move to 0.3, whose theme exports are named for Accurona (`createAccuronaTheme`). No change to the editor's own API.
+
 ## [0.5.0] - 2026-10-01
 
 ### Added
