@@ -78,7 +78,7 @@ puts images, plus `data:` if it inlines small ones. Images load through `<img>`,
 - The iframe protocol below is not part of the component; talk to the component through
   its props and ref.
 
-> **Status:** load, request-save and ready since v0.2.0. Signed plan loads and session binding were added after v0.3.0; see [Signed plans](#signed-plans).
+> **Status:** load, request-save and ready since v0.2.0. Signed plan loads and session binding since v0.4.0; see [Signed plans](#signed-plans).
 
 ## Quick start
 

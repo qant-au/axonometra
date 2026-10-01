@@ -11,16 +11,16 @@ Use it on its own, or embed it in your own application.
 
 ## Status
 
-Pre-1.0 (currently v0.3). The embedding API and the plan format can still change
+Pre-1.0 (currently v0.5). The embedding API and the plan format can still change
 between minor versions; each change is recorded in [CHANGELOG.md](CHANGELOG.md).
 
 ## Features
 
 - **Plan editing.** Walls, doors and windows, rooms and multiple floors, drawn to a
   10 cm grid and measured true to scale.
-- **Around 230 items** in 12 groups: living, bedroom, dining, kitchen, bathroom,
-  office, comms and server room, networking, security, fire and safety, outdoor and
-  structure.
+- **Around 260 items** in 13 groups: living, bedroom, dining, kitchen, bathroom and
+  laundry, office, comms and server room, networking and AV, security, fire and safety,
+  outdoor, vehicles and EV charging, and structure.
 - **Axonometric view** of the plan.
 - **3D view.** Orbit, or walk through in first person with collision and storey
   changes. Save an image, or export the whole building as a `.glb` (glTF) file for
