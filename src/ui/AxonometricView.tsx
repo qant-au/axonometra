@@ -39,7 +39,12 @@ export function AxonometricView({ opened, onClose }: Props) {
   );
 
   const wallCount = shown.reduce((n, f) => n + f.walls.length, 0);
-  const furnitureCount = shown.reduce((n, f) => n + f.furniture.length, 0);
+  // Doors and windows sit in their walls and are not furniture: counted as
+  // the 3D view counts them.
+  const furnitureCount = shown.reduce(
+    (n, f) => n + f.furniture.filter((item) => !item.wall).length,
+    0
+  );
   const label = `Axonometric view of ${
     allFloors ? `all ${scene.floors.length} floors` : `floor ${scene.current}`
   }: ${wallsAndFurniture(wallCount, furnitureCount)}, turned ${
