@@ -23,8 +23,7 @@ npm ci
 npm run dev        # Vite dev server on http://localhost:4891
 ```
 
-For a production-like preview (nginx and the CSP headers, on http://localhost:4890),
-which is also what the end-to-end tests run against:
+For a production-like preview (nginx and the CSP headers, on http://localhost:4890):
 
 ```bash
 NO_WATCH=1 bash restart.sh
@@ -39,9 +38,9 @@ npx tsc --noEmit       # TypeScript, strict
 npm test               # Vitest unit tests
 ```
 
-For changes to the editor canvas or the embedding bridge, also run the Playwright suite
-against the preview (`PLAYWRIGHT_BASE_URL=http://localhost:4891` targets the dev server
-instead):
+For changes to the editor canvas or the embedding bridge, also run the Playwright suite.
+It starts the dev server itself (`PLAYWRIGHT_BASE_URL=http://localhost:4890` targets an
+already-running preview instead):
 
 ```bash
 npm run test:e2e
