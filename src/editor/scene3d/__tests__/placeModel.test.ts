@@ -104,7 +104,7 @@ describe('placeModel', () => {
   });
 });
 
-describe('vendored models', () => {
+describe('element library models', () => {
   it('has a model for catalogue items, with symbols flagged', () => {
     expect(getItemModel('rack-600x1200-42u')?.parts.length).toBeGreaterThan(0);
     expect(getItemModel('cctv-dome')?.symbol).toBe(true);

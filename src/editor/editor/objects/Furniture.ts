@@ -88,7 +88,7 @@ export class Furniture extends Sprite {
   // The door y-offset uses different dimensions depending on caller:
   // switchOrientation passes useWidthForDoorOffset=false (uses height);
   // setOrientation passes true (uses width). height/width discrepancy
-  // preserved from upstream; see follow-up.
+  // preserved from upstream.
   private applyStep(fromOrientation: number, useWidthForDoorOffset: boolean) {
     const doorAxis = useWidthForDoorOffset ? this.width : this.height;
     switch (fromOrientation) {
