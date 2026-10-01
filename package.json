@@ -34,9 +34,9 @@
     "access": "public"
   },
   "dependencies": {
-    "@accurona/core": "^0.2.0",
-    "@accurona/elements": "^0.2.0",
-    "@accurona/ui": "^0.2.0",
+    "@accurona/core": "^0.3.0",
+    "@accurona/elements": "^0.3.0",
+    "@accurona/ui": "^0.3.0",
     "@tabler/icons-react": "^3.44.0",
     "file-saver": "^2.0.5",
     "pixi-viewport": "^6.0.3",

@@ -18,7 +18,7 @@ import {
 } from '@mui/material';
 import { TOOLBAR_WIDTH } from '../editor/editor/constants';
 import {
-  createLineworkTheme,
+  createAccuronaTheme,
   NotificationHost,
   type NotifyOptions
 } from '@accurona/ui';
@@ -134,7 +134,7 @@ function Themed({
   // mode the editor is in. No CSS variables: MUI would write them to the
   // host page's :root.
   const mode = useStore((s) => s.theme);
-  const own = useMemo(() => createLineworkTheme(mode), [mode]);
+  const own = useMemo(() => createAccuronaTheme(mode), [mode]);
   return <ThemeProvider theme={theme ?? own}>{children}</ThemeProvider>;
 }
 
