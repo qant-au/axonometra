@@ -512,6 +512,9 @@ async function lumaIn(
 test('a measurement started on a wall or an item draws its line and length', async ({
   page
 }) => {
+  // Ten measurements, six screenshots each: past 30 s on a CI runner's
+  // software WebGL, though nothing in it is waiting.
+  test.slow();
   await start(page);
   const { cx, cy } = await drawRoom(page);
   await addSofa(page);
@@ -642,29 +645,35 @@ test('a room area hides under a selected item’s size labels', async ({
     const b = f.getBounds();
     return { x: (b.minX + b.maxX) / 2, y: (b.minY + b.maxY) / 2 };
   });
-  const { screen } = (await areaAndSizes(page))!;
-  // Drag it onto the area: the area moves below it, where the item's
-  // horizontal size label is drawn.
-  await page.mouse.move(ap.x, ap.y);
-  await page.mouse.down();
-  await page.mouse.move(ap.x, screen.y, { steps: 8 });
-  await page.mouse.up();
+  // Drag it up and down through the area in steps. Where the area is first
+  // written (above or below the item) follows the font's metrics, so it
+  // differs between platforms; the rule does not: whenever one of the
+  // selected item's size labels is over the area, the area is hidden.
   type Box = { x: number; y: number; width: number; height: number };
   const overlap = (a: Box, b: Box) =>
     a.x < b.x + b.width &&
     b.x < a.x + a.width &&
     a.y < b.y + b.height &&
     b.y < a.y + a.height;
-  await expect
-    .poll(async () => {
-      const now = (await areaAndSizes(page))!;
-      return {
-        sizes: now.sizes.length,
-        under: now.sizes.some((s) => overlap(s, now.area)),
-        visible: now.visible
-      };
-    })
-    .toEqual({ sizes: 2, under: true, visible: false });
+  let at = ap;
+  let covered = 0;
+  for (let dy = -120; dy <= 120; dy += 8) {
+    const to = { x: ap.x, y: ap.y + dy };
+    await page.mouse.move(at.x, at.y);
+    await page.mouse.down();
+    await page.mouse.move(to.x, to.y, { steps: 4 });
+    await page.mouse.up();
+    at = to;
+    const now = (await areaAndSizes(page))!;
+    expect(now.sizes.length).toBe(2);
+    if (now.sizes.some((box) => overlap(box, now.area))) {
+      covered++;
+      expect(now.visible, `area under a size label at dy ${dy}`).toBe(false);
+    }
+  }
+  expect(covered, 'some step put a size label over the area').toBeGreaterThan(
+    0
+  );
   // Deselected, the area shows again.
   await page.keyboard.press('Escape');
   await expect.poll(async () => (await areaAndSizes(page))?.visible).toBe(true);
