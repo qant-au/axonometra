@@ -1,4 +1,4 @@
-// lw-055: one object on the floor plan and in a network diagram.
+// One object on the floor plan and in a network diagram.
 //
 // COPY of @accurona/core's scene/crossover.ts (accurona f4a54d4), trimmed to
 // what Axonometra uses. The published @accurona/core (0.1.0) predates it;

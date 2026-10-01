@@ -46,7 +46,7 @@ export class Serializer {
     this.context = newContext();
   }
 
-  // --- lw-055: crossover with the network diagram -----------------------
+  // --- crossover with the network diagram -----------------------
 
   /** The scene the plan was opened from: diagram views and all. */
   public openedScene(): Scene {

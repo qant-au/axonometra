@@ -10,7 +10,7 @@ import { useInstance } from '../../../editor/instance/context';
 import { useFloorPlanStore } from '../../../stores/FloorPlanStore';
 import { METER } from '../../../editor/editor/constants';
 
-// lw-055: devices in a network diagram (Reticulyne) that are not on the floor
+// Devices in a network diagram (Reticulyne) that are not on the floor
 // plan yet. Placing one keeps its scene object id, so the item on the plan and
 // the node in the diagram are one object. Only objects with an Accurona element
 // can be drawn on a plan; the rest (a cloud service, a VPN link) never are.

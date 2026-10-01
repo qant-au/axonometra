@@ -63,7 +63,7 @@ export function createFloorPlanStore(
 ): StoreApi<FloorPlanStore> {
   // A new item's id. An undo winds the counter back, so an id can be issued
   // again for a different item: whatever scene object the old one was linked
-  // to (lw-055) must not carry over to it.
+  // to must not carry over to it.
   const nextFurnitureId = (
     get: () => FloorPlanStore,
     set: (partial: Partial<FloorPlanStore>) => void

@@ -6,7 +6,7 @@ import { useContextMenuStore } from '../editor/editor/selection/pointer';
 import type { SelectionRef } from '../editor/editor/selection/planOps';
 import { objectPlaces } from '../editor/editor/persistence/crossover';
 
-// lw-055: an item that is also a node in a network diagram says which ones.
+// An item that is also a node in a network diagram says which ones.
 function diagramItems(
   inst: EditorInstance,
   furnitureId: number

@@ -3,7 +3,7 @@ import { validateScene, type Scene } from '@accurona/core';
 import { objectPlaces, placedOnlyElsewhere } from '../persistence/crossover';
 import { planToScene, sceneToPlan } from '../persistence/sceneFile';
 
-// lw-055: an access point in a network diagram, placed on the floor plan from
+// An access point in a network diagram, placed on the floor plan from
 // Axonometra, stays one scene object with the diagram's id.
 
 function scene(): Scene {
