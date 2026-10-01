@@ -79,6 +79,12 @@ test.describe('undo / redo', () => {
     await redoButton.click();
     expect(await counts(page)).toEqual({ nodes: 3, walls: 2 });
     await expect(redoButton).toBeDisabled();
+
+    // Ctrl+Y is the shared keymap's second redo chord (Ctrl alone, every OS).
+    await page.keyboard.press('ControlOrMeta+z');
+    expect(await counts(page)).toEqual({ nodes: 2, walls: 1 });
+    await page.keyboard.press('Control+y');
+    expect(await counts(page)).toEqual({ nodes: 3, walls: 2 });
   });
 
   test('a new edit after undo discards the redo branch', async ({ page }) => {
