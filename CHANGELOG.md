@@ -9,9 +9,18 @@ Expect breaking changes between minor versions until v1.0.0.
 
 ## [Unreleased]
 
+## [0.5.2] - 2026-10-01
+
+0.5.1 was tagged but never published: its lockfile still pinned Accurona 0.2, so the install failed. 0.5.2 carries its change, plus the fixes below.
+
 ### Changed
 
 - **Built on Accurona 0.3.** `@accurona/core`, `@accurona/elements` and `@accurona/ui` move to 0.3, whose theme exports are named for Accurona (`createAccuronaTheme`). No change to the editor's own API.
+
+### Fixed
+
+- **A saved plan image keeps a margin.** The PNG cropped tight to the plan, so a wall label or an item on the edge touched the image border; it now has 40 px of clear space on every side.
+- **The axonometric view counts furniture as the 3D view does.** Its description counted doors and windows as pieces of furniture.
 
 ## [0.5.0] - 2026-10-01
 
