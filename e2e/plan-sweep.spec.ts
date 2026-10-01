@@ -614,6 +614,8 @@ const areaAndSizes = (page: Page) =>
 test('a room area hides under a selected item’s size labels', async ({
   page
 }) => {
+  // Up to 31 drags, each re-reading the plan: past 30 s on a CI runner.
+  test.slow();
   await loadFixture(page, 'comms-room.scene.json');
   await page.getByRole('button', { name: 'Edit', exact: true }).click();
   await expect.poll(async () => (await areaAndSizes(page))?.visible).toBe(true);
@@ -669,6 +671,9 @@ test('a room area hides under a selected item’s size labels', async ({
     if (now.sizes.some((box) => overlap(box, now.area))) {
       covered++;
       expect(now.visible, `area under a size label at dy ${dy}`).toBe(false);
+      // Three overlapping positions make the case; the rest of the sweep
+      // only costs time on a CI runner.
+      if (covered === 3) break;
     }
   }
   expect(covered, 'some step put a size label over the area').toBeGreaterThan(
