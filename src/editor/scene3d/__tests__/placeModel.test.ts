@@ -101,6 +101,68 @@ describe('placeModel', () => {
     };
     const parts = placeModel(item({}), two, 0, 200, 120);
     expect(parts.map((p) => [p.z0, p.z1])).toEqual([[0, 100]]);
+    // With `above`, what is over the cut is an outline at its true height.
+    const outlined = placeModel(item({}), two, 0, 200, 90, { above: true });
+    expect(outlined.map((p) => [p.z0, p.z1, !!p.ghost])).toEqual([
+      [0, 90, false],
+      [90, 100, true],
+      [150, 200, true]
+    ]);
+  });
+
+  it('steps a downward dome the other way', () => {
+    const dome: ItemModel = {
+      size: { w: 10, d: 10, h: 6 },
+      symbol: false,
+      parts: [{ dome: [5, 5, 5], z: 0, h: 6, down: true, colour: '#000000' }]
+    };
+    const parts = placeModel(
+      item({ width: 0.1, height: 0.1 }),
+      dome,
+      0,
+      6,
+      null
+    );
+    const radius = (p: { footprint: { x: number }[] }) =>
+      (Math.max(...xs(p)) - Math.min(...xs(p))) / 2;
+    expect(parts.map(radius).map((r) => Math.round(r * 10) / 10)).toEqual([
+      2.5, 4, 5
+    ]);
+  });
+
+  it('turns an item over inside its height when flipped', () => {
+    // A 10 cm body with a 2 cm dome on top, as a ceiling-hung item drawn up.
+    const lamp: ItemModel = {
+      size: { w: 10, d: 10, h: 12 },
+      symbol: false,
+      parts: [
+        { box: [0, 0, 10, 10], z: 0, h: 10, colour: '#000000' },
+        { dome: [5, 5, 5], z: 10, h: 2, colour: '#ffffff' }
+      ]
+    };
+    const parts = placeModel(
+      item({ width: 0.1, height: 0.1 }),
+      lamp,
+      200,
+      12,
+      null,
+      {
+        flip: true
+      }
+    );
+    const rounded = parts.map((p) =>
+      [p.z0, p.z1].map((v) => Math.round(v * 1e6) / 1e6)
+    );
+    // The body hangs from the top; the dome is under it, widest at its top.
+    expect(rounded[0]).toEqual([202, 212]);
+    expect(rounded.slice(1)).toEqual([
+      [200, 200.666667],
+      [200.666667, 201.333333],
+      [201.333333, 202]
+    ]);
+    const width = (p: { footprint: { x: number }[] }) =>
+      Math.max(...xs(p)) - Math.min(...xs(p));
+    expect(width(parts[1])).toBeLessThan(width(parts[3]));
   });
 });
 

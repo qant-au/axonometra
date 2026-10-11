@@ -7,7 +7,7 @@ import type { FloorPlanSerializable } from '../editor/persistence/FloorPlanSeria
 import { floorInput } from './fromPlan';
 import { floorGeometry, type Prism } from './geometry';
 import type { ItemModel } from '../../res/catalog/models';
-import { placeModel } from './placeModel';
+import { cutAt, placeModel } from './placeModel';
 import { resolveMount, type CatalogueHeights } from '../mount';
 
 /** Height of a free-standing item with no recorded or catalogue height. */
@@ -22,6 +22,11 @@ export interface SceneOptions {
    * ceilings off so the rooms can be seen into. null draws them whole.
    */
   cutaway: number | null;
+  /**
+   * Draw what is above the cut-away (ceiling items, most wall gear) as faint
+   * outlines at its true height, instead of leaving it out.
+   */
+  above?: boolean;
 }
 
 /** Real height and mount in plan units (cm) for a catalogue id. */
@@ -36,7 +41,10 @@ export interface SceneModel {
   bounds: { min: [number, number, number]; max: [number, number, number] };
   wallCount: number;
   furnitureCount: number;
-  /** items left out because they hang above the cut-away */
+  /**
+   * items that hang wholly above the cut-away: outlines when `above`, else
+   * left out
+   */
   hiddenCount: number;
 }
 
@@ -50,6 +58,7 @@ export function sceneModel(
     ? plan.floors.map((_, i) => i)
     : [options.current].filter((i) => i >= 0 && i < plan.floors.length);
   const top = indices[indices.length - 1];
+  const above = !!options.above;
   const prisms: Prism[] = [];
   let wallCount = 0;
   let furnitureCount = 0;
@@ -93,32 +102,43 @@ export function sceneModel(
         tall
       );
       const z0 = input.elevation + mount;
-      // Hangs above the cut: left out, but counted, so the description
-      // does not claim the item is not there.
+      // Hangs above the cut: an outline or left out, but counted either way,
+      // so the description does not claim the item is not there.
       if (cut != null && z0 >= cut) {
         hiddenCount++;
-        continue;
+        if (!above) continue;
+      } else {
+        furnitureCount++;
       }
-      furnitureCount++;
       const model = models(item.texturePath);
       if (model) {
-        prisms.push(...placeModel(item, model, z0, tall, cut));
+        // The models are drawn as their element is installed; an item set
+        // the other way up is turned over inside its height.
+        const flip =
+          item.facing != null && item.facing !== (catalogue?.facing ?? 'up');
+        prisms.push(...placeModel(item, model, z0, tall, cut, { flip, above }));
         continue;
       }
       // No model: a box of the item's footprint and height.
-      prisms.push({
-        kind: 'furniture',
-        footprint: furnitureFootprint({
-          kind: item.texturePath,
-          x: item.x,
-          y: item.y,
-          width: item.width,
-          height: item.height,
-          rotation: item.rotation
-        }),
-        z0,
-        z1: cut == null ? z0 + tall : Math.min(z0 + tall, cut)
-      });
+      prisms.push(
+        ...cutAt(
+          {
+            kind: 'furniture',
+            footprint: furnitureFootprint({
+              kind: item.texturePath,
+              x: item.x,
+              y: item.y,
+              width: item.width,
+              height: item.height,
+              rotation: item.rotation
+            }),
+            z0,
+            z1: z0 + tall
+          },
+          cut,
+          above
+        )
+      );
     }
   }
 

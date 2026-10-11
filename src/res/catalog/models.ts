@@ -7,7 +7,7 @@ import models from '@accurona/elements/models.json';
 export type ModelPart = { z: number; h: number; colour: string } & (
   | { box: [number, number, number, number] }
   | { cyl: [number, number, number, number] }
-  | { dome: [number, number, number] }
+  | { dome: [number, number, number]; down?: boolean }
   | { poly: [number, number][] }
 );
 

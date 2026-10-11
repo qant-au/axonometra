@@ -86,7 +86,9 @@ and window openings, a floor and ceiling for each room, and furniture drawn from
 item's 3D model. Drag to turn it, right-drag or use the arrow keys to move, and scroll
 to zoom. In Walk, W A S D or the arrow keys move and Q and E turn. **Walk** switches to a first-person view; with reduced motion turned on it
 moves by teleporting instead. **Cut away walls** (on by default) cuts the walls off at
-1.2 m so you can see into the rooms, **All floors** stacks every floor, **Save image**
+1.2 m so you can see into the rooms; **Show ceiling items** (on by default) draws what
+hangs above the cut, such as downlights, ceiling cameras and a wall TV's top half, as faint
+outlines at its true height. **All floors** stacks every floor, **Save image**
 downloads a PNG, and **Save 3D model** downloads the building as a `.glb` file. It needs
 WebGL, and three.js is only downloaded the first time the view is opened.
 

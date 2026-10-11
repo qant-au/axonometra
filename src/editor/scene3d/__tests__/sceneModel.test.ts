@@ -130,6 +130,65 @@ describe('sceneModel', () => {
     );
     expect(cut.furnitureCount).toBe(0);
     expect(cut.hiddenCount).toBe(1);
+    expect(cut.prisms.some((p) => p.kind === 'furniture')).toBe(false);
+  });
+
+  it('draws items above the cut as outlines at their true height', () => {
+    const ac = item({ heightM: 0.3, mountM: 2.1 });
+    const tv = item({ id: 2, heightM: 0.6, mountM: 1.1 });
+    const m = sceneModel(
+      planOf(roomFloor([ac, tv])),
+      { ...whole, cutaway: 120, above: true },
+      noCatalogue
+    );
+    expect(m.furnitureCount).toBe(1);
+    expect(m.hiddenCount).toBe(1);
+    const furniture = m.prisms
+      .filter((p) => p.kind === 'furniture')
+      .map((p) => [Math.round(p.z0), Math.round(p.z1), !!p.ghost]);
+    // The AC whole as an outline; the TV solid to the cut, outline above.
+    expect(furniture).toEqual([
+      [210, 240, true],
+      [110, 120, false],
+      [120, 170, true]
+    ]);
+    // Outlines are their own mesh, so the solid furniture stays opaque.
+    const { group, dispose } = buildGroup(m.prisms);
+    const names = group.children
+      .filter((c): c is Mesh => c instanceof Mesh)
+      .map((c) => c.name);
+    expect(names).toContain('furniture');
+    expect(names).toContain('furniture-above');
+    dispose();
+  });
+
+  it('turns an item over when it faces the other way from its element', () => {
+    const model = {
+      size: { w: 10, d: 10, h: 10 },
+      symbol: false,
+      parts: [
+        {
+          box: [0, 0, 10, 10] as [number, number, number, number],
+          z: 0,
+          h: 2,
+          colour: '#000000'
+        }
+      ]
+    };
+    const z = (facing?: 'up' | 'down') =>
+      sceneModel(
+        planOf(
+          roomFloor([
+            item({ texturePath: 'x', heightM: 0.1, mountM: 1, facing })
+          ])
+        ),
+        whole,
+        () => ({ height: 10, mount: 0, facing: 'up' }),
+        () => model
+      ).prisms.find((p) => p.kind === 'furniture')!.z0;
+    expect(z()).toBe(100);
+    expect(z('up')).toBe(100);
+    expect(z('down')).toBe(108);
   });
 
   it('hangs a ceiling item from its floor’s ceiling, and follows it', () => {

@@ -52,6 +52,8 @@ export interface Prism {
   wallId?: string;
   /** a furniture part's own colour; otherwise the kind's colour */
   colour?: string;
+  /** above the cut-away: drawn as a faint outline at its true height */
+  ghost?: boolean;
 }
 
 export interface Room {

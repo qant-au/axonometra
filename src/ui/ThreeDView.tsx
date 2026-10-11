@@ -99,6 +99,8 @@ interface Stage {
 export function ThreeDView({ opened, onClose }: Props) {
   const [allFloors, setAllFloors] = useState(false);
   const [cutaway, setCutaway] = useState(true);
+  // Items above the cut drawn as outlines, so ceiling and wall gear is seen.
+  const [showAbove, setShowAbove] = useState(true);
   const [mode, setMode] = useState<Mode>('orbit');
   const [reduceMotion] = useState(
     () => !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
@@ -138,11 +140,16 @@ export function ThreeDView({ opened, onClose }: Props) {
         walking
           ? // One floor, walls whole and a ceiling overhead.
             { allFloors: false, current: walkFloor, cutaway: null }
-          : { allFloors, current, cutaway: cutaway ? CUTAWAY : null },
+          : {
+              allFloors,
+              current,
+              cutaway: cutaway ? CUTAWAY : null,
+              above: showAbove
+            },
         getItemHeights,
         getItemModel
       ),
-    [plan, walking, walkFloor, allFloors, current, cutaway]
+    [plan, walking, walkFloor, allFloors, current, cutaway, showAbove]
   );
   // What the walker bumps into and stands on for the floor being walked.
   const walkWorld = useMemo(() => {
@@ -419,7 +426,11 @@ export function ThreeDView({ opened, onClose }: Props) {
     : `3D view of ${
         allFloors ? `all ${plan.floors.length} floors` : `floor ${current}`
       }: ${wallsAndFurniture(model.wallCount, model.furnitureCount)}${
-        model.hiddenCount ? ` (${model.hiddenCount} more above the cut)` : ''
+        model.hiddenCount
+          ? ` (${model.hiddenCount} more above the cut${
+              showAbove ? ', drawn as outlines' : ', not shown'
+            })`
+          : ''
       }${cutaway ? ', walls cut away' : ''}.`;
   useEffect(() => {
     stage.current?.renderer.domElement.setAttribute('aria-label', label);
@@ -533,6 +544,13 @@ export function ThreeDView({ opened, onClose }: Props) {
               label="Cut away walls"
               checked={cutaway}
               onChange={setCutaway}
+            />
+          )}
+          {!walking && cutaway && (
+            <LabelledSwitch
+              label="Show ceiling items"
+              checked={showAbove}
+              onChange={setShowAbove}
             />
           )}
           {!walking && plan.floors.length > 1 && (

@@ -9,6 +9,10 @@ Expect breaking changes between minor versions until v1.0.0.
 
 ## [Unreleased]
 
+### Changed
+
+- **3D view shows raised items.** With the walls cut away, anything above the cut (ceiling items, most wall gear) is drawn as a faint outline at its true height instead of being left out; **Show ceiling items** turns the outlines off. An item set to face the other way from its element (**Height and mounting...**) is drawn turned over inside its height, and a dome facing down narrows downwards.
+
 ## [0.5.2] - 2026-10-01
 
 0.5.1 was tagged but never published: its lockfile still pinned Accurona 0.2, so the install failed. 0.5.2 carries its change, plus the fixes below.
