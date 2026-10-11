@@ -219,3 +219,31 @@ describe('ceiling items and facing', () => {
     expect(up.marks).toEqual([]);
   });
 });
+
+describe('drawing order', () => {
+  it('draws an item near the end of a long front wall behind the wall', () => {
+    // The front wall (y = 400) runs the room's width; the cabinet stands in
+    // the corner behind it. By centre depth alone the cabinet (x + y about
+    // 700) was nearer than the wall's middle (600) and drew over it.
+    const front = wall(0, 400, 400, 400);
+    const cabinet = {
+      kind: 'cabinet',
+      x: 330,
+      y: 320,
+      width: 0.6,
+      height: 0.5,
+      rotation: 0,
+      tall: 90,
+      mount: 0
+    };
+    const { faces } = projectScene(
+      [{ walls: [wall(0, 0, 400, 0), front], furniture: [cabinet] }],
+      0
+    );
+    const fills = faces.map((f) => f.fill);
+    const lastCabinet = fills.lastIndexOf('#c99a6b');
+    const lastWall = fills.lastIndexOf('#f4f1ea');
+    expect(lastCabinet).toBeGreaterThan(-1);
+    expect(lastCabinet).toBeLessThan(lastWall);
+  });
+});

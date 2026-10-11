@@ -33,7 +33,7 @@ export interface SceneFurniture {
   /** real height and height above the floor, in plan units; defaults apply when absent */
   tall?: number;
   mount?: number;
-  /** hung from the ceiling: drawn after everything else on its floor */
+  /** hung from the ceiling: Hide ceiling items leaves it out */
   ceiling?: boolean;
   /** installed facing down: its top carries a down arrow */
   facingDown?: boolean;
@@ -180,6 +180,69 @@ interface Box {
   layer: number;
 }
 
+// Overlaps smaller than this (plan units) are rounding, not overlaps.
+const TOUCH = 0.5;
+
+function extent(box: Box) {
+  const xs = box.footprint.map((p) => p.x);
+  const ys = box.footprint.map((p) => p.y);
+  return {
+    x0: Math.min(...xs),
+    x1: Math.max(...xs),
+    y0: Math.min(...ys),
+    y1: Math.max(...ys)
+  };
+}
+
+/**
+ * The order to paint boxes in, back to front. A box wholly behind another
+ * along x or y, or wholly below it, draws first; the viewer looks from +x +y
+ * and above. Only where nothing separates two boxes does their centre depth
+ * decide. By centre depth alone an item near the end of a long front wall
+ * was nearer than the wall's middle, and drew over the wall.
+ */
+function paintOrder(boxes: Box[]): Box[] {
+  const n = boxes.length;
+  const ext = boxes.map(extent);
+  const before = (a: number, b: number) =>
+    ext[a].x1 <= ext[b].x0 + TOUCH ||
+    ext[a].y1 <= ext[b].y0 + TOUCH ||
+    boxes[a].z1 <= boxes[b].z0 + TOUCH;
+  const after: number[][] = boxes.map(() => []);
+  const waiting = new Array<number>(n).fill(0);
+  for (let a = 0; a < n; a++) {
+    for (let b = a + 1; b < n; b++) {
+      const ab = before(a, b);
+      const ba = before(b, a);
+      if (ab === ba) continue; // apart either way, or not apart at all
+      const [first, second] = ab ? [a, b] : [b, a];
+      after[first].push(second);
+      waiting[second]++;
+    }
+  }
+  const rank = (i: number, j: number) =>
+    boxes[i].depth - boxes[j].depth || boxes[i].layer - boxes[j].layer;
+  const done = new Array<boolean>(n).fill(false);
+  const order: Box[] = [];
+  for (let k = 0; k < n; k++) {
+    let next = -1;
+    for (let i = 0; i < n; i++) {
+      if (done[i] || waiting[i] > 0) continue;
+      if (next < 0 || rank(i, next) < 0) next = i;
+    }
+    // A cycle (footprints that are not boxes): the nearest-ranked goes next.
+    if (next < 0) {
+      for (let i = 0; i < n; i++) {
+        if (!done[i] && (next < 0 || rank(i, next) < 0)) next = i;
+      }
+    }
+    done[next] = true;
+    order.push(boxes[next]);
+    for (const j of after[next]) waiting[j]--;
+  }
+  return order;
+}
+
 function centroid(points: ScenePoint[]): ScenePoint {
   const sum = points.reduce((s, p) => ({ x: s.x + p.x, y: s.y + p.y }), {
     x: 0,
@@ -296,7 +359,6 @@ export function projectScene(
     const base = floor.elevation ?? (firstLevel + index) * STOREY_HEIGHT;
     const wallHeight = floor.wallHeight ?? WALL_HEIGHT;
     const boxes: Box[] = [];
-    const overhead: Box[] = [];
     const downArrows = new Set<Box>();
 
     const nodes = floor.walls.flatMap((w) => [w.a, w.b]).map(turn);
@@ -365,14 +427,13 @@ export function projectScene(
           'furniture'
         );
         if (item.facingDown) downArrows.add(box);
-        // Ceiling items are above everything standing on the floor, so they
-        // draw after it and are never lost under a table or a wardrobe.
-        (item.ceiling ? overhead : boxes).push(box);
+        // A ceiling item is above what stands under it, so paintOrder draws
+        // it after a table or a wardrobe, never lost beneath one.
+        boxes.push(box);
       }
     }
 
-    const order = (p: Box, q: Box) => p.depth - q.depth || p.layer - q.layer;
-    for (const box of [...boxes.sort(order), ...overhead.sort(order)]) {
+    for (const box of paintOrder(boxes)) {
       faces.push(...boxFaces(box));
       if (downArrows.has(box)) marks.push(...downArrow(box));
     }
