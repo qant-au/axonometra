@@ -139,7 +139,7 @@ test.describe('place-wall critical flow', () => {
     const parsed = JSON.parse(stored ?? '{}');
     // An Accurona scene, never the old plan format.
     expect(parsed.format).toBe('accurona-scene');
-    expect(parsed.version).toBe(1);
+    expect(parsed.version).toBe(2);
     expect(parsed.views[0].kind).toBe('plan');
     expect(parsed.views[0].floors[0].nodes.length).toBeGreaterThanOrEqual(2);
     expect(parsed).not.toHaveProperty('wallNodeId');
