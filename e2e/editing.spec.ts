@@ -492,3 +492,30 @@ test('Make exterior takes every selected wall', async ({ page }) => {
   );
   expect(exterior).toEqual([true, true]);
 });
+
+test('a door is centred on the click that adds it', async ({ page }) => {
+  await start(page);
+  await drawWall(page, 400, 800, 400);
+  await page.getByRole('button', { name: 'Add', exact: true }).hover();
+  await page.getByRole('menuitem', { name: 'Add door' }).click();
+  await page.mouse.click(600, 400);
+  await expect.poll(async () => (await axo(page)).furniture.length).toBe(1);
+  // In screen pixels: the door's middle against the click.
+  const middle = await page.evaluate(() => {
+    const a = (
+      window as unknown as {
+        __axo: {
+          getPlan: () => {
+            getFurniture: () => Map<
+              number,
+              { getBounds: () => { x: number; width: number } }
+            >;
+          };
+        };
+      }
+    ).__axo;
+    const b = [...a.getPlan().getFurniture().values()][0].getBounds();
+    return b.x + b.width / 2;
+  });
+  expect(Math.abs(middle - 600)).toBeLessThan(15);
+});

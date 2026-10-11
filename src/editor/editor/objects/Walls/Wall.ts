@@ -9,6 +9,7 @@ import { AddNodeAction } from '../../actions/AddNodeAction';
 import { DeleteWallAction } from '../../actions/DeleteWallAction';
 import {
   INTERIOR_WALL_THICKNESS,
+  METER,
   Tool,
   WALL_COLOR,
   WALL_THICKNESS
@@ -158,6 +159,15 @@ export class Wall extends Container {
     return this.length - this.thickness;
   }
 
+  /**
+   * Where a window or door `widthM` wide starts along this wall so that it is
+   * centred on the click at `x`, kept within the wall.
+   */
+  private fittingStart(x: number, widthM: number) {
+    const width = widthM * METER;
+    return Math.max(0, Math.min(x - width / 2, this.length - width));
+  }
+
   /** The context menu's Make exterior / Make interior. */
   public toggleExterior() {
     this.setIsExterior(!this.isExteriorWall);
@@ -237,7 +247,7 @@ export class Wall extends Container {
           this.inst,
           res[0],
           this,
-          { x: localCoords.x, y: 0 },
+          { x: this.fittingStart(localCoords.x, res[0].width), y: 0 },
           this.leftNode.getId(),
           this.rightNode.getId()
         );
@@ -251,7 +261,7 @@ export class Wall extends Container {
           this.inst,
           res[0],
           this,
-          { x: localCoords.x, y: 0 },
+          { x: this.fittingStart(localCoords.x, res[0].width), y: 0 },
           this.leftNode.getId(),
           this.rightNode.getId()
         );
