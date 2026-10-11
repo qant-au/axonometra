@@ -84,14 +84,45 @@ describe('AddWallManager.checkStep', () => {
 describe('AddWallManager ending a chain', () => {
   // The Wall drawing mode notification stayed up after Escape ended the
   // chain (sweep 2026-09-30).
-  it('takes the drawing hint down', () => {
+  const withNode = (isolated: boolean) => {
+    const node = { getId: () => 7 };
+    const remove = vi.fn();
     const dismissToolHint = vi.fn();
-    const m = new AddWallManager(fakeInstance({ dismissToolHint }));
+    const m = new AddWallManager(
+      fakeInstance({
+        dismissToolHint,
+        plan: {
+          getState: () => ({
+            getWallNodeSeq: () => ({
+              getWallNodes: () => new Map([[7, node]]),
+              isIsolated: () => isolated,
+              remove
+            })
+          })
+        }
+      })
+    );
+    return { m, node, remove, dismissToolHint };
+  };
+
+  it('takes the drawing hint down', () => {
+    const { m, node, dismissToolHint } = withNode(false);
     m.unset();
     expect(dismissToolHint).not.toHaveBeenCalled();
-    m.previousNode = {} as never;
+    m.previousNode = node as never;
     m.unset();
     expect(dismissToolHint).toHaveBeenCalledOnce();
     expect(m.previousNode).toBeUndefined();
+  });
+
+  it('removes the first node of a chain that never drew a wall', () => {
+    const lone = withNode(true);
+    lone.m.previousNode = lone.node as never;
+    lone.m.unset();
+    expect(lone.remove).toHaveBeenCalledWith(7);
+    const joined = withNode(false);
+    joined.m.previousNode = joined.node as never;
+    joined.m.unset();
+    expect(joined.remove).not.toHaveBeenCalled();
   });
 });
