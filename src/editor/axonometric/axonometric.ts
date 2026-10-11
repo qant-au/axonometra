@@ -33,6 +33,10 @@ export interface SceneFurniture {
   /** real height and height above the floor, in plan units; defaults apply when absent */
   tall?: number;
   mount?: number;
+  /** hung from the ceiling: drawn after everything else on its floor */
+  ceiling?: boolean;
+  /** installed facing down: its top carries a down arrow */
+  facingDown?: boolean;
   /** set for doors and windows: the wall they sit in */
   wall?: SceneWall;
 }
@@ -51,8 +55,15 @@ export interface Face {
   fill: string;
 }
 
+export interface ProjectOptions {
+  /** Leave ceiling items out, so the room below them can be seen. */
+  hideCeiling?: boolean;
+}
+
 export interface Projection {
   faces: Face[];
+  /** Open polylines drawn over the faces: the down arrows on items facing down. */
+  marks: [number, number][][];
   /** SVG viewBox covering every face, with a margin */
   viewBox: [number, number, number, number];
 }
@@ -227,6 +238,33 @@ function boxFaces(box: Box): Face[] {
   return faces;
 }
 
+/**
+ * An item facing down shows only its back from above, so a down arrow stands
+ * on the middle of its top, as Accurona's isometric drawings mark it.
+ */
+function downArrow(box: Box): [number, number][][] {
+  const [tx, ty] = project(centroid(box.footprint), box.z1);
+  const xs = box.footprint.map((p) => p.x);
+  const ys = box.footprint.map((p) => p.y);
+  const extent = Math.min(
+    Math.max(...xs) - Math.min(...xs),
+    Math.max(...ys) - Math.min(...ys)
+  );
+  const len = Math.max(8, extent * 0.4);
+  const head = len * 0.35;
+  return [
+    [
+      [tx, ty - len],
+      [tx, ty]
+    ],
+    [
+      [tx - head * 0.7, ty - head],
+      [tx, ty],
+      [tx + head * 0.7, ty - head]
+    ]
+  ];
+}
+
 function planCentre(floors: SceneFloor[]): ScenePoint {
   const pts = floors.flatMap((f) => f.walls.flatMap((w) => [w.a, w.b]));
   if (pts.length === 0) return { x: 0, y: 0 };
@@ -246,16 +284,20 @@ function planCentre(floors: SceneFloor[]): ScenePoint {
 export function projectScene(
   floors: SceneFloor[],
   quarterTurns: number,
-  firstLevel = 0
+  firstLevel = 0,
+  options: ProjectOptions = {}
 ): Projection {
   const centre = planCentre(floors);
   const turn = (p: ScenePoint) => rotatePlan(p, centre, quarterTurns);
   const faces: Face[] = [];
+  const marks: [number, number][][] = [];
 
   floors.forEach((floor, index) => {
     const base = floor.elevation ?? (firstLevel + index) * STOREY_HEIGHT;
     const wallHeight = floor.wallHeight ?? WALL_HEIGHT;
     const boxes: Box[] = [];
+    const overhead: Box[] = [];
+    const downArrows = new Set<Box>();
 
     const nodes = floor.walls.flatMap((w) => [w.a, w.b]).map(turn);
     if (nodes.length > 0) {
@@ -315,23 +357,29 @@ export function projectScene(
         );
         boxes.push(box);
       } else {
-        boxes.push(
-          makeBox(
-            furnitureFootprint(item).map(turn),
-            base + (item.mount ?? 0),
-            base + (item.mount ?? 0) + (item.tall ?? DEFAULT_FURNITURE_HEIGHT),
-            'furniture'
-          )
+        if (item.ceiling && options.hideCeiling) continue;
+        const box = makeBox(
+          furnitureFootprint(item).map(turn),
+          base + (item.mount ?? 0),
+          base + (item.mount ?? 0) + (item.tall ?? DEFAULT_FURNITURE_HEIGHT),
+          'furniture'
         );
+        if (item.facingDown) downArrows.add(box);
+        // Ceiling items are above everything standing on the floor, so they
+        // draw after it and are never lost under a table or a wardrobe.
+        (item.ceiling ? overhead : boxes).push(box);
       }
     }
 
-    boxes.sort((p, q) => p.depth - q.depth || p.layer - q.layer);
-    for (const box of boxes) faces.push(...boxFaces(box));
+    const order = (p: Box, q: Box) => p.depth - q.depth || p.layer - q.layer;
+    for (const box of [...boxes.sort(order), ...overhead.sort(order)]) {
+      faces.push(...boxFaces(box));
+      if (downArrows.has(box)) marks.push(...downArrow(box));
+    }
   });
 
-  const all = faces.flatMap((f) => f.points);
-  if (all.length === 0) return { faces, viewBox: [0, 0, 100, 100] };
+  const all = [...faces.flatMap((f) => f.points), ...marks.flat()];
+  if (all.length === 0) return { faces, marks, viewBox: [0, 0, 100, 100] };
   const xs = all.map(([x]) => x);
   const ys = all.map(([, y]) => y);
   const margin = 0.5 * METER;
@@ -339,6 +387,7 @@ export function projectScene(
   const minY = Math.min(...ys) - margin;
   return {
     faces,
+    marks,
     viewBox: [
       minX,
       minY,

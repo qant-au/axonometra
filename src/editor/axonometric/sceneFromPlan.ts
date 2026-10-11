@@ -4,7 +4,7 @@ import type { EditorInstance } from '../instance/EditorInstance';
 import type { Floor } from '../editor/objects/Floor';
 import type { Wall } from '../editor/objects/Walls/Wall';
 import { METER, WALL_HEIGHT } from '../editor/constants';
-import { resolveMount } from '../mount';
+import { facingOf, mountFromOf, resolveMount } from '../mount';
 import type { IFurnitureSerializable } from '../editor/persistence/IFurnitureSerializable';
 import { SceneFloor, SceneWall } from './axonometric';
 
@@ -32,9 +32,12 @@ function heights(data: IFurnitureSerializable, wallHeight: number) {
           wallHeight,
           tall ?? 0
         );
+  const from = mountFromOf({ mountFrom: data.mountFrom, offset }, catalogue);
   return {
     ...(tall != null ? { tall } : {}),
-    ...(mount != null ? { mount } : {})
+    ...(mount != null ? { mount } : {}),
+    ...(from === 'ceiling' ? { ceiling: true } : {}),
+    ...(facingOf(data, catalogue) === 'down' ? { facingDown: true } : {})
   };
 }
 

@@ -157,3 +157,65 @@ describe('projectScene', () => {
     );
   });
 });
+
+describe('ceiling items and facing', () => {
+  const walls = [wall(0, 0, 400, 0), wall(0, 0, 0, 400)];
+  // A table nearer the viewer (larger x + y) than the downlight over its
+  // far corner: by depth alone the table would draw over the light.
+  const table = {
+    kind: 'table',
+    x: 100,
+    y: 100,
+    width: 1.6,
+    height: 0.9,
+    rotation: 0,
+    tall: 75,
+    mount: 0
+  };
+  const downlight = {
+    kind: 'downlight',
+    x: 100,
+    y: 100,
+    width: 0.2,
+    height: 0.2,
+    rotation: 0,
+    tall: 10,
+    mount: 260,
+    ceiling: true,
+    facingDown: true
+  };
+  const floor: SceneFloor = { walls, furniture: [downlight, table] };
+
+  it('draws a ceiling item after the furniture under it', () => {
+    const { faces } = projectScene([floor], 0);
+    const top = furnitureFootprint(downlight).map((p) =>
+      project(p, downlight.mount + downlight.tall)
+    );
+    expect(faces[faces.length - 1].points).toEqual(top);
+  });
+
+  it('leaves ceiling items out when asked', () => {
+    const shown = projectScene([floor], 0);
+    const hidden = projectScene([floor], 0, 0, { hideCeiling: true });
+    // A top and two sides, and the arrow on it.
+    expect(shown.faces.length - hidden.faces.length).toBe(3);
+    expect(hidden.marks).toEqual([]);
+  });
+
+  it('marks an item facing down with an arrow inside the view box', () => {
+    const { marks, viewBox } = projectScene([floor], 0);
+    expect(marks).toHaveLength(2);
+    const [vx, vy, vw, vh] = viewBox;
+    for (const [x, y] of marks.flat()) {
+      expect(x).toBeGreaterThanOrEqual(vx);
+      expect(x).toBeLessThanOrEqual(vx + vw);
+      expect(y).toBeGreaterThanOrEqual(vy);
+      expect(y).toBeLessThanOrEqual(vy + vh);
+    }
+    const up = projectScene(
+      [{ walls, furniture: [{ ...downlight, facingDown: false }, table] }],
+      0
+    );
+    expect(up.marks).toEqual([]);
+  });
+});

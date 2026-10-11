@@ -25,13 +25,30 @@ export function resolveMount(
   wallHeight: number,
   tall: number
 ): number {
-  const from =
-    item.mountFrom ??
-    (item.offset != null ? 'floor' : (catalogue?.mountFrom ?? 'floor'));
+  const from = mountFromOf(item, catalogue);
   const offset = item.offset ?? catalogue?.mount ?? 0;
   // 'surface' needs the support's top, which the editor does not track yet:
   // until it does, the offset is read from the floor.
   return from === 'ceiling' ? wallHeight - offset - tall : offset;
+}
+
+/** What an item's height is measured from: its own, else the catalogue's. */
+export function mountFromOf(
+  item: { mountFrom?: MountFrom; offset?: number },
+  catalogue: CatalogueHeights | undefined
+): MountFrom {
+  return (
+    item.mountFrom ??
+    (item.offset != null ? 'floor' : (catalogue?.mountFrom ?? 'floor'))
+  );
+}
+
+/** Which way an item is installed: its own, else the catalogue's, else up. */
+export function facingOf(
+  item: { facing?: Facing },
+  catalogue: CatalogueHeights | undefined
+): Facing {
+  return item.facing ?? catalogue?.facing ?? 'up';
 }
 
 /** Facing down flips `facing` (the element's default) over; mirror.z in a file. */

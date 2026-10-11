@@ -24,6 +24,7 @@ interface Props {
 export function AxonometricView({ opened, onClose }: Props) {
   const [turns, setTurns] = useState(0);
   const [allFloors, setAllFloors] = useState(false);
+  const [hideCeiling, setHideCeiling] = useState(false);
 
   // Mounted only while open, and the plan cannot change underneath the
   // dialog, so the scene is read once.
@@ -34,22 +35,31 @@ export function AxonometricView({ opened, onClose }: Props) {
     : scene.floors.slice(scene.current, scene.current + 1);
   const firstLevel = allFloors ? 0 : scene.current;
   const projection = useMemo(
-    () => projectScene(shown, turns, firstLevel),
-    [shown, turns, firstLevel]
+    () => projectScene(shown, turns, firstLevel, { hideCeiling }),
+    [shown, turns, firstLevel, hideCeiling]
+  );
+  const ceilingCount = shown.reduce(
+    (n, f) => n + f.furniture.filter((item) => item.ceiling).length,
+    0
   );
 
   const wallCount = shown.reduce((n, f) => n + f.walls.length, 0);
   // Doors and windows sit in their walls and are not furniture: counted as
   // the 3D view counts them.
   const furnitureCount = shown.reduce(
-    (n, f) => n + f.furniture.filter((item) => !item.wall).length,
+    (n, f) =>
+      n +
+      f.furniture.filter((item) => !item.wall && !(hideCeiling && item.ceiling))
+        .length,
     0
   );
   const label = `Axonometric view of ${
     allFloors ? `all ${scene.floors.length} floors` : `floor ${scene.current}`
-  }: ${wallsAndFurniture(wallCount, furnitureCount)}, turned ${
-    turns * 90
-  } degrees.`;
+  }: ${wallsAndFurniture(wallCount, furnitureCount)}${
+    hideCeiling && ceilingCount > 0
+      ? `, ${ceilingCount} ceiling item${ceilingCount === 1 ? '' : 's'} hidden`
+      : ''
+  }, turned ${turns * 90} degrees.`;
 
   return (
     <AppDialog
@@ -84,17 +94,28 @@ export function AxonometricView({ opened, onClose }: Props) {
             </IconButton>
           </Tooltip>
         </Stack>
-        {scene.floors.length > 1 && (
+        <Stack direction="row" spacing={1}>
           <FormControlLabel
-            label="All floors"
+            label="Hide ceiling items"
             control={
               <Switch
-                checked={allFloors}
-                onChange={(e) => setAllFloors(e.currentTarget.checked)}
+                checked={hideCeiling}
+                onChange={(e) => setHideCeiling(e.currentTarget.checked)}
               />
             }
           />
-        )}
+          {scene.floors.length > 1 && (
+            <FormControlLabel
+              label="All floors"
+              control={
+                <Switch
+                  checked={allFloors}
+                  onChange={(e) => setAllFloors(e.currentTarget.checked)}
+                />
+              }
+            />
+          )}
+        </Stack>
       </Stack>
       {wallCount === 0 ? (
         <Typography
@@ -115,6 +136,14 @@ export function AxonometricView({ opened, onClose }: Props) {
               strokeWidth: 1,
               strokeLinejoin: 'round',
               vectorEffect: 'non-scaling-stroke'
+            },
+            '& polyline': {
+              fill: 'none',
+              stroke: '#3d3a33',
+              strokeWidth: 1.5,
+              strokeLinecap: 'round',
+              strokeLinejoin: 'round',
+              vectorEffect: 'non-scaling-stroke'
             }
           }}
           viewBox={projection.viewBox.join(' ')}
@@ -126,6 +155,13 @@ export function AxonometricView({ opened, onClose }: Props) {
               key={i}
               points={face.points.map(([x, y]) => `${x},${y}`).join(' ')}
               fill={face.fill}
+            />
+          ))}
+          {projection.marks.map((mark, i) => (
+            <polyline
+              key={`m${i}`}
+              data-facing="down"
+              points={mark.map(([x, y]) => `${x},${y}`).join(' ')}
             />
           ))}
         </Box>
