@@ -86,7 +86,7 @@ test('a loaded scene: items built in 3D, and one reads as a piece', async ({
   const view = page.getByRole('img', { name: /^3D view of floor 0/ });
   await expect(view).toHaveAttribute(
     'aria-label',
-    /4 walls and 1 piece of furniture \(2 more above the cut\)/,
+    /4 walls and 1 piece of furniture \(2 more above the cut, drawn as outlines\)/,
     { timeout: 10000 }
   );
 
