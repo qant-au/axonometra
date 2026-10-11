@@ -219,14 +219,20 @@ export function createSelectionCommands(inst: EditorInstance) {
   };
 
   /**
-   * Pastes where it was copied from if that is free (after a Cut), else
+   * Pastes centred on `at` (a plan point: the right-click menu's Paste).
+   * Otherwise where it was copied from if that is free (after a Cut), else
    * the first free step down and right of it; in the middle of the view if
    * that is off screen.
    */
-  function paste(): boolean {
+  function paste(at?: { x: number; y: number }): boolean {
     const clip = inst.clipboard;
     const floor = currentFloorData();
     if (!clip || !floor) return false;
+    const clipCentre = at && fragmentCentre(clip);
+    if (at && clipCentre) {
+      pasteAt(clip, at.x - clipCentre.x, at.y - clipCentre.y);
+      return true;
+    }
     if (pastes.clip !== clip) pastes = { clip, step: -1 };
     pastes.step = freePasteStep(floor, clip, pastes.step + 1, COPY_OFFSET);
     let dx = pastes.step * COPY_OFFSET;

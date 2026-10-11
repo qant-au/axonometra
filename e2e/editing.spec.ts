@@ -519,3 +519,52 @@ test('a door is centred on the click that adds it', async ({ page }) => {
   });
   expect(Math.abs(middle - 600)).toBeLessThan(15);
 });
+
+test("the menu's Paste lands where the plan was right-clicked", async ({
+  page
+}) => {
+  await start(page);
+  await page.getByRole('button', { name: 'Add', exact: true }).hover();
+  await page.getByRole('menuitem', { name: 'Add furniture' }).click();
+  await page.getByRole('dialog').getByAltText('Sofa, 3-seat').click();
+  await page.keyboard.press('Escape');
+  // New furniture lands in the middle of the view; select it and copy.
+  await page.getByRole('button', { name: 'Edit' }).click();
+  await page.mouse.click(640, 360);
+  await page.keyboard.press('ControlOrMeta+c');
+  await page.mouse.click(300, 650, { button: 'right' });
+  await page.getByRole('menuitem', { name: 'Paste' }).click();
+  await expect.poll(async () => (await axo(page)).furniture.length).toBe(2);
+  const middles = await page.evaluate(() =>
+    [
+      ...(
+        window as unknown as {
+          __axo: {
+            getPlan: () => {
+              getFurniture: () => Map<
+                number,
+                {
+                  getBounds: () => {
+                    x: number;
+                    y: number;
+                    width: number;
+                    height: number;
+                  };
+                }
+              >;
+            };
+          };
+        }
+      ).__axo
+        .getPlan()
+        .getFurniture()
+        .values()
+    ].map((f) => {
+      const b = f.getBounds();
+      return [b.x + b.width / 2, b.y + b.height / 2];
+    })
+  );
+  const pasted = middles[1];
+  expect(Math.abs(pasted[0] - 300)).toBeLessThan(15);
+  expect(Math.abs(pasted[1] - 650)).toBeLessThan(15);
+});

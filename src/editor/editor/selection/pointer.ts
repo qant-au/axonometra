@@ -14,6 +14,8 @@ export interface ContextMenuState {
   y: number;
   /** What was right-clicked; null for the empty plan. */
   ref: SelectionRef | null;
+  /** The plan point right-clicked: Paste from the menu lands there. */
+  at?: { x: number; y: number };
 }
 
 export interface ContextMenuStore {
@@ -67,7 +69,15 @@ export function createPointerGlue(inst: EditorInstance): PointerGlue {
       else store.set([ref]);
     },
     rightPressed(ref, ev) {
-      pending = { x: ev.client.x, y: ev.client.y, ref };
+      pending = {
+        x: ev.client.x,
+        y: ev.client.y,
+        ref,
+        at: {
+          x: inst.viewportX(ev.global.x, false),
+          y: inst.viewportY(ev.global.y, false)
+        }
+      };
     },
     rightReleased: (ev) => {
       if (ev.button !== 2 || !pending) return;

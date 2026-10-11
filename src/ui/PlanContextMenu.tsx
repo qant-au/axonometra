@@ -45,7 +45,8 @@ function wallTargets(inst: EditorInstance, clicked: SelectionRef) {
 
 function itemsFor(
   inst: EditorInstance,
-  ref: SelectionRef | null
+  ref: SelectionRef | null,
+  at?: { x: number; y: number }
 ): ContextMenuItem[] {
   const {
     copySelection,
@@ -62,7 +63,7 @@ function itemsFor(
   if (inst.config.readOnly) return [view];
   if (ref === null) {
     return [
-      ...(hasClipboard() ? [{ label: 'Paste', onClick: () => paste() }] : []),
+      ...(hasClipboard() ? [{ label: 'Paste', onClick: () => paste(at) }] : []),
       { label: 'Select all', onClick: selectAll },
       view
     ];
@@ -127,7 +128,7 @@ export function PlanContextMenu() {
   const close = useContextMenuStore((s) => s.close);
   const [anchor, setAnchor] = useState<HTMLElement | null>(null);
   if (!menu) return null;
-  const items = itemsFor(inst, menu.ref).map((item) => ({
+  const items = itemsFor(inst, menu.ref, menu.at).map((item) => ({
     ...item,
     onClick: () => {
       close();
