@@ -145,7 +145,6 @@ export function planToScene(
 
   const objects: SceneObject[] = [];
   const placements: PlanPlacement[] = [];
-  const opened = openedPlacements(ctx);
 
   const floors: SceneFloor[] = plan.floors.map((floor, index) => {
     const floorId =
@@ -190,6 +189,9 @@ export function planToScene(
       }
     }
 
+    // Standing on another item names it by its scene id, known once every
+    // item on this floor has one.
+    const standing: [PlanPlacement, number][] = [];
     for (const item of floor.furnitureArray) {
       let objectId = ctx.objectIds.get(item.id);
       if (!objectId) {
@@ -216,14 +218,14 @@ export function planToScene(
         item,
         getPlacementDefaults(item.texturePath)?.facing ?? 'up'
       );
-      placements.push({
+      const placement: PlanPlacement = {
         object: objectId,
         floor: floorId,
         x: toMm(centre.x),
         y: toMm(centre.y),
         ...(degrees ? { rotation: degrees } : {}),
         ...(mirror ? { mirror } : {}),
-        ...mountOf(item, opened.get(objectId)),
+        ...mountOf(item),
         ...(item.mountM != null
           ? { mountMm: round(item.mountM * 1000, 2) }
           : {}),
@@ -233,7 +235,20 @@ export function planToScene(
           ...(item.heightM != null ? { h: round(item.heightM * 1000, 2) } : {})
         },
         ...(frame && key ? { attach: { wall: ctx.wallIds.get(key)! } } : {})
-      });
+      };
+      placements.push(placement);
+      if (item.mountFrom === 'surface' && item.mountOn != null) {
+        standing.push([placement, item.mountOn]);
+      }
+    }
+    const here = new Set(floor.furnitureArray.map((i) => i.id));
+    for (const [placement, support] of standing) {
+      const mountOn = here.has(support)
+        ? ctx.objectIds.get(support)
+        : undefined;
+      if (!mountOn) continue;
+      placement.mountFrom = 'surface';
+      placement.mountOn = mountOn;
     }
 
     return {
@@ -293,30 +308,21 @@ export function planToScene(
 }
 
 // The reference to write for an item, whenever it has one or an offset, so
-// a stored height never takes on the element's reference instead. Standing
-// on another item ('surface') keeps the support the file named; the editor
-// cannot pick a support yet, so an item with none known (a copy) is written
-// from the floor rather than as a placement the schema refuses.
+// a stored height never takes on the element's reference instead. An item
+// standing on another ('surface') is written from the floor here and given
+// its support once the floor's items all have scene ids; one standing on
+// nothing stays from the floor, never a placement the schema refuses.
 function mountOf(
-  item: IFurnitureSerializable,
-  opened: PlanPlacement | undefined
-): Pick<PlanPlacement, 'mountFrom' | 'mountOn'> {
+  item: IFurnitureSerializable
+): Pick<PlanPlacement, 'mountFrom'> {
   if (item.mountFrom == null && item.mountM == null) return {};
-  if (item.mountFrom === 'surface') {
-    const mountOn = opened?.mountOn;
-    return mountOn ? { mountFrom: 'surface', mountOn } : { mountFrom: 'floor' };
-  }
-  return { mountFrom: item.mountFrom ?? 'floor' };
+  return {
+    mountFrom:
+      item.mountFrom == null || item.mountFrom === 'surface'
+        ? 'floor'
+        : item.mountFrom
+  };
 }
-
-// The opened scene's placements in the view being edited, by object.
-const openedPlacements = (ctx: SceneContext) =>
-  new Map(
-    (ctx.opened.views ?? [])
-      .filter((v): v is PlanView => v.kind === 'plan' && v.id === ctx.viewId)
-      .flatMap((v) => v.placements ?? [])
-      .map((p) => [p.object, p])
-  );
 
 const usedObjectIsPlaced = (placements: PlanPlacement[], object: string) =>
   placements.some((p) => p.object === object);
@@ -345,6 +351,9 @@ export function sceneToPlan(scene: Scene): {
   const objects = new Map(scene.objects.map((o) => [o.id, o]));
   let nextNode = 0;
   let nextItem = 0;
+  // Items standing on another, by the support's scene id, resolved once
+  // every item has an editor id.
+  const standing: [IFurnitureSerializable, string][] = [];
 
   plan.floors = view.floors.map((sceneFloor, index) => {
     ctx.floorIds[index] = sceneFloor.id;
@@ -428,6 +437,11 @@ export function sceneToPlan(scene: Scene): {
       if (p.size?.h != null) item.heightM = p.size.h / 1000;
       if (p.mountMm != null) item.mountM = p.mountMm / 1000;
       if (p.mountFrom != null) item.mountFrom = p.mountFrom;
+      if (p.mountFrom === 'surface' && p.mountOn != null) {
+        standing.push([item, p.mountOn]);
+        // It draws over what it stands on.
+        if (item.zIndex < 2) item.zIndex = 2;
+      }
       const facing = defaults?.facing ?? 'up';
       if (p.mirror?.z) item.facing = flipFacing(facing);
       else if (defaults?.facing) item.facing = facing;
@@ -435,6 +449,12 @@ export function sceneToPlan(scene: Scene): {
     }
     return floor;
   });
+  const idOf = new Map([...ctx.objectIds].map(([id, object]) => [object, id]));
+  for (const [item, support] of standing) {
+    const id = idOf.get(support);
+    // A support Axonometra could not draw: it stands on the floor.
+    if (id != null) item.mountOn = id;
+  }
   plan.furnitureId = nextItem;
   plan.wallNodeId = nextNode;
   return { plan, ctx };

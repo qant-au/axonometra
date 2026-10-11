@@ -15,6 +15,7 @@
 import type { Snapshot } from '../../stores/HistoryStore';
 import type { EditorInstance } from '../instance/EditorInstance';
 import type { FloorPlanSerializable } from './persistence/FloorPlanSerializable';
+import { settleSurfaces } from '../surfaces';
 
 export interface EditHistory {
   snapshot(): Snapshot;
@@ -55,6 +56,10 @@ export function createEditHistory(inst: EditorInstance): EditHistory {
     if (--depth > 0) return;
     const start = before;
     before = undefined;
+    // What stands on what follows the edit, inside the same undo step.
+    if (start) {
+      settleSurfaces(inst, JSON.parse(start.plan) as FloorPlanSerializable);
+    }
     if (start && start.plan !== inst.serializer.serialize()) {
       inst.history.getState().push(start);
     }

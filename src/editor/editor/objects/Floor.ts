@@ -8,9 +8,12 @@ import {
   LABEL_COLOR,
   LABEL_FONT,
   LABEL_FONT_SIZE,
-  MISCLICK_THRESHOLD
+  METER,
+  MISCLICK_THRESHOLD,
+  WALL_HEIGHT
 } from '../constants';
 import { heightTag, isCeilingItem, planStyle } from '../../planLayers';
+import { surfaceTops } from '../../surfaces';
 import { FloorSerializable } from '../persistence/FloorSerializable';
 
 import { Furniture } from './Furniture';
@@ -93,6 +96,7 @@ export class Floor extends Container {
         if (fur.mountM != null) furnitureData.mountM = fur.mountM;
         if (fur.mountFrom != null) furnitureData.mountFrom = fur.mountFrom;
         if (fur.facing != null) furnitureData.facing = fur.facing;
+        if (fur.mountOn != null) furnitureData.mountOn = fur.mountOn;
         const attachedTo =
           fur.attachedToLeft != null && fur.attachedToRight != null
             ? this.wallNodeSequence.getWall(
@@ -165,11 +169,19 @@ export class Floor extends Container {
   private styleItems() {
     const { planLayer, heightTags } = this.inst.editor.getState();
     const seen = new Set<number>();
+    const tops = heightTags ? this.surfaceTops() : undefined;
     for (const [id, item] of this.furnitureArray) {
       const { visible, alpha } = planStyle(planLayer, isCeilingItem(item));
       item.visible = visible;
       item.alpha = alpha;
-      const tag = heightTags && visible ? heightTag(item, this.format) : null;
+      const tag =
+        heightTags && visible
+          ? heightTag(
+              item,
+              this.format,
+              item.mountOn != null ? tops?.get(item.mountOn) : undefined
+            )
+          : null;
       if (!tag) continue;
       seen.add(id);
       let text = this.tagText.get(id);
@@ -190,6 +202,24 @@ export class Floor extends Container {
   }
 
   private readonly format = (length: number) => this.inst.formatLength(length);
+
+  // The tops of this floor's supports; empty, and cheap, when nothing stands
+  // on anything, which is every frame of most plans.
+  private surfaceTops(): Map<number, number> {
+    const items = [...this.furnitureArray.values()];
+    if (!items.some((i) => i.mountOn != null)) return new Map();
+    return surfaceTops(
+      items.map((i) => ({
+        id: i.getId(),
+        kind: i.resourcePath,
+        mountFrom: i.mountFrom,
+        mountM: i.mountM,
+        heightM: i.heightM,
+        mountOn: i.mountOn
+      })),
+      this.wallHeightM != null ? this.wallHeightM * METER : WALL_HEIGHT
+    );
+  }
 
   /** The free-standing items' footprints, in this floor's coordinates. */
   public itemBoxes(): Box[] {
@@ -294,6 +324,7 @@ export class Floor extends Container {
     if (data.mountM != null) furnitureData.mountM = data.mountM;
     if (data.mountFrom != null) furnitureData.mountFrom = data.mountFrom;
     if (data.facing != null) furnitureData.facing = data.facing;
+    if (data.mountOn != null) furnitureData.mountOn = data.mountOn;
     const wall = source.isAttached ? (onWall ?? (source.parent as Wall)) : null;
     const copy = new Furniture(
       this.inst,

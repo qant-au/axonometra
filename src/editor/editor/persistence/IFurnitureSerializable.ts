@@ -20,4 +20,6 @@ export interface IFurnitureSerializable {
   mountFrom?: MountFrom;
   /** Which way the item is installed; absent is the element's way. */
   facing?: Facing;
+  /** 'surface': the id of the item this one stands on, on the same floor. */
+  mountOn?: number;
 }

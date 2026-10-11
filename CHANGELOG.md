@@ -14,6 +14,10 @@ Expect breaking changes between minor versions until v1.0.0.
 - **3D view shows raised items.** With the walls cut away, anything above the cut (ceiling items, most wall gear) is drawn as a faint outline at its true height instead of being left out; **Show ceiling items** turns the outlines off. An item set to face the other way from its element (**Height and mounting...**) is drawn turned over inside its height, and a dome facing down narrows downwards.
 - **Plan and axonometric views show mounting.** On the plan, ceiling items are drawn lighter, as a reflected ceiling plan draws them; the toolbar's **Floor and ceiling** menu shows both layers, the floor items only, or the ceiling items only (a reflected ceiling plan), and turns on **Height tags** (`C` flush with the ceiling, `C -300 mm` hanging below it, `+1100 mm` above the floor). Select all and a drag-select pass by a hidden layer; **Find** still reaches it and shows both layers again. A click on overlapping items that hits the selected one selects the one under it, so a downlight over a table can be picked either way. The axonometric view draws ceiling items over the furniture, marks an item facing down with a down arrow, and has a **Hide ceiling items** switch.
 
+### Added
+
+- **Items stand on other items.** A monitor, laptop, desk phone, router, desktop switch, NAS or microwave dropped or moved over a desk, table, bench, base cabinet, sideboard, TV unit, bedside table or filing cabinet stands on its top in the plan's height tags, the axonometric view and the 3D view, and follows it when the support's height changes; **Height and mounting...** offers **Another item** for anything with a support under it. Moving a support away or deleting it drops what stood on it to the floor, with a notice. Saved as `mountFrom: 'surface'` with `mountOn` (scene format version 2). Needs the Accurona build that flags supports (`surface`).
+
 ## [0.5.2] - 2026-10-01
 
 0.5.1 was tagged but never published: its lockfile still pinned Accurona 0.2, so the install failed. 0.5.2 carries its change, plus the fixes below.

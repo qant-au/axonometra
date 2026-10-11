@@ -6,6 +6,7 @@ import { useStore } from '../stores/EditorStore';
 import { useInstance } from '../editor/instance/context';
 import { useUnitsStore } from '../stores/UnitsStore';
 import type { Furniture } from '../editor/editor/objects/Furniture';
+import { supportUnder } from '../editor/surfaces';
 import { METER, WALL_HEIGHT } from '../editor/editor/constants';
 import {
   applyMounting,
@@ -30,6 +31,14 @@ function MountingForm({
 }) {
   const inst = useInstance();
   const units = useUnitsStore((s) => s.units);
+  const supportOf = (item: Furniture) => {
+    if (item.isAttached) return undefined;
+    const floor = inst.plan.getState().getCurrentFloor();
+    const all = [...floor.getFurniture().values()].map((f) => f.serialize());
+    const wallHeight =
+      floor.wallHeightM != null ? floor.wallHeightM * METER : WALL_HEIGHT;
+    return supportUnder(item.serialize(), all, wallHeight);
+  };
   const show = (length: number | null) =>
     length == null ? MIXED : inst.formatLength(length, { suffix: false });
   const fill = (m: MountingEdit) => ({
@@ -58,14 +67,20 @@ function MountingForm({
     ? 'Enter a length, e.g. 2.4 m'
     : mountingError(edit, items);
 
-  // A support is chosen by dropping the item on it, which is not built yet,
-  // so 'Another item' is only offered to items a scene file put on one.
-  const onSurface = items.every((i) => i.mountFrom === 'surface');
+  // 'Another item' stands each item on the support under it, so it is
+  // offered when every item has one.
+  const onSurface = items.every((i) => supportOf(i) != null);
   const fromCeiling = form.mountFrom === 'ceiling';
+  const fromSurface = form.mountFrom === 'surface';
 
   // Between floor and ceiling the item stays where it is: the height above
-  // the floor becomes the gap below the ceiling, and back.
+  // the floor becomes the gap below the ceiling, and back. Onto or off
+  // another item, it stands right on the top, or on the floor.
   const changeMountFrom = (to: string) => {
+    if (to === 'surface' || form.mountFrom === 'surface') {
+      setForm((f) => ({ ...f, mountFrom: to, offset: show(0) }));
+      return;
+    }
     const wasCeiling = form.mountFrom === 'ceiling';
     const toCeiling = to === 'ceiling';
     const { offset, height } = edit;
@@ -107,7 +122,13 @@ function MountingForm({
   const apply = () => {
     if (error) return;
     inst.edits.transact(() => {
-      for (const item of items) applyMounting(item, edit);
+      for (const item of items) {
+        applyMounting(item, edit);
+        if (item.mountFrom === 'surface' && item.mountOn == null) {
+          const support = supportOf(item);
+          if (support) item.mountOn = support.id;
+        }
+      }
     });
     close();
   };
@@ -138,7 +159,11 @@ function MountingForm({
         </TextField>
         <TextField
           label={`${
-            fromCeiling ? 'Gap below the ceiling' : 'Height above the floor'
+            fromCeiling
+              ? 'Gap below the ceiling'
+              : fromSurface
+                ? 'Height above the item under it'
+                : 'Height above the floor'
           } (${units})`}
           value={form.offset}
           onChange={(e) => set('offset')(e.target.value)}
@@ -149,7 +174,9 @@ function MountingForm({
           helperText={
             fromCeiling
               ? "To the item's top: 0 is flush, below 0 is recessed"
-              : "To the item's underside"
+              : fromSurface
+                ? "From the top it stands on to the item's underside"
+                : "To the item's underside"
           }
         />
         <TextField

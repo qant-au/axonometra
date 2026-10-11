@@ -5,6 +5,7 @@ import type { Floor } from '../editor/objects/Floor';
 import type { Wall } from '../editor/objects/Walls/Wall';
 import { METER, WALL_HEIGHT } from '../editor/constants';
 import { facingOf, mountFromOf, resolveMount } from '../mount';
+import { mountedOf, supportTopOf, surfaceTops } from '../surfaces';
 import type { IFurnitureSerializable } from '../editor/persistence/IFurnitureSerializable';
 import { SceneFloor, SceneWall } from './axonometric';
 
@@ -18,8 +19,13 @@ function sceneWall(wall: Wall): SceneWall {
 
 // An item's own saved heights (plan format v2, metres) win; a v1 plan's items
 // fall back to the catalogue (cm, which is also the plan unit, METER = 100).
-// A ceiling item hangs from this floor's wall height, so it follows it.
-function heights(data: IFurnitureSerializable, wallHeight: number) {
+// A ceiling item hangs from this floor's wall height, so it follows it, and
+// an item standing on another follows that one's top.
+function heights(
+  data: IFurnitureSerializable,
+  wallHeight: number,
+  tops: Map<number, number>
+) {
   const catalogue = getItemHeights(data.texturePath);
   const tall = data.heightM != null ? data.heightM * METER : catalogue?.height;
   const offset = data.mountM != null ? data.mountM * METER : undefined;
@@ -30,7 +36,8 @@ function heights(data: IFurnitureSerializable, wallHeight: number) {
           { mountFrom: data.mountFrom, offset },
           catalogue,
           wallHeight,
-          tall ?? 0
+          tall ?? 0,
+          supportTopOf(mountedOf(data), tops)
         );
   const from = mountFromOf({ mountFrom: data.mountFrom, offset }, catalogue);
   return {
@@ -48,8 +55,11 @@ export function sceneFromFloor(floor: Floor): SceneFloor {
   const wallHeight =
     floor.wallHeightM != null ? floor.wallHeightM * METER : WALL_HEIGHT;
 
-  const furniture = [...floor.getFurniture().values()].map((item) => {
-    const data = item.serialize();
+  const all = [...floor.getFurniture().values()].map((item) =>
+    item.serialize()
+  );
+  const tops = surfaceTops(all.map(mountedOf), wallHeight);
+  const furniture = all.map((data) => {
     const wall =
       data.attachedToLeft != null && data.attachedToRight != null
         ? seq.getWall(data.attachedToLeft, data.attachedToRight)
@@ -61,7 +71,7 @@ export function sceneFromFloor(floor: Floor): SceneFloor {
       width: data.width,
       height: data.height,
       rotation: data.rotation,
-      ...heights(data, wallHeight),
+      ...heights(data, wallHeight, tops),
       wall: wall ? walls.get(wall) : undefined
     };
   });

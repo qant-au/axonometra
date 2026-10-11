@@ -382,6 +382,28 @@ describe('mounting and facing', () => {
     });
   });
 
+  it('writes an item standing on nothing from the floor, never a surface the schema refuses', () => {
+    const phone = {
+      id: 1,
+      texturePath: 'ip-phone',
+      width: 0.22,
+      height: 0.2,
+      x: 100,
+      y: 100,
+      rotation: 0,
+      orientation: 0,
+      zIndex: 2,
+      mountFrom: 'surface' as const
+    };
+    const gone = { ...phone, id: 2, mountOn: 99 };
+    const saved = planToScene(room([phone, gone]), newContext());
+    expect(validateScene(saved).ok).toBe(true);
+    for (const p of (saved.views![0] as PlanView).placements!) {
+      expect(p.mountFrom).toBe('floor');
+      expect(p.mountOn).toBeUndefined();
+    }
+  });
+
   it('keeps an item standing on another, and the support it names', () => {
     const scene: Scene = {
       format: 'accurona-scene',
@@ -413,6 +435,9 @@ describe('mounting and facing', () => {
     };
     expect(validateScene(scene).ok).toBe(true);
     const { plan: loaded, ctx } = sceneToPlan(scene);
+    // In the editor it names the desk by the desk's editor id.
+    const [desk, phone] = loaded.floors[0].furnitureArray;
+    expect(phone).toMatchObject({ mountFrom: 'surface', mountOn: desk.id });
     const saved = planToScene(loaded, ctx);
     expect(validateScene(saved).ok).toBe(true);
     expect(placementOf(saved, 'phone')).toMatchObject({

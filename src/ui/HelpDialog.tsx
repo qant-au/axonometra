@@ -93,7 +93,9 @@ export function HelpDialog() {
           <IconArrowsVertical />{' '}
           <p>
             Right-click an item, Height and mounting, to raise it, hang it from
-            the ceiling or turn it face down (Enter does the same)
+            the ceiling, stand it on the item under it or turn it face down
+            (Enter does the same). A monitor or microwave dropped on a desk or
+            bench stands on it
           </p>
         </Row>
         <Row nowrap>

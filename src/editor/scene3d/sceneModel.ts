@@ -9,6 +9,7 @@ import { floorGeometry, type Prism } from './geometry';
 import type { ItemModel } from '../../res/catalog/models';
 import { cutAt, placeModel } from './placeModel';
 import { resolveMount, type CatalogueHeights } from '../mount';
+import { mountedOf, supportTopOf, surfaceTops } from '../surfaces';
 
 /** Height of a free-standing item with no recorded or catalogue height. */
 const DEFAULT_ITEM_HEIGHT = 0.7 * METER;
@@ -84,6 +85,11 @@ export function sceneModel(
     // a cut-away view leaves them off so the rooms can be seen into.
     if (cut == null && index === top) prisms.push(...geometry.ceilings);
 
+    const tops = surfaceTops(
+      floor.furnitureArray.map(mountedOf),
+      input.wallHeight,
+      lookup
+    );
     for (const item of floor.furnitureArray) {
       // Doors and windows are openings in their walls, already cut out.
       if (item.attachedToLeft != null && item.attachedToRight != null) continue;
@@ -99,7 +105,8 @@ export function sceneModel(
         },
         catalogue,
         input.wallHeight,
-        tall
+        tall,
+        supportTopOf(mountedOf(item), tops)
       );
       const z0 = input.elevation + mount;
       // Hangs above the cut: an outline or left out, but counted either way,

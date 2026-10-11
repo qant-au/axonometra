@@ -20,6 +20,8 @@ interface ElementEntry {
   mountFrom?: MountFrom;
   /** which way the item is installed; absent is up */
   facing?: Facing;
+  /** cm from the underside to a top that carries other items (a desk, a bench) */
+  surface?: number;
   /** cm: what the item occupies on the plan (a symbol's square for small devices) */
   footprint: { w: number; d: number };
   symbol?: boolean;
@@ -44,9 +46,10 @@ const localImages = import.meta.glob('./images/*.svg', {
 }) as Record<string, string>;
 
 // Wall and ceiling gear draws over floor-standing furniture. A flush ceiling
-// item has mount 0 and is raised all the same.
+// item has mount 0 and is raised all the same, as is bench-top gear, which
+// draws over the desk or bench it stands on.
 const zIndexOf = (el: ElementEntry) =>
-  el.mount || el.mountFrom === 'ceiling' ? 2 : 1;
+  el.mount || el.mountFrom === 'ceiling' || el.mountFrom === 'surface' ? 2 : 1;
 
 function toFurniture(el: ElementEntry): FurnitureData {
   return {
@@ -94,7 +97,8 @@ export function getFurnitureForElement(
 
 /**
  * Real height and mount in cm for a catalogue item, if it is one, with what
- * the mount is measured from and which way the item faces.
+ * the mount is measured from, which way the item faces, and the height of a
+ * top that carries other items.
  */
 export function getItemHeights(
   imagePath: string
@@ -105,7 +109,8 @@ export function getItemHeights(
       height: el.size.h,
       mount: el.mount ?? 0,
       ...(el.mountFrom ? { mountFrom: el.mountFrom } : {}),
-      ...(el.facing ? { facing: el.facing } : {})
+      ...(el.facing ? { facing: el.facing } : {}),
+      ...(el.surface != null ? { surface: el.surface } : {})
     }
   );
 }

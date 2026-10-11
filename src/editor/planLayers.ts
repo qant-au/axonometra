@@ -55,12 +55,15 @@ export function planStyle(
 /**
  * The height tag beside an item off the floor: 'C' for flush with the
  * ceiling (or recessed into it), 'C -300 mm' for hanging below it, '+1100 mm'
- * for the underside above the floor. Nothing for an item on the floor.
- * `format` writes a length in plan units in the plan's display units.
+ * for the underside above the floor, an item standing on another included.
+ * Nothing for an item on the floor.
+ * `format` writes a length in plan units in the plan's display units, and
+ * `supportTop` is the top of the item this one stands on, if it does.
  */
 export function heightTag(
   item: LayeredItem,
-  format: (length: number) => string
+  format: (length: number) => string,
+  supportTop?: number
 ): string | null {
   if (item.isAttached) return null;
   const catalogue = getItemHeights(item.resourcePath);
@@ -77,7 +80,8 @@ export function heightTag(
     { mountFrom: item.mountFrom, offset },
     catalogue,
     0,
-    tall
+    tall,
+    supportTop
   );
   return mount > 0 ? `+${format(mount)}` : null;
 }

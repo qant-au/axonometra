@@ -219,6 +219,33 @@ describe('sceneModel', () => {
     expect([flush.z0, flush.z1]).toEqual([265, 270]);
   });
 
+  it('stands an item on the top of the item under it, and follows that top', () => {
+    const catalogue = (id: string) =>
+      id === 'desk'
+        ? { height: 73, mount: 0, surface: 73 }
+        : { height: 45, mount: 0, mountFrom: 'surface' as const };
+    const z = (deskHeightM?: number) => {
+      const desk = item({ id: 1, texturePath: 'desk', heightM: deskHeightM });
+      const monitor = item({
+        id: 2,
+        texturePath: 'monitor',
+        mountFrom: 'surface',
+        mountOn: 1,
+        width: 0.6,
+        height: 0.2
+      });
+      const box = sceneModel(
+        planOf(roomFloor([desk, monitor])),
+        whole,
+        catalogue
+      ).prisms.filter((p) => p.kind === 'furniture')[1];
+      return [box.z0, box.z1].map((v) => Math.round(v * 1e6) / 1e6);
+    };
+    expect(z()).toEqual([73, 118]);
+    // A sit-stand desk raised to 110: the monitor goes up with it.
+    expect(z(1.1)).toEqual([110, 155]);
+  });
+
   it('does not draw doors and windows as furniture', () => {
     const m = sceneModel(planOf(roomFloor([door])), whole, noCatalogue);
     expect(m.furnitureCount).toBe(0);

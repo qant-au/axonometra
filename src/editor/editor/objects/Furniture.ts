@@ -25,6 +25,8 @@ export class Furniture extends Sprite {
   /** What mountM is measured from, and which way the item faces (scene v2). */
   public mountFrom?: MountFrom;
   public facing?: Facing;
+  /** 'surface': the id of the item it stands on, on the same floor. */
+  public mountOn?: number;
   constructor(
     private readonly inst: EditorInstance,
     data: FurnitureData,
@@ -60,6 +62,7 @@ export class Furniture extends Sprite {
     this.mountM = data.mountM;
     this.mountFrom = data.mountFrom;
     this.facing = data.facing;
+    this.mountOn = data.mountOn;
     this.id = id;
     this.orientation = 0;
     this.cursor = 'pointer';
@@ -247,6 +250,7 @@ export class Furniture extends Sprite {
     if (this.mountM != null) res.mountM = this.mountM;
     if (this.mountFrom != null) res.mountFrom = this.mountFrom;
     if (this.facing != null) res.facing = this.facing;
+    if (this.mountOn != null) res.mountOn = this.mountOn;
     return res;
   }
 }

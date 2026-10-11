@@ -2,6 +2,10 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createHistoryStore } from '../../../stores/HistoryStore';
 import type { EditorInstance } from '../../instance/EditorInstance';
 import { createEditHistory } from '../history';
+import { settleSurfaces } from '../../surfaces';
+
+// What stands on what is surfaces.ts's business, tested there.
+vi.mock('../../surfaces', () => ({ settleSurfaces: vi.fn() }));
 
 const useHistoryStore = createHistoryStore();
 
@@ -67,6 +71,22 @@ describe('history', () => {
     transact(() => {
       plan.current = doc('B');
     });
+    expect(useHistoryStore.getState().past.map((s) => s.plan)).toEqual([
+      doc('A')
+    ]);
+  });
+
+  it('settles what stands on what inside the step, from the plan it started with', () => {
+    let settledWith: string | undefined;
+    vi.mocked(settleSurfaces).mockImplementationOnce((_, before) => {
+      settledWith = JSON.stringify(before);
+      plan.current = doc('C'); // the settle's own change
+    });
+    transact(() => {
+      plan.current = doc('B');
+    });
+    expect(settledWith).toBe(doc('A'));
+    // One step, undone back to A over the settle's change too.
     expect(useHistoryStore.getState().past.map((s) => s.plan)).toEqual([
       doc('A')
     ]);

@@ -123,9 +123,11 @@ export function applyMounting(item: Furniture, edit: MountingEdit) {
   item.mountM = toMetres(m.offset);
   item.heightM = toMetres(m.height);
   item.facing = m.facing;
+  // Off its support it stands on nothing; the dialog names a new one.
+  if (m.mountFrom !== 'surface') item.mountOn = undefined;
   // Raised gear draws over floor-standing furniture, as the catalogue
   // places it; a raise by hand otherwise left it under the table.
-  const raised = m.mountFrom === 'ceiling' || m.offset > 0;
+  const raised = m.mountFrom !== 'floor' || m.offset > 0;
   if (item.zIndex === 1 && raised) item.zIndex = 2;
   else if (item.zIndex === 2 && !raised) item.zIndex = 1;
 }

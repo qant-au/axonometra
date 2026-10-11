@@ -26,6 +26,8 @@ export interface FurnitureData {
   mountFrom?: MountFrom;
   /** Which way the item is installed; absent is the element's way, else up. */
   facing?: Facing;
+  /** 'surface': the id of the placed item this one stands on. */
+  mountOn?: number;
   /** Kinds of equipment: network, power, cooling, security, fire, av. */
   tags?: string[];
 }

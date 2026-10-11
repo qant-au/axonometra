@@ -89,6 +89,17 @@ hanging below it, `+1100 mm` for one raised off the floor. Where items overlap, 
 the selected one again to select the one underneath. The **Axonometric view** draws
 ceiling items over the furniture, with **Hide ceiling items** to see the room below.
 
+### Items on top of other items
+
+Drop or move a monitor, laptop, desk phone, router, NAS or microwave over a desk,
+table, bench, base cabinet, sideboard, TV unit or bedside table and it stands on
+its top, in every view, and goes up or down with it when the support's height
+changes. Anything else can be stood on the item under it from **Height and
+mounting...** (**Mounted on: Another item**). Moving a support does not carry what
+stands on it: an item left behind, or on a support that is deleted, drops to the
+floor and a notice says so. The scene file records the support (`mountFrom:
+'surface'` with `mountOn`).
+
 ### 3D view
 
 The toolbar's **3D view** button shows the plan as a 3D model: walls with their door
