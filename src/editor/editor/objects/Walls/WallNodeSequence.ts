@@ -74,24 +74,20 @@ export class WallNodeSequence extends Container {
     this.wallNodeLinks.clear();
     this.inst.wallNodeId = 0;
   }
+  /** Whether a node has no wall at either end. */
+  public isIsolated(id: number) {
+    const ownLinks = this.wallNodeLinks.get(id);
+    if (ownLinks && ownLinks.length > 0) return false;
+    for (const dests of this.wallNodeLinks.values()) {
+      if (dests.includes(id)) return false;
+    }
+    return true;
+  }
+
   public remove(id: number) {
     //TODO only remove if connected to 2 points.
-    const ownLinks = this.wallNodeLinks.get(id);
-    if (!ownLinks) return;
-    let isolated = true;
-    if (ownLinks.length > 0) {
-      isolated = false;
-    } else {
-      for (const dests of this.wallNodeLinks.values()) {
-        for (const dest of dests) {
-          if (dest == id) {
-            isolated = false;
-          }
-        }
-      }
-    }
-
-    if (isolated) {
+    if (!this.wallNodeLinks.get(id)) return;
+    if (this.isIsolated(id)) {
       // remove node
       const node = this.wallNodes.get(id);
       if (node) {

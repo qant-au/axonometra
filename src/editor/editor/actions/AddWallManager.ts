@@ -77,10 +77,17 @@ export class AddWallManager {
   }
   /** Ends the chain being drawn, and with it the drawing hint. */
   public unset() {
-    const ending = this.previousNode !== undefined;
+    const last = this.previousNode;
     this.previousNode = undefined;
     this.preview.set(undefined);
-    if (ending) this.inst.dismissToolHint();
+    if (!last) return;
+    this.inst.dismissToolHint();
+    // A chain ended before its first wall leaves no lone node behind.
+    const seq = this.inst.plan.getState().getWallNodeSeq();
+    const id = last.getId();
+    if (seq.getWallNodes().get(id) === last && seq.isIsolated(id)) {
+      seq.remove(id);
+    }
   }
   public resetTools() {
     this.inst.transformLayer.deselect();

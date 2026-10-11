@@ -444,3 +444,51 @@ test('in View, a drag that starts on furniture pans', async ({ page }) => {
   const after = await axo(page);
   expect(after.main.x - before.main.x).toBeCloseTo(-150, -1);
 });
+
+test('a chain ended before its first wall leaves no lone node', async ({
+  page
+}) => {
+  await start(page);
+  await drawWall(page, 500, 800, 400);
+  const before = await axo(page);
+  // The tool stays on: a click starts a new chain, and Esc ends it.
+  await page.getByRole('button', { name: 'Add', exact: true }).hover();
+  await page.getByRole('menuitem', { name: 'Draw wall' }).click();
+  await page.mouse.move(650, 750);
+  await page.mouse.click(650, 600);
+  await page.keyboard.press('Escape');
+  const after = await axo(page);
+  expect(after.nodes).toEqual(before.nodes);
+  expect(after.walls).toBe(1);
+});
+
+test('Make exterior takes every selected wall', async ({ page }) => {
+  await start(page);
+  await drawWall(page, 400, 800, 300);
+  await drawWall(page, 400, 800, 500);
+  await page.getByRole('button', { name: 'Edit' }).click();
+  await page.mouse.click(600, 300);
+  await page.keyboard.down('Shift');
+  await page.mouse.click(600, 500);
+  await page.keyboard.up('Shift');
+  await page.mouse.click(600, 300, { button: 'right' });
+  await page.getByRole('menuitem', { name: 'Make exterior' }).click();
+  const exterior = await page.evaluate(() =>
+    (
+      window as unknown as {
+        __axo: {
+          getPlan: () => {
+            getWallNodeSeq: () => {
+              getWalls: () => { isExteriorWall: boolean }[];
+            };
+          };
+        };
+      }
+    ).__axo
+      .getPlan()
+      .getWallNodeSeq()
+      .getWalls()
+      .map((w) => w.isExteriorWall)
+  );
+  expect(exterior).toEqual([true, true]);
+});
