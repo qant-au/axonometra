@@ -3,7 +3,7 @@ import { ContextMenu, type ContextMenuItem } from '@accurona/ui';
 import type { EditorInstance } from '../editor/instance/EditorInstance';
 import { useInstance } from '../editor/instance/context';
 import { useContextMenuStore } from '../editor/editor/selection/pointer';
-import type { SelectionRef } from '../editor/editor/selection/planOps';
+import { sameRef, type SelectionRef } from '../editor/editor/selection/planOps';
 import { objectPlaces } from '../editor/editor/persistence/crossover';
 import { mountTargets } from '../editor/mountEdit';
 
@@ -29,6 +29,18 @@ function diagramItems(
         })
     }
   ];
+}
+
+// The walls a wall's menu item applies to: every selected wall, or the one
+// right-clicked when it is not in the selection.
+function wallTargets(inst: EditorInstance, clicked: SelectionRef) {
+  const seq = inst.plan.getState().getWallNodeSeq();
+  const walls = inst.selection.getState().refs.filter((r) => r.kind === 'wall');
+  const refs = walls.some((r) => sameRef(r, clicked)) ? walls : [clicked];
+  return refs.flatMap((r) => {
+    const wall = r.kind === 'wall' ? seq.getWall(r.left, r.right) : undefined;
+    return wall ? [wall] : [];
+  });
 }
 
 function itemsFor(
@@ -72,9 +84,15 @@ function itemsFor(
         onClick: () => inst.editor.getState().setLengthEditWall(wall)
       },
       {
-        // Was a bare right-click before the menu.
+        // Was a bare right-click before the menu. Like Copy and Delete, it
+        // takes every selected wall when the one clicked is among them.
         label: wall.isExteriorWall ? 'Make interior' : 'Make exterior',
-        onClick: () => transact(() => wall.toggleExterior())
+        onClick: () => {
+          const exterior = !wall.isExteriorWall;
+          transact(() => {
+            for (const w of wallTargets(inst, ref)) w.setIsExterior(exterior);
+          });
+        }
       }
     ];
   }
