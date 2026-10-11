@@ -171,11 +171,13 @@ function MountingForm({
         </TextField>
         <TextField
           label={`${
-            fromCeiling
-              ? 'Gap below the ceiling'
-              : fromSurface
-                ? 'Height above the item under it'
-                : 'Height above the floor'
+            form.mountFrom === MIXED
+              ? 'Height, from what each is mounted on'
+              : fromCeiling
+                ? 'Gap below the ceiling'
+                : fromSurface
+                  ? 'Height above the item under it'
+                  : 'Height above the floor'
           } (${units})`}
           value={form.offset}
           onChange={(e) => set('offset')(e.target.value)}
