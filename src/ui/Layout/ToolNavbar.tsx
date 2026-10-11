@@ -34,7 +34,8 @@ import {
   IconView360,
   IconRulerMeasure,
   IconCheck,
-  IconKeyboard
+  IconKeyboard,
+  IconStack2
 } from '@tabler/icons-react';
 import type { LengthUnit } from '@accurona/core';
 import { useUnitsStore } from '../../stores/UnitsStore';
@@ -53,6 +54,7 @@ import { useInstance } from '../../editor/instance/context';
 import { ToggleLabelAction } from '../../editor/editor/actions/ToggleLabelAction';
 import { NavbarLink } from '../NavbarLink';
 import { ADD_TOOLS } from './toolbarTools';
+import type { PlanLayer } from '../../editor/planLayers';
 
 const FurnitureAddPanel = lazy(() =>
   import('../FurnitureControls/FurnitureAddPanel/FurnitureAddPanel').then(
@@ -137,6 +139,48 @@ function UnitsMenu() {
         divider: unit === 'in',
         onClick: () => new SetUnitsAction(inst, unit).execute()
       }))}
+    />
+  );
+}
+
+const LAYER_NAMES: { layer: PlanLayer; label: string }[] = [
+  { layer: 'both', label: 'Floor and ceiling items' },
+  { layer: 'floor', label: 'Floor items only' },
+  { layer: 'ceiling', label: 'Ceiling items only (reflected ceiling plan)' }
+];
+
+// A blank box keeps the labels aligned beside the tick.
+const tick = (on: boolean) =>
+  on ? (
+    <IconCheck size={18} aria-label="selected" />
+  ) : (
+    <Box sx={{ width: 18 }} />
+  );
+
+// What the plan shows: floor items, ceiling items (drawn lighter over the
+// floor items), or one of them alone; and the height tags.
+function LayersMenu() {
+  const planLayer = useStore((s) => s.planLayer);
+  const setPlanLayer = useStore((s) => s.setPlanLayer);
+  const heightTags = useStore((s) => s.heightTags);
+  const setHeightTags = useStore((s) => s.setHeightTags);
+  return (
+    <ToolMenu
+      name="Floor and ceiling"
+      icon={<IconStack2 />}
+      items={[
+        ...LAYER_NAMES.map(({ layer, label }) => ({
+          label,
+          icon: tick(layer === planLayer),
+          divider: layer === 'ceiling',
+          onClick: () => setPlanLayer(layer)
+        })),
+        {
+          label: 'Height tags',
+          icon: tick(heightTags),
+          onClick: () => setHeightTags(!heightTags)
+        }
+      ]}
     />
   );
 }
@@ -388,6 +432,7 @@ export function ToolNavbar() {
               }}
             />
             <UnitsMenu />
+            <LayersMenu />
             <NavbarLink
               icon={IconCube}
               label="Axonometric view"

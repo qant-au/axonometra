@@ -12,6 +12,7 @@ import {
   IconLayoutAlignMiddle,
   IconMultiplier2x,
   IconRuler,
+  IconStack2,
   IconTrash,
   IconVector,
   IconZoomIn
@@ -93,6 +94,14 @@ export function HelpDialog() {
           <p>
             Right-click an item, Height and mounting, to raise it, hang it from
             the ceiling or turn it face down (Enter does the same)
+          </p>
+        </Row>
+        <Row nowrap>
+          <IconStack2 />{' '}
+          <p>
+            Ceiling items are drawn lighter; Floor and ceiling shows one layer
+            alone or height tags. Click overlapping items again to pick the one
+            underneath
           </p>
         </Row>
       </>

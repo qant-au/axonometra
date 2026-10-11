@@ -37,7 +37,17 @@ export function useContextMenuStore<T>(
 }
 
 // Further than this between press and release is a pan, not a click.
-const CLICK_SLOP = 5;
+export const CLICK_SLOP = 5;
+
+/**
+ * A click on overlapping items (`stack`, ids top first) that hits the one
+ * selected selects the one under it, and from the bottom goes round to the
+ * top again: a downlight over a table, then the table, then the downlight.
+ */
+export function nextInStack(stack: number[], selected: number): number {
+  const at = stack.indexOf(selected);
+  return stack[(at + 1) % stack.length];
+}
 
 export interface PointerGlue {
   /** Click selects; Shift + click adds or takes out. */

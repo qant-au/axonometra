@@ -79,6 +79,16 @@ used before ([PLAN-FORMAT.md](PLAN-FORMAT.md)) still open, and save as scenes.
   saved.
 - Saving is manual; there is no periodic autosave.
 
+### Floor and ceiling
+
+Ceiling items, such as downlights, smoke detectors and ceiling access points, are
+drawn lighter on the plan. The toolbar's **Floor and ceiling** menu shows both, the
+floor items only, or the ceiling items only (a reflected ceiling plan), and turns on
+**Height tags**: `C` beside an item flush with the ceiling, `C -300 mm` for one
+hanging below it, `+1100 mm` for one raised off the floor. Where items overlap, click
+the selected one again to select the one underneath. The **Axonometric view** draws
+ceiling items over the furniture, with **Hide ceiling items** to see the room below.
+
 ### 3D view
 
 The toolbar's **3D view** button shows the plan as a 3D model: walls with their door

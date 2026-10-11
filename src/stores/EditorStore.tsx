@@ -8,6 +8,7 @@ import type {
 import { useInstance } from '../editor/instance/context';
 import { Tool } from '../editor/editor/constants';
 import type { Wall } from '../editor/editor/objects/Walls/Wall';
+import { isCeilingItem, shownOn, type PlanLayer } from '../editor/planLayers';
 
 export enum ToolMode {
   FurnitureMode,
@@ -30,6 +31,10 @@ export interface EditorStore {
   /** The welcome dialog, which shows the notifications while it is open. */
   welcomeOpen: boolean;
   theme: ThemeMode;
+  /** Which items the plan shows: floor, ceiling, or both. */
+  planLayer: PlanLayer;
+  /** Height tags beside items off the floor ('C', '+1100 mm'). */
+  heightTags: boolean;
   setMode: (mode: ToolMode) => void;
   setTool: (tool: Tool) => void;
   setSnap: (snap: boolean) => void;
@@ -38,6 +43,9 @@ export interface EditorStore {
   setShortcutsOpen: (open: boolean) => void;
   setFindOpen: (open: boolean) => void;
   setWelcomeOpen: (open: boolean) => void;
+  /** Also lets go of any selected item the new layer hides. */
+  setPlanLayer: (layer: PlanLayer) => void;
+  setHeightTags: (on: boolean) => void;
   /** Alt + Shift + D. The host can remember it (onThemeModeChange). */
   toggleTheme: () => void;
 }
@@ -55,6 +63,8 @@ export function createEditorStore(inst: EditorInstance): StoreApi<EditorStore> {
     findOpen: false,
     welcomeOpen: false,
     theme: inst.config.themeMode,
+    planLayer: 'both',
+    heightTags: false,
     setMode: (mode: ToolMode) => {
       set(() => ({
         mode: mode
@@ -85,6 +95,20 @@ export function createEditorStore(inst: EditorInstance): StoreApi<EditorStore> {
     },
     setWelcomeOpen: (open: boolean) => {
       set(() => ({ welcomeOpen: open }));
+    },
+    setPlanLayer: (layer: PlanLayer) => {
+      set(() => ({ planLayer: layer }));
+      const selection = inst.selection.getState();
+      const plan = inst.plan.getState();
+      const kept = selection.refs.filter((ref) => {
+        if (ref.kind !== 'furniture') return true;
+        const item = plan.getObject(ref.id);
+        return !item || shownOn(layer, isCeilingItem(item));
+      });
+      if (kept.length !== selection.refs.length) selection.set(kept);
+    },
+    setHeightTags: (on: boolean) => {
+      set(() => ({ heightTags: on }));
     },
     toggleTheme: () => {
       set((state) => {

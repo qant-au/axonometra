@@ -1,10 +1,16 @@
 import type { EditorInstance } from '../../instance/EditorInstance';
-import { Container } from 'pixi.js';
+import { Container, Text, TextStyle } from 'pixi.js';
 import { euclideanDistance } from '../../../helpers/EuclideanDistance';
 import { Point } from '../../../helpers/Point';
 import { getCorrespondingY } from '../../../helpers/Slope';
 import { FurnitureData } from '../../../stores/FurnitureStore';
-import { MISCLICK_THRESHOLD } from '../constants';
+import {
+  LABEL_COLOR,
+  LABEL_FONT,
+  LABEL_FONT_SIZE,
+  MISCLICK_THRESHOLD
+} from '../constants';
+import { heightTag, isCeilingItem, planStyle } from '../../planLayers';
 import { FloorSerializable } from '../persistence/FloorSerializable';
 
 import { Furniture } from './Furniture';
@@ -29,6 +35,14 @@ export class Floor extends Container {
   /** Plan format v2; absent means the defaults. Kept so they survive a save. */
   public wallHeightM?: number;
   public elevationM?: number;
+  /** The height tags beside items off the floor, by item id. */
+  private readonly tags = new Container();
+  private readonly tagText = new Map<number, Text>();
+  private readonly tagStyle = new TextStyle({
+    fontFamily: LABEL_FONT,
+    fontSize: LABEL_FONT_SIZE,
+    fill: LABEL_COLOR
+  });
   constructor(
     private readonly inst: EditorInstance,
     floorData?: FloorSerializable,
@@ -46,7 +60,12 @@ export class Floor extends Container {
     this.addChild(this.wallNodeSequence.roomLabels);
     // ...and move off any item that would hide them, and hide under a
     // measurement or size read-out drawn over them.
+    // Tags are read-outs over everything: a press goes through them.
+    this.tags.eventMode = 'none';
+    this.tags.zIndex = 2000;
+    this.addChild(this.tags);
     this.onRender = () => {
+      this.styleItems();
       const labels = this.wallNodeSequence.roomLabels;
       labels.place(this.itemBoxes());
       labels.hideUnder(this.readoutBoxes());
@@ -138,11 +157,46 @@ export class Floor extends Container {
     return this.furnitureArray;
   }
 
+  /**
+   * Shows or hides each item for the plan's layer (ceiling items lighter
+   * over the floor items), and keeps the height tags beside the ones off the
+   * floor. Every frame, so an item follows a change to its mounting at once.
+   */
+  private styleItems() {
+    const { planLayer, heightTags } = this.inst.editor.getState();
+    const seen = new Set<number>();
+    for (const [id, item] of this.furnitureArray) {
+      const { visible, alpha } = planStyle(planLayer, isCeilingItem(item));
+      item.visible = visible;
+      item.alpha = alpha;
+      const tag = heightTags && visible ? heightTag(item, this.format) : null;
+      if (!tag) continue;
+      seen.add(id);
+      let text = this.tagText.get(id);
+      if (!text) {
+        text = new Text({ text: tag, style: this.tagStyle });
+        this.tagText.set(id, text);
+        this.tags.addChild(text);
+      }
+      if (text.text !== tag) text.text = tag;
+      const box = this.localBox(item);
+      text.position.set(box.x + box.width + 4, box.y);
+    }
+    for (const [id, text] of this.tagText) {
+      if (seen.has(id)) continue;
+      this.tagText.delete(id);
+      text.destroy();
+    }
+  }
+
+  private readonly format = (length: number) => this.inst.formatLength(length);
+
   /** The free-standing items' footprints, in this floor's coordinates. */
   public itemBoxes(): Box[] {
     const boxes: Box[] = [];
     for (const item of this.furnitureArray.values()) {
       if (item.parent !== this) continue; // a door or window, in its wall
+      if (!item.visible) continue; // on the layer the plan is not showing
       boxes.push(this.localBox(item));
     }
     return boxes;

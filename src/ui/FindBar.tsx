@@ -5,6 +5,7 @@ import { useInstance } from '../editor/instance/context';
 import { getItemName } from '../res/catalog';
 import { Tool } from '../editor/editor/constants';
 import { ChangeFloorAction } from '../editor/editor/actions/ChangeFloorAction';
+import { isCeilingItem, shownOn } from '../editor/planLayers';
 
 interface Found {
   key: string;
@@ -13,8 +14,9 @@ interface Found {
   id: number;
 }
 
-// Ctrl/Cmd + F: find a placed item by name on any floor. Choosing one goes
-// to its floor, selects it and brings it into view.
+// Ctrl/Cmd + F: find a placed item by name on any floor, on either layer.
+// Choosing one goes to its floor, shows both layers if its own was hidden,
+// selects it and brings it into view.
 function FindBox() {
   const inst = useInstance();
   const setOpen = useStore((s) => s.setFindOpen);
@@ -40,7 +42,12 @@ function FindBox() {
     if (!item) return;
     const by = item.floor - inst.plan.getState().currentFloor;
     if (by !== 0) new ChangeFloorAction(inst, by).execute();
-    inst.editor.getState().setTool(Tool.Edit);
+    const editor = inst.editor.getState();
+    const found = inst.plan.getState().getObject(item.id);
+    if (found && !shownOn(editor.planLayer, isCeilingItem(found))) {
+      editor.setPlanLayer('both');
+    }
+    editor.setTool(Tool.Edit);
     inst.selection.getState().set([{ kind: 'furniture', id: item.id }]);
     inst.commands.fitSelection();
   };

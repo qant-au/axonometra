@@ -6,6 +6,7 @@ import { resolveCatalogImage } from '../../../api/api-client';
 import { FurnitureData } from '../../../stores/FurnitureStore';
 import { DeleteFurnitureAction } from '../actions/DeleteFurnitureAction';
 import { INTERIOR_WALL_THICKNESS, METER, Tool } from '../constants';
+import { CLICK_SLOP, nextInStack } from '../selection/pointer';
 import { IFurnitureSerializable } from '../persistence/IFurnitureSerializable';
 
 export class Furniture extends Sprite {
@@ -159,6 +160,7 @@ export class Furniture extends Sprite {
     if (ev.button === 2) return;
     switch (this.inst.editor.getState().activeTool) {
       case Tool.Edit:
+        if (!ev.shiftKey && this.pressStack(ev)) break;
         this.inst.pointer.pressSelect(
           { kind: 'furniture', id: this.id },
           ev.shiftKey
@@ -175,6 +177,50 @@ export class Furniture extends Sprite {
         break;
       }
     }
+  }
+
+  /**
+   * A press on overlapping items, one of which is selected: it stays
+   * selected, so a drag moves it, and a click with no drag selects the item
+   * under it. False when there is nothing to cycle through.
+   */
+  private pressStack(ev: FederatedPointerEvent): boolean {
+    const { refs } = this.inst.selection.getState();
+    const only = refs.length === 1 ? refs[0] : undefined;
+    if (only?.kind !== 'furniture') return false;
+    const stack = this.stackAt(ev);
+    if (stack.length < 2 || !stack.includes(only.id)) return false;
+    this.inst.transformLayer.beginMove(ev);
+    const start = { x: ev.client.x, y: ev.client.y };
+    window.addEventListener(
+      'pointerup',
+      (up) => {
+        if (Math.hypot(up.clientX - start.x, up.clientY - start.y) > CLICK_SLOP)
+          return;
+        this.inst.selection
+          .getState()
+          .set([{ kind: 'furniture', id: nextInStack(stack, only.id) }]);
+      },
+      { once: true }
+    );
+    return true;
+  }
+
+  /** The ids of the shown items under the press, the one drawn on top first. */
+  private stackAt(ev: FederatedPointerEvent): number[] {
+    const rank = (item: Furniture) => [
+      item.isAttached ? 1 : 0, // doors and windows draw with the walls, over the rest
+      item.zIndex,
+      item.parent?.getChildIndex(item) ?? 0
+    ];
+    const under = [...this.inst.plan.getState().getFurniture().values()].filter(
+      (item) => item.visible && item.containsPoint(item.toLocal(ev.global))
+    );
+    under.sort((a, b) => {
+      const [p, q] = [rank(a), rank(b)];
+      return q[0] - p[0] || q[1] - p[1] || q[2] - p[2];
+    });
+    return under.map((item) => item.getId());
   }
 
   private onMouseMove() {

@@ -5,6 +5,7 @@
 import type { EditorInstance } from '../../instance/EditorInstance';
 import { ADD_TOOLS } from '../../../ui/Layout/toolbarTools';
 import { METER, TOOLBAR_WIDTH, Tool } from '../constants';
+import { isCeilingItem, shownOn } from '../../planLayers';
 import type { FloorPlanSerializable } from '../persistence/FloorPlanSerializable';
 import type { FloorSerializable } from '../persistence/FloorSerializable';
 import {
@@ -106,16 +107,26 @@ export function createSelectionCommands(inst: EditorInstance) {
     if (kept.length !== refs.length) inst.selection.getState().set(kept);
   }
 
+  // An item on the layer the plan is hiding cannot be seen, so select all
+  // and a marquee pass it by. Find still reaches it, and shows its layer.
+  function onShownLayer(ref: SelectionRef) {
+    if (ref.kind !== 'furniture') return true;
+    const item = inst.plan.getState().getObject(ref.id);
+    const { planLayer } = inst.editor.getState();
+    return !item || shownOn(planLayer, isCeilingItem(item));
+  }
+
   function selectAll() {
     const floor = currentFloorData();
     if (!floor) return;
     takeSelectTool();
-    inst.selection.getState().set(allRefs(floor));
+    inst.selection.getState().set(allRefs(floor).filter(onShownLayer));
   }
 
   function selectRefs(refs: SelectionRef[], add = false) {
     const store = inst.selection.getState();
-    store.set(add ? [...store.refs, ...refs] : refs);
+    const shown = refs.filter(onShownLayer);
+    store.set(add ? [...store.refs, ...shown] : shown);
   }
 
   function deleteSelection(): boolean {
