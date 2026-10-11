@@ -4,6 +4,7 @@ import { useStore } from '../stores/EditorStore';
 import { NavbarLink } from './NavbarLink';
 import {
   IconArrowNarrowRight,
+  IconArrowsVertical,
   IconClick,
   IconEdit,
   IconGitFork,
@@ -86,6 +87,13 @@ export function HelpDialog() {
         </Row>
         <Row nowrap>
           <IconClick /> <p>Alt + drag leaves a copy; right-click for more</p>
+        </Row>
+        <Row nowrap>
+          <IconArrowsVertical />{' '}
+          <p>
+            Right-click an item, Height and mounting, to raise it, hang it from
+            the ceiling or turn it face down (Enter does the same)
+          </p>
         </Row>
       </>
     )

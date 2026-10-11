@@ -5,6 +5,7 @@ import { useInstance } from '../editor/instance/context';
 import { useContextMenuStore } from '../editor/editor/selection/pointer';
 import type { SelectionRef } from '../editor/editor/selection/planOps';
 import { objectPlaces } from '../editor/editor/persistence/crossover';
+import { mountTargets } from '../editor/mountEdit';
 
 // An item that is also a node in a network diagram says which ones.
 function diagramItems(
@@ -86,6 +87,16 @@ function itemsFor(
       label: 'Turn',
       onClick: () => transact(() => furniture.switchOrientation())
     },
+    // Doors and windows sit in their walls.
+    ...(furniture.isAttached
+      ? []
+      : [
+          {
+            label: 'Height and mounting...',
+            onClick: () =>
+              inst.editor.getState().setMountEditIds(mountTargets(inst, ref.id))
+          }
+        ]),
     ...diagramItems(inst, ref.id)
   ];
 }

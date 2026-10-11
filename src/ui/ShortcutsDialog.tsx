@@ -18,6 +18,15 @@ export function ShortcutsDialog() {
     () => [
       ...shortcutSections(KEYMAP),
       {
+        title: 'Selected items',
+        rows: [
+          {
+            label: 'Height and mounting (also on the right-click menu)',
+            keys: ['Enter']
+          }
+        ]
+      },
+      {
         title: 'Keyboard cursor (canvas focused from the keyboard)',
         rows: [
           { label: 'Move the cursor', keys: ['Arrow keys; with Shift, 1 m'] },

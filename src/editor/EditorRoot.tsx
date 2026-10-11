@@ -145,7 +145,24 @@ export function EditorRoot() {
             getMain: () => inst.getMain(),
             getPlan: () => inst.plan.getState(),
             getStore: () => inst.editor.getState(),
-            getSelection: () => inst.selection.getState()
+            getSelection: () => inst.selection.getState(),
+            // What the 3D view draws for the plan as it stands, uncut.
+            getSceneModel: async () => {
+              const [{ sceneModel }, { getItemHeights }] = await Promise.all([
+                import('./scene3d/sceneModel'),
+                import('../res/catalog')
+              ]);
+              return sceneModel(
+                JSON.parse(inst.serializer.serialize()),
+                {
+                  allFloors: false,
+                  current: inst.plan.getState().currentFloor,
+                  cutaway: null
+                },
+                getItemHeights
+              );
+            },
+            getSceneText: () => inst.serializer.sceneText()
           };
         }
 

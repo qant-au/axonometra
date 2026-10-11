@@ -8,6 +8,7 @@ import { SaveAction } from './editor/actions/SaveAction';
 import type { EditorInstance } from './instance/EditorInstance';
 import { Tool } from './editor/constants';
 import { NUDGE_STEP, NUDGE_STEP_LARGE } from './editor/selection/commands';
+import { mountTargets } from './mountEdit';
 
 /**
  * Rows the spec marks "where built" that Axonometra has not built stay
@@ -163,8 +164,15 @@ export function createKeymap(inst: EditorInstance) {
         // A wall's length is both its property and its geometry.
         if (action === 'edit-geometry' && ctx.editLengthAtCursor()) return true;
         const wall = selectedWall();
-        if (!wall) return false;
-        editor.setLengthEditWall(wall);
+        if (wall) {
+          editor.setLengthEditWall(wall);
+          return true;
+        }
+        // An item's properties are its height and mounting.
+        if (action !== 'edit' || ctx.readonly) return false;
+        const items = mountTargets(inst);
+        if (!items.length) return false;
+        editor.setMountEditIds(items);
         return true;
       }
       default:

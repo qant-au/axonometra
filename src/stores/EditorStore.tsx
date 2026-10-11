@@ -21,6 +21,8 @@ export interface EditorStore {
   snap: boolean;
   /** The wall whose length is being typed in, if the dialog is open. */
   lengthEditWall: Wall | null;
+  /** The items whose height and mounting are being set, if that dialog is open. */
+  mountEditIds: number[] | null;
   /** The `?` list of keyboard shortcuts. */
   shortcutsOpen: boolean;
   /** The Find box (Ctrl/Cmd + F). */
@@ -32,6 +34,7 @@ export interface EditorStore {
   setTool: (tool: Tool) => void;
   setSnap: (snap: boolean) => void;
   setLengthEditWall: (wall: Wall | null) => void;
+  setMountEditIds: (ids: number[] | null) => void;
   setShortcutsOpen: (open: boolean) => void;
   setFindOpen: (open: boolean) => void;
   setWelcomeOpen: (open: boolean) => void;
@@ -47,6 +50,7 @@ export function createEditorStore(inst: EditorInstance): StoreApi<EditorStore> {
     activeTool: Tool.View,
     snap: true,
     lengthEditWall: null,
+    mountEditIds: null,
     shortcutsOpen: false,
     findOpen: false,
     welcomeOpen: false,
@@ -69,6 +73,9 @@ export function createEditorStore(inst: EditorInstance): StoreApi<EditorStore> {
     },
     setLengthEditWall: (wall: Wall | null) => {
       set(() => ({ lengthEditWall: wall }));
+    },
+    setMountEditIds: (ids: number[] | null) => {
+      set(() => ({ mountEditIds: ids }));
     },
     setShortcutsOpen: (open: boolean) => {
       set(() => ({ shortcutsOpen: open }));
