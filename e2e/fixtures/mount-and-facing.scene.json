@@ -1,0 +1,311 @@
+{
+  "format": "accurona-scene",
+  "version": 2,
+  "id": "mount-and-facing",
+  "title": "Mount and facing",
+  "units": "mm",
+  "objects": [
+    {
+      "id": "downlight-g",
+      "element": "downlight",
+      "name": "Downlight (g)"
+    },
+    {
+      "id": "pendant-g",
+      "element": "pendant-light",
+      "name": "Pendant (g)"
+    },
+    {
+      "id": "dome-g",
+      "element": "cctv-dome",
+      "name": "Dome camera (g)"
+    },
+    {
+      "id": "tv-g",
+      "element": "tv-wall",
+      "name": "Wall TV (g)"
+    },
+    {
+      "id": "bedside-g",
+      "element": "bedside-table",
+      "name": "Bedside table (g)"
+    },
+    {
+      "id": "lamp-g",
+      "element": "table-lamp",
+      "name": "Table lamp (g)"
+    },
+    {
+      "id": "smoke-g",
+      "element": "smoke-detector",
+      "name": "Smoke detector (g)"
+    },
+    {
+      "id": "downlight-l1",
+      "element": "downlight",
+      "name": "Downlight (l1)"
+    },
+    {
+      "id": "pendant-l1",
+      "element": "pendant-light",
+      "name": "Pendant (l1)"
+    },
+    {
+      "id": "dome-l1",
+      "element": "cctv-dome",
+      "name": "Dome camera (l1)"
+    },
+    {
+      "id": "tv-l1",
+      "element": "tv-wall",
+      "name": "Wall TV (l1)"
+    },
+    {
+      "id": "bedside-l1",
+      "element": "bedside-table",
+      "name": "Bedside table (l1)"
+    },
+    {
+      "id": "lamp-l1",
+      "element": "table-lamp",
+      "name": "Table lamp (l1)"
+    },
+    {
+      "id": "smoke-l1",
+      "element": "smoke-detector",
+      "name": "Smoke detector (l1)"
+    }
+  ],
+  "views": [
+    {
+      "id": "plan",
+      "kind": "plan",
+      "name": "Floor plan",
+      "floors": [
+        {
+          "id": "g",
+          "name": "Ground, 2.4 m",
+          "wallHeightMm": 2400,
+          "nodes": [
+            {
+              "id": "g-n1",
+              "x": 0,
+              "y": 0
+            },
+            {
+              "id": "g-n2",
+              "x": 4000,
+              "y": 0
+            },
+            {
+              "id": "g-n3",
+              "x": 4000,
+              "y": 3000
+            },
+            {
+              "id": "g-n4",
+              "x": 0,
+              "y": 3000
+            }
+          ],
+          "walls": [
+            {
+              "id": "g-w1",
+              "from": "g-n1",
+              "to": "g-n2",
+              "exterior": true
+            },
+            {
+              "id": "g-w2",
+              "from": "g-n2",
+              "to": "g-n3",
+              "exterior": true
+            },
+            {
+              "id": "g-w3",
+              "from": "g-n3",
+              "to": "g-n4",
+              "exterior": true
+            },
+            {
+              "id": "g-w4",
+              "from": "g-n4",
+              "to": "g-n1",
+              "exterior": true
+            }
+          ]
+        },
+        {
+          "id": "l1",
+          "name": "Level 1, 2.7 m",
+          "elevationMm": 3000,
+          "wallHeightMm": 2700,
+          "nodes": [
+            {
+              "id": "l1-n1",
+              "x": 0,
+              "y": 0
+            },
+            {
+              "id": "l1-n2",
+              "x": 4000,
+              "y": 0
+            },
+            {
+              "id": "l1-n3",
+              "x": 4000,
+              "y": 3000
+            },
+            {
+              "id": "l1-n4",
+              "x": 0,
+              "y": 3000
+            }
+          ],
+          "walls": [
+            {
+              "id": "l1-w1",
+              "from": "l1-n1",
+              "to": "l1-n2",
+              "exterior": true
+            },
+            {
+              "id": "l1-w2",
+              "from": "l1-n2",
+              "to": "l1-n3",
+              "exterior": true
+            },
+            {
+              "id": "l1-w3",
+              "from": "l1-n3",
+              "to": "l1-n4",
+              "exterior": true
+            },
+            {
+              "id": "l1-w4",
+              "from": "l1-n4",
+              "to": "l1-n1",
+              "exterior": true
+            }
+          ]
+        }
+      ],
+      "placements": [
+        {
+          "object": "downlight-g",
+          "floor": "g",
+          "x": 1000,
+          "y": 1000,
+          "mountFrom": "ceiling",
+          "mountMm": -90
+        },
+        {
+          "object": "pendant-g",
+          "floor": "g",
+          "x": 2000,
+          "y": 1500,
+          "mountFrom": "ceiling",
+          "mountMm": 0
+        },
+        {
+          "object": "dome-g",
+          "floor": "g",
+          "x": 3000,
+          "y": 1000,
+          "mountFrom": "ceiling",
+          "mountMm": 0
+        },
+        {
+          "object": "tv-g",
+          "floor": "g",
+          "x": 2000,
+          "y": 100,
+          "mountFrom": "floor",
+          "mountMm": 1100
+        },
+        {
+          "object": "bedside-g",
+          "floor": "g",
+          "x": 500,
+          "y": 2600,
+          "mountFrom": "floor",
+          "mountMm": 0
+        },
+        {
+          "object": "lamp-g",
+          "floor": "g",
+          "x": 500,
+          "y": 2600,
+          "mountFrom": "surface",
+          "mountMm": 0,
+          "mountOn": "bedside-g"
+        },
+        {
+          "object": "smoke-g",
+          "floor": "g",
+          "x": 3000,
+          "y": 2200,
+          "mountFrom": "ceiling",
+          "mountMm": 0
+        },
+        {
+          "object": "downlight-l1",
+          "floor": "l1",
+          "x": 1000,
+          "y": 1000,
+          "mountFrom": "ceiling",
+          "mountMm": -90
+        },
+        {
+          "object": "pendant-l1",
+          "floor": "l1",
+          "x": 2000,
+          "y": 1500,
+          "mountFrom": "ceiling",
+          "mountMm": 0
+        },
+        {
+          "object": "dome-l1",
+          "floor": "l1",
+          "x": 3000,
+          "y": 1000,
+          "mountFrom": "ceiling",
+          "mountMm": 0
+        },
+        {
+          "object": "tv-l1",
+          "floor": "l1",
+          "x": 2000,
+          "y": 100,
+          "mountFrom": "floor",
+          "mountMm": 1100
+        },
+        {
+          "object": "bedside-l1",
+          "floor": "l1",
+          "x": 500,
+          "y": 2600,
+          "mountFrom": "floor",
+          "mountMm": 0
+        },
+        {
+          "object": "lamp-l1",
+          "floor": "l1",
+          "x": 500,
+          "y": 2600,
+          "mountFrom": "surface",
+          "mountMm": 0,
+          "mountOn": "bedside-l1"
+        },
+        {
+          "object": "smoke-l1",
+          "floor": "l1",
+          "x": 3000,
+          "y": 2200,
+          "mountFrom": "ceiling",
+          "mountMm": 0
+        }
+      ]
+    }
+  ]
+}
