@@ -55,6 +55,7 @@ import { ToggleLabelAction } from '../../editor/editor/actions/ToggleLabelAction
 import { NavbarLink } from '../NavbarLink';
 import { ADD_TOOLS } from './toolbarTools';
 import type { PlanLayer } from '../../editor/planLayers';
+import { pickTool } from '../../editor/toolHints';
 
 const FurnitureAddPanel = lazy(() =>
   import('../FurnitureControls/FurnitureAddPanel/FurnitureAddPanel').then(
@@ -187,7 +188,6 @@ function LayersMenu() {
 
 function AddMenu() {
   const inst = useInstance();
-  const setTool = useStore((s) => s.setTool);
   const drawing = ADD_TOOLS.includes(useStore((s) => s.activeTool));
   const [drawerOpened, setDrawerOpened] = useState(false);
   // The menu button is Accurona's; it says which of its tools is on the way
@@ -243,42 +243,17 @@ function AddMenu() {
               label: 'Draw wall',
               icon: <IconBorderLeft size={18} />,
               divider: true,
-              onClick: () => {
-                setTool(Tool.WallAdd);
-                inst.showToolHint({
-                  title: '✏️ Wall drawing mode',
-                  message:
-                    'Click to draw walls. Double click on wall node to end sequence.',
-                  severity: 'info'
-                });
-              }
+              onClick: () => pickTool(inst, Tool.WallAdd)
             },
             {
               label: 'Add window',
               icon: <IconWindow size={18} />,
-              onClick: () => {
-                setTool(Tool.FurnitureAddWindow);
-                inst.notifier.clear();
-                inst.notify({
-                  title: '🪟 Add window',
-                  message: 'Click on wall to add window',
-                  severity: 'info'
-                });
-              }
+              onClick: () => pickTool(inst, Tool.FurnitureAddWindow)
             },
             {
               label: 'Add door',
               icon: <IconDoor size={18} />,
-              onClick: () => {
-                setTool(Tool.FurnitureAddDoor);
-                inst.notifier.clear();
-                inst.notify({
-                  title: '🚪 Add door',
-                  message:
-                    'Click on wall to add door. Right click to change orientation',
-                  severity: 'info'
-                });
-              }
+              onClick: () => pickTool(inst, Tool.FurnitureAddDoor)
             }
           ]}
         />

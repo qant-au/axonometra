@@ -9,6 +9,7 @@ import type { EditorInstance } from './instance/EditorInstance';
 import { Tool } from './editor/constants';
 import { NUDGE_STEP, NUDGE_STEP_LARGE } from './editor/selection/commands';
 import { mountTargets } from './mountEdit';
+import { pickTool } from './toolHints';
 
 /**
  * Rows the spec marks "where built" that Axonometra has not built stay
@@ -92,8 +93,7 @@ export function createKeymap(inst: EditorInstance) {
       // A read-only embed has one tool, the hand; the Select tool would let
       // the plan be dragged about.
       if (ctx.readonly) return false;
-      inst.notifier.clear();
-      editor.setTool(tool);
+      pickTool(inst, tool);
       return true;
     }
     switch (action) {
