@@ -132,6 +132,34 @@ describe('sceneModel', () => {
     expect(cut.hiddenCount).toBe(1);
   });
 
+  it('hangs a ceiling item from its floor’s ceiling, and follows it', () => {
+    const ap = item({
+      texturePath: 'wifi-ap',
+      heightM: 0.04,
+      mountFrom: 'ceiling',
+      mountM: 0.1
+    });
+    const z = (wallHeightM?: number) => {
+      const floor = roomFloor([ap]);
+      if (wallHeightM != null) floor.wallHeightM = wallHeightM;
+      const box = sceneModel(planOf(floor), whole, noCatalogue).prisms.find(
+        (p) => p.kind === 'furniture'
+      )!;
+      return [box.z0, box.z1].map((v) => Math.round(v * 1e6) / 1e6);
+    };
+    // Its top 10 cm below the ceiling.
+    expect(z(2.4)).toEqual([226, 230]);
+    expect(z(2.55)).toEqual([241, 245]);
+    expect(z()).toEqual([256, 260]);
+    // A catalogue ceiling item with nothing stored follows its element.
+    const flush = sceneModel(
+      planOf(roomFloor([item({ texturePath: 'smoke-detector' })])),
+      whole,
+      () => ({ height: 5, mount: 0, mountFrom: 'ceiling', facing: 'down' })
+    ).prisms.find((p) => p.kind === 'furniture')!;
+    expect([flush.z0, flush.z1]).toEqual([265, 270]);
+  });
+
   it('does not draw doors and windows as furniture', () => {
     const m = sceneModel(planOf(roomFloor([door])), whole, noCatalogue);
     expect(m.furnitureCount).toBe(0);

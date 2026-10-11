@@ -14,6 +14,7 @@
 import {
   emptyScene,
   mergeScene,
+  type Facing,
   type Floor as SceneFloor,
   type PlanPlacement,
   type PlanView,
@@ -22,6 +23,7 @@ import {
   type Wall as SceneWall
 } from '@accurona/core';
 import { getPlacementDefaults } from '../../../res/catalog';
+import { flipFacing } from '../../mount';
 import { INTERIOR_WALL_THICKNESS, METER, WALL_THICKNESS } from '../constants';
 import {
   CURRENT_PLAN_VERSION,
@@ -107,6 +109,16 @@ const MIRRORS: PlanPlacement['mirror'][] = [
 const orientationOf = (mirror: PlanPlacement['mirror']) =>
   mirror?.x ? (mirror.y ? 2 : 1) : mirror?.y ? 3 : 0;
 
+// mirror.z flips an item top to bottom against its element's facing.
+function mirrorOf(
+  item: IFurnitureSerializable,
+  elementFacing: Facing
+): PlanPlacement['mirror'] {
+  const flat = MIRRORS[item.orientation];
+  const z = (item.facing ?? elementFacing) !== elementFacing;
+  return z ? { ...flat, z: true } : flat;
+}
+
 function freshId(wanted: string, used: Set<string>): string {
   let id = wanted.replace(/[^A-Za-z0-9_-]/g, '-').slice(0, 56) || 'id';
   for (let n = 2; used.has(id); n++) id = `${wanted.slice(0, 56)}-${n}`;
@@ -133,6 +145,7 @@ export function planToScene(
 
   const objects: SceneObject[] = [];
   const placements: PlanPlacement[] = [];
+  const opened = openedPlacements(ctx);
 
   const floors: SceneFloor[] = plan.floors.map((floor, index) => {
     const floorId =
@@ -199,15 +212,18 @@ export function planToScene(
         centre = { x: frame.origin.x + p.x, y: frame.origin.y + p.y };
       }
       const degrees = round((item.rotation * 180) / Math.PI, 6);
+      const mirror = mirrorOf(
+        item,
+        getPlacementDefaults(item.texturePath)?.facing ?? 'up'
+      );
       placements.push({
         object: objectId,
         floor: floorId,
         x: toMm(centre.x),
         y: toMm(centre.y),
         ...(degrees ? { rotation: degrees } : {}),
-        ...(MIRRORS[item.orientation]
-          ? { mirror: MIRRORS[item.orientation] }
-          : {}),
+        ...(mirror ? { mirror } : {}),
+        ...mountOf(item, opened.get(objectId)),
         ...(item.mountM != null
           ? { mountMm: round(item.mountM * 1000, 2) }
           : {}),
@@ -275,6 +291,32 @@ export function planToScene(
     set: { units: (plan.units ?? 'mm') as Scene['units'] }
   });
 }
+
+// The reference to write for an item, whenever it has one or an offset, so
+// a stored height never takes on the element's reference instead. Standing
+// on another item ('surface') keeps the support the file named; the editor
+// cannot pick a support yet, so an item with none known (a copy) is written
+// from the floor rather than as a placement the schema refuses.
+function mountOf(
+  item: IFurnitureSerializable,
+  opened: PlanPlacement | undefined
+): Pick<PlanPlacement, 'mountFrom' | 'mountOn'> {
+  if (item.mountFrom == null && item.mountM == null) return {};
+  if (item.mountFrom === 'surface') {
+    const mountOn = opened?.mountOn;
+    return mountOn ? { mountFrom: 'surface', mountOn } : { mountFrom: 'floor' };
+  }
+  return { mountFrom: item.mountFrom ?? 'floor' };
+}
+
+// The opened scene's placements in the view being edited, by object.
+const openedPlacements = (ctx: SceneContext) =>
+  new Map(
+    (ctx.opened.views ?? [])
+      .filter((v): v is PlanView => v.kind === 'plan' && v.id === ctx.viewId)
+      .flatMap((v) => v.placements ?? [])
+      .map((p) => [p.object, p])
+  );
 
 const usedObjectIsPlaced = (placements: PlanPlacement[], object: string) =>
   placements.some((p) => p.object === object);
@@ -375,7 +417,9 @@ export function sceneToPlan(scene: Scene): {
         y: centre.y - half.y,
         rotation,
         orientation: orientationOf(p.mirror),
-        zIndex: defaults?.zIndex ?? ((p.mountMm ?? 0) > 0 ? 2 : 1)
+        zIndex:
+          defaults?.zIndex ??
+          ((p.mountMm ?? 0) > 0 || p.mountFrom === 'ceiling' ? 2 : 1)
       };
       if (attached) {
         item.attachedToLeft = attached.a;
@@ -383,6 +427,10 @@ export function sceneToPlan(scene: Scene): {
       }
       if (p.size?.h != null) item.heightM = p.size.h / 1000;
       if (p.mountMm != null) item.mountM = p.mountMm / 1000;
+      if (p.mountFrom != null) item.mountFrom = p.mountFrom;
+      const facing = defaults?.facing ?? 'up';
+      if (p.mirror?.z) item.facing = flipFacing(facing);
+      else if (defaults?.facing) item.facing = facing;
       floor.furnitureArray.push(item);
     }
     return floor;

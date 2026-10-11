@@ -17,6 +17,7 @@ vi.mock('../../../api/api-client', () => ({
 const { Floor } = await import('../objects/Floor');
 const { fakeInstance } = await import('../../../test/fakeInstance');
 const { FloorSerializable } = await import('../persistence/FloorSerializable');
+const { sceneFromFloor } = await import('../../axonometric/sceneFromPlan');
 
 // A square room: nodes 1-4, walls 1-2, 2-3, 3-4, 4-1. Two are exterior.
 function room() {
@@ -94,6 +95,100 @@ describe('Floor plan format v2', () => {
     expect(saved.wallHeightM).toBe(3.2);
     expect(saved.elevationM).toBe(3.5);
     expect(saved.furnitureArray[0]).toMatchObject({ heightM: 2, mountM: 0 });
+  });
+});
+
+describe('Floor mounting and facing', () => {
+  // A flush smoke detector on the ceiling, facing down (scene format v2).
+  const detector = {
+    id: 5,
+    texturePath: 'smoke-detector',
+    width: 0.11,
+    height: 0.11,
+    rotation: 0,
+    x: 150,
+    y: 100,
+    orientation: 0,
+    zIndex: 2,
+    heightM: 0.05,
+    mountFrom: 'ceiling' as const,
+    facing: 'down' as const
+  };
+  const withDetector = (wallHeightM?: number) => {
+    const data = room();
+    if (wallHeightM != null) data.wallHeightM = wallHeightM;
+    data.furnitureArray = [{ ...detector }];
+    return new Floor(fakeInstance(), data);
+  };
+
+  it('round-trips a ceiling item and the way it faces', () => {
+    const saved = withDetector(2.4).serialize();
+    expect(saved.furnitureArray[0]).toMatchObject({
+      mountFrom: 'ceiling',
+      facing: 'down',
+      heightM: 0.05
+    });
+    expect(saved.furnitureArray[0].mountM).toBeUndefined();
+  });
+
+  it('keeps them on a copy', () => {
+    const floor = withDetector();
+    const copy = floor.cloneFurniture(floor.getFurniture().get(5)!, 6);
+    expect(copy.serialize()).toMatchObject({
+      mountFrom: 'ceiling',
+      facing: 'down'
+    });
+  });
+
+  it('moves a ceiling item with the wall height, and nothing else', () => {
+    const data = room();
+    data.wallHeightM = 2.4;
+    data.furnitureArray = [
+      { ...detector },
+      // A wall TV keeps its height above the floor.
+      {
+        ...detector,
+        id: 6,
+        texturePath: 'tv-wall',
+        mountFrom: 'floor',
+        mountM: 1.1,
+        facing: undefined,
+        heightM: 0.8
+      }
+    ];
+    const floor = new Floor(fakeInstance(), data);
+    const mounts = () =>
+      sceneFromFloor(floor).furniture.map(
+        (f) => Math.round(f.mount! * 1e6) / 1e6
+      );
+    // Underside: the ceiling, less the gap (0), less the 5 cm detector.
+    expect(mounts()).toEqual([235, 110]);
+    floor.wallHeightM = 2.7;
+    expect(mounts()).toEqual([265, 110]);
+    // With no wall height of its own, the floor is 2.7 m.
+    floor.wallHeightM = undefined;
+    expect(mounts()).toEqual([265, 110]);
+  });
+
+  it('hangs a catalogue ceiling item from the ceiling with nothing stored', () => {
+    const data = room();
+    data.wallHeightM = 2.4;
+    data.furnitureArray = [
+      {
+        id: 7,
+        texturePath: 'cable-tray',
+        width: 1,
+        height: 0.3,
+        rotation: 0,
+        x: 100,
+        y: 100,
+        orientation: 0,
+        zIndex: 2
+      }
+    ];
+    const [tray] = sceneFromFloor(new Floor(fakeInstance(), data)).furniture;
+    // 240 less the element's 10 cm gap, less its 10 cm height.
+    expect(tray.mount).toBe(220);
   });
 });
 

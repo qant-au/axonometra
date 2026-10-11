@@ -1,3 +1,4 @@
+import type { Facing, MountFrom } from '@accurona/core';
 import { useStore as useZustand } from 'zustand';
 import { createStore, type StoreApi } from 'zustand/vanilla';
 import { useInstance } from '../editor/instance/context';
@@ -19,8 +20,12 @@ export interface FurnitureData {
   zIndex?: number;
   /** How tall the item is, in metres (`height` is its depth on the plan). */
   heightM?: number;
-  /** Height of the item's base above the floor, in metres. */
+  /** Height of the item's base above the floor, in metres; from the ceiling, the gap above its top. */
   mountM?: number;
+  /** What `mountM` is measured from; absent is the floor. */
+  mountFrom?: MountFrom;
+  /** Which way the item is installed; absent is the element's way, else up. */
+  facing?: Facing;
   /** Kinds of equipment: network, power, cooling, security, fire, av. */
   tags?: string[];
 }

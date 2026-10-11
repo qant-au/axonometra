@@ -1,3 +1,4 @@
+import type { Facing, MountFrom } from '@accurona/core';
 import type { EditorInstance } from '../../instance/EditorInstance';
 import { Container, FederatedPointerEvent, Sprite, Texture } from 'pixi.js';
 import { loadedTexture, loadTexture } from '../textures';
@@ -20,6 +21,9 @@ export class Furniture extends Sprite {
   /** Real height and height above the floor, metres (plan format v2). */
   public heightM?: number;
   public mountM?: number;
+  /** What mountM is measured from, and which way the item faces (scene v2). */
+  public mountFrom?: MountFrom;
+  public facing?: Facing;
   constructor(
     private readonly inst: EditorInstance,
     data: FurnitureData,
@@ -53,6 +57,8 @@ export class Furniture extends Sprite {
     this.resourcePath = data.imagePath;
     this.heightM = data.heightM;
     this.mountM = data.mountM;
+    this.mountFrom = data.mountFrom;
+    this.facing = data.facing;
     this.id = id;
     this.orientation = 0;
     this.cursor = 'pointer';
@@ -193,6 +199,8 @@ export class Furniture extends Sprite {
     };
     if (this.heightM != null) res.heightM = this.heightM;
     if (this.mountM != null) res.mountM = this.mountM;
+    if (this.mountFrom != null) res.mountFrom = this.mountFrom;
+    if (this.facing != null) res.facing = this.facing;
     return res;
   }
 }

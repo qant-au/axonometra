@@ -72,6 +72,8 @@ export class Floor extends Container {
         }
         if (fur.heightM != null) furnitureData.heightM = fur.heightM;
         if (fur.mountM != null) furnitureData.mountM = fur.mountM;
+        if (fur.mountFrom != null) furnitureData.mountFrom = fur.mountFrom;
+        if (fur.facing != null) furnitureData.facing = fur.facing;
         const attachedTo =
           fur.attachedToLeft != null && fur.attachedToRight != null
             ? this.wallNodeSequence.getWall(
@@ -236,6 +238,8 @@ export class Floor extends Container {
     };
     if (data.heightM != null) furnitureData.heightM = data.heightM;
     if (data.mountM != null) furnitureData.mountM = data.mountM;
+    if (data.mountFrom != null) furnitureData.mountFrom = data.mountFrom;
+    if (data.facing != null) furnitureData.facing = data.facing;
     const wall = source.isAttached ? (onWall ?? (source.parent as Wall)) : null;
     const copy = new Furniture(
       this.inst,

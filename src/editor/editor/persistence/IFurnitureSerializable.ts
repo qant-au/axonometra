@@ -1,3 +1,5 @@
+import type { Facing, MountFrom } from '@accurona/core';
+
 export interface IFurnitureSerializable {
   id: number;
   texturePath: string;
@@ -14,4 +16,8 @@ export interface IFurnitureSerializable {
   heightM?: number;
   /** v2: height of the item's base above the floor, metres. For a window, the sill. */
   mountM?: number;
+  /** What mountM is measured from ('ceiling': the gap above the item's top); absent is the floor. */
+  mountFrom?: MountFrom;
+  /** Which way the item is installed; absent is the element's way. */
+  facing?: Facing;
 }

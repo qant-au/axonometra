@@ -211,7 +211,7 @@ describe('Serializer scene files', () => {
     expect(saved.objects).toEqual([
       { id: 'fw', element: 'firewall', props: { ip: '10.0.0.1' } }
     ]);
-    expect(saved.$schema).toMatch(/scene-v1\.json$/);
+    expect(saved.$schema).toMatch(/scene-v2\.json$/);
   });
 
   it('refuses an invalid scene whole', () => {

@@ -3,7 +3,9 @@
 // (wall-fittings.json and ./images).
 import manifest from '@accurona/elements/manifest.json';
 import wallFittings from './wall-fittings.json';
+import type { Facing, MountFrom } from '@accurona/core';
 import type { Category, FurnitureData } from '../../stores/FurnitureStore';
+import type { CatalogueHeights } from '../../editor/mount';
 
 interface ElementEntry {
   id: string;
@@ -12,8 +14,12 @@ interface ElementEntry {
   tags?: string[];
   /** cm: width, depth, height of the real item */
   size: { w: number; d: number; h: number };
-  /** cm above the floor, for wall and ceiling gear */
+  /** cm from `mountFrom`: above the floor, or the gap below the ceiling */
   mount?: number;
+  /** what `mount` is measured from; absent is the floor */
+  mountFrom?: MountFrom;
+  /** which way the item is installed; absent is up */
+  facing?: Facing;
   /** cm: what the item occupies on the plan (a symbol's square for small devices) */
   footprint: { w: number; d: number };
   symbol?: boolean;
@@ -37,6 +43,11 @@ const localImages = import.meta.glob('./images/*.svg', {
   import: 'default'
 }) as Record<string, string>;
 
+// Wall and ceiling gear draws over floor-standing furniture. A flush ceiling
+// item has mount 0 and is raised all the same.
+const zIndexOf = (el: ElementEntry) =>
+  el.mount || el.mountFrom === 'ceiling' ? 2 : 1;
+
 function toFurniture(el: ElementEntry): FurnitureData {
   return {
     _id: el.id,
@@ -45,10 +56,11 @@ function toFurniture(el: ElementEntry): FurnitureData {
     height: el.footprint.d / 100,
     imagePath: el.id,
     category: el.group,
-    // Wall and ceiling gear draws over floor-standing furniture.
-    zIndex: el.mount ? 2 : 1,
+    zIndex: zIndexOf(el),
     heightM: el.size.h / 100,
     ...(el.mount ? { mountM: el.mount / 100 } : {}),
+    ...(el.mountFrom ? { mountFrom: el.mountFrom } : {}),
+    ...(el.facing ? { facing: el.facing } : {}),
     ...(el.tags ? { tags: el.tags } : {})
   };
 }
@@ -80,22 +92,38 @@ export function getFurnitureForElement(
   return el && toFurniture(el);
 }
 
-/** Real height and mount height in cm for a catalogue item, if it is one. */
+/**
+ * Real height and mount in cm for a catalogue item, if it is one, with what
+ * the mount is measured from and which way the item faces.
+ */
 export function getItemHeights(
   imagePath: string
-): { height: number; mount: number } | undefined {
+): CatalogueHeights | undefined {
   const el = byId.get(imagePath);
-  return el && { height: el.size.h, mount: el.mount ?? 0 };
+  return (
+    el && {
+      height: el.size.h,
+      mount: el.mount ?? 0,
+      ...(el.mountFrom ? { mountFrom: el.mountFrom } : {}),
+      ...(el.facing ? { facing: el.facing } : {})
+    }
+  );
 }
 
 /**
  * What an element (or a built-in door or window) is when placed with no size
  * of its own: its plan footprint and real height, cm, and its draw order.
  */
-export function getPlacementDefaults(
-  elementId: string
-):
-  | { w: number; d: number; h?: number; mount?: number; zIndex: number }
+export function getPlacementDefaults(elementId: string):
+  | {
+      w: number;
+      d: number;
+      h?: number;
+      mount?: number;
+      mountFrom?: MountFrom;
+      facing?: Facing;
+      zIndex: number;
+    }
   | undefined {
   const el = byId.get(elementId);
   if (el) {
@@ -104,7 +132,9 @@ export function getPlacementDefaults(
       d: el.footprint.d,
       h: el.size.h,
       ...(el.mount != null ? { mount: el.mount } : {}),
-      zIndex: el.mount ? 2 : 1
+      ...(el.mountFrom ? { mountFrom: el.mountFrom } : {}),
+      ...(el.facing ? { facing: el.facing } : {}),
+      zIndex: zIndexOf(el)
     };
   }
   const fitting =

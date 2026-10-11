@@ -9,7 +9,7 @@ import { planToScene, sceneToPlan } from '../persistence/sceneFile';
 function scene(): Scene {
   return {
     format: 'accurona-scene',
-    version: 1,
+    version: 2,
     id: 'hq',
     objects: [
       { id: 'desk', element: 'desk-1600x800' },

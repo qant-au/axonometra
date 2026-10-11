@@ -207,7 +207,7 @@ describe('plan <-> scene', () => {
   it('opens a hand-written scene, sizing items from the element library', () => {
     const scene: Scene = {
       format: 'accurona-scene',
-      version: 1,
+      version: 2,
       id: 'comms-room',
       objects: [{ id: 'rack-1', element: 'rack-600x1200-42u' }],
       views: [
@@ -230,7 +230,7 @@ describe('plan <-> scene', () => {
   it('keeps a wall exterior whichever way the scene runs it', () => {
     const scene: Scene = {
       format: 'accurona-scene',
-      version: 1,
+      version: 2,
       id: 'room',
       objects: [],
       views: [
@@ -262,5 +262,162 @@ describe('plan <-> scene', () => {
     for (const [a, b] of floor.exteriorWalls!) {
       expect(links.get(a)).toContain(b);
     }
+  });
+});
+
+// Scene format version 2: what an item's height is measured from, and which
+// way it faces, survive a save and an open.
+describe('mounting and facing', () => {
+  const room = (
+    furnitureArray: FloorPlanSerializable['floors'][0]['furnitureArray']
+  ) =>
+    ({
+      version: 2,
+      furnitureId: 3,
+      wallNodeId: 0,
+      floors: [
+        { wallNodes: [], wallNodeLinks: [], furnitureArray, wallHeightM: 2.4 }
+      ]
+    }) as FloorPlanSerializable;
+  const ceilingItem = (id: number, texturePath: string, over: object = {}) => ({
+    id,
+    texturePath,
+    width: 0.2,
+    height: 0.2,
+    x: 100,
+    y: 100,
+    rotation: 0,
+    orientation: 0,
+    zIndex: 2,
+    heightM: 0.05,
+    mountFrom: 'ceiling' as const,
+    facing: 'down' as const,
+    ...over
+  });
+  const placementOf = (scene: Scene, object: string) =>
+    (scene.views![0] as PlanView).placements!.find((p) => p.object === object)!;
+
+  it('round-trips a flush ceiling detector, facing down as its element does', () => {
+    const scene = planToScene(
+      room([
+        ceilingItem(1, 'smoke-detector'),
+        ceilingItem(2, 'cable-tray', { mountM: 0.1, facing: undefined })
+      ]),
+      newContext(emptyScene('s'))
+    );
+    expect(validateScene(scene).ok).toBe(true);
+    const detector = placementOf(scene, '1');
+    expect(detector.mountFrom).toBe('ceiling');
+    expect(detector.mountMm).toBeUndefined();
+    // Facing down is the smoke detector's own way: no mirror.z.
+    expect(detector.mirror).toBeUndefined();
+    expect(placementOf(scene, '2')).toMatchObject({
+      mountFrom: 'ceiling',
+      mountMm: 100
+    });
+
+    const [floor] = sceneToPlan(scene).plan.floors;
+    const [a, b] = floor.furnitureArray;
+    expect(a).toMatchObject({
+      mountFrom: 'ceiling',
+      facing: 'down',
+      zIndex: 2
+    });
+    expect(a.mountM).toBeUndefined();
+    expect(b).toMatchObject({ mountFrom: 'ceiling', mountM: 0.1 });
+    expect(b.facing).toBeUndefined();
+  });
+
+  it('writes an item turned against its element as mirror.z, and reads it back', () => {
+    const scene = planToScene(
+      room([
+        ceilingItem(1, 'smoke-detector', { facing: 'up', orientation: 1 })
+      ]),
+      newContext(emptyScene('s'))
+    );
+    expect(placementOf(scene, '1').mirror).toEqual({ x: true, z: true });
+    const [item] = sceneToPlan(scene).plan.floors[0].furnitureArray;
+    expect(item.facing).toBe('up');
+    expect(item.orientation).toBe(1);
+  });
+
+  it('opens a version 1 file with every item where it was, floor-referenced', () => {
+    const v1 = {
+      format: 'accurona-scene',
+      version: 1,
+      id: 'old',
+      objects: [
+        { id: 'ap', element: 'wifi-ap' },
+        { id: 'tv', element: 'tv-wall' }
+      ],
+      views: [
+        {
+          id: 'plan',
+          kind: 'plan',
+          name: 'Floor plan',
+          floors: [{ id: 'g', wallHeightMm: 2400 }],
+          placements: [
+            { object: 'ap', floor: 'g', x: 500, y: 500, mountMm: 2700 },
+            { object: 'tv', floor: 'g', x: 900, y: 500, mountMm: 1100 }
+          ]
+        }
+      ]
+    };
+    const result = validateScene(v1);
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    const { plan: loaded, ctx } = sceneToPlan(result.scene);
+    const [ap, tv] = loaded.floors[0].furnitureArray;
+    expect(ap).toMatchObject({ mountFrom: 'floor', mountM: 2.7 });
+    expect(tv).toMatchObject({ mountFrom: 'floor', mountM: 1.1 });
+    const saved = planToScene(loaded, ctx);
+    expect(saved.version).toBe(2);
+    expect(placementOf(saved, 'ap')).toMatchObject({
+      mountFrom: 'floor',
+      mountMm: 2700
+    });
+    expect(placementOf(saved, 'tv')).toMatchObject({
+      mountFrom: 'floor',
+      mountMm: 1100
+    });
+  });
+
+  it('keeps an item standing on another, and the support it names', () => {
+    const scene: Scene = {
+      format: 'accurona-scene',
+      version: 2,
+      id: 'desk',
+      objects: [
+        { id: 'desk', element: 'desk' },
+        { id: 'phone', element: 'ip-phone' }
+      ],
+      views: [
+        {
+          id: 'plan',
+          kind: 'plan',
+          name: 'Floor plan',
+          floors: [{ id: 'g' }],
+          placements: [
+            { object: 'desk', floor: 'g', x: 1000, y: 1000 },
+            {
+              object: 'phone',
+              floor: 'g',
+              x: 1000,
+              y: 1000,
+              mountFrom: 'surface',
+              mountOn: 'desk'
+            }
+          ]
+        }
+      ]
+    };
+    expect(validateScene(scene).ok).toBe(true);
+    const { plan: loaded, ctx } = sceneToPlan(scene);
+    const saved = planToScene(loaded, ctx);
+    expect(validateScene(saved).ok).toBe(true);
+    expect(placementOf(saved, 'phone')).toMatchObject({
+      mountFrom: 'surface',
+      mountOn: 'desk'
+    });
   });
 });

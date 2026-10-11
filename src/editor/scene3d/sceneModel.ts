@@ -8,6 +8,7 @@ import { floorInput } from './fromPlan';
 import { floorGeometry, type Prism } from './geometry';
 import type { ItemModel } from '../../res/catalog/models';
 import { placeModel } from './placeModel';
+import { resolveMount, type CatalogueHeights } from '../mount';
 
 /** Height of a free-standing item with no recorded or catalogue height. */
 const DEFAULT_ITEM_HEIGHT = 0.7 * METER;
@@ -23,10 +24,8 @@ export interface SceneOptions {
   cutaway: number | null;
 }
 
-/** Real height and mount height in plan units (cm) for a catalogue id. */
-export type HeightLookup = (
-  id: string
-) => { height: number; mount: number } | undefined;
+/** Real height and mount in plan units (cm) for a catalogue id. */
+export type HeightLookup = (id: string) => CatalogueHeights | undefined;
 
 /** A catalogue item's 3D model, if it has one. */
 export type ModelLookup = (id: string) => ItemModel | undefined;
@@ -84,8 +83,15 @@ export function sceneModel(
         item.heightM != null
           ? item.heightM * METER
           : (catalogue?.height ?? DEFAULT_ITEM_HEIGHT);
-      const mount =
-        item.mountM != null ? item.mountM * METER : (catalogue?.mount ?? 0);
+      const mount = resolveMount(
+        {
+          mountFrom: item.mountFrom,
+          offset: item.mountM != null ? item.mountM * METER : undefined
+        },
+        catalogue,
+        input.wallHeight,
+        tall
+      );
       const z0 = input.elevation + mount;
       // Hangs above the cut: left out, but counted, so the description
       // does not claim the item is not there.
