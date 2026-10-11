@@ -9,14 +9,27 @@ Expect breaking changes between minor versions until v1.0.0.
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-10-11
+
 ### Changed
 
+- **Built on Accurona 0.4, scene format version 2.** A plan is saved as a version 2 scene, which carries each item's mounting (`mountFrom`: floor, ceiling or another item, with `mountOn`) and facing (`mirror.z`). A version 1 file opens unchanged and is saved as version 2. `@accurona/core`, `@accurona/elements` and `@accurona/ui` move to 0.4.
 - **3D view shows raised items.** With the walls cut away, anything above the cut (ceiling items, most wall gear) is drawn as a faint outline at its true height instead of being left out; **Show ceiling items** turns the outlines off. An item set to face the other way from its element (**Height and mounting...**) is drawn turned over inside its height, and a dome facing down narrows downwards.
 - **Plan and axonometric views show mounting.** On the plan, ceiling items are drawn lighter, as a reflected ceiling plan draws them; the toolbar's **Floor and ceiling** menu shows both layers, the floor items only, or the ceiling items only (a reflected ceiling plan), and turns on **Height tags** (`C` flush with the ceiling, `C -300 mm` hanging below it, `+1100 mm` above the floor). Select all and a drag-select pass by a hidden layer; **Find** still reaches it and shows both layers again. A click on overlapping items that hits the selected one selects the one under it, so a downlight over a table can be picked either way. The axonometric view draws ceiling items over the furniture, marks an item facing down with a down arrow, and has a **Hide ceiling items** switch.
 
 ### Added
 
-- **Items stand on other items.** A monitor, laptop, desk phone, router, desktop switch, NAS or microwave dropped or moved over a desk, table, bench, base cabinet, sideboard, TV unit, bedside table or filing cabinet stands on its top in the plan's height tags, the axonometric view and the 3D view, and follows it when the support's height changes; **Height and mounting...** offers **Another item** for anything with a support under it. Moving a support away or deleting it drops what stood on it to the floor, with a notice. Saved as `mountFrom: 'surface'` with `mountOn` (scene format version 2). Needs the Accurona build that flags supports (`surface`).
+- **Items stand on other items.** A monitor, laptop, desk phone, router, desktop switch, NAS or microwave dropped or moved over a desk, table, bench, base cabinet, sideboard, TV unit, bedside table or filing cabinet stands on its top in the plan's height tags, the axonometric view and the 3D view, and follows it when the support's height changes; **Height and mounting...** offers **Another item** for anything with a support under it. Moving a support away or deleting it drops what stood on it to the floor, with a notice. Saved as `mountFrom: 'surface'` with `mountOn` (scene format version 2).
+
+### Fixed
+
+- **The Height and mounting dialog says what the file will.** An item standing on nothing (its support moved or deleted) reads **Floor**, not the disabled **Another item**; values the selected items disagree on read **Mixed**, not blank; an error shows under the field it is about; a single item's emptied length is an error, not a silent keep; and a ceiling item that would hang below the floor is refused.
+- **The axonometric view draws an item in a corner behind the wall in front of it.** Boxes were painted by the depth of their centres, so an item near the end of a long front wall drew over the wall.
+- **A tool taken by its key explains itself.** L, W and D show the same hint as the Add menu; the door hint no longer says a right-click turns it (the right-click menu's **Turn** does).
+- **Make exterior and Make interior take every selected wall**, like Copy and Delete on the same menu.
+- **A wall chain ended before its first wall leaves no lone node** on the plan.
+- **A window or door is centred on the click that adds it**, kept within the wall; it started at the click.
+- **Paste from the right-click menu lands where the plan was clicked.** Ctrl+V still steps the copy off the original.
 
 ## [0.5.2] - 2026-10-01
 
@@ -216,7 +229,9 @@ Initial Axonometra release after the fork from
 - Upstream-only assets and the thesis PDF.
 - Unused dependencies; moved `@types/*` to `devDependencies`.
 
-[Unreleased]: https://github.com/qant-au/axonometra/compare/v0.5.0...HEAD
+[Unreleased]: https://github.com/qant-au/axonometra/compare/v0.6.0...HEAD
+[0.6.0]: https://github.com/qant-au/axonometra/compare/v0.5.2...v0.6.0
+[0.5.2]: https://github.com/qant-au/axonometra/compare/v0.5.0...v0.5.2
 [0.5.0]: https://github.com/qant-au/axonometra/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/qant-au/axonometra/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/qant-au/axonometra/compare/v0.2.0...v0.3.0
