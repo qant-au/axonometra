@@ -91,4 +91,29 @@ describe('mounting a placed item', () => {
     ).toMatch(/0 or more/);
     expect(mountingError({ ...keep, height: 0 }, smoke)).toMatch(/height/);
   });
+
+  it('refuses a ceiling item that would reach below the floor', () => {
+    const smoke = [item('smoke-detector')];
+    const ceiling = 270;
+    expect(
+      mountingError({ ...keep, offset: 100, height: 170 }, smoke, ceiling)
+    ).toBeNull();
+    expect(
+      mountingError({ ...keep, offset: 100, height: 300 }, smoke, ceiling)
+    ).toMatch(/below the floor/);
+    // A height alone is checked against the item's own gap.
+    expect(mountingError({ ...keep, height: 300 }, smoke, ceiling)).toMatch(
+      /below the floor/
+    );
+  });
+
+  it('reads an item standing on nothing as on the floor, as a save writes it', () => {
+    expect(
+      mountingOf(item('table-lamp', { mountFrom: 'surface' })).mountFrom
+    ).toBe('floor');
+    expect(
+      mountingOf(item('table-lamp', { mountFrom: 'surface', mountOn: 3 }))
+        .mountFrom
+    ).toBe('surface');
+  });
 });

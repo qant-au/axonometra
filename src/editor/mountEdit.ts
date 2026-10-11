@@ -61,8 +61,10 @@ const toMetres = (plan: number) => Math.round((plan / METER) * 1e5) / 1e5;
  */
 export function mountingOf(item: Furniture): Mounting {
   const d = defaultMounting(item.resourcePath);
+  const from = item.mountFrom ?? (item.mountM != null ? 'floor' : d.mountFrom);
   return {
-    mountFrom: item.mountFrom ?? (item.mountM != null ? 'floor' : d.mountFrom),
+    // Standing on nothing, it stands on the floor, as a save writes it.
+    mountFrom: from === 'surface' && item.mountOn == null ? 'floor' : from,
     offset: item.mountM != null ? toPlan(item.mountM) : d.offset,
     height: item.heightM != null ? toPlan(item.heightM) : d.height,
     facing: item.facing ?? d.facing
@@ -88,17 +90,28 @@ export function commonMounting(items: Furniture[]): MountingEdit {
 /** Why a set of values cannot be applied, or null when it can. */
 export function mountingError(
   edit: MountingEdit,
-  items: Furniture[]
+  items: Furniture[],
+  /** The floor's wall height, plan units: a ceiling item stays above the floor. */
+  ceiling?: number
 ): string | null {
   if (edit.height != null && !(edit.height > 0)) {
     return 'Enter a height greater than 0';
   }
-  if (edit.offset == null) return null;
+  if (edit.offset == null && edit.height == null && edit.mountFrom == null) {
+    return null;
+  }
   for (const item of items) {
     const m = { ...mountingOf(item), ...defined(edit) };
     // A negative gap is a recess into the ceiling, at most the item's height.
     if (m.mountFrom === 'ceiling' && m.offset < -m.height) {
       return 'A recess into the ceiling cannot be deeper than the item';
+    }
+    if (
+      m.mountFrom === 'ceiling' &&
+      ceiling != null &&
+      m.offset + m.height > ceiling
+    ) {
+      return 'Hung from the ceiling, the item would reach below the floor';
     }
     if (m.mountFrom !== 'ceiling' && m.offset < 0) {
       return 'Enter a height of 0 or more';

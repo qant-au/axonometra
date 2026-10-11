@@ -51,21 +51,32 @@ function MountingForm({
   const set = (field: keyof typeof form) => (value: string) =>
     setForm((f) => ({ ...f, [field]: value }));
 
-  // An empty length keeps each item's own; anything else must parse.
-  const length = (text: string) =>
-    text.trim() === MIXED ? null : inst.parseLength(text);
+  // With several items an empty length keeps each item's own; anything
+  // else, and every length of a single item, must parse.
+  const many = items.length > 1;
+  const kept = (text: string) => many && text.trim() === MIXED;
+  const length = (text: string) => (kept(text) ? null : inst.parseLength(text));
   const edit: MountingEdit = {
     mountFrom: (form.mountFrom || null) as MountFrom | null,
     offset: length(form.offset),
     height: length(form.height),
     facing: (form.facing || null) as Facing | null
   };
-  const unreadable =
-    (form.offset.trim() !== MIXED && edit.offset === null) ||
-    (form.height.trim() !== MIXED && edit.height === null);
-  const error = unreadable
-    ? 'Enter a length, e.g. 2.4 m'
-    : mountingError(edit, items);
+  const floor = inst.plan.getState().getCurrentFloor();
+  const ceiling =
+    floor.wallHeightM != null ? floor.wallHeightM * METER : WALL_HEIGHT;
+  const unreadableOffset = !kept(form.offset) && edit.offset === null;
+  const unreadableHeight = !kept(form.height) && edit.height === null;
+  const error =
+    unreadableOffset || unreadableHeight
+      ? 'Enter a length, e.g. 2.4 m'
+      : mountingError(edit, items, ceiling);
+  // Shown under the field it is about: the item height, or the height or
+  // gap above it.
+  const heightError =
+    unreadableHeight ||
+    (!unreadableOffset && /greater than 0/.test(error ?? ''));
+  const offsetError = error !== null && !heightError;
 
   // 'Another item' stands each item on the support under it, so it is
   // offered when every item has one.
@@ -88,9 +99,6 @@ function MountingForm({
       set('mountFrom')(to);
       return;
     }
-    const floor = inst.plan.getState().getCurrentFloor();
-    const ceiling =
-      floor.wallHeightM != null ? floor.wallHeightM * METER : WALL_HEIGHT;
     setForm((f) => ({
       ...f,
       mountFrom: to,
@@ -147,6 +155,10 @@ function MountingForm({
           label="Mounted on"
           value={form.mountFrom}
           onChange={(e) => changeMountFrom(e.target.value)}
+          slotProps={{
+            select: { displayEmpty: true },
+            inputLabel: { shrink: true }
+          }}
         >
           {form.mountFrom === MIXED && (
             <MenuItem value={MIXED}>Mixed (each keeps its own)</MenuItem>
@@ -167,32 +179,39 @@ function MountingForm({
           } (${units})`}
           value={form.offset}
           onChange={(e) => set('offset')(e.target.value)}
-          placeholder={form.offset === MIXED ? 'Mixed' : undefined}
+          placeholder={many && form.offset === MIXED ? 'Mixed' : undefined}
           slotProps={{ htmlInput: { inputMode } }}
           autoFocus
           inputRef={inputRef}
+          error={offsetError}
           helperText={
-            fromCeiling
-              ? "To the item's top: 0 is flush, below 0 is recessed"
-              : fromSurface
-                ? "From the top it stands on to the item's underside"
-                : "To the item's underside"
+            offsetError
+              ? error
+              : fromCeiling
+                ? "To the item's top: 0 is flush, below 0 is recessed"
+                : fromSurface
+                  ? "From the top it stands on to the item's underside"
+                  : "To the item's underside"
           }
         />
         <TextField
           label={`Item height (${units})`}
           value={form.height}
           onChange={(e) => set('height')(e.target.value)}
-          placeholder={form.height === MIXED ? 'Mixed' : undefined}
+          placeholder={many && form.height === MIXED ? 'Mixed' : undefined}
           slotProps={{ htmlInput: { inputMode } }}
+          error={heightError}
+          helperText={heightError ? error : undefined}
         />
         <TextField
           select
           label="Facing"
           value={form.facing}
           onChange={(e) => set('facing')(e.target.value)}
-          error={error !== null}
-          helperText={error ?? undefined}
+          slotProps={{
+            select: { displayEmpty: true },
+            inputLabel: { shrink: true }
+          }}
         >
           {form.facing === MIXED && (
             <MenuItem value={MIXED}>Mixed (each keeps its own)</MenuItem>
