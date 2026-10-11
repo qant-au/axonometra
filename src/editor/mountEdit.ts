@@ -144,3 +144,23 @@ export function applyMounting(item: Furniture, edit: MountingEdit) {
   if (item.zIndex === 1 && raised) item.zIndex = 2;
   else if (item.zIndex === 2 && !raised) item.zIndex = 1;
 }
+
+/**
+ * Why a floor cannot take a wall height (plan units), or null. Only the
+ * floor's wall height changes: a ceiling item keeps its gap below the
+ * ceiling, so a lower ceiling must still leave every one above the floor.
+ */
+export function wallHeightError(
+  height: number,
+  items: Iterable<Furniture>
+): string | null {
+  if (!(height > 0)) return 'Enter a height greater than 0';
+  for (const item of items) {
+    if (item.isAttached) continue; // a door or window, in its wall
+    const m = mountingOf(item);
+    if (m.mountFrom === 'ceiling' && m.offset + m.height > height) {
+      return 'A ceiling item would hang below the floor';
+    }
+  }
+  return null;
+}

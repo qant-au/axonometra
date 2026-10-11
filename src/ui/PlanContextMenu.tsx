@@ -65,6 +65,10 @@ function itemsFor(
     return [
       ...(hasClipboard() ? [{ label: 'Paste', onClick: () => paste(at) }] : []),
       { label: 'Select all', onClick: selectAll },
+      {
+        label: 'Wall height...',
+        onClick: () => inst.editor.getState().setWallHeightOpen(true)
+      },
       view
     ];
   }

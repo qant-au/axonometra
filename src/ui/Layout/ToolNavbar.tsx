@@ -159,12 +159,14 @@ const tick = (on: boolean) =>
   );
 
 // What the plan shows: floor items, ceiling items (drawn lighter over the
-// floor items), or one of them alone; and the height tags.
+// floor items), or one of them alone; the height tags; and the floor's
+// wall height, which the ceiling items hang from.
 function LayersMenu() {
   const planLayer = useStore((s) => s.planLayer);
   const setPlanLayer = useStore((s) => s.setPlanLayer);
   const heightTags = useStore((s) => s.heightTags);
   const setHeightTags = useStore((s) => s.setHeightTags);
+  const setWallHeightOpen = useStore((s) => s.setWallHeightOpen);
   return (
     <ToolMenu
       name="Floor and ceiling"
@@ -179,7 +181,13 @@ function LayersMenu() {
         {
           label: 'Height tags',
           icon: tick(heightTags),
+          divider: true,
           onClick: () => setHeightTags(!heightTags)
+        },
+        {
+          label: 'Wall height...',
+          icon: <Box sx={{ width: 18 }} />,
+          onClick: () => setWallHeightOpen(true)
         }
       ]}
     />

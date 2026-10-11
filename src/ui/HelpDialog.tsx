@@ -102,8 +102,9 @@ export function HelpDialog() {
           <IconStack2 />{' '}
           <p>
             Ceiling items are drawn lighter; Floor and ceiling shows one layer
-            alone or height tags. Click overlapping items again to pick the one
-            underneath
+            alone or height tags, and sets the floor&rsquo;s wall height
+            (ceiling items move with the ceiling). Click overlapping items again
+            to pick the one underneath
           </p>
         </Row>
       </>

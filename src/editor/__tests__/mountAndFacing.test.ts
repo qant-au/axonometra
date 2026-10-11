@@ -25,6 +25,7 @@ const { sceneFromFloor } = await import('../axonometric/sceneFromPlan');
 const { sceneModel } = await import('../scene3d/sceneModel');
 const { getItemHeights } = await import('../../res/catalog');
 const { heightTag, isCeilingItem } = await import('../planLayers');
+const { applyMounting, wallHeightError } = await import('../mountEdit');
 
 // Mount and facing, end to end (lw-112): the fixture e2e/mount-and-facing
 // is one room on a 2.4 m ground floor and a 2.7 m first floor, each with a
@@ -252,5 +253,66 @@ describe('mount and facing, end to end (lw-112)', () => {
         expect(q).toMatchObject({ mountFrom: 'floor', mountMm: p.mountMm });
       }
     }
+  });
+});
+
+// Setting a floor's wall height in the editor (lw-117): the Wall height
+// dialog writes only Floor.wallHeightM, so every ceiling item keeps its gap
+// below the ceiling rather than its height above the floor.
+describe('a floor’s wall height set in the editor (lw-117)', () => {
+  const scene = fixture('mount-and-facing.scene.json');
+  const item = (opened: ReturnType<typeof open>, name: string) =>
+    [...opened.floors[0].getFurniture().values()].find(
+      (f) => opened.ctx.objectIds.get(f.getId()) === name
+    )!;
+
+  it('keeps an item set to the ceiling in the dialog at its gap', () => {
+    const opened = open(scene);
+    // The wall TV, 85 cm tall, hung flush from the 2.4 m ceiling.
+    applyMounting(item(opened, 'tv-g'), {
+      mountFrom: 'ceiling',
+      offset: 0,
+      height: null,
+      facing: null
+    });
+    expect(heights3d(opened, 0).tv).toEqual([155, 240]);
+    opened.floors[0].wallHeightM = 2.7;
+    // Still flush with the ceiling, not 300 mm below it.
+    expect(heights3d(opened, 0).tv).toEqual([185, 270]);
+    expect(heightsIso(opened, 0).tv.span).toEqual([185, 270]);
+    const mm = (cm: number) => `${Math.round(cm * 10)} mm`;
+    expect(heightTag(item(opened, 'tv-g'), mm)).toBe('C');
+    const saved = planView(save(opened));
+    expect(saved.floors[0].wallHeightMm).toBe(2700);
+    expect(saved.placements!.find((p) => p.object === 'tv-g')).toMatchObject({
+      mountFrom: 'ceiling',
+      mountMm: 0
+    });
+  });
+
+  it('moves what stands on a ceiling item with it', () => {
+    const opened = open(scene);
+    // The bedside table hung 100 cm below the ceiling; the lamp stays on it.
+    applyMounting(item(opened, 'bedside-g'), {
+      mountFrom: 'ceiling',
+      offset: 100,
+      height: null,
+      facing: null
+    });
+    const before = heights3d(opened, 0);
+    opened.floors[0].wallHeightM = 2.7;
+    const after = heights3d(opened, 0);
+    expect(after.bedside).toEqual(before.bedside.map((v) => v + 30));
+    expect(after.lamp).toEqual(before.lamp.map((v) => v + 30));
+    expect(heightsIso(opened, 0).lamp.span).toEqual(after.lamp);
+  });
+
+  it('refuses a height that would leave a ceiling item below the floor', () => {
+    const items = [...open(scene).floors[0].getFurniture().values()];
+    // The pendant is the longest drop: 80 cm from the ceiling.
+    expect(wallHeightError(270, items)).toBeNull();
+    expect(wallHeightError(80, items)).toBeNull();
+    expect(wallHeightError(79, items)).toMatch(/below the floor/);
+    expect(wallHeightError(0, items)).toMatch(/greater than 0/);
   });
 });

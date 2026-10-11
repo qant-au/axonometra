@@ -89,6 +89,11 @@ hanging below it, `+1100 mm` for one raised off the floor. Where items overlap, 
 the selected one again to select the one underneath. The **Axonometric view** draws
 ceiling items over the furniture, with **Hide ceiling items** to see the room below.
 
+**Wall height...** on the same menu (or the right-click menu on an empty part of
+the plan) sets the current floor's height, floor to ceiling, as one undo step.
+Ceiling items keep their gap below the ceiling and move with it, and so does
+anything standing on them.
+
 ### Items on top of other items
 
 Drop or move a monitor, laptop, desk phone, router, NAS or microwave over a desk,

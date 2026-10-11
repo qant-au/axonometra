@@ -2,6 +2,7 @@ import { EditorRoot } from '../../editor/EditorRoot';
 import { WelcomeModal } from '../WelcomeModal';
 import { ToolNavbar } from './ToolNavbar';
 import { WallLengthDialog } from '../WallLengthDialog';
+import { WallHeightDialog } from '../WallHeightDialog';
 import { MountingDialog } from '../MountingDialog';
 import { useInstance } from '../../editor/instance/context';
 import { ShortcutsDialog } from '../ShortcutsDialog';
@@ -20,6 +21,7 @@ export function PageLayout() {
       {showWelcomeModal && <WelcomeModal />}
       {showToolbar && <ToolNavbar></ToolNavbar>}
       {showToolbar && <WallLengthDialog />}
+      {showToolbar && <WallHeightDialog />}
       {showToolbar && <MountingDialog />}
       <ShortcutsDialog />
       <FindBar />
