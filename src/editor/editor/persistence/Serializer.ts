@@ -2,8 +2,7 @@ import {
   isLengthUnit,
   isSceneDocument,
   serializeScene,
-  validateScene,
-  type Scene
+  validateScene
 } from '@accurona/core';
 import { DEFAULT_UNITS } from '../../../stores/UnitsStore';
 import type { EditorInstance } from '../../instance/EditorInstance';
@@ -44,31 +43,6 @@ export class Serializer {
   /** Starts a new, unsaved document. */
   public reset(): void {
     this.context = newContext();
-  }
-
-  // --- crossover with the network diagram -----------------------
-
-  /** The scene the plan was opened from: diagram views and all. */
-  public openedScene(): Scene {
-    return this.context.opened;
-  }
-
-  /** The scene object a furniture item is, once it has one. */
-  public objectIdOf(furnitureId: number): string | undefined {
-    return this.context.objectIds.get(furnitureId);
-  }
-
-  /** Whether a scene object is already on this plan, as some item. */
-  public isOnPlan(objectId: string): boolean {
-    return [...this.context.objectIds.values()].includes(objectId);
-  }
-
-  /**
-   * Makes a new furniture item the scene object it was placed as (a device
-   * from the network diagram), so the plan and the diagram share one object.
-   */
-  public linkFurniture(furnitureId: number, objectId: string): void {
-    this.context.objectIds.set(furnitureId, objectId);
   }
 
   /** Forgets any object a now-reissued furniture id was linked to. */

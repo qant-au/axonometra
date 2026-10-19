@@ -13,6 +13,10 @@ Expect breaking changes between minor versions until v1.0.0.
 
 - **Set a floor's wall height in the editor.** **Wall height...** on the toolbar's **Floor and ceiling** menu, or on the right-click menu over an empty part of the plan, sets the current floor's height, floor to ceiling, as one undo step. Ceiling items keep their gap below the ceiling and move with it in the plan's height tags, the axonometric view and the 3D view, and what stands on them follows; a height that would leave a ceiling item hanging below the floor is refused. It was only read from the scene file (`wallHeightMm`) before.
 
+### Removed
+
+- **The network-diagram crossover** (breaking). The add panel's "From the network diagram" list, which offered objects placed in another editor's diagram views for placing on the plan under the same object id, is gone, as is the right-click "In the network diagram" entry. Axonometra is a floor planner on its own; it no longer reads diagram views for anything. A scene that has other views still opens, and a save still keeps whatever the plan does not draw.
+
 ## [0.6.0] - 2026-10-11
 
 ### Changed

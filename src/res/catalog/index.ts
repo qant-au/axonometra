@@ -87,14 +87,6 @@ export function getFurnitureForCategory(categoryId: string): FurnitureData[] {
 
 const byId = new Map(elements.map((el) => [el.id, el]));
 
-/** The catalogue entry for an element, to place it as furniture. */
-export function getFurnitureForElement(
-  elementId: string
-): FurnitureData | undefined {
-  const el = byId.get(elementId);
-  return el && toFurniture(el);
-}
-
 /**
  * Real height and mount in cm for a catalogue item, if it is one, with what
  * the mount is measured from, which way the item faces, and the height of a
