@@ -57,7 +57,7 @@
     "build:elements": "node elements/scripts/build.mjs",
     "preview": "vite preview",
     "test": "vitest",
-    "test:elements": "node --test elements/test",
+    "test:elements": "node --test elements/test/*.test.mjs",
     "test:e2e": "playwright test",
     "sheet": "node elements/scripts/sheet.mjs",
     "lint": "eslint src e2e",
