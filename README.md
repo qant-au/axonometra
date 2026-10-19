@@ -60,9 +60,8 @@ export function Planner() {
 The editor fills the box you give it, and several can share a page. React, MUI and
 Emotion are peer dependencies, so your app provides one copy of each. The props, the
 ref API and the iframe alternative are in [EMBEDDING.md](EMBEDDING.md). Plans are
-saved as [Accurona scenes](https://github.com/qant-au/accurona/blob/main/docs/scene-format.md), the file format Axonometra shares with
-[Reticulyne](https://github.com/qant-au/reticulyne). Files in the plan format Axonometra
-used before ([PLAN-FORMAT.md](PLAN-FORMAT.md)) still open, and save as scenes.
+saved as [Accurona scenes](https://github.com/qant-au/accurona/blob/main/docs/scene-format.md).
+Files in the plan format Axonometra used before ([PLAN-FORMAT.md](PLAN-FORMAT.md)) still open, and save as scenes.
 
 ## Using it
 
@@ -72,8 +71,7 @@ used before ([PLAN-FORMAT.md](PLAN-FORMAT.md)) still open, and save as scenes.
   (in the app; a host app decides with `onSave`).
 - The toolbar **Save** button downloads the plan as an `axonometra-plan-*.json` file, an
   Accurona scene. A scene opened from a file keeps everything Axonometra does not draw
-  (Reticulyne's diagrams of the same devices, their properties and connections) when it is
-  saved again.
+  (other views, object properties and connections) when it is saved again.
 - Load a plan from the welcome dialog ("Load from disk" / "Load from local save") or the
   toolbar's **Load plan** button. A scene or an old plan file both open; only scenes are
   saved.
@@ -128,10 +126,9 @@ WebGL, and three.js is only downloaded the first time the view is opened.
 
 ### Shortcuts
 
-Axonometra binds the shared [Accurona](https://github.com/qant-au/accurona) keymap, the same one
-[Reticulyne](https://github.com/qant-au/reticulyne) binds, aligned with
-[Excalidraw](https://github.com/excalidraw/excalidraw): someone coming from either should
-not have to retrain. Press **?** (or the toolbar's **Keyboard shortcuts** button) for the
+Axonometra binds the [Accurona](https://github.com/qant-au/accurona) keymap, aligned with
+[Excalidraw](https://github.com/excalidraw/excalidraw): someone coming from Excalidraw
+should not have to retrain. Press **?** (or the toolbar's **Keyboard shortcuts** button) for the
 full list and every deliberate difference from Excalidraw. The specification is
 [Accurona's `docs/keymap.md`](https://github.com/qant-au/accurona/blob/main/docs/keymap.md).
 
@@ -188,18 +185,6 @@ Every action is announced through a polite live region, including refusals such 
 deleting a wall point that still has walls attached. Doors and windows move with their
 wall and cannot be picked up on their own. Resizing and rotating furniture still needs
 the pointer.
-
-## A sibling project: Reticulyne
-
-Axonometra has a sibling, [Reticulyne](https://github.com/qant-au/reticulyne), an
-open-source isometric network-diagram editor. They are built to be used together:
-
-- **Axonometra** lays out physical space at true scale: rooms, racks, cameras, access
-  points and furniture.
-- **Reticulyne** draws how those things connect.
-
-Both draw their equipment from one shared element library, so a rack is the same rack,
-at the same size and in the same colours, in a floor plan and in a network diagram.
 
 ## Contributing
 

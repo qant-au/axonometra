@@ -224,7 +224,7 @@ export function buildFragment(
  * The first step, from `start` on, at which a fragment pasted `step` times
  * that far down and right puts none of its wall points or free-standing
  * items exactly where one already is: a copy there hid what was under it,
- * as the sibling Reticulyne also refuses. Step 0 is where it was copied
+ * so it is refused. Step 0 is where it was copied
  * from, free again after a Cut.
  */
 export function freePasteStep(

@@ -130,9 +130,8 @@ function Themed({
   theme?: Theme;
   children: React.ReactNode;
 }) {
-  // Accurona's shared theme, so Axonometra looks like Reticulyne, in the
-  // mode the editor is in. No CSS variables: MUI would write them to the
-  // host page's :root.
+  // Accurona's theme, in the mode the editor is in. No CSS variables: MUI
+  // would write them to the host page's :root.
   const mode = useStore((s) => s.theme);
   const own = useMemo(() => createAccuronaTheme(mode), [mode]);
   return <ThemeProvider theme={theme ?? own}>{children}</ThemeProvider>;

@@ -3,7 +3,7 @@
 //
 // The scene is what is saved and opened. The in-memory plan is what the
 // editor, undo and the 3D view work on. A scene holds more than Axonometra
-// draws (diagram views, object props, ports, links, connections), so a save
+// draws (other views, object props, ports, links, connections), so a save
 // merges the plan back into the scene that was opened and keeps the rest.
 //
 // Scene lengths are millimetres, x right and y down the plan; a placement's

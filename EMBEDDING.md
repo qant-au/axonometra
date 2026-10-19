@@ -172,7 +172,7 @@ The legacy `X-Frame-Options` header has been removed in favour of CSP — `X-Fra
 
 ## Plan format
 
-`axo:save` sends an [Accurona scene](https://github.com/qant-au/accurona/blob/main/docs/scene-format.md): the file format Axonometra shares with Reticulyne, validated by one schema whose JSON Schema is published (the file names it in `$schema`). `axo:load` accepts a scene, or a plan in the format Axonometra used before ([PLAN-FORMAT.md](./PLAN-FORMAT.md), versions 1 and 2), which is read and never written again: the next save is a scene. Hosts that store plans should store the scenes the editor sends. A scene loaded here keeps everything Axonometra does not draw (diagram views, device properties, connections) through later saves.
+`axo:save` sends an [Accurona scene](https://github.com/qant-au/accurona/blob/main/docs/scene-format.md): the file format Axonometra writes, validated by one schema whose JSON Schema is published (the file names it in `$schema`). `axo:load` accepts a scene, or a plan in the format Axonometra used before ([PLAN-FORMAT.md](./PLAN-FORMAT.md), versions 1 and 2), which is read and never written again: the next save is a scene. Hosts that store plans should store the scenes the editor sends. A scene loaded here keeps everything Axonometra does not draw (other views, object properties, connections) through later saves.
 
 ## Signed plans
 
