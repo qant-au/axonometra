@@ -50,7 +50,7 @@ dependencies; Pixi.js, three.js and the rest are ordinary dependencies, installe
 | `showWelcome`                    | on without `initialScene` | The welcome box: New plan, Load from disk.                                                                                                |
 | `keyboardScope`                  | `'root'`                  | Where the shortcuts listen. `'root'`: while focus is inside the editor. `'document'`: the whole page, for a page that is only the editor. |
 | `themeMode`, `onThemeModeChange` | `'light'`                 | Light or dark. Alt+Shift+D switches it and calls `onThemeModeChange`.                                                                     |
-| `theme`                          | Accurona's theme          | Your MUI theme, used instead.                                                                                                             |
+| `theme`                          | Axonometra's theme        | Your MUI theme, used instead.                                                                                                             |
 | `onSave`                         | download the file         | Ctrl/Cmd+S. Receives the scene file's text; a returned string is the message shown.                                                       |
 | `loadSaved`                      | none                      | Adds Load from local save to the welcome box; returns the text to open.                                                                   |
 | `onChange`                       | none                      | Called after each edit, undo and redo, with the API.                                                                                      |
@@ -59,7 +59,7 @@ dependencies; Pixi.js, three.js and the rest are ordinary dependencies, installe
 ### The API (ref)
 
 `load(file)` opens a scene or a plan v1/v2 file; `getScene()` and `getSceneText()`
-return the plan as an [Accurona scene](https://github.com/qant-au/accurona/blob/main/docs/scene-format.md);
+return the plan as a [scene](docs/scene-format.md);
 `exportGlb()` resolves to the building as a glTF binary; `setUnits(units)`, `undo()`,
 `redo()` and `notify({ message })` do what they say. `debug` exposes the editor's
 internals for tests and is not a stable API.
@@ -104,7 +104,7 @@ Host page:
       );
     }
     if (event.data?.type === 'axo:save') {
-      // event.data.plan is an Accurona scene, as a JSON string
+      // event.data.plan is a scene, as a JSON string
       console.log('plan saved', event.data.plan);
     }
   });
@@ -172,7 +172,7 @@ The legacy `X-Frame-Options` header has been removed in favour of CSP — `X-Fra
 
 ## Plan format
 
-`axo:save` sends an [Accurona scene](https://github.com/qant-au/accurona/blob/main/docs/scene-format.md): the file format Axonometra writes, validated by one schema whose JSON Schema is published (the file names it in `$schema`). `axo:load` accepts a scene, or a plan in the format Axonometra used before ([PLAN-FORMAT.md](./PLAN-FORMAT.md), versions 1 and 2), which is read and never written again: the next save is a scene. Hosts that store plans should store the scenes the editor sends. A scene loaded here keeps everything Axonometra does not draw (other views, object properties, connections) through later saves.
+`axo:save` sends a [scene](docs/scene-format.md): the file format Axonometra writes, validated by one schema whose JSON Schema is published (the file names it in `$schema`). `axo:load` accepts a scene, or a plan in the format Axonometra used before ([PLAN-FORMAT.md](./PLAN-FORMAT.md), versions 1 and 2), which is read and never written again: the next save is a scene. Hosts that store plans should store the scenes the editor sends. A scene loaded here keeps everything Axonometra does not draw (other views, object properties, connections) through later saves.
 
 ## Signed plans
 

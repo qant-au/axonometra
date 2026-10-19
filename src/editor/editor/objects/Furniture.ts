@@ -1,4 +1,4 @@
-import type { Facing, MountFrom } from '@accurona/core';
+import type { Facing, MountFrom } from '../../../core';
 import type { EditorInstance } from '../../instance/EditorInstance';
 import { Container, FederatedPointerEvent, Sprite, Texture } from 'pixi.js';
 import { loadedTexture, loadTexture } from '../textures';

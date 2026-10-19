@@ -93,7 +93,10 @@ module.exports = tseslint.config(
     }
   },
   {
-    files: ['src/**/__tests__/**/*.{ts,tsx}', 'src/**/*.test.{ts,tsx}'],
+    files: [
+      'src/**/__tests__/**/*.{ts,tsx,mjs}',
+      'src/**/*.test.{ts,tsx,mjs}'
+    ],
     languageOptions: {
       globals: {
         ...globals.node

@@ -1,14 +1,14 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it, vi } from 'vitest';
-import { validateScene, type PlanView, type Scene } from '@accurona/core';
+import { validateScene, type PlanView, type Scene } from '../../core';
 
 vi.mock('pixi.js', async () => {
   const { createPixiMock } = await import('../../test/pixiMock');
   return createPixiMock();
 });
 vi.mock('../../helpers/isMobile', () => ({ isMobile: false }));
-vi.mock('@accurona/ui', () => ({
+vi.mock('../../ui/kit', () => ({
   notify: vi.fn()
 }));
 vi.mock('../../api/api-client', () => ({

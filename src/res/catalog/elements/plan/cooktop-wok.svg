@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 60" width="80" height="120" preserveAspectRatio="none" stroke-linejoin="round" stroke-linecap="round">
+  <rect x="0" y="0" width="40" height="53" rx="0" fill="#e4dfd6" stroke="#8a857c" stroke-width="0.75"/>
+  <rect x="0" y="0" width="40" height="58" rx="0" fill="#f7f5f1" stroke="#8a857c" stroke-width="0.75"/>
+  <rect x="0.75" y="0.75" width="38.5" height="58.5" rx="0" fill="#e4dfd6" stroke="#2b2b2b" stroke-width="1.5"/>
+  <rect x="2" y="4" width="36" height="52" rx="1" fill="#c9ced3" stroke="#2b2b2b" stroke-width="1.5"/>
+  <circle cx="20" cy="27" r="13" fill="none" stroke="#2b2b2b" stroke-width="0.75"/>
+  <circle cx="20" cy="27" r="9" fill="none" stroke="#8a857c" stroke-width="0.75"/>
+  <circle cx="20" cy="27" r="4.5" fill="#5b6770" stroke="#8a857c" stroke-width="0.75"/>
+  <polyline points="25.66,32.66 30.96,37.96" fill="none" stroke="#2b2b2b" stroke-width="1.5"/>
+  <polyline points="14.34,32.66 9.04,37.96" fill="none" stroke="#2b2b2b" stroke-width="1.5"/>
+  <polyline points="14.34,21.34 9.04,16.04" fill="none" stroke="#2b2b2b" stroke-width="1.5"/>
+  <polyline points="25.66,21.34 30.96,16.04" fill="none" stroke="#2b2b2b" stroke-width="1.5"/>
+  <circle cx="20" cy="52" r="2.2" fill="#5b6770" stroke="#8a857c" stroke-width="0.75"/>
+</svg>

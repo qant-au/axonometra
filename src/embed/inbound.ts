@@ -53,7 +53,7 @@ export interface InboundDeps {
   publicKeys: string[];
   /** Load the plan text; returns false if the plan itself was rejected. */
   load: (planText: string) => boolean;
-  /** The file to save: the plan as an Accurona scene. */
+  /** The file to save: the plan as an Axonometra scene. */
   serialize: () => string;
   /** The plan as a glTF binary. Loaded lazily: it brings in three.js. */
   exportGlb: () => Promise<ArrayBuffer>;

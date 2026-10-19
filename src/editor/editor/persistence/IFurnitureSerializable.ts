@@ -1,4 +1,4 @@
-import type { Facing, MountFrom } from '@accurona/core';
+import type { Facing, MountFrom } from '../../../core';
 
 export interface IFurnitureSerializable {
   id: number;

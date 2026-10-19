@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 70" width="120" height="140" preserveAspectRatio="none" stroke-linejoin="round" stroke-linecap="round">
+  <ellipse cx="30" cy="10" rx="9.25" ry="9.25" fill="#c9ced3" stroke="#2b2b2b" stroke-width="1.5"/>
+  <ellipse cx="30" cy="54" rx="20" ry="14" fill="#f7f5f1" stroke="#2b2b2b" stroke-width="1.5"/>
+  <ellipse cx="30" cy="53" rx="15" ry="10" fill="#e4dfd6" stroke="#8a857c" stroke-width="0.75"/>
+  <circle cx="25" cy="52" r="2" fill="#c9ced3" stroke="#2b2b2b" stroke-width="0.75"/>
+  <circle cx="35" cy="52" r="2" fill="#c9ced3" stroke="#2b2b2b" stroke-width="0.75"/>
+  <rect x="26" y="64" width="8" height="3" rx="1" fill="#2e8540" stroke="none" stroke-width="0.75"/>
+  <rect x="45" y="25" width="8" height="6" rx="0" fill="#c9ced3" stroke="#2b2b2b" stroke-width="1.5"/>
+  <rect x="46" y="26" width="6" height="4" rx="0" fill="#2e8540" stroke="none" stroke-width="0.75"/>
+  <rect x="48" y="27" width="2" height="2" rx="0" fill="#c9ced3" stroke="#2b2b2b" stroke-width="1.5"/>
+  <ellipse cx="30" cy="10" rx="3" ry="3" fill="#c9ced3" stroke="#8a857c" stroke-width="0.75"/>
+  <rect x="28.5" y="10" width="3" height="18" rx="0" fill="#c9ced3" stroke="#8a857c" stroke-width="0.75"/>
+  <ellipse cx="30" cy="28" rx="13" ry="13" fill="#f7f5f1" stroke="#2b2b2b" stroke-width="1.5" stroke-dasharray="5 3"/>
+  <circle cx="30" cy="28" r="7" fill="none" stroke="#8a857c" stroke-width="0.75"/>
+  <circle cx="30" cy="28" r="1" fill="#8a857c" stroke="#8a857c" stroke-width="0.75"/>
+  <circle cx="26" cy="26" r="1" fill="#8a857c" stroke="#8a857c" stroke-width="0.75"/>
+  <circle cx="34" cy="26" r="1" fill="#8a857c" stroke="#8a857c" stroke-width="0.75"/>
+  <circle cx="28" cy="31.5" r="1" fill="#8a857c" stroke="#8a857c" stroke-width="0.75"/>
+  <circle cx="32" cy="31.5" r="1" fill="#8a857c" stroke="#8a857c" stroke-width="0.75"/>
+</svg>

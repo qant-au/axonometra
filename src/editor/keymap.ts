@@ -1,9 +1,9 @@
-// Axonometra's keys: the shared keymap from @accurona/core (Accurona's
-// docs/keymap.md), and what each action does here. The `?` dialog, the
-// toolbar tooltips and this handler all read the same table.
+// Axonometra's keys: the keymap from src/core/keymap.ts (docs/keymap.md),
+// and what each action does here. The `?` dialog, the toolbar tooltips and
+// this handler all read the same table.
 import { createElement } from 'react';
 import { IconDeviceFloppy } from '@tabler/icons-react';
-import { keymapFor, resolveAction } from '@accurona/core';
+import { keymapFor, resolveAction } from '../core';
 import { SaveAction } from './editor/actions/SaveAction';
 import type { EditorInstance } from './instance/EditorInstance';
 import { Tool } from './editor/constants';

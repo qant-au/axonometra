@@ -1,9 +1,9 @@
-// The built-in catalogue. Furniture and equipment come from the shared element
-// library, @accurona/elements; doors and windows are still local
-// (wall-fittings.json and ./images).
-import manifest from '@accurona/elements/manifest.json';
+// The built-in catalogue. Furniture and equipment come from the element
+// library (elements/, built into ./elements); doors and windows are still
+// local (wall-fittings.json and ./images).
+import manifest from './elements/manifest.json';
 import wallFittings from './wall-fittings.json';
-import type { Facing, MountFrom } from '@accurona/core';
+import type { Facing, MountFrom } from '../../core';
 import type { Category, FurnitureData } from '../../stores/FurnitureStore';
 import type { CatalogueHeights } from '../../editor/mount';
 
@@ -29,15 +29,11 @@ interface ElementEntry {
 
 const elements = manifest.elements as ElementEntry[];
 
-// A glob cannot go through the package's exports, so it names the files.
-const elementImages = import.meta.glob(
-  '/node_modules/@accurona/elements/dist/plan/*.svg',
-  {
-    eager: true,
-    query: '?url',
-    import: 'default'
-  }
-) as Record<string, string>;
+const elementImages = import.meta.glob('./elements/plan/*.svg', {
+  eager: true,
+  query: '?url',
+  import: 'default'
+}) as Record<string, string>;
 
 const localImages = import.meta.glob('./images/*.svg', {
   eager: true,
@@ -170,9 +166,7 @@ export function resolveCatalogImage(imagePath: string): string {
   const placeholder = localImages['./images/placeholder.svg'];
   if (!SAFE_IMAGE_PATH.test(imagePath)) return placeholder;
   return (
-    elementImages[
-      `/node_modules/@accurona/elements/dist/plan/${imagePath}.svg`
-    ] ??
+    elementImages[`./elements/plan/${imagePath}.svg`] ??
     localImages[`./images/${imagePath}.svg`] ??
     placeholder
   );

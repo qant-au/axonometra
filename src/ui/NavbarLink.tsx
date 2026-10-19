@@ -1,5 +1,5 @@
 import { type Icon as TablerIcon } from '@tabler/icons-react';
-import { ToolButton } from '@accurona/ui';
+import { ToolButton } from './kit';
 
 interface NavbarLinkProps {
   icon: TablerIcon;
@@ -9,7 +9,7 @@ interface NavbarLinkProps {
   onClick?(): void;
 }
 
-// One tool on the left toolbar: Accurona's shared ToolButton.
+// One tool on the left toolbar: the kit's ToolButton (src/ui/kit).
 export function NavbarLink({
   icon: Icon,
   label,

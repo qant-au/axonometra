@@ -1,6 +1,6 @@
 import { Button, Stack, TextField } from '@mui/material';
 import { useEffect, useRef, useState } from 'react';
-import { AppDialog } from '@accurona/ui';
+import { AppDialog } from './kit';
 import { useStore } from '../stores/EditorStore';
 import { useInstance } from '../editor/instance/context';
 import { useUnitsStore } from '../stores/UnitsStore';

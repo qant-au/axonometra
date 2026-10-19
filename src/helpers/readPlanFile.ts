@@ -1,4 +1,4 @@
-import type { NotifyOptions } from '@accurona/ui';
+import type { NotifyOptions } from '../ui/kit';
 
 const MAX_BYTES = 5 * 1024 * 1024;
 // Browsers frequently report an empty MIME type for `.json` files, so the
@@ -11,7 +11,7 @@ const ALLOWED_TYPES = ['application/json', 'text/plain', ''];
  * the wrong type, or larger than 5 MB.
  *
  * `notify` is the editor's own notifier: the page-wide `notify` from
- * @accurona/ui reaches no display in an editor, so these warnings were
+ * src/ui/kit reaches no display in an editor, so these warnings were
  * never seen (sweep 2026-09-30).
  */
 export async function readPlanFile(

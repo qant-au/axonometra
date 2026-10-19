@@ -10,7 +10,7 @@ import { describe, expect, it } from 'vitest';
 const root = resolve(__dirname, '../../../..');
 const dirs = [
   resolve(root, 'src/res/catalog/images'),
-  resolve(root, 'node_modules/@accurona/elements/dist/plan')
+  resolve(root, 'src/res/catalog/elements/plan')
 ];
 
 function rootTag(svg: string): string {

@@ -3,7 +3,7 @@ import {
   isSceneDocument,
   serializeScene,
   validateScene
-} from '@accurona/core';
+} from '../../../core';
 import { DEFAULT_UNITS } from '../../../stores/UnitsStore';
 import type { EditorInstance } from '../../instance/EditorInstance';
 import {
@@ -24,7 +24,7 @@ import {
 // editor's Pixi containers are not involved: `Floor.serialize()` produces the
 // DTO, and `setPlan` rebuilds the floors from one.
 //
-// Files are Accurona scenes (sceneText, load). Plan v2, the format this
+// Files are Axonometra scenes (sceneText, load). Plan v2, the format this
 // editor used before, is read on load and never written. The in-memory plan
 // text (serialize) is what undo, the 3D view and the glTF export work on.
 export class Serializer {
@@ -34,7 +34,7 @@ export class Serializer {
   // not draw. A new or plan v2 document starts from an empty scene.
   private context: SceneContext = newContext();
 
-  /** The file to save: the plan as an Accurona scene. */
+  /** The file to save: the plan as an Axonometra scene. */
   public sceneText(): string {
     const plan = JSON.parse(this.serialize()) as FloorPlanSerializable;
     return serializeScene(planToScene(plan, this.context));

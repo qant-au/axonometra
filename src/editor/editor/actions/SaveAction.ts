@@ -15,7 +15,7 @@ export class SaveAction implements Action {
   constructor(private readonly inst: EditorInstance) {}
 
   public execute() {
-    // An Accurona scene: Axonometra's file format.
+    // A scene: Axonometra's file format.
     const data = this.inst.serializer.sceneText();
     const blob = new Blob([data], { type: 'application/json;charset=utf-8' });
     saveAs(blob, `axonometra-plan-${timestamp()}.json`);

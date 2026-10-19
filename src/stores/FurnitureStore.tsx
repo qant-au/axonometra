@@ -1,4 +1,4 @@
-import type { Facing, MountFrom } from '@accurona/core';
+import type { Facing, MountFrom } from '../core';
 import { useStore as useZustand } from 'zustand';
 import { createStore, type StoreApi } from 'zustand/vanilla';
 import { useInstance } from '../editor/instance/context';

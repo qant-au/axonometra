@@ -2,7 +2,7 @@
 import { useStore as useZustand } from 'zustand';
 import { createStore, type StoreApi } from 'zustand/vanilla';
 import { useInstance } from '../editor/instance/context';
-import type { LengthUnit } from '@accurona/core';
+import type { LengthUnit } from '../core';
 
 export const DEFAULT_UNITS: LengthUnit = 'mm';
 

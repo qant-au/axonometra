@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 270 270" width="540" height="540" preserveAspectRatio="none" stroke-linejoin="round" stroke-linecap="round">
+  <ellipse cx="135" cy="135" rx="25" ry="25" fill="#5b6770" stroke="#8a857c" stroke-width="0.75"/>
+  <ellipse cx="135" cy="135" rx="2.5" ry="2.5" fill="#c9ced3" stroke="#8a857c" stroke-width="0.75"/>
+  <polygon points="270,135 230.46,230.46 135,270 39.54,230.46 0,135 39.54,39.54 135,0 230.46,39.54" fill="#e4dfd6" stroke="#2b2b2b" stroke-width="1.5"/>
+  <polyline points="135,135 270,135" fill="none" stroke="#8a857c" stroke-width="0.75"/>
+  <polyline points="135,135 230.46,230.46" fill="none" stroke="#8a857c" stroke-width="0.75"/>
+  <polyline points="135,135 135,270" fill="none" stroke="#8a857c" stroke-width="0.75"/>
+  <polyline points="135,135 39.54,230.46" fill="none" stroke="#8a857c" stroke-width="0.75"/>
+  <polyline points="135,135 0,135" fill="none" stroke="#8a857c" stroke-width="0.75"/>
+  <polyline points="135,135 39.54,39.54" fill="none" stroke="#8a857c" stroke-width="0.75"/>
+  <polyline points="135,135 135,0" fill="none" stroke="#8a857c" stroke-width="0.75"/>
+  <polyline points="135,135 230.46,39.54" fill="none" stroke="#8a857c" stroke-width="0.75"/>
+  <circle cx="135" cy="135" r="6" fill="#f7f5f1" stroke="#2b2b2b" stroke-width="0.75"/>
+</svg>

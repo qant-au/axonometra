@@ -5,12 +5,12 @@
 // constructor; React reads it from context (./context.ts).
 import type { Renderer } from 'pixi.js';
 import type { StoreApi } from 'zustand/vanilla';
-import { formatLength, parseLength } from '@accurona/core';
+import { formatLength, parseLength } from '../../core';
 import {
   createNotifier,
   type Notifier,
   type NotifyOptions
-} from '@accurona/ui';
+} from '../../ui/kit';
 import { createEditorStore, type EditorStore } from '../../stores/EditorStore';
 import {
   createFloorPlanStore,

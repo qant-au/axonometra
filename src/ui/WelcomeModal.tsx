@@ -1,6 +1,6 @@
 import { ChangeEvent, useEffect, useRef, useState } from 'react';
 import { Box, Button, Dialog, DialogContent, Stack } from '@mui/material';
-import { NotificationHost } from '@accurona/ui';
+import { NotificationHost } from './kit';
 import {
   IconDatabase,
   IconPlus,

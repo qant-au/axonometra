@@ -49,3 +49,6 @@ CLAUDE.md
 # library build
 /dist-lib
 /.consumer
+
+# Element review sheets (npm run sheet), local only
+elements/review/

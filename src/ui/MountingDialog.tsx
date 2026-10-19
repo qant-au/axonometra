@@ -1,7 +1,7 @@
 import { Button, MenuItem, Stack, TextField } from '@mui/material';
 import { useEffect, useRef, useState } from 'react';
-import type { Facing, MountFrom } from '@accurona/core';
-import { AppDialog } from '@accurona/ui';
+import type { Facing, MountFrom } from '../core';
+import { AppDialog } from './kit';
 import { useStore } from '../stores/EditorStore';
 import { useInstance } from '../editor/instance/context';
 import { useUnitsStore } from '../stores/UnitsStore';

@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 110 110" width="220" height="220" preserveAspectRatio="none" stroke-linejoin="round" stroke-linecap="round">
+  <ellipse cx="55" cy="55" rx="30" ry="30" fill="#d9c3a3" stroke="#8a857c" stroke-width="0.75"/>
+  <ellipse cx="55" cy="55" rx="7" ry="7" fill="#d9c3a3" stroke="#8a857c" stroke-width="0.75"/>
+  <ellipse cx="55" cy="55" rx="54.25" ry="54.25" fill="#d9c3a3" stroke="#2b2b2b" stroke-width="1.5"/>
+  <circle cx="55" cy="55" r="30" fill="none" stroke="#8a857c" stroke-width="0.75" stroke-dasharray="3 3"/>
+</svg>

@@ -1,7 +1,7 @@
-// 3D models of the catalogue's elements, from @accurona/elements
-// (models.json). Only the 3D view imports this, so the models load with it.
-import manifest from '@accurona/elements/manifest.json';
-import models from '@accurona/elements/models.json';
+// 3D models of the catalogue's elements, from the element library
+// (./elements/models.json). Only the 3D view imports this, so the models load with it.
+import manifest from './elements/manifest.json';
+import models from './elements/models.json';
 
 /** One solid of a model, in cm: x right, y towards the front, z up. */
 export type ModelPart = { z: number; h: number; colour: string } & (

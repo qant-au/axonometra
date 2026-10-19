@@ -303,7 +303,7 @@ function boxFaces(box: Box): Face[] {
 
 /**
  * An item facing down shows only its back from above, so a down arrow stands
- * on the middle of its top, as Accurona's isometric drawings mark it.
+ * on the middle of its top, as isometric drawings mark it.
  */
 function downArrow(box: Box): [number, number][][] {
   const [tx, ty] = project(centroid(box.footprint), box.z1);

@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 150 50" width="300" height="100" preserveAspectRatio="none" stroke-linejoin="round" stroke-linecap="round">
+  <rect x="2" y="2" width="146" height="42" rx="0" fill="#e4dfd6" stroke="#8a857c" stroke-width="0.75"/>
+  <rect x="0" y="0" width="150" height="48" rx="0" fill="#f7f5f1" stroke="#8a857c" stroke-width="0.75"/>
+  <rect x="0.75" y="0.75" width="148.5" height="48.5" rx="0" fill="#e4dfd6" stroke="#2b2b2b" stroke-width="1.5"/>
+  <ellipse cx="37.5" cy="28" rx="22" ry="16" fill="#f7f5f1" stroke="#2b2b2b" stroke-width="0.75"/>
+  <ellipse cx="37.5" cy="29" rx="18.5" ry="12.5" fill="#d6e8f5" stroke="#8a857c" stroke-width="0.75"/>
+  <circle cx="37.5" cy="29" r="1.8" fill="#f7f5f1" stroke="#8a857c" stroke-width="0.75"/>
+  <circle cx="37.5" cy="4" r="1.8" fill="#c9ced3" stroke="#2b2b2b" stroke-width="0.75"/>
+  <polyline points="37.5,5.8 37.5,9" fill="none" stroke="#2b2b2b" stroke-width="0.75"/>
+  <ellipse cx="112.5" cy="28" rx="22" ry="16" fill="#f7f5f1" stroke="#2b2b2b" stroke-width="0.75"/>
+  <ellipse cx="112.5" cy="29" rx="18.5" ry="12.5" fill="#d6e8f5" stroke="#8a857c" stroke-width="0.75"/>
+  <circle cx="112.5" cy="29" r="1.8" fill="#f7f5f1" stroke="#8a857c" stroke-width="0.75"/>
+  <circle cx="112.5" cy="4" r="1.8" fill="#c9ced3" stroke="#2b2b2b" stroke-width="0.75"/>
+  <polyline points="112.5,5.8 112.5,9" fill="none" stroke="#2b2b2b" stroke-width="0.75"/>
+</svg>

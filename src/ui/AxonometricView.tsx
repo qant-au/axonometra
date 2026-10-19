@@ -12,7 +12,7 @@ import { IconRotate2, IconRotateClockwise2 } from '@tabler/icons-react';
 import { projectScene } from '../editor/axonometric/axonometric';
 import { sceneFromPlan } from '../editor/axonometric/sceneFromPlan';
 import { useInstance } from '../editor/instance/context';
-import { AppDialog } from '@accurona/ui';
+import { AppDialog } from './kit';
 import { wallsAndFurniture } from '../helpers/counted';
 
 interface Props {

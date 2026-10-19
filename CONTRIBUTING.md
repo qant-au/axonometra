@@ -36,6 +36,7 @@ npm run lint           # ESLint
 npm run format:check   # Prettier
 npx tsc --noEmit       # TypeScript, strict
 npm test               # Vitest unit tests
+npm run test:elements  # the element library's rules (node --test)
 ```
 
 For changes to the editor canvas or the embedding bridge, also run the Playwright suite.
@@ -72,10 +73,12 @@ Keep each commit to one logical change.
 
 - `src/editor/` - the Pixi.js floor-plan engine; `src/editor/scene3d/` - the 3D view.
 - `src/lib/` - the `<Axonometra>` component and the npm package's entry.
-- `src/ui/` - the React components, built on MUI and Accurona's shared UI (`@accurona/ui`).
+- `src/ui/` - the React components, built on MUI; `src/ui/kit/` - the theme, menus, panels and dialogs they share.
+- `src/core/` - the scene format (a Zod schema; `schema/` holds its generated JSON Schema), length units and the keymap.
 - `src/stores/` - Zustand stores.
 - `src/embed/` - the iframe `postMessage` bridge.
-- `src/res/catalog/` - the catalogue. Doors and windows are local (`wall-fittings.json`); furniture and equipment come from [Accurona](https://github.com/qant-au/accurona)'s `@accurona/elements` package. To ask for a new item or a change to one, open an issue on Accurona.
+- `src/res/catalog/` - the catalogue. Doors and windows are local (`wall-fittings.json`); furniture and equipment are built from the element library into `src/res/catalog/elements/`.
+- `elements/` - the element library: one model per item, rendered to plan and 3D ([elements/README.md](elements/README.md)). Change an element there, then `npm run build:elements` and `npm run test:elements`.
 - `e2e/` - Playwright specs; `src/**/__tests__/` - Vitest tests.
 - `Dockerfile`, `docker/` - the preview image.
 
@@ -83,7 +86,10 @@ Keep each commit to one logical change.
 
 - [README.md](README.md) - what Axonometra is and how to use it.
 - [EMBEDDING.md](EMBEDDING.md) - the embedding contract: `postMessage`, URL parameters, the origin allowlist, signed plans.
-- [PLAN-FORMAT.md](PLAN-FORMAT.md) - the saved plan format.
+- [docs/scene-format.md](docs/scene-format.md) - the scene format, the file Axonometra saves and opens.
+- [docs/keymap.md](docs/keymap.md) - the keyboard shortcuts and gestures, and how they differ from Excalidraw's.
+- [elements/README.md](elements/README.md) - the element library: how an item is modelled.
+- [PLAN-FORMAT.md](PLAN-FORMAT.md) - the plan format Axonometra used before scenes (read only).
 - [CHANGELOG.md](CHANGELOG.md) - release notes.
 
 ## Licence

@@ -1,7 +1,7 @@
 # Axonometra plan file format (legacy, read only)
 
 > **Axonometra no longer writes this format.** Plans are saved as
-> [Accurona scenes](https://github.com/qant-au/accurona/blob/main/docs/scene-format.md). A file in
+> [scenes](docs/scene-format.md). A file in
 > this format still opens (from disk, local storage or `axo:load`), and the
 > next save writes it as a scene. This document stays so existing files can
 > be read and converted; the mapping to the scene is in the scene format's
@@ -177,7 +177,7 @@ back to a placeholder texture.
 
 ## Out of scope
 
-- The catalog manifest (`@accurona/elements/manifest.json` and
+- The catalog manifest (`src/res/catalog/elements/manifest.json` and
   `src/res/catalog/wall-fittings.json`) — that ships with the
   build and is not part of the plan payload.
 - UI state (selected tool, snap mode, viewport position). The plan

@@ -17,7 +17,7 @@ export function EmbedBridge({
     const handle = createInboundHandler({
       publicKeys: embedConfig.planPublicKeys,
       load: (planText) => api.current?.load(planText) ?? false,
-      // The saved file: an Accurona scene.
+      // The saved file: an Axonometra scene.
       serialize: () => api.current?.getSceneText() ?? '',
       exportGlb: () => {
         if (!api.current) return Promise.reject(new Error('Not ready'));

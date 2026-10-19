@@ -30,7 +30,7 @@ import {
   gridLines,
   toPixelCentre
 } from './grid';
-import { isTypingTarget } from '@accurona/core';
+import { isTypingTarget } from '../../core';
 
 // A press that moves less than this, in screen pixels, is a click, not a
 // marquee.

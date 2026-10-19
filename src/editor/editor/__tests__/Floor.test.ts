@@ -5,7 +5,7 @@ vi.mock('pixi.js', async () => {
   return createPixiMock();
 });
 vi.mock('../../../helpers/isMobile', () => ({ isMobile: false }));
-vi.mock('@accurona/ui', () => ({
+vi.mock('../../../ui/kit', () => ({
   notify: vi.fn()
 }));
 vi.mock('../../../api/api-client', () => ({

@@ -4,7 +4,7 @@
 // the top of the item it stands on.
 // A ceiling item is resolved against the floor's wall height every time it is
 // drawn, so it follows the ceiling when that changes.
-import type { Facing, MountFrom } from '@accurona/core';
+import type { Facing, MountFrom } from '../core';
 
 /** The catalogue's word on an element: its height and mount, plan units (cm). */
 export interface CatalogueHeights {

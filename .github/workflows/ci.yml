@@ -44,6 +44,9 @@ jobs:
       - name: Unit tests
         run: npx vitest run
 
+      - name: Element library tests
+        run: npm run test:elements
+
       - name: Build
         run: npx vite build
 

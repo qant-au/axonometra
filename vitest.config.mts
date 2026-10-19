@@ -14,7 +14,9 @@ export default defineConfig({
       'build',
       'e2e',
       'playwright-out',
-      '.consumer'
+      '.consumer',
+      // node --test suites (npm run test:elements)
+      'elements'
     ]
   }
 });

@@ -37,10 +37,10 @@ import {
   IconKeyboard,
   IconStack2
 } from '@tabler/icons-react';
-import type { LengthUnit } from '@accurona/core';
+import type { LengthUnit } from '../../core';
 import { useUnitsStore } from '../../stores/UnitsStore';
 import { SetUnitsAction } from '../../editor/editor/actions/SetUnitsAction';
-import { SidePanel, ToolMenu } from '@accurona/ui';
+import { SidePanel, ToolMenu } from '../kit';
 import { useStore } from '../../stores/EditorStore';
 import { useFloorPlanStore } from '../../stores/FloorPlanStore';
 import { ChangeFloorAction } from '../../editor/editor/actions/ChangeFloorAction';
@@ -198,7 +198,7 @@ function AddMenu() {
   const inst = useInstance();
   const drawing = ADD_TOOLS.includes(useStore((s) => s.activeTool));
   const [drawerOpened, setDrawerOpened] = useState(false);
-  // The menu button is Accurona's; it says which of its tools is on the way
+  // The menu button is the kit's; it says which of its tools is on the way
   // View, Edit and Erase say theirs are pressed.
   const addButton = useRef<HTMLSpanElement>(null);
   useEffect(() => {

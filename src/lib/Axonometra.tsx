@@ -18,11 +18,11 @@ import {
 } from '@mui/material';
 import { TOOLBAR_WIDTH } from '../editor/editor/constants';
 import {
-  createAccuronaTheme,
+  createAxonometraTheme,
   NotificationHost,
   type NotifyOptions
-} from '@accurona/ui';
-import type { LengthUnit, Scene } from '@accurona/core';
+} from '../ui/kit';
+import type { LengthUnit, Scene } from '../core';
 import {
   EditorInstance,
   type ThemeMode
@@ -36,7 +36,7 @@ import { useStore } from '../stores/EditorStore';
 export interface AxonometraApi {
   /** Opens a scene, or a plan v1/v2 file (saved as a scene from then on). */
   load(file: string | object): boolean;
-  /** The plan as an Accurona scene, the file Save writes. */
+  /** The plan as an Axonometra scene, the file Save writes. */
   getScene(): Scene;
   /** getScene() as the text of the file. */
   getSceneText(): string;
@@ -71,7 +71,7 @@ export interface AxonometraProps {
   /** Light or dark. Alt + Shift + D switches it and calls onThemeModeChange. */
   themeMode?: ThemeMode;
   onThemeModeChange?: (mode: ThemeMode) => void;
-  /** A host MUI theme, used instead of Accurona's. */
+  /** A host MUI theme, used instead of Axonometra's own. */
   theme?: Theme;
   /**
    * Ctrl/Cmd + S. Receives the scene file's text; a returned string is the
@@ -130,10 +130,10 @@ function Themed({
   theme?: Theme;
   children: React.ReactNode;
 }) {
-  // Accurona's theme, in the mode the editor is in. No CSS variables: MUI
+  // Axonometra's theme, in the mode the editor is in. No CSS variables: MUI
   // would write them to the host page's :root.
   const mode = useStore((s) => s.theme);
-  const own = useMemo(() => createAccuronaTheme(mode), [mode]);
+  const own = useMemo(() => createAxonometraTheme(mode), [mode]);
   return <ThemeProvider theme={theme ?? own}>{children}</ThemeProvider>;
 }
 

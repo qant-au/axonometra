@@ -60,7 +60,7 @@ export function Planner() {
 The editor fills the box you give it, and several can share a page. React, MUI and
 Emotion are peer dependencies, so your app provides one copy of each. The props, the
 ref API and the iframe alternative are in [EMBEDDING.md](EMBEDDING.md). Plans are
-saved as [Accurona scenes](https://github.com/qant-au/accurona/blob/main/docs/scene-format.md).
+saved as [scenes](docs/scene-format.md).
 Files in the plan format Axonometra used before ([PLAN-FORMAT.md](PLAN-FORMAT.md)) still open, and save as scenes.
 
 ## Using it
@@ -70,7 +70,7 @@ Files in the plan format Axonometra used before ([PLAN-FORMAT.md](PLAN-FORMAT.md
 - **Ctrl+S** (Cmd+S on macOS) saves the current plan to your browser's local storage
   (in the app; a host app decides with `onSave`).
 - The toolbar **Save** button downloads the plan as an `axonometra-plan-*.json` file, an
-  Accurona scene. A scene opened from a file keeps everything Axonometra does not draw
+  Axonometra scene. A scene opened from a file keeps everything Axonometra does not draw
   (other views, object properties and connections) when it is saved again.
 - Load a plan from the welcome dialog ("Load from disk" / "Load from local save") or the
   toolbar's **Load plan** button. A scene or an old plan file both open; only scenes are
@@ -126,11 +126,11 @@ WebGL, and three.js is only downloaded the first time the view is opened.
 
 ### Shortcuts
 
-Axonometra binds the [Accurona](https://github.com/qant-au/accurona) keymap, aligned with
+Axonometra's keymap is aligned with
 [Excalidraw](https://github.com/excalidraw/excalidraw): someone coming from Excalidraw
 should not have to retrain. Press **?** (or the toolbar's **Keyboard shortcuts** button) for the
 full list and every deliberate difference from Excalidraw. The specification is
-[Accurona's `docs/keymap.md`](https://github.com/qant-au/accurona/blob/main/docs/keymap.md).
+[docs/keymap.md](docs/keymap.md).
 
 | Key or gesture                           | Does                                                     |
 | ---------------------------------------- | -------------------------------------------------------- |

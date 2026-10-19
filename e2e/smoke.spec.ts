@@ -74,7 +74,7 @@ test('a load from the welcome dialog that fails leaves it open', async ({
   await expect(
     welcome.getByRole('button', { name: /new plan/i })
   ).toBeVisible();
-  const scene = { format: 'accurona-scene', version: 1, icons: {} };
+  const scene = { format: 'axonometra-scene', version: 1, icons: {} };
   await welcome.locator('input[type=file]').setInputFiles({
     name: 'bad-scene.json',
     mimeType: 'application/json',
@@ -117,7 +117,7 @@ test('the same bad file loaded twice shows one notification', async ({
     name: 'bad-scene.json',
     mimeType: 'application/json',
     buffer: Buffer.from(
-      JSON.stringify({ format: 'accurona-scene', version: 1, icons: {} })
+      JSON.stringify({ format: 'axonometra-scene', version: 1, icons: {} })
     )
   };
   const input = welcome.locator('input[type=file]');

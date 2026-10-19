@@ -1,10 +1,6 @@
 import { useMemo } from 'react';
-import {
-  AXONOMETRA_WALK_KEYS,
-  DIFFERENCES,
-  shortcutSections
-} from '@accurona/core';
-import { KeyboardShortcutsDialog } from '@accurona/ui';
+import { AXONOMETRA_WALK_KEYS, DIFFERENCES, shortcutSections } from '../core';
+import { KeyboardShortcutsDialog } from './kit';
 import { KEYMAP } from '../editor/keymap';
 import { useStore } from '../stores/EditorStore';
 

@@ -1,5 +1,5 @@
 // Converts between the editor's in-memory plan (FloorPlanSerializable, cm,
-// numeric ids) and the Accurona scene format, Axonometra's file format.
+// numeric ids) and the scene format, Axonometra's file format.
 //
 // The scene is what is saved and opened. The in-memory plan is what the
 // editor, undo and the 3D view work on. A scene holds more than Axonometra
@@ -21,7 +21,7 @@ import {
   type Scene,
   type SceneObject,
   type Wall as SceneWall
-} from '@accurona/core';
+} from '../../../core';
 import { getPlacementDefaults } from '../../../res/catalog';
 import { flipFacing } from '../../mount';
 import { INTERIOR_WALL_THICKNESS, METER, WALL_THICKNESS } from '../constants';

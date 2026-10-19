@@ -1,10 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import {
+  LEGACY_SCENE_FORMAT,
   emptyScene,
   validateScene,
   type PlanView,
   type Scene
-} from '@accurona/core';
+} from '../../../core';
 import type { FloorPlanSerializable } from '../persistence/FloorPlanSerializable';
 import { newContext, planToScene, sceneToPlan } from '../persistence/sceneFile';
 
@@ -206,7 +207,7 @@ describe('plan <-> scene', () => {
 
   it('opens a hand-written scene, sizing items from the element library', () => {
     const scene: Scene = {
-      format: 'accurona-scene',
+      format: 'axonometra-scene',
       version: 2,
       id: 'comms-room',
       objects: [{ id: 'rack-1', element: 'rack-600x1200-42u' }],
@@ -229,7 +230,7 @@ describe('plan <-> scene', () => {
 
   it('keeps a wall exterior whichever way the scene runs it', () => {
     const scene: Scene = {
-      format: 'accurona-scene',
+      format: 'axonometra-scene',
       version: 2,
       id: 'room',
       objects: [],
@@ -343,7 +344,7 @@ describe('mounting and facing', () => {
 
   it('opens a version 1 file with every item where it was, floor-referenced', () => {
     const v1 = {
-      format: 'accurona-scene',
+      format: LEGACY_SCENE_FORMAT,
       version: 1,
       id: 'old',
       objects: [
@@ -406,7 +407,7 @@ describe('mounting and facing', () => {
 
   it('keeps an item standing on another, and the support it names', () => {
     const scene: Scene = {
-      format: 'accurona-scene',
+      format: 'axonometra-scene',
       version: 2,
       id: 'desk',
       objects: [

@@ -2,7 +2,7 @@
 // what its height is measured from, that height, the item's own height and
 // which way it faces (scene format version 2, "Mounting and facing").
 // Lengths are plan units (cm), as the length dialogs type them.
-import type { Facing, MountFrom } from '@accurona/core';
+import type { Facing, MountFrom } from '../core';
 import { getPlacementDefaults } from '../res/catalog';
 import { METER } from './editor/constants';
 import type { Furniture } from './editor/objects/Furniture';

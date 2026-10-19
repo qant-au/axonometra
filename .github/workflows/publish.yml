@@ -31,6 +31,7 @@ jobs:
       - run: npm ci
       - run: npm run lint
       - run: npx vitest run
+      - run: npm run test:elements
       - run: npm run build:lib
       # A re-pushed or re-run tag whose version is already on npm has nothing to
       # publish: succeed without publishing instead of failing on "cannot

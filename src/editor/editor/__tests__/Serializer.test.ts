@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { LEGACY_SCENE_FORMAT } from '../../../core';
 import { Serializer } from '../persistence/Serializer';
 import { FloorSerializable } from '../persistence/FloorSerializable';
 import {
@@ -186,7 +187,7 @@ describe('Serializer scene files', () => {
 
   it('opens a scene and saves back the scene it opened', () => {
     const scene = {
-      format: 'accurona-scene',
+      format: LEGACY_SCENE_FORMAT, // saved under the current name
       version: 1,
       id: 'comms',
       title: 'Comms room',
@@ -205,7 +206,7 @@ describe('Serializer scene files', () => {
       0
     );
     const saved = JSON.parse(serializer.sceneText());
-    expect(saved.format).toBe('accurona-scene');
+    expect(saved.format).toBe('axonometra-scene');
     expect(saved.id).toBe('comms');
     expect(saved.title).toBe('Comms room');
     expect(saved.objects).toEqual([
@@ -216,7 +217,7 @@ describe('Serializer scene files', () => {
 
   it('refuses an invalid scene whole', () => {
     const bad = {
-      format: 'accurona-scene',
+      format: 'axonometra-scene',
       version: 1,
       id: 'x',
       objects: [{ id: 'a', colour: 'red' }]
@@ -239,7 +240,7 @@ describe('Serializer scene files', () => {
     ).toBe(true);
     seedPlan([makeFakeFloor({ wallNodeId: 0 })], 0);
     const saved = JSON.parse(serializer.sceneText());
-    expect(saved.format).toBe('accurona-scene');
+    expect(saved.format).toBe('axonometra-scene');
     expect(saved.views[0].kind).toBe('plan');
     expect(saved.floors).toBeUndefined();
   });

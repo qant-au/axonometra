@@ -2,3 +2,7 @@ STAGE*-REVIEW.md
 # The library build and the consumer app built from it.
 dist-lib/
 .consumer/
+# The element library: models are coordinate data, one part per line reads
+# better than Prettier's layout; the built output is generated.
+elements/src/elements/
+src/res/catalog/elements/

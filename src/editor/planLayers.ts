@@ -2,7 +2,7 @@
 // ceiling. The plan can show both (ceiling items lighter, as a reflected
 // ceiling plan draws them over a floor plan), the floor items only, or the
 // ceiling items only (a reflected ceiling plan).
-import type { MountFrom } from '@accurona/core';
+import type { MountFrom } from '../core';
 import { getItemHeights } from '../res/catalog';
 import { METER } from './editor/constants';
 import { mountFromOf, resolveMount } from './mount';
