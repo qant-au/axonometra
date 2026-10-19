@@ -30,7 +30,13 @@
     },
     "units": {
       "type": "string",
-      "enum": ["mm", "cm", "m", "in", "ft-in"]
+      "enum": [
+        "mm",
+        "cm",
+        "m",
+        "in",
+        "ft-in"
+      ]
     },
     "objects": {
       "maxItems": 10000,
@@ -154,12 +160,16 @@
                         "maxLength": 100
                       }
                     },
-                    "required": ["source"],
+                    "required": [
+                      "source"
+                    ],
                     "additionalProperties": false
                   }
                 }
               },
-              "required": ["id"],
+              "required": [
+                "id"
+              ],
               "additionalProperties": false
             }
           },
@@ -187,12 +197,16 @@
                   "maxLength": 100
                 }
               },
-              "required": ["source"],
+              "required": [
+                "source"
+              ],
               "additionalProperties": false
             }
           }
         },
-        "required": ["id"],
+        "required": [
+          "id"
+        ],
         "additionalProperties": false
       }
     },
@@ -280,12 +294,18 @@
                   "maxLength": 100
                 }
               },
-              "required": ["source"],
+              "required": [
+                "source"
+              ],
               "additionalProperties": false
             }
           }
         },
-        "required": ["id", "from", "to"],
+        "required": [
+          "id",
+          "from",
+          "to"
+        ],
         "additionalProperties": false
       }
     },
@@ -363,7 +383,11 @@
                             "maximum": 10000000
                           }
                         },
-                        "required": ["id", "x", "y"],
+                        "required": [
+                          "id",
+                          "x",
+                          "y"
+                        ],
                         "additionalProperties": false
                       }
                     },
@@ -393,12 +417,18 @@
                             "pattern": "^[A-Za-z0-9_-]{1,64}$"
                           }
                         },
-                        "required": ["id", "from", "to"],
+                        "required": [
+                          "id",
+                          "from",
+                          "to"
+                        ],
                         "additionalProperties": false
                       }
                     }
                   },
-                  "required": ["id"],
+                  "required": [
+                    "id"
+                  ],
                   "additionalProperties": false
                 }
               },
@@ -448,7 +478,11 @@
                     },
                     "mountFrom": {
                       "type": "string",
-                      "enum": ["floor", "ceiling", "surface"]
+                      "enum": [
+                        "floor",
+                        "ceiling",
+                        "surface"
+                      ]
                     },
                     "mountMm": {
                       "type": "number",
@@ -488,7 +522,9 @@
                           "pattern": "^[A-Za-z0-9_-]{1,64}$"
                         }
                       },
-                      "required": ["wall"],
+                      "required": [
+                        "wall"
+                      ],
                       "additionalProperties": false
                     },
                     "layer": {
@@ -499,12 +535,22 @@
                       "type": "boolean"
                     }
                   },
-                  "required": ["object", "floor", "x", "y"],
+                  "required": [
+                    "object",
+                    "floor",
+                    "x",
+                    "y"
+                  ],
                   "additionalProperties": false
                 }
               }
             },
-            "required": ["id", "name", "kind", "floors"],
+            "required": [
+              "id",
+              "name",
+              "kind",
+              "floors"
+            ],
             "additionalProperties": false
           },
           {
@@ -529,7 +575,10 @@
               },
               "kind": {
                 "type": "string",
-                "enum": ["iso", "schematic"]
+                "enum": [
+                  "iso",
+                  "schematic"
+                ]
               },
               "placements": {
                 "maxItems": 10000,
@@ -555,7 +604,10 @@
                           "maximum": 1000
                         }
                       },
-                      "required": ["x", "y"],
+                      "required": [
+                        "x",
+                        "y"
+                      ],
                       "additionalProperties": false
                     },
                     "labelHeight": {
@@ -575,7 +627,10 @@
                       "type": "boolean"
                     }
                   },
-                  "required": ["object", "tile"],
+                  "required": [
+                    "object",
+                    "tile"
+                  ],
                   "additionalProperties": false
                 }
               },
@@ -615,10 +670,17 @@
                                   },
                                   "side": {
                                     "type": "string",
-                                    "enum": ["+X", "-X", "+Y", "-Y"]
+                                    "enum": [
+                                      "+X",
+                                      "-X",
+                                      "+Y",
+                                      "-Y"
+                                    ]
                                   }
                                 },
-                                "required": ["object"],
+                                "required": [
+                                  "object"
+                                ],
                                 "additionalProperties": false
                               },
                               {
@@ -629,7 +691,9 @@
                                     "pattern": "^[A-Za-z0-9_-]{1,64}$"
                                   }
                                 },
-                                "required": ["anchor"],
+                                "required": [
+                                  "anchor"
+                                ],
                                 "additionalProperties": false
                               },
                               {
@@ -649,17 +713,25 @@
                                         "maximum": 1000
                                       }
                                     },
-                                    "required": ["x", "y"],
+                                    "required": [
+                                      "x",
+                                      "y"
+                                    ],
                                     "additionalProperties": false
                                   }
                                 },
-                                "required": ["tile"],
+                                "required": [
+                                  "tile"
+                                ],
                                 "additionalProperties": false
                               }
                             ]
                           }
                         },
-                        "required": ["id", "ref"],
+                        "required": [
+                          "id",
+                          "ref"
+                        ],
                         "additionalProperties": false
                       }
                     },
@@ -678,11 +750,20 @@
                     },
                     "style": {
                       "type": "string",
-                      "enum": ["SOLID", "DOTTED", "DASHED"]
+                      "enum": [
+                        "SOLID",
+                        "DOTTED",
+                        "DASHED"
+                      ]
                     },
                     "direction": {
                       "type": "string",
-                      "enum": ["START_TO_END", "END_TO_START", "BOTH", "NONE"]
+                      "enum": [
+                        "START_TO_END",
+                        "END_TO_START",
+                        "BOTH",
+                        "NONE"
+                      ]
                     },
                     "glyph": {
                       "type": "string",
@@ -711,7 +792,11 @@
                     },
                     "animationFlow": {
                       "type": "string",
-                      "enum": ["forward", "reverse", "both"]
+                      "enum": [
+                        "forward",
+                        "reverse",
+                        "both"
+                      ]
                     },
                     "layer": {
                       "type": "string",
@@ -721,7 +806,10 @@
                       "type": "boolean"
                     }
                   },
-                  "required": ["id", "anchors"],
+                  "required": [
+                    "id",
+                    "anchors"
+                  ],
                   "additionalProperties": false
                 }
               },
@@ -749,7 +837,10 @@
                           "maximum": 1000
                         }
                       },
-                      "required": ["x", "y"],
+                      "required": [
+                        "x",
+                        "y"
+                      ],
                       "additionalProperties": false
                     },
                     "to": {
@@ -766,7 +857,10 @@
                           "maximum": 1000
                         }
                       },
-                      "required": ["x", "y"],
+                      "required": [
+                        "x",
+                        "y"
+                      ],
                       "additionalProperties": false
                     },
                     "color": {
@@ -803,7 +897,11 @@
                       "type": "boolean"
                     }
                   },
-                  "required": ["id", "from", "to"],
+                  "required": [
+                    "id",
+                    "from",
+                    "to"
+                  ],
                   "additionalProperties": false
                 }
               },
@@ -831,7 +929,10 @@
                           "maximum": 1000
                         }
                       },
-                      "required": ["x", "y"],
+                      "required": [
+                        "x",
+                        "y"
+                      ],
                       "additionalProperties": false
                     },
                     "content": {
@@ -845,7 +946,10 @@
                     },
                     "orientation": {
                       "type": "string",
-                      "enum": ["X", "Y"]
+                      "enum": [
+                        "X",
+                        "Y"
+                      ]
                     },
                     "group": {
                       "type": "string",
@@ -859,7 +963,11 @@
                       "type": "boolean"
                     }
                   },
-                  "required": ["id", "tile", "content"],
+                  "required": [
+                    "id",
+                    "tile",
+                    "content"
+                  ],
                   "additionalProperties": false
                 }
               },
@@ -889,12 +997,18 @@
                       "type": "boolean"
                     }
                   },
-                  "required": ["id"],
+                  "required": [
+                    "id"
+                  ],
                   "additionalProperties": false
                 }
               }
             },
-            "required": ["id", "name", "kind"],
+            "required": [
+              "id",
+              "name",
+              "kind"
+            ],
             "additionalProperties": false
           }
         ]
@@ -918,7 +1032,10 @@
             "type": "boolean"
           }
         },
-        "required": ["id", "name"],
+        "required": [
+          "id",
+          "name"
+        ],
         "additionalProperties": false
       }
     },
@@ -948,7 +1065,11 @@
             "type": "boolean"
           }
         },
-        "required": ["id", "name", "url"],
+        "required": [
+          "id",
+          "name",
+          "url"
+        ],
         "additionalProperties": false
       }
     },
@@ -967,7 +1088,10 @@
             "pattern": "^#[0-9a-fA-F]{6}$"
           }
         },
-        "required": ["id", "value"],
+        "required": [
+          "id",
+          "value"
+        ],
         "additionalProperties": false
       }
     },
@@ -995,11 +1119,18 @@
             "maxLength": 100
           }
         },
-        "required": ["source"],
+        "required": [
+          "source"
+        ],
         "additionalProperties": false
       }
     }
   },
-  "required": ["format", "version", "id", "objects"],
+  "required": [
+    "format",
+    "version",
+    "id",
+    "objects"
+  ],
   "additionalProperties": false
 }

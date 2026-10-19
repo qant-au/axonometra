@@ -6,3 +6,5 @@ dist-lib/
 # better than Prettier's layout; the built output is generated.
 elements/src/elements/
 src/res/catalog/elements/
+# Generated from the Zod schema (src/core/__tests__/jsonSchema.test.ts).
+schema/
