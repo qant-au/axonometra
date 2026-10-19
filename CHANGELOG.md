@@ -9,6 +9,8 @@ Expect breaking changes between minor versions until v1.0.0.
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-10-20
+
 ### Added
 
 - **Set a floor's wall height in the editor.** **Wall height...** on the toolbar's **Floor and ceiling** menu, or on the right-click menu over an empty part of the plan, sets the current floor's height, floor to ceiling, as one undo step. Ceiling items keep their gap below the ceiling and move with it in the plan's height tags, the axonometric view and the 3D view, and what stands on them follows; a height that would leave a ceiling item hanging below the floor is refused. It was only read from the scene file (`wallHeightMm`) before.
@@ -241,7 +243,8 @@ Initial Axonometra release after the fork from
 - Upstream-only assets and the thesis PDF.
 - Unused dependencies; moved `@types/*` to `devDependencies`.
 
-[Unreleased]: https://github.com/qant-au/axonometra/compare/v0.6.0...HEAD
+[Unreleased]: https://github.com/qant-au/axonometra/compare/v0.7.0...HEAD
+[0.7.0]: https://github.com/qant-au/axonometra/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/qant-au/axonometra/compare/v0.5.2...v0.6.0
 [0.5.2]: https://github.com/qant-au/axonometra/compare/v0.5.0...v0.5.2
 [0.5.0]: https://github.com/qant-au/axonometra/compare/v0.4.0...v0.5.0
