@@ -5,6 +5,7 @@
 import { SHIPD_EXAMPLES } from "./examples.ts";
 import { asymmetricBody, foilOutrigger, outriggerBodies, placeBody, steppedBody, strutBody } from "./forms.ts";
 import { parametricHull } from "./parametric.ts";
+import { plateHull } from "./plate.ts";
 import { bulbGeometry, foilGeometry, type FoilSpec, type PartGeometry } from "./parts.ts";
 import { pontoonBody, revolutionBody } from "./revolution.ts";
 import { shipdBody } from "./shipd.ts";
@@ -79,6 +80,12 @@ export const CATALOGUE: CatalogueEntry[] = [
       const { hull } = shipd("rib-6.5m");
       return { hull, tubes: [ribTube(hull.bodies[0], { diameter: 0.5 })] };
     },
+  },
+  {
+    name: "plate-alloy-fishing-6.5m",
+    group: "Small craft",
+    note: "plate aluminium fishing boat: hard chine, 18° deadrise aft, a wide transom for twin outboards",
+    build: () => ({ hull: plateHull({ length: 6.5, beam: 2.45, transom: 2.3, chineBeam: 2.0, draft: 0.3, freeboard: 0.9, deadrise: 18 }) }),
   },
   {
     name: "stepped-planing-10m",
