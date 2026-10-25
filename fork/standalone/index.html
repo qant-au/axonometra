@@ -21,11 +21,17 @@
     <script type="module">
       // The planner on its own: the plan is kept in this browser, and there is no live data.
       // ?plan=<name> keeps a separate plan; ?fresh starts an empty one in memory (nothing kept); ?ha shows the parts that
-      // need a Home Assistant behind the host (off by default: there is none here).
+      // need a Home Assistant behind the host (off by default: there is none here); ?example=<name> opens one of the
+      // example plans in memory (frontend/src/plans/examples.ts).
       import { browserStore, memoryStore, mountAccurona } from "./accurona-host.js";
 
       const params = new URLSearchParams(location.search);
-      const store = params.has("fresh") ? memoryStore() : browserStore(params.get("plan") ?? "default");
+      const example = params.get("example");
+      const store = example
+        ? memoryStore({ building: (await import("./accurona-plans.js")).examplePlan(example).building })
+        : params.has("fresh")
+          ? memoryStore()
+          : browserStore(params.get("plan") ?? "default");
       window.accurona = await mountAccurona(document.querySelector("#plan"), { store, language: params.get("lang") ?? undefined, homeAssistant: params.has("ha") });
     </script>
   </body>

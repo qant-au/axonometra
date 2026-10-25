@@ -99,6 +99,14 @@ try {
   const kept = url.replace("?fresh", "?plan=smoke-ha");
   if (await ttChip(kept)) failures.push("the time-travel chip shows with no Home Assistant");
   if (!(await ttChip(`${kept}&ha`))) failures.push("with ?ha the time-travel chip does not show");
+
+  // an example plan opens in memory (?example=), all its rooms in the 3D view (frontend/src/plans/examples.ts)
+  await page.goto(url.replace("?fresh", "?example=peptide-lab"), { waitUntil: "networkidle0" });
+  try {
+    await page.waitForFunction(() => window.accurona?.element?.shadowRoot?.querySelectorAll(".fp3d-room-chip").length === 13, { timeout: 15000 });
+  } catch {
+    failures.push("?example=peptide-lab does not open the lab's 13 rooms");
+  }
 } finally {
   await browser.close();
   server.close();
@@ -108,4 +116,4 @@ if (failures.length) {
   console.error(failures.map((f) => `FAIL ${f}`).join("\n"));
   process.exit(1);
 }
-console.log("ok   standalone planner mounts, opens the editor, keeps a saved plan, hides Home Assistant's parts unless asked (dist/standalone-smoke.png)");
+console.log("ok   standalone planner mounts, opens the editor, keeps a saved plan, hides Home Assistant's parts unless asked, opens an example plan (dist/standalone-smoke.png)");
