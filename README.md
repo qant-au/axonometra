@@ -13,12 +13,22 @@ by Mastershort (MIT). Upstream releases are merged in on a schedule, and there i
 to merge Accurona back: it is going somewhere a house-planning project would not carry.
 See [NOTICE](NOTICE) for the credit and [LICENSE](LICENSE) for the terms.
 
+> **Early days.** Accurona is in its early stages, with a lot of work planned and new things
+> landing all the time. The [samples below](#homes-and-rooms) are current as of 26 October 2026,
+> and more are on the way, so check back soon. If you'd like to follow along, a star or a watch
+> on the repository is very welcome, and so are suggestions: open an
+> [issue](https://github.com/qant-au/accurona/issues) with yours.
+
 ## Status
 
-Early. Today Accurona is NeonPlan 3D 1.23.1 under its own name, as a Home Assistant
-integration that installs **beside** NeonPlan 3D without either one touching the other:
-its own integration domain (`accurona`), panel, card, custom elements, storage and static
-path.
+Early. The engine is NeonPlan 3D 1.23.1's plan model, editor and 3D view, under its own
+name, and it runs in two hosts:
+
+- **Standalone**, with no Home Assistant anywhere: a plan kept in the browser, embeddable
+  in any page (see [Embedding](#embedding)). This is the base everything else builds on.
+- **Home Assistant**, as an optional integration that installs **beside** NeonPlan 3D
+  without either one touching the other: its own integration domain (`accurona`), panel,
+  card, custom elements, storage and static path.
 
 What stays compatible with NeonPlan 3D:
 
@@ -27,19 +37,73 @@ What stays compatible with NeonPlan 3D:
 
 ## Where it is going
 
-1. **An engine without Home Assistant.** The plan model, editor and 3D viewer as an
-   embeddable package with its own API, so other hosts can use it. Home Assistant becomes
-   one optional host.
-2. **A Signal K Server plugin first.** Signal K is the open data standard on many boats,
-   and its server installs plugins from its own app store. The plugin is the first host
-   after Home Assistant.
-3. **Accurate hulls.** A hull interface built on cross-sections at stations, then a
+1. **Accurate hulls.** A hull interface built on cross-sections at stations, then a
    library of real hull families (fin-keel sloop, semi-displacement and planing
    cruisers, RIB, catamaran, launch) that you adjust to your own boat's measurements.
-4. **A first-run wizard.** Read the boat's details from the Signal K server (name,
-   length, beam, draft, tanks, engines, batteries), pick a hull, confirm the equipment,
-   and land on your boat on the water in 3D. The wizard writes an ordinary plan that the
-   editor then refines.
+2. **Live data from outside.** The standalone host takes a signal source; Signal K is the
+   first one, and once the marine work is in, a Signal K Server plugin installable from
+   its app store.
+3. **A first-run wizard**, once there is a library of boats and equipment to pick from:
+   read the boat's details from Signal K, pick a hull, confirm the equipment, and land on
+   your boat on the water in 3D, as an ordinary plan the editor then refines.
+
+## Homes and Rooms
+
+Accurona plans a whole building or just the rooms inside one. These example plans are the
+starting set: the structure only, not yet furnished. Each opens in the standalone page with
+`index.html?example=<name>` (see [demos](demos/README.md)).
+
+![A two-storey family home](docs/demos/plan-family-home-two-storey.gif)
+![A ranch home with a full basement](docs/demos/plan-ranch-home-basement.gif)
+![A large acreage home](docs/demos/plan-acreage-home.gif)
+![A small peptide laboratory behind its airlocks](docs/demos/plan-peptide-lab.gif)
+![A real estate office for eight staff](docs/demos/plan-real-estate-office.gif)
+![A shed with a double garage and a workshop](docs/demos/plan-shed-workshop.gif)
+
+## Boats and Ships
+
+Accurona plans homes, and it is being built to plan boats and ships too. This is a preview
+of that work: hull design, the first part of it. Hull shapes, what is fixed to them, and how
+they float and heel are in; decks, rooms, equipment, and live data from the boat are still
+to come.
+
+![A 10 m sailing yacht with its fin keel, bulb and rudder](docs/demos/hull-sailing-yacht-10m-keel.gif)
+![A 6.5 m RIB with its tube](docs/demos/hull-rib-6.5m-with-tube.gif)
+![A 6.5 m plate aluminium fishing boat](docs/demos/hull-plate-alloy-fishing-6.5m.gif)
+![A 12 m cruising catamaran](docs/demos/hull-catamaran-12m.gif)
+![A 25 m SWATH: two submerged hulls under thin struts](docs/demos/hull-swath-25m.gif)
+![A 300 m container ship with its bulbous bow](docs/demos/hull-container-ship-300m.gif)
+
+## Embedding
+
+```sh
+cd frontend && npm ci && npm run build && node ../fork/build-standalone.mjs
+```
+
+`dist/standalone/` then holds the engine and `accurona-host.js`. Serve the folder over
+HTTP; `index.html` is a working example. In your own page:
+
+```js
+import { mountAccurona, browserStore } from "./accurona-host.js";
+
+const planner = await mountAccurona(document.querySelector("#plan"), {
+  store: browserStore("my-plan"), // or memoryStore(), or your own PlanStore
+  // signals: a SignalSource for live data; staticSignals() is the simplest
+  // homeAssistant: true shows the parts that need a Home Assistant behind the host (off by default)
+});
+```
+
+The plan store and the signal source are interfaces (`frontend/src/host/types.ts`), so a
+server-side store or a live data feed plugs in without touching the engine.
+
+## Hulls
+
+The hull code is in `frontend/src/hull/`: hulls as sections at stations, the Ship-D
+parameterisation, round hulls and pontoons, RIB tubes, underwater parts, hydrostatics, and
+stability at any heel and trim. The same build puts a hull viewer in
+`dist/standalone/hulls.html`: every hull in the catalogue in 3D on the water, with its
+numbers, a heel slider that floats it there with its load, and its righting-lever curve.
+`hulls.html?hull=<name>` opens one.
 
 ## Install (Home Assistant)
 

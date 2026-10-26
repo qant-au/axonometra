@@ -311,3 +311,11 @@ def verify_pack(text: str, keys: dict[str, str] | None = None, instance: str | N
     if instance is not None and payload["instance"] is not None and payload["instance"] != instance:
         raise PackError("wrong_instance", "the pack is bound to another installation")
     return payload
+
+
+def module_sha(pack: dict[str, Any] | None) -> str | None:
+    """Fingerprint of a pack's module code (what an admin approves), None for a pack without code."""
+    module = (pack or {}).get("module")
+    if not isinstance(module, dict) or not isinstance(module.get("code"), str):
+        return None
+    return hashlib.sha256(module["code"].encode("utf-8")).hexdigest()

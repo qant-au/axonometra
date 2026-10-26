@@ -5,7 +5,7 @@
  */
 import type { Feature } from "./features.ts";
 
-export const BETA_FEATURES: readonly Feature[] = ["pool", "household"];
+export const BETA_FEATURES: readonly Feature[] = ["pool"];
 
 export function isBeta(feature: Feature): boolean {
   return BETA_FEATURES.includes(feature);

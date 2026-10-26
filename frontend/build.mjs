@@ -30,11 +30,11 @@ const langHash = createHash("sha256")
 const cardEditorConfig = { ...common, entryPoints: ["src/card-editor.ts"], outfile: `${out}/accurona-card-editor.js`, define: { __FP3D_LANG_HASH__: JSON.stringify(langHash) } };
 // the editor is only needed by admins who open it, so it is a bundle of its own as well
 // (it draws furniture previews with the 3D bundle, so it knows that bundle's hash too)
-const editorConfig = (viewerHash) => ({
+const editorConfig = (viewerHash, locateHash) => ({
   ...common,
   entryPoints: ["src/components/editor.ts"],
   outfile: `${out}/accurona-editor.js`,
-  define: { __FP3D_VIEWER_HASH__: JSON.stringify(viewerHash), __FP3D_LANG_HASH__: JSON.stringify(langHash) },
+  define: { __FP3D_VIEWER_HASH__: JSON.stringify(viewerHash), __FP3D_LANG_HASH__: JSON.stringify(langHash), __FP3D_LOCATE_HASH__: JSON.stringify(locateHash) },
 });
 // the time travel (Pro) only loads when it starts; its texts come from the main bundle
 const timeTravelConfig = { ...common, entryPoints: ["src/timetravel/entry.ts"], outfile: `${out}/accurona-timetravel.js` };
@@ -42,13 +42,15 @@ const timeTravelConfig = { ...common, entryPoints: ["src/timetravel/entry.ts"], 
 const funConfig = { ...common, entryPoints: ["src/fun/entry.ts"], outfile: `${out}/accurona-fun.js` };
 // voice (the microphone probe for now) only loads when it is asked for
 const voiceConfig = { ...common, entryPoints: ["src/voice/entry.ts"], outfile: `${out}/accurona-voice.js` };
+// the locating setup assistant only loads when an admin opens it
+const locateConfig = { ...common, entryPoints: ["src/locate/entry.ts"], outfile: `${out}/accurona-locate.js` };
 // the import page of the website (other programs' plans to Accurona, in the browser): not part of the integration
 const importConfig = { ...common, entryPoints: ["src/import/app.ts"], outfile: "../site/import/neonplan-import.js" };
 // The main bundle loads the 3D bundle with a hash of its content in the URL, so a new 3D bundle is
 // never taken from the browser cache (the integration version only changes after a restart).
 // the frontend knows its own version, to notice a backend that still runs an older one
 const version = JSON.parse(readFileSync("../custom_components/accurona/manifest.json", "utf8")).version;
-const mainConfig = (viewerHash, editorHash, cardEditorHash, timeTravelHash, funHash, voiceHash) => ({
+const mainConfig = (viewerHash, editorHash, cardEditorHash, timeTravelHash, funHash, voiceHash, locateHash) => ({
   ...common,
   entryPoints: ["src/main.ts"],
   outfile: `${out}/accurona.js`,
@@ -59,6 +61,7 @@ const mainConfig = (viewerHash, editorHash, cardEditorHash, timeTravelHash, funH
     __FP3D_TIMETRAVEL_HASH__: JSON.stringify(timeTravelHash),
     __FP3D_FUN_HASH__: JSON.stringify(funHash),
     __FP3D_VOICE_HASH__: JSON.stringify(voiceHash),
+    __FP3D_LOCATE_HASH__: JSON.stringify(locateHash),
     __FP3D_VERSION__: JSON.stringify(version),
     __FP3D_LANG_HASH__: JSON.stringify(langHash),
   },
@@ -85,6 +88,9 @@ function copyFonts() {
   }
 }
 
+// main 674 KB and 3D 812 KB on 2026-10-22 for richer module cards (a state line, a second value, a chain, cells, a hint), module markers and solid module pipes
+// main 668 KB and 3D 808 KB on 2026-10-22 for what modules may draw: lines in the flow layer, surfaces over floors and lawns, labels, layered light on an item, a card curve, fields on furniture and module settings
+// 3D 796 KB and editor 916 KB on 2026-10-21 for roof sections that cut each other, wings meeting a roof in valleys (#466, #605) and the ends per section
 // editor 860 KB on 2026-10-19 for sloping walls, the background section and the 1.21 texts
 // main 632 KB and 3D 792 KB on 2026-10-19 for wall switches and sockets (gangs with their own entities, #593) and their texts
 // card editor 256 KB on 2026-10-19 for the 1.21 texts (3D lock, full screen, ceiling fan)
@@ -115,22 +121,29 @@ function copyFonts() {
 // editor 800 KB on 2026-10-14 for the awning (form, sensors) and the 1.18.2 fixes
 // main 570 KB, 3D 770 KB and card editor 230 KB on 2026-10-14 for the awnings (five kinds) and their texts
 // main 590 KB, editor 820 KB, card editor 235 KB on 2026-10-15 for the household (bins, mailboxes, Haushalt Pro) and its texts
-const BUDGET = { "accurona.js": 664 * 1024, "accurona-fun.js": 40 * 1024, "accurona-voice.js": 60 * 1024, "accurona-timetravel.js": 120 * 1024, "accurona-3d.js": 792 * 1024, "accurona-editor.js": 912 * 1024, "accurona-card-editor.js": 264 * 1024 };
+// editor 930 KB on 2026-10-23 for the locating section and the people setting in ⚙ House
+// main 692 KB on 2026-10-24 (was 688): the panel microphone asks locating first and flies into the rooms of the answer; presence zones place people at furniture and doors
+// locate 160 KB on 2026-10-24 (was 140): the locating setup carries its texts in 18 languages, the key helper, the Android transmitter hints and the fly switch (it only loads when an admin opens it)
+// main 694 KB on 2026-10-25 (was 692): people without a tracker in Home Assistant still show where they are located (#744)
+// card editor 268 KB on 2026-10-25 (was 267): the texts of the invitation to the usage reports
+// 3D 816 KB on 2026-10-25 (was 812): free walls drawn as outer walls find their outside (blinds, glass), pets walk on at their own pace on tablets, door glass on both faces
+const BUDGET = { "accurona.js": 694 * 1024, "accurona-fun.js": 40 * 1024, "accurona-voice.js": 60 * 1024, "accurona-locate.js": 160 * 1024, "accurona-timetravel.js": 120 * 1024, "accurona-3d.js": 816 * 1024, "accurona-editor.js": 930 * 1024, "accurona-card-editor.js": 268 * 1024 };
 
 copyFonts();
 if (watch) {
   // in watch mode the hash is not tracked; a dev reload fetches the bundle anyway
-  for (const c of [viewerConfig, editorConfig("dev"), cardEditorConfig, timeTravelConfig, funConfig, voiceConfig, mainConfig("dev", "dev", "dev", "dev", "dev", "dev")]) await (await context(c)).watch();
+  for (const c of [viewerConfig, editorConfig("dev", "dev"), cardEditorConfig, timeTravelConfig, funConfig, voiceConfig, locateConfig, mainConfig("dev", "dev", "dev", "dev", "dev", "dev", "dev")]) await (await context(c)).watch();
 } else {
   await build(viewerConfig);
-  const editor = editorConfig(hashOf(viewerConfig.outfile));
+  await build(locateConfig);
+  const editor = editorConfig(hashOf(viewerConfig.outfile), hashOf(locateConfig.outfile));
   await build(editor);
   await build(cardEditorConfig);
   await build(timeTravelConfig);
   await build(funConfig);
   await build(voiceConfig);
   await build(importConfig);
-  await build(mainConfig(hashOf(viewerConfig.outfile), hashOf(editor.outfile), hashOf(cardEditorConfig.outfile), hashOf(timeTravelConfig.outfile), hashOf(funConfig.outfile), hashOf(voiceConfig.outfile)));
+  await build(mainConfig(hashOf(viewerConfig.outfile), hashOf(editor.outfile), hashOf(cardEditorConfig.outfile), hashOf(timeTravelConfig.outfile), hashOf(funConfig.outfile), hashOf(voiceConfig.outfile), hashOf(locateConfig.outfile)));
   let over = false;
   // old Fire-tablet WebViews (Chrome before 91, e.g. Fully Kiosk on a Fire 7) throw on an optional call with spread
   // arguments, `a?.b(...x)` – the roof failed there; lowering the target for it would cost ~11 KB, so it is banned

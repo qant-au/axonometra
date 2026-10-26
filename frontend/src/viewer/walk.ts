@@ -59,9 +59,6 @@ export class FloorMap {
       if (!host) continue;
       const at = locateOpening(this.walls, o, host);
       if (!at) continue;
-      const list = gapsBy.get(at.wall) ?? [];
-      list.push([at.s - o.width / 2 + 0.05, at.s + o.width / 2 - 0.05]);
-      gapsBy.set(at.wall, list);
       const w = at.wall;
       const dx = w.b[0] - w.a[0];
       const dz = w.b[1] - w.a[1];
@@ -72,7 +69,17 @@ export class FloorMap {
       // the door points stand 45 cm beyond the wall faces on both sides (normal of the left face: (-uz, ux))
       const nl = w.left + 0.45;
       const nr = w.right + 0.45;
-      this.doors.push({ centre: c, p: [[c[0] - uz * nl, c[1] + ux * nl], [c[0] + uz * nr, c[1] - ux * nr]] });
+      const pts: [Vec2, Vec2] = [
+        [c[0] - uz * nl, c[1] + ux * nl],
+        [c[0] + uz * nr, c[1] - ux * nr],
+      ];
+      // an outer door upstairs leads into the air unless a balcony or terrace is drawn there (#766); outer walls
+      // have their room on the left, the outside on the right
+      if (w.exterior && floor.elevation > 0.3 && !(floor.outdoor ?? []).some((a) => a.points.length >= 3 && pointInPolygon(pts[1], a.points))) continue;
+      const list = gapsBy.get(w) ?? [];
+      list.push([at.s - o.width / 2 + 0.05, at.s + o.width / 2 - 0.05]);
+      gapsBy.set(w, list);
+      this.doors.push({ centre: c, p: pts });
     }
     for (const w of this.walls) {
       if (w.height !== undefined && w.height < 0.9) continue;

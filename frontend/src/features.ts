@@ -14,7 +14,7 @@ export const FEATURES: readonly Feature[] = ["camera_cockpit", "weather", "scree
  */
 export const FUN: readonly Feature[] = ["fun_pets", "fun_halloween"];
 /** Free features built but not released yet (no pack unlocks them; only the lab switch shows them). */
-export type FreeFeature = "diagnostics";
+export type FreeFeature = "diagnostics" | "locate";
 export type Gated = Feature | FreeFeature;
 
 /**
@@ -22,7 +22,7 @@ export type Gated = Feature | FreeFeature;
  * unlocked (the tester has the pack) or the lab switch is on (localStorage "accurona.lab" = "1").
  * A release takes a feature off this list.
  */
-export const UNRELEASED: readonly Gated[] = ["diagnostics", "pool"];
+export const UNRELEASED: readonly Gated[] = ["pool"];
 
 export function labOn(): boolean {
   try {
@@ -50,7 +50,7 @@ export function projectionOn(): boolean {
 
 /** Whether an add-on may be shown and advertised: released, or unlocked, or the lab switch is on. */
 export function released(feature: Gated): boolean {
-  return !UNRELEASED.includes(feature) || (feature !== "diagnostics" && hasFeature(feature)) || labOn();
+  return !UNRELEASED.includes(feature) || (feature !== "diagnostics" && feature !== "locate" && hasFeature(feature)) || labOn();
 }
 
 /** Features unlocked by a pack but not listed anywhere (exclusive items). */
@@ -72,7 +72,7 @@ const isGerman = (lang: string | undefined) => (lang ?? navigator.language).toLo
  * from the app. (The exact address comes from the shop – see "Rueckmeldung Claude Desktop - Fun-Pack Halloween.md".)
  */
 export function registerUrl(lang: string | undefined): string {
-  return `https://mastershort.de/my-account/?lang=${isGerman(lang) ? "de" : "en"}&src=accurona-app`;
+  return `https://mastershort.de/my-account/?lang=${isGerman(lang) ? "de" : "en"}&src=neonplan-app`;
 }
 
 export function shopUrl(lang: string | undefined): string {
@@ -89,7 +89,7 @@ const MANUAL_FEATURE: Record<string, { de: string; en: string }> = {
   auto_pro: { de: "pro-erweiterungen/#66-auto-pro", en: "pro-add-ons/#66-auto-pro" },
   time_travel: { de: "pro-erweiterungen/#67-zeitreise", en: "pro-add-ons/#67-time-travel" },
   pool: { de: "pro-erweiterungen/#68-pool-pro", en: "pro-add-ons/#68-pool-pro" },
-  household: { de: "pro-erweiterungen/#68-haushalt-pro-beta", en: "pro-add-ons/#68-household-pro-beta" },
+  household: { de: "pro-erweiterungen/#68-haushalt-pro", en: "pro-add-ons/#68-household-pro" },
   extensions: { de: "erweiterungen-shop-moebel-packs/", en: "extensions-shop-furniture-packs/" },
 };
 

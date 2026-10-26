@@ -48,6 +48,8 @@ FORK = ROOT / "fork"
 EXCLUDE = [
     "LICENSE", "NOTICE", "README.md", "CLAUDE.md", "CHANGELOG.md", "docs/release-*.md",
     "fork/*", "custom_components/*/frontend/*.js", "site/import/*.js",
+    # ours, and they name the upstream product on purpose
+    "custom_components/accurona/upstream.py", "frontend/src/upstream.ts",
 ]
 # Upstream files the fork does not carry: his product roadmap, his shop's server code,
 # his donation link, and the workflows that post to his Discord, probe his shop and
@@ -85,6 +87,7 @@ PROTECT = [
     re.compile(r"neonplan-import"),               # import file format and its page
     re.compile(r'EXPORT_FORMAT = "neonplan3d"'),  # plan export format
     re.compile(r'format: "neonplan3d"'),
+    re.compile(r"src=neonplan-app"),              # the shop's referral tag, for when it is switched on
 ]
 
 # Exact edits made after the transform, per file: (old, new).
@@ -95,6 +98,12 @@ OVERRIDES = {
          '"documentation": "https://github.com/qant-au/accurona"'),
         ('"issue_tracker": "https://github.com/mastershort/neonplan3d/issues"',
          '"issue_tracker": "https://github.com/qant-au/accurona/issues"'),
+    ],
+    # The editor's help box: problems and ideas come to this repo; there is no Accurona Discord.
+    "frontend/src/components/editor.ts": [
+        ("https://github.com/Mastershort/neonplan3d/issues/new/choose", "https://github.com/qant-au/accurona/issues/new/choose"),
+        ("https://github.com/Mastershort/neonplan3d/discussions/categories/ideas", "https://github.com/qant-au/accurona/discussions"),
+        ('        <a class="fp3d-btn" href="https://discord.gg/SSdVVFsev7" target="_blank" rel="noopener">💬 ${this.t("help_discord")}</a>\n', ""),
     ],
     # Upstream's guard reads the public texts, ROADMAP.md among them; the fork drops that file.
     "frontend/src/unreleased-guard.test.ts": [

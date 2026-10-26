@@ -78,8 +78,8 @@ test("the GPU is reported as a rough class only", () => {
   assert.equal(gpuTier(null), null);
 });
 
-test("the unreleased switch hides the reports unless the lab is on", async () => {
+test("the reports are released (2.0.1): the switch shows for admins, off until they turn it on", async () => {
   const { released, UNRELEASED } = await import("./features.ts");
-  assert.ok(UNRELEASED.includes("diagnostics"));
-  assert.equal(released("diagnostics"), false);
+  assert.ok(!UNRELEASED.includes("diagnostics"));
+  assert.equal(released("diagnostics"), true);
 });

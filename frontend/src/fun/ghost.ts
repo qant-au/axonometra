@@ -151,8 +151,11 @@ export function startGhost(ctx: GhostContext): GhostController {
       ghost.root.rotation.z = Math.sin(t * 1.6) * 0.12;
       const fade = Math.min(1, t / FADE, (duration - t) / FADE);
       ghost.mats.forEach((m, j) => (m.opacity = ghost.opacity[j] * fade));
-      viewer.invalidate();
-      raf = requestAnimationFrame(step);
+      // on the tablet level at its slower pace (and not at all while the view rests)
+      viewer.animate();
+      // the tablet level draws it about 5 times a second: it moves on as often
+      if (viewer.low) timer = setTimeout(() => (raf = requestAnimationFrame(step)), 180);
+      else raf = requestAnimationFrame(step);
     };
     raf = requestAnimationFrame(step);
   }

@@ -1,4 +1,4 @@
-# The fork's own check, kept out of upstream's ci.yml so merges never touch it: the tree
+# The fork's own checks, kept out of upstream's ci.yml so merges never touch them. The tree
 # must already carry Accurona's identity (fork/identity.py --check makes no changes).
 name: Fork
 
@@ -14,8 +14,29 @@ jobs:
   identity:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.13"
       - run: python3 fork/identity.py --check
+
+  # The engine with no Home Assistant: build it standalone and check it mounts in a headless Chrome.
+  standalone:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      - run: npm run build
+      - run: node ../fork/build-standalone.mjs
+      - run: node ../fork/smoke-standalone.mjs
+      - run: node ../fork/smoke-hulls.mjs
+        env:
+          CHROME_PATH: /usr/bin/google-chrome

@@ -20,6 +20,9 @@ export interface HassEntityEntry {
   device_id?: string | null;
   area_id?: string | null;
   hidden?: boolean;
+  /** Set when the full registry entry is at hand (the frontend's short entry only has `hidden`). */
+  hidden_by?: string | null;
+  disabled_by?: string | null;
   entity_category?: "config" | "diagnostic" | null;
   /** The integration's key for the entity (e.g. "current_room"). */
   translation_key?: string | null;

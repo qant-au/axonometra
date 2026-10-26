@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { emptyBuilding, newFloor, ROOF_SHAPES, type Room, type RoofSection } from "./model.ts";
-import { cutHole, dormerHole, dormerHoles, dormerParent, floorOutline, offsetPolygon, polygonBox, proposeDormer, ridgeHeight, roofRider, roofSectionsFromRooms, roofUnderAt, sectionFrame, sectionGeometry, sectionHeightAt, sectionOverhang, sectionPolygon, sectionProfile, wallTopUnder } from "./roof-sections.ts";
+import { coversIn, cutHole, cutUnder, dormerHole, dormerHoles, dormerParent, floorOutline, lineOutside, sectionCovers, sectionEnds, sectionUV, wingJunction, wingSection, offsetPolygon, polygonBox, proposeDormer, ridgeHeight, roofRider, roofSectionsFromRooms, roofUnderAt, sectionFrame, sectionGeometry, sectionHeightAt, sectionOverhang, sectionPolygon, sectionProfile, wallTopUnder } from "./roof-sections.ts";
 import { buildRoof } from "./viewer/roof.ts";
 
 const near = (a: number, b: number, eps = 1e-6) => assert.ok(Math.abs(a - b) < eps, `${a} != ${b}`);
@@ -244,4 +244,100 @@ test("pulled apart, a roof rides with the loft under its slopes, a garage roof w
   assert.equal(roofRider(b, og, ["main"]), "sb");
   assert.equal(roofRider(b, og, ["d"]), "sb");
   assert.equal(roofRider(b, b.floors[0], ["gar"]), "eg");
+});
+
+test("a gable, hip or half-hip section may end differently at each end; without a choice it is as before (#466)", () => {
+  const ov = { u0: 0.4, u1: 0.4, a: 0.4, b: 0.4 };
+  // no end set: exactly the old geometry of each shape
+  for (const shape of ["gable", "hip", "halfhip"] as const) {
+    const plain = sectionGeometry(section({ shape }), ov);
+    const same = sectionGeometry(section({ shape, end_u0: shape, end_u1: null }), ov);
+    assert.deepEqual(same, plain, shape);
+    assert.deepEqual(sectionEnds(section({ shape })), [shape, shape]);
+  }
+  assert.equal(sectionEnds(section({ shape: "pyramid", end_u0: "hip" })), null);
+  // a hip at the left end only: three planes, the hip's ridge starts 4 m in (45°, 8 m deep), a gable wall on the right
+  const one = sectionGeometry(section({ end_u0: "hip" }), ov);
+  assert.equal(one.faces.length, 3);
+  near(one.ridges[0][0][0], 4);
+  near(one.ridges[0][1][0], 12 + 0.4);
+  assert.equal(one.gables[0], null);
+  assert.ok(one.gables[1] && one.gables[1].length === 3);
+  // under the hipped end the roof comes down, at the gable end it keeps the full height
+  near(sectionHeightAt(one, 0.5, 4)!, 3.5);
+  near(sectionHeightAt(one, 11.5, 4)!, 7);
+  // a hip shape with a half-hip on the right
+  const mixed = sectionGeometry(section({ shape: "hip", end_u1: "halfhip" }), ov);
+  assert.equal(mixed.faces.length, 4);
+  assert.ok(mixed.gables[1] && mixed.gables[1].length === 4, "the half-hip's wall ends under its hip");
+});
+
+/** An L: a main roof along x (12 × 8, its ridge at z = 4) and a lower wing along z running into its slope (#605). */
+const main = section({ id: "main", x0: -0.24, z0: -0.24, x1: 12.24, z1: 8.24, eave_a: 2.75, eave_b: 2.75, pitch_a: 40, pitch_b: 40, base: 2.75 });
+const wing = section({ id: "wing", x0: 5.76, z0: 7.76, x1: 11.24, z1: 14.24, shape: "halfhip", axis: "z", eave_a: 2.75, eave_b: 2.75, pitch_a: 40, pitch_b: 40, base: 2.75 });
+
+test("a wing running into the slope of a higher roof reaches on to its ridge line and is cut off where it goes under it (#605)", () => {
+  const all = [main, wing];
+  const j = wingJunction(all, wing);
+  assert.ok(j && j.host === main && j.end === 0, "the wing's top end meets the main roof");
+  assert.equal(wingJunction(all, main), null);
+  // a section on its own, and a dormer, are no wings
+  assert.equal(wingJunction([main], main), null);
+  assert.equal(wingJunction([main, { ...wing, dormer: true }], { ...wing, dormer: true }), null);
+  // drawn on to the ridge line (z = 4), a gable at that end, the half-hip at its free end
+  const drawn = wingSection(wing, j!);
+  near(drawn.z0, 4);
+  near(drawn.z1, 14.24);
+  assert.deepEqual(sectionEnds(drawn), ["gable", "halfhip"]);
+  // what is left of the wing lies nowhere under the main roof's planes
+  const ov = { u0: 0, u1: 0.4, a: 0.4, b: 0.4 };
+  const mainGeo = sectionGeometry(main, { u0: 0.4, u1: 0.4, a: 0.4, b: 0.4 });
+  const covers = coversIn(drawn, sectionCovers(main, mainGeo.faces));
+  const pieces = sectionGeometry(drawn, ov).faces.flatMap((f) => cutUnder(f, covers));
+  const fr = sectionFrame(drawn);
+  for (const piece of pieces) {
+    const cu = piece.reduce((a, q) => a + q[0], 0) / piece.length;
+    const cv = piece.reduce((a, q) => a + q[1], 0) / piece.length;
+    const cy = piece.reduce((a, q) => a + q[2], 0) / piece.length;
+    const [x, z] = fr.at(cu, cv);
+    // over the main roof's walls (under its overhang only its slab counts)
+    if (z > 8.24) continue;
+    const [mu, mv] = sectionUV(main, x, z);
+    const roof = sectionHeightAt(mainGeo, mu, mv);
+    assert.ok(roof === null || cy >= roof - 0.15, `a wing piece at ${x.toFixed(2)}, ${z.toFixed(2)} lies ${(roof! - cy).toFixed(2)} m under the main roof`);
+  }
+  // its ridge ends where it meets the main slope: 5.05 m high, the main slope reaches that 1.5 m in from the ridge
+  const ridge = sectionGeometry(drawn, ov).ridges[0];
+  const kept = lineOutside(ridge[0], ridge[1], covers);
+  assert.equal(kept.length, 1);
+  const start = Math.min(kept[0][0][0], kept[0][1][0]);
+  near(start, 4 + (6.31 - 5.05) / Math.tan((40 * Math.PI) / 180), 0.05);
+});
+
+test("overlapping sections keep only what shows above the other; a single section is drawn as before (#466)", () => {
+  const b = emptyBuilding();
+  b.floors = [{ ...newFloor("eg", "EG", 0), height: 2.75, rooms: [rect("a", 0, 0, 12, 8), rect("b", 6, 8, 11, 14)] }];
+  // one section alone: the same triangles as drawn by itself
+  b.settings.roof = { type: "custom", pitch: 40, overhang: 0.4, sections: [main] };
+  const alone = buildRoof(b)[0].solid.count;
+  b.settings.roof = { type: "custom", pitch: 40, overhang: 0.4, sections: [main, wing] };
+  const [part] = buildRoof(b);
+  assert.ok(part.solid.count > alone);
+  // no roof triangle lies well below another section's roof over that section's walls
+  const tops = [main, wing].map((s) => ({ s, g: sectionGeometry(s, { u0: 0, u1: 0, a: 0, b: 0 }) }));
+  const top = (x: number, z: number) =>
+    Math.max(
+      ...tops.map(({ s, g }) => {
+        if (x < s.x0 + 0.02 || x > s.x1 - 0.02 || z < s.z0 + 0.02 || z > s.z1 - 0.02) return -Infinity;
+        const [u, v] = sectionUV(s, x, z);
+        return sectionHeightAt(g, u, v) ?? -Infinity;
+      }),
+    );
+  const p = part.solid.p;
+  for (let i = 0; i < p.length; i += 9) {
+    const x = (p[i] + p[i + 3] + p[i + 6]) / 3;
+    const y = (p[i + 1] + p[i + 4] + p[i + 7]) / 3 + part.floor.elevation + part.base;
+    const z = (p[i + 2] + p[i + 5] + p[i + 8]) / 3;
+    assert.ok(!(y < top(x, z) - 0.3), `a triangle at ${x.toFixed(2)}, ${z.toFixed(2)} lies under the roof`);
+  }
 });

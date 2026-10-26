@@ -10,3 +10,8 @@ LICENSE
 CLAUDE.md
 .github/dependabot.yml
 .github/workflows/fork.yml
+frontend/src/host
+frontend/src/hull
+demos
+docs/demos
+frontend/src/plans

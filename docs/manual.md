@@ -39,17 +39,17 @@ This manual describes every feature of the current version. What changed in whic
 
 [![Open your Home Assistant instance and open the Accurona repository inside HACS.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=Mastershort&repository=accurona&category=integration)
 
-The button opens Accurona straight in the HACS of your installation. By hand:
+The button opens Accurona straight in the HACS of your installation. Accurona is in the official HACS list, no custom repository needed. By hand:
 
 1. Open **HACS** in Home Assistant.
-2. Choose **⋮ → Custom repositories** at the top right.
-3. Enter `https://github.com/Mastershort/neonplan3d`, type **Integration**, and add it.
-4. Search for **Accurona**, install it and restart Home Assistant.
-5. **Settings → Devices & services → Add integration → Accurona**, or straight with this button:
+2. Search for **Accurona**, install it and restart Home Assistant.
+3. **Settings → Devices & services → Add integration → Accurona**, or straight with this button:
 
    [![Open your Home Assistant instance and start setting up Accurona.](https://my.home-assistant.io/badges/config_flow_start.svg)](https://my.home-assistant.io/redirect/config_flow_start/?domain=accurona)
 
 **Accurona** now appears in the sidebar. The dashboard card is available right away, no resource needed.
+
+If you added Accurona as a custom repository before, there is nothing to do: updates keep coming as usual.
 
 ### By hand
 
@@ -167,7 +167,7 @@ A selected room shows on the right:
 
 Walls are created automatically: every shared edge of two rooms becomes an interior wall, every outer edge an exterior wall. Corners and T-junctions are mitred. You set the thicknesses under **Settings**.
 
-**Single walls:** The **Wall** tool draws a free-standing wall, e.g. a partition that runs through half a room. **Shift** keeps it straight, **Alt** draws without snapping. Where it meets a room wall, the corner is mitred. When selected, drag the handles to move its ends or the line to move the whole wall. On the right you set **X** and **Y** (the middle of the wall, as with furniture; so you place it to the centimetre, off the grid), **Length**, **Wall thickness** and **Height**. In 3D it behaves like any interior wall. You can put doors and windows into single walls too, with **Doors & windows** (see 4.7). Deleting the wall removes its doors and windows as well.
+**Single walls:** The **Wall** tool draws a free-standing wall, e.g. a partition that runs through half a room. **Shift** keeps it straight, **Alt** draws without snapping. Where it meets a room wall, the corner is mitred. When selected, drag the handles to move its ends or the line to move the whole wall. On the right you set **X** and **Y** (the middle of the wall, as with furniture; so you place it to the centimetre, off the grid), **Length**, **Wall thickness** and **Height**. In 3D it behaves like any interior wall. With rooms on one side only (a single wall drawn as an outer wall), the other side counts as outside: blinds and sills sit there whichever way the wall was drawn, and it turns to glass like the other outer walls when it faces the camera. You can put doors and windows into single walls too, with **Doors & windows** (see 4.7). Deleting the wall removes its doors and windows as well.
 
 **Wall height:** Any wall can be lower than the room, e.g. a parapet or a counter. For a single wall you set its **Height** in the form. For rooms (rectangle and free shape) select the room; the form shows the **Wall heights** box with every wall of the room, named by its corners (e.g. "Wall 2–3", the numbers are shown at the corners in the plan) and with its length. Hovering a row or tapping its field lights the wall up in the plan. ↥ resets it to full room height. If two rooms share the wall, the lower setting applies. Windows and doors in a low wall end at the wall height. Low walls look lighter in the plan. If one wall in line should have two heights (2.5 m next to 1.7 m), split it with **✂**: the part gets a row and a height of its own, the split point can be moved in **Split point from corner** (marked by a tick in the plan), **⨉** joins the parts again.
 
@@ -218,16 +218,19 @@ Under **Template (floor plan image)** you load a photo or scan of your floor pla
 
 With **Doors & windows** you tap a wall, a room wall or a single wall. Then you choose the **Type** on the right: door, window or garage door. A window with a sill of 0 is a terrace door; like a door, **⇅ Reverse opening direction** turns it outwards (in 3D its sashes then swing outside; tilting stays inwards). The preset **Glass wall** sets fixed floor-to-ceiling glazing with slim mullions and no sashes – for an indoor glass wall or partition; width and height are free, and any window can take it under **Style**.
 
+Where two rooms meet without a wall (an open transition) and the outer wall carries on in a straight line, a window or door may reach across the transition into the neighbouring room's wall. The middle of the opening stays on its own room's wall.
+
 ![Kinds of openings](images/editor-opening-kinds.jpg)
 
 Every opening has:
 
 - **Width**, **sill** and **height**, plus the hinge side. With **Select** you slide it along the wall.
+- **Sill** (windows only): *automatic* (default) draws a window board inside and a sill outside from a sill height of 30 cm – except for a window that sits directly on another window or a door of the same wall (transom light, fixed upper part, a glass front split in two): that one gets none of its own. *None*, *inside only* or *outside only* fix it, e.g. for a glass front without a board or a window above a kitchen worktop. Chosen by hand it also shows on a window down to the floor or a terrace door (lying at the floor) and on a glass wall, which has none by itself.
 - **Style:** room door, front door, front door with glass, with one or two sidelights, glass door, sliding door or **Opening (no door)**. With sidelights you set their **width** below (empty = automatic), with two the left and the right one separately; a single sidelight sits opposite the hinge, or next to the hinges with **Sidelight on the hinge side**. An opening is just a gap in the wall, without frame and leaf; light always passes through. Windows come as standard or with glazing bars. "Automatic" picks a front door for exterior doors.
 - **Leaves:** single or double, with an own contact for the second leaf.
 - **Highlight in 3D:** *When open* (default) makes open windows and doors glow warm. *When closed* turns this round, e.g. for the WC or a child's room door: it glows while it is shut. This needs a contact; without a sensor nothing is highlighted.
 - **Show closed without a sensor:** a door without a contact stands half open in 3D, so it is seen as a door. The checkbox draws it closed, e.g. for a front door or a carport without a sensor.
-- **Smart lock:** the door's lock (Nuki, Aqara, `lock.*`). A pin stands at the door in 3D: 🔒 locked, glowing red while it is unlocked; a tap locks or unlocks. The voice asks it ("Is the front door locked?").
+- **Smart lock:** the door's lock (Nuki, Aqara, `lock.*`). A pin stands at the door in 3D: 🔒 locked, glowing red while it is unlocked; a tap locks or unlocks. A tap on the door itself (without a drive) also opens its menu with **Lock** or **Unlock**, always asking first; while the lock is unlocked, the leaf's free edge glows softly in the accent colour – whatever the door contact says. On a double door or terrace door the pin sits on the main leaf (on the hinge side). The voice asks it ("Is the front door locked?").
 - **Invert contact:** for sensors that report open and closed the other way round. Accurona then shows open when the sensor reports closed, and vice versa (default: off).
 
 Doors and windows can also be tapped in a wide band around the opening in the plan; a selected room lists its doors and windows in its form.
@@ -241,11 +244,11 @@ Doors and windows can also be tapped in a wide band around the opening in the pl
 | **Cover** | The blind moves in front of the window – or of a door (front door, French window, sliding door) – with the cover's position |
 | **Position sensor** | For blinds whose position comes from a separate sensor, e.g. Homematic. Can be inverted |
 | **Ask before switching** | Open, close and positions ask first in the quick menu and the room panel, and a swipe on the marker no longer moves the blind (it turns the view instead). Stop never asks. Good for tablets where blinds or the garage door would otherwise move by accident |
-| **Contact** | The door swings open, the window opens |
+| **Contact** | The door swings open, the window opens. Offered are binary sensors of the door, window or opening class and ones without a class (KNX, enOcean, template sensors often have none) |
 | **Tilt contact** | A second sensor that reports "tilted" |
 | **Tilt angle sensor** | Optional: a sensor reporting the tilt angle in degrees (e.g. the "Rotation" of a Shelly BLU Door/Window). The sash tilts exactly that far in 3D; **Angle that counts as fully tilted** (15° by default), an **Offset** for the value while closed and **counts the other way round** adapt it to the mounting. Above a small angle the window counts as tilted, also for the rain warning |
 | **Contact second leaf** | For double windows and doors |
-| **Garage door** | A garage door follows a cover entity or a contact (on = open; sensors reporting “open”/“closed” work too). A **switch or input_boolean** that drives the door works as the contact too: on = open, a tap in 3D switches it. Its open part lies under the ceiling. A gate or garage-door cover on a **door** (e.g. a sliding gate) moves the door leaf instead of a roller shutter |
+| **Garage door** | A garage door follows a cover entity or a contact (on = open; sensors reporting “open”/“closed” work too). A **switch or input_boolean** that drives the door works as the contact too: on = open, a tap in 3D switches it. If your opener only takes a short pulse, choose the **switch, button or `input_button` under Drive** and the real door contact under Contact: a tap on the door switches the switch on or presses the button (asking first with *Ask before switching*), and open or closed comes from the contact. Its open part lies under the ceiling. A gate or garage-door cover on a **door** (e.g. a sliding gate) moves the door leaf instead of a roller shutter |
 
 Accurona matches covers and contacts through the area automatically. You can change them by hand at any time.
 
@@ -279,7 +282,7 @@ The **Worktop** (Kitchen) is a free top without a base, for gaps in the kitchen 
 
 ![Wall view: 3D in the room and wall from the front](images/wall-view.jpg)
 
-- **State from:** any piece of furniture can show an entity that reports on, occupied or home – its top then glows: the bed with an occupancy mat, the armchair, the sauna. A second entity lights the other half (left/right, bottom/top for a bunk bed). Lamps, energy devices and screens have fields of their own for this.
+- **State from:** any piece of furniture can show an entity that reports on, occupied or home – its top then glows: the bed with an occupancy mat, the armchair, the sauna. A second entity lights the other half (left/right, bottom/top for a bunk bed); set the first one to *none* and the second moves up into its place. Lamps, energy devices and screens have fields of their own for this.
 - **Duplicate** and **Delete** are there too.
 
 ![A selected item](images/editor-furniture.jpg)
@@ -304,7 +307,7 @@ The **Worktop** (Kitchen) is a free top without a base, for gaps in the kitchen 
 
 ![Devices of a room](images/editor-devices.jpg)
 
-A room with an area lists all devices of that area on the right, grouped by device. The main entity comes first, further ones such as LED indicators or effects sit behind **"+n more"**. A search field helps with big areas.
+A room with an area lists all devices of that area on the right, grouped by device. The main entity comes first, further ones such as LED indicators or effects sit behind **"+n more"**. A search field helps with big areas. When a device brings very many entities (such as the segments of an LED strip from Govee2MQTT), the unfolded list shows the first 40 – the search narrows it down – and **"Hide all n in the room panel"** takes them out of the room panel with one click (**"Show all n again"** brings them back).
 
 Sensors appear when they measure something for the room: temperature, humidity, CO₂ and air quality, power and energy, gas and water meters, illuminance and pressure. Meters without a device class count too when their unit fits (m³, l, kWh, lx). Battery and signal sensors stay out. The value shows the decimals set in Home Assistant. If a device is missing, check in Home Assistant that it is assigned to the room's area.
 
@@ -335,9 +338,9 @@ Lamps are furniture with a linked light: ceiling light, downlight, surface spot,
 
 - The 3D model glows in the light's colour and brightness. The room's floor and walls are lit too, two coloured ceiling lights mix in between. Light reaches the next room only through doors. A lamp over a stairwell or floor opening (up to 1.5 m beside it) also shines through the opening into the floor below.
 - Colour effects such as a colour loop are animated in 3D.
-- Table lamps stand on the item below (under a worktop high up from 1.2 m – a step of stairs built from worktops – what fits beneath stays on the floor), wall lights and LED strips snap to the wall, a pendant's height is how far it hangs below the ceiling.
+- Table lamps stand on the item below (under a worktop high up from 1.2 m – a step of stairs built from worktops – what fits beneath stays on the floor), wall lights and LED strips snap to the wall, a pendant's height is how far it hangs below the ceiling. On wall lights from packs, the halo and the light sit in the glowing parts (a lantern's glass).
 - **Ceiling fan with light:** the light switches the lamp under the motor. Under **Fan (fan entity)** you choose the fan: its blades turn in 3D with its speed (about once a second at 100 %, still when off). It gets a symbol of its own beside the lamp showing its speed; a tap switches it, a long press opens the menu with the speed. The width is the blade span, the height how far it hangs below the ceiling. On old tablets the blades turn with few frames per second, and only while the fan runs.
-- **Height above floor:** wall lights hang at 1.75 m by default, LED strips right under the ceiling. Under a sloped roof, ceiling lamps, spots and pendants hang from the roof's underside instead of in the air. In the form you set a **Height above floor** of their own, e.g. for a strip under the wall cabinets or behind the TV unit. **Automatic height** resets it. Recessed and surface spots, ceiling lamps and LED panels have the field as well: by default they sit under the ceiling, with a height of their own – under a staircase too – e.g. under the wall cabinets – model and light then shine down from there onto the worktop. A strip below 1 m (skirting board, behind a cabinet) shines up the wall, higher strips shine down. A strip below the cut height stays visible with cut walls. **Tilt about its length** lays the strip against a roof slope or turns it sideways (90° = its face points to the side); **Rise (°)** lets it climb along its length, e.g. up the stairs or along a handrail (about 35–40°), its height above the floor then being its middle; **Upright** stands it on end: it then runs up from the height above the floor, along a door frame or as a light column, and shines all around.
+- **Height above floor:** wall lights hang at 1.75 m by default, LED strips right under the ceiling. Under a sloped roof, ceiling lamps, spots and pendants hang from the roof's underside instead of in the air. In the form you set a **Height above floor** of their own, e.g. for a strip under the wall cabinets or behind the TV unit. **Automatic height** resets it. Recessed and surface spots, ceiling lamps, LED panels and flat ceiling lights from packs (such as the workshop light) have the field as well: by default they sit under the ceiling, with a height of their own – under a staircase too – e.g. under the wall cabinets – model and light then shine down from there onto the worktop. A strip below 1 m (skirting board, behind a cabinet) shines up the wall, higher strips shine down. A strip below the cut height stays visible with cut walls. **Tilt about its length** lays the strip against a roof slope or turns it sideways (90° = its face points to the side); **Rise (°)** lets it climb along its length, e.g. up the stairs or along a handrail (about 35–40°), its height above the floor then being its middle; **Upright** stands it on end: it then runs up from the height above the floor, along a door frame or as a light column, and shines all around.
 - **Colour and brightness from:** when a relay (Shelly, switch actuator) switches the lamp while the bulb itself knows its colour and brightness, on/off comes from the switch and the colour from this second entity.
 - **Glow in one colour only:** the lamp only glows while the light shows about the chosen colour. A colour light can serve as a signal this way – yellow for "water" at the washbasin – without its other colours (red, green, blue for other alerts) showing there.
 - **Glow in 3D (%):** how strongly the lamp glows in 3D. Below 100 % tones down bright LED strips so the room does not burn out, above 100 % makes a weak lamp glow more. Works for lights placed as devices too; it switches nothing in Home Assistant.
@@ -354,7 +357,7 @@ TVs, media walls, the wall unit with a TV (the wall unit without a TV is a lamp:
 
 - **Radiator – Heating (sensor):** when the thermostat does not say whether it heats (Tuya valves report a "work state" sensor instead), pick that sensor under **Heating (sensor)**: "opened", "heating", "on" or an opening above 0 % makes the radiator glow.
 - **Device** or **TV (media player or smart plug)**: A **status sensor** works as a device too, e.g. the print status of a 3D printer (Bambu Lab and others); the item then counts as active while the status reports "running", "printing", "prepare" or similar. A TV glows while it is on. An older TV on a smart plug simply takes the plug's switch; the screen glows while the plug is on, and a tap switches it. Washing machine, dryer and dishwasher glow while they run – washer and dryer with a ring of light round their round door. A radiator with a thermostat glows while it heats. The **air conditioner (wall)** hangs high on the wall and glows at its air outlet in the colour of its mode: red heating, blue cooling, green automatic, yellow drying, white fan only – bright while it works, dimmed on standby. A **stove** glows on its cooking zones while it cooks; an operating-state sensor (e.g. Home Connect: "run", "ready", "inactive") makes it glow faintly at "ready" and stay dark at "inactive".
-- **Power sensor (W)**: The item shows its watts. **Running from (watts)** sets from how many watts it counts as running and glows (empty: 10 W) – handy for appliances behind a smart plug that draw a few watts on standby, e.g. 100 W.
+- **Power sensor (W)**: The item shows its watts. **Running from (watts)** sets from how many watts it counts as running and glows (empty: 10 W) – handy for appliances behind a smart plug that draw a few watts on standby, e.g. 100 W. When it is set, the pin shows only the state (or "Standby") below it instead of the standby watts.
 - **Extra value at the symbol:** a sensor whose value stands at the item's symbol – a gas boiler's water temperature, a ventilation unit's humidity. With an extra value the symbol shows by itself.
 - **Ask before switching** and **Marker in 3D** as with devices.
 - **Pictures by state** on screens: a Pro add-on, see [6.3](#63-live-screens).
@@ -389,7 +392,7 @@ The item **Parking spot** in the Parking group marks where a car stands: in the 
 
 ### 4.15 Robot vacuum
 
-The robot vacuum item – and the **robot vacuum with dock** from the Smart Home pack just the same – links to the `vacuum` entity. While the robot cleans, it drives lanes through the room of its dock in 3D and then returns. The lanes are simulated because Home Assistant usually does not know the real position.
+The robot vacuum item – and the **robot vacuum with dock** from the Smart Home pack just the same – links to the `vacuum` entity. While the robot cleans, it drives lanes through the room of its dock in 3D and then returns. The lanes are simulated because Home Assistant usually does not know the real position. With the robot vacuum with dock, the model's own robot drives off: while it is away, the dock stands empty.
 
 Many robots do report the room they are cleaning, for example Roborock and Dreame with a "current room" sensor. Accurona finds this sensor on the robot's device by itself; the **Current room (sensor)** field lets you pick another one. The reported name is compared with the room name and the Home Assistant area, ignoring case and the spelling of umlauts ("Kueche" matches "Küche"). When the robot changes rooms it appears there in 3D and drives its lanes. If no room matches, it stays in the room of its dock.
 
@@ -431,6 +434,7 @@ A simple house gets a flat or gable roof over the whole top floor under **Build 
 - In the **Roof** tool you drag a new section in the plan. Tap selects one, dragging moves it, the corners resize it. At the top you choose the floor whose rooms the plan shows. The 3D view opens beside it with the whole house, so you see every change at once.
 - With the lock **🔓 Fix** (or the key **L**) a finished section stays put and no longer slips when you tap it; **Lock floor plan** locks all sections too.
 - Each section has a **shape** – gable, hip, half-hip (a gable hipped at the top), pyramid (four slopes to a point), mansard (steep below, flatter above), pent, flat and parapet (a flat roof with a wall ring) – and a **ridge direction** (↔ or ↕).
+- For gable, hip and half-hip, **End left/right** (or **top/bottom**) sets each end of the ridge on its own to a gable, a hip or a half-hip – a hip roof with an upright gable at the other end, for example. **as the shape** leaves the end as the shape has it.
 - **Eave** and **pitch** are set for both sides separately. All heights count from the ground. A side with a lower eave reaches further down, e.g. a catslide over a low extension. A pent roof rises from the first side; **Swap sides** turns it round.
 - **Top of walls** is the height where the walls below the roof end. A new section takes it from the rooms below, whatever floor the plan shows. Gables and knee walls are built from there up under the roof, so the space under a pent roof is closed too.
 - **Sits on floor** shows which floor the section belongs to in the 3D view and puts it on another floor's wall tops – top of walls and eaves move along. This helps when a new section landed on the wrong floor, e.g. over an upper floor with a stairwell in the middle.
@@ -440,6 +444,9 @@ A simple house gets a flat or gable roof over the whole top floor under **Build 
 - **Roof slopes (knee walls):** if the top of walls lies below the ceiling height of the floor underneath (also when the slope already starts in the floor below: its walls on the eave side then end at the slope as well) – say 0.9 m above the attic floor – that floor's walls end under the roof: knee walls at the eaves, gables up to the ridge, inner walls cut by the slope. Windows then only fit where the wall is tall enough (in the gable); on the eave side use roof windows. Dashed lines in the plan show where 1.5 m and 2 m of headroom remain under the slope.
 - Where a section meets a taller part of the house, e.g. a pent roof against the house wall, the overhang is left out there; the roof ends at the wall.
 - The **ridge height** is shown at the bottom of the form. Sections may overlap: the lower roof runs under the higher one, as with a real extension.
+- **Create again from the rooms** replaces all sections with a new proposal, **Back to one roof** switches to the simple roof. The sections are kept for later but no longer cut any walls.
+
+- The **ridge height** is shown at the bottom of the form. Sections may overlap: the lower roof runs under the higher one, as with a real extension – what lies under the other section is cut away, and a line shows the valley where two sections meet. A wing whose ridge runs at right angles into the slope of a higher roof (an L- or T-shaped house) reaches on into that roof and ends there cleanly in two valleys instead of a gable.
 - **Create again from the rooms** replaces all sections with a new proposal, **Back to one roof** switches to the simple roof.
 - **Canopy:** For a terrace roof or a carport, drag a section over an area without a room. It becomes a canopy by itself: a flat pent roof at 2.4 m, carried by posts and beams instead of walls, with a see-through roof. At the house wall it rests on the wall. The **Canopy** switch is in the form of every section, too.
 
@@ -493,7 +500,7 @@ A **cellar** is a floor with a negative **elevation**, e.g. −2.6 m. Under **�
 - **Show cellars in the earth:** floors below the ground sit in the earth in 3D. Open the cellar and you see it as in a building pit, with the earth walls around it. Unticked, they stand free as before.
 - **Reset the ground** sets everything back.
 
-**Cellar window:** in a window's form, **Cellar window** sets the right size – 100 × 50 cm, 25 cm under the ceiling. A window below the ground gets a **light well** with a grate in 3D by itself. In the window form, the tick **Light well** takes it away again (e.g. where a path runs past outside); **Rim above the ground** raises the rim and grate so a gravel or paved path around the house does not cover them. Where a lawn, path or terrace of the garden tool reaches over the well up to the house, its rim stands just above that surface by itself.
+**Cellar window:** in a window's form, **Cellar window** sets the right size – 100 × 50 cm, 25 cm under the ceiling. A window below the ground gets a **light well** with a grate in 3D by itself. The tick **Light well** is in the window form exactly when 3D draws a well (a window in an outer wall below the ground) and takes it away again (e.g. where a path runs past outside); **Rim above the ground** raises the rim and grate so a gravel or paved path around the house does not cover them. Where a lawn, path or terrace of the garden tool reaches over the well up to the house, its rim stands just above that surface by itself.
 
 ### 4.22 Awnings
 
@@ -514,10 +521,10 @@ Under **Furniture → Household** you find the **waste bin** and the **mailbox**
 
 ### 4.24 Home technology: light switches, sockets, Wi-Fi and hot water
 
-Under **Furniture → Home technology** (in the wall view under 🔌 **Switches**) you find the **light switch** and the **socket**. They hang on the wall: the switch at 1.05 m, the socket at 0.3 m (the outdoor socket at 0.5 m); **Height above floor** sets your own.
+Under **Furniture → Home technology** (in the wall view under 🔌 **Switches**) you find the **light switch** and the **socket**. They hang on the wall: the switch at 1.05 m, the socket at 0.3 m (the outdoor socket at 0.5 m); **Height above floor** sets your own. A socket placed a little into the wall is shown on the wall's face in 3D; on a low wall (a balcony parapet, say) it comes down, without a height of its own, far enough to stay below the wall's top.
 
 - **Buttons / sockets in the frame:** 1 to 4 in one frame; the frame grows wider to fit.
-- **Every button, every socket gets its own entity:** a light, a switch (the relay, the smart plug) or a fan. It glows in 3D while the entity is on – a light in its colour, a socket green.
+- **Every button, every socket gets its own entity:** a light, a switch (the relay, the smart plug) or a fan. It glows in 3D while the entity is on – a socket green, a light switch's button softly: for a light in its colour, otherwise in the accent colour.
 - **The same entity on several sockets:** when one relay switches two sockets (inside and outside, or a double socket), choose the same entity for both. This works across any number of frames.
 - **Power (sockets only):** an optional power sensor per socket. The socket glows brighter the more it draws and counts as a consumer.
 - **Kind (socket):** indoor or **outdoor socket with lid**.
@@ -526,7 +533,7 @@ Under **Furniture → Home technology** (in the wall view under 🔌 **Switches*
 
 **Wi-Fi access point:** a flat disc under the ceiling or a plate on the wall (**Mounting**). As its **status** pick whatever says whether it is there – a connectivity sensor, its state, a device_tracker; diagnostic entities (UniFi's, for example) are offered too. Its ring glows blue while it is there and red when it is gone; its symbol then shows with "Offline". With the **connected clients** sensor their number stands at the symbol.
 
-**Water heater:** a standing tank or a slim tank on the wall (at 1.1 m). Link the water_heater entity, a thermostat or the heating element's switch, plus optionally a sensor with the **water temperature** and a power sensor. It glows warm while it heats (thermostat heating, switch on or power above the threshold), faintly while it is ready, and shows the water temperature.
+**Water heater:** a standing tank or a slim tank on the wall (at 1.1 m). Link the water_heater entity, a thermostat or the heating element's switch, plus optionally a sensor with the **water temperature** and a power sensor. It glows warm while it heats (thermostat heating, switch on or power above the threshold), faintly while it is ready, and shows the water temperature. The **heat pump (indoor unit)**, gas boiler, buffer tank and water heater from the packs take a water_heater entity as well; their pin shows the mode and the water temperature.
 
 ---
 
@@ -582,7 +589,7 @@ At the top right:
 | **Small** / **Normal** / **Large** | How large the device markers are; the device remembers the choice (card: `marker_size`) |
 | **◧ / ◨** | Floor pictures, star, search and eye on the left or on the right – handy when the view sits at the left edge of a dashboard |
 | **⌖ Keep view** | Switching from floor to floor keeps the camera where it is; only its height follows |
-| **🔒 3D lock** | The angle stays fixed: a drag moves the view, zooming still works, flights to rooms keep the angle – nobody turns the house on a wall tablet by accident. Per device; in the card `angle_lock: true` |
+| **🔒 3D lock** | The angle stays fixed: a drag moves the view, zooming still works, flights to rooms keep the angle; a saved start view (house, floor or room) brings its own angle – nobody turns the house on a wall tablet by accident. Per device; in the card `angle_lock: true` |
 | **FPS** | Frame rate, slowest frame and the reason for every drawn frame. At rest it reads 0 fps |
 
 At the far right of the header stands the installed version (e.g. v1.11.0); hovering it shows which version the integration in Home Assistant reports.
@@ -599,7 +606,7 @@ Each device remembers these switches.
 
 - **Tap** switches lamps and switches. The lamp flashes briefly to confirm.
 - **Swipe up or down** on a lamp dims it; on a blind or window it moves the blind. The value appears at your finger. Devices and windows with "Ask before switching" do not react to a swipe.
-- **Long press** opens the quick menu: brightness, colour temperature and colours for lights; up, stop, down and fixed positions for blinds. Venetian blinds and Raffstores get a **Slats** slider there and in the room panel (or slats open/closed) as soon as the entity supports it.
+- **Long press** opens the quick menu: brightness, colour temperature and colours for lights; up, stop, down and fixed positions for blinds. Venetian blinds and Raffstores get a **Slats** slider there and in the room panel (or slats open/closed) as soon as the entity supports it. Roller shutters, garage doors and curtains only get them when they report a slat position (some integrations such as KNX announce slat buttons for roller shutters, too).
 - Tap a **window** – frame, glass or blind – to open the blind menu or show the contact.
 - **Double tap a room** switches all its lights on or off. Devices with "Ask before switching" stay out.
 - TVs, doors and garage doors can be tapped directly as well.
@@ -683,7 +690,7 @@ Talk to your house. A **microphone button** 🎙️ appears at the bottom left o
 | "Show the living room", "Go to the kitchen" or just "Bathroom" | The room opens, on its floor. |
 | "Show the upper floor", "Cellar" | The floor opens. |
 | "Show the whole house" | Back to the house view. |
-| "Show the garden", "Terrace" | An outdoor area with a name and an area opens like a room. |
+| "Show the garden", "Terrace" | An outdoor area with a name and an area opens like a room. When a room and an outdoor area (or its Home Assistant area) share a name, the room's own name wins: "Show the garage" opens the room Garage, not the driveway in the garage's area. |
 | "Show the washing machine", "Where is the floor lamp?", "Show the TV", "Where is the dryer?" | The view flies to the device or piece of furniture and it flashes. Furniture answers to its kind ("dryer", "pool pump"), its own name and everyday words ("TV", "telly", "heating", "car") – with or without a linked entity. If the sensor is called "Washing machine power" in the plan, "washing machine" is enough. With several of a kind, name the room too ("the heating in the living room"). |
 | "Show the front door camera", "Show the camera in the garden" | The view looks through the camera (with the Camera Cockpit). |
 | "Show the cameras" | The camera wall opens (with the Camera Cockpit). |
@@ -734,7 +741,7 @@ Commands ("turn on the light", "set the heating to 22 degrees") still go to Assi
    - in the browser, "Allow" on the first tap;
    - in **Fully Kiosk**: Settings → Web Content Settings → enable microphone access (Plus licence), plus Fully's microphone permission in Android.
 
-**Asking through Assist – without a microphone on the tablet.** Everything Accurona understands you can also say to Assist: a voice satellite (Home Assistant Voice, ESPHome), the Assist dialog or the app. On start Accurona writes the sentences `custom_sentences/en/accurona.yaml` and `…/de/…` into your configuration folder (only when they are missing or changed). Say "Show the living room" or "What is open?" to Assist and the sentence goes to **every open Accurona view** – the wall tablet shows the room or the open windows, and Assist speaks the answer where you asked. The tablet itself stays quiet. Which sentences stand there you choose under **⚙ Settings → 🎙 Voice control → Sentences for Assist**: **Only distinct ones** (default: "show …", "go to …", "ask the house …", "Accurona, …", "good morning", "good night" – nobody says those to Home Assistant itself), **All questions** (adds "which windows are open", "where is …", "is the washer running" – careful, some of these Home Assistant answers itself otherwise) or **None** (the file is removed). "Ask the house which windows are open" reaches Accurona in every mode. Your own sentences go into a further file under `custom_sentences` for the intent `AccuronaAsk`.
+**Asking through Assist – without a microphone on the tablet.** Everything Accurona understands you can also say to Assist: a voice satellite (Home Assistant Voice, ESPHome), the Assist dialog or the app. Assist needs a sentence file for that: Accurona writes `custom_sentences/en/accurona.yaml` and `…/de/…` into your configuration folder **only once you make a choice under Sentences for Assist** (since 1.24 – before, this happened on start). Say "Show the living room" or "What is open?" to Assist and the sentence goes to **every open Accurona view** – the wall tablet shows the room or the open windows, and Assist speaks the answer where you asked. The tablet itself stays quiet. Which sentences stand there you choose under **⚙ Settings → 🎙 Voice control → Sentences for Assist**: **Only distinct ones** ("show …", "go to …", "ask the house …", "Accurona, …", "good morning", "good night" – nobody says those to Home Assistant itself), **All questions** (adds "which windows are open", "where is …", "is the washer running" – careful, some of these Home Assistant answers itself otherwise) or **None** (default: no file; a file Accurona wrote is removed). A file you changed yourself is never overwritten or deleted by Accurona – the dialog tells you which language it left alone. Removing the integration takes Accurona's sentence files with it. "Ask the house which windows are open" reaches Accurona in every mode. Your own sentences go into a further file under `custom_sentences` for the intent `AccuronaAsk`.
 
 **The service `accurona.ask`.** For automations and scripts: fields **Sentence** (`text`), **Screen** (`screen`, optional) and **Speak** (`speak`, off by default). The service returns the answer (`answer`, `answered`, `screen_open`), e.g. for a notification. With `speak: true` the view speaks the answer itself through its Assist pipeline's text-to-speech. Example – the night check on the wall tablet every evening at 10 pm:
 
@@ -755,6 +762,84 @@ data:
 - The microphone is **only open while you speak**. It does not listen all the time, so there is no wake word. That also spares old tablets.
 - Speech to text is done by **your** Assist pipeline, so how fast and accurate it is depends on that pipeline. With Speech-to-Phrase or the cloud a sentence usually takes one to two seconds.
 - If the live director is on, it does not interrupt you while you speak.
+
+### 5.11 Locating (new)
+
+> **New in 2.0, free.** Who and what is where in the house – without Bermuda, without ESPresense, without new hardware. Accurona uses the Bluetooth scanners Home Assistant already knows.
+
+Accurona shows which room you are in right now – and where your iPhone or your keys are. People stand as a glowing figure in the room and glide over when they change rooms. Every device gets a sensor in Home Assistant ("Torsten's watch room: Kitchen"), and by voice you ask "Where is my iPhone?".
+
+**What you need:**
+
+- **Bluetooth scanners in Home Assistant** – what you already have is enough:
+  - **Shelly** Gen2 and Gen3 (plugs, in-wall). In the Shelly device set **Configure → Bluetooth scanning** to **passive**.
+  - **ESPHome Bluetooth proxies** (an ESP32 for a few euros). They report more often than Shellys, so room changes arrive faster.
+  - the Bluetooth adapter of the Home Assistant machine.
+
+  About one scanner per room is ideal. Rooms without a scanner of their own (hall, guest toilet) are still recognised: learning remembers how they look to the scanners in the rooms next door.
+- **Something you carry:**
+  - **Apple Watch and iPhone** with their key (IRK) – the key helper reads it in three minutes (see below). The watch on the wrist is ideal: an iPhone in a pocket goes quiet about a minute after its screen turns off.
+  - **Android phones:** in the Home Assistant app switch on **Settings → Companion app → Manage sensors → BLE Transmitter**. No key needed. Set the **transmit power to "High"** and the **advertise mode to "Low latency"** there: out of the box the app sends so weakly that the scanners barely hear it. Accurona then finds the phone by itself and shows a hint when a setting is too weak.
+  - **Pairing Android through the key helper does not help:** Android does not send this key in the background, so the device stays "not heard".
+  - **Key tags** with a fixed address or as an iBeacon (e.g. Nut, Tile, iBeacon tags). **AirTags do not work** – they change their address, and Apple gives no key.
+
+**Setting up** (editor → **⚙ Settings → 📡 Locating**, admins only):
+
+1. **Scanners:** Accurona lists all Bluetooth scanners of Home Assistant and suggests their room – from the device's Home Assistant area, a pin or a piece of furniture in the plan (the washing machine with the Shelly plug's power sensor) or the name ("PC office plug"). After learning Accurona knows from the signals where each scanner stands and offers **"Signals say: … – use it"** when they disagree.
+2. **Devices:** the watch and the iPhone through the **🔑 Key helper**, Android phones appear by themselves under **📱 Android with the Home Assistant app**, key tags through **📱 Add an Android phone or a key tag** (hold the device right next to a scanner). When no scanner hears a device right now, it says **⚠ not heard**; a key you already have goes in under **🔑 Paste a key you already have**. Give every device a name, a person and – for "ring my iPhone" – the phone's Home Assistant app.
+3. **Learning:** tick the devices you are **carrying**. Go into every room, tap it and walk around slowly for **90 seconds**, into the corners and along the walls. Keep a phone in your **pocket** (screen off), as in everyday life – best tap with another tablet or phone. **Learning once is enough:** devices without learning of their own use the others'. The countdown runs; at 0 the room is done (✓). **Check accuracy** then shows how surely each room is recognised. Simply learn a weak room again.
+4. **Live:** switch locating on and walk through the house – the list shows at once where Accurona sees you.
+
+**In the 3D view:**
+
+- **A person's watch and phone:** what is worn on the body (watch, band – tick **⌚ worn**, already set for "watch" in the name) tells where the person stands while it was heard in the last two minutes; otherwise the device heard last. When the watch and the phone are heard at the same time in different rooms (typically at a shared wall), the phone only wins when it is clearly surer (by more than 15 percentage points). A phone left lying in another room while you walked on with the watch shows there as a small symbol of its own. **Presence sensors with zones** (such as an Aqara FP2): when a zone named like a piece of furniture in the room ("Sofa", "Armchair", "Dining table", "Bed", or the furniture's own name) reports someone there, the figure stands at that furniture instead of in the middle of the room. A zone at a door ("Entrance hall", "Terrace door") puts the figure in front of the door to the room of that name, or of a door to the outside; "rest of the room" keeps the middle. The sensor belongs to the room by its Home Assistant area. The other way round too: a watch that has lain in one room for ten minutes while the phone changed rooms after it counts as taken off – the phone then tells where the person is, and the watch stands as a symbol where it lies.
+- People stand as a **glowing figure** in their colour in the room, with the name above. Things (keys, an iPhone without a person) are small round symbols. A tap shows the room, the certainty and since when.
+- In the assistant under **4 · Live → People in 3D**: **figure, pin or off** – once for the whole house.
+- The **room panel** shows under its name who is here now, and the floors count the people.
+- **Show people to admins only** (in the Live step) hides them from all other users.
+
+**Faster with presence sensors:** motion and presence sensors (radar like the Aqara FP2 too) that belong to an area in Home Assistant speed locating up by themselves: Bluetooth tells **who** it is, the sensor tells **when** someone enters the room. Without sensors a room change takes two to five seconds – with one often just a moment.
+
+**Voice** (with the Assist sentences under **⚙ Settings → Voice control**): "Where is my iPhone?", "Where is Torsten?", "Who is home?", "Ring my iPhone". The answer comes straight from Home Assistant – even without an open Accurona screen. Open Accurona views fly into the room of the answer, on "Who is home?" into every room with someone in it, one after another (a tap stops it). Switch it off in the locating assistant under **Live**; while people are shown to admins only, only admins' views fly to them. "Where is Anna?" with the names locating knows is understood by Assist even when an AI agent (such as Gemini) answers everything else. Ringing sends a loud notification to the Home Assistant app (on an iPhone a critical alert that rings in silent mode too).
+
+**For automations:** every device has a sensor, e.g. `sensor.torstens_watch_room`. Its state is the room name; the attributes are `room_id`, `area_id` (the room's Home Assistant area), `floor`, `probability` (certainty 0–1), `since` and `last_seen`. Example – the light follows you:
+
+```yaml
+triggers:
+  - trigger: state
+    entity_id: sensor.torstens_watch_room
+    to: Kitchen
+actions:
+  - action: light.turn_on
+    target:
+      area_id: kitchen
+```
+
+**How fast a room change shows:** usually after **two to five seconds**. That comes from the scanners, not from Accurona: a **Shelly** passes a device on only about **every three to four seconds**, an **ESP32 Bluetooth proxy about every second**. Watches send once or twice a second, an iPhone in a pocket much less often. Accurona also waits for two or three readings so the view does not jump between two rooms. It gets faster with **ESP32 proxies** instead of Shellys – and with **presence sensors**, then almost at once.
+
+**Where scanners work best:**
+
+- **In a corner or on an outside wall of the room – not on the wall to the next room.** A plug right behind the wall hears you in the next room almost as loudly as in its own; then the view jumps between the two. (Example: you sit in the kitchen, and the living room's Shelly is plugged in right behind you in the shared wall.)
+- **Not back to back:** two scanners on both sides of the same wall make the two rooms hard to tell apart.
+- **In the open, not hidden:** not behind a fridge, radiator or mirror or in a metal cabinet – metal and water swallow Bluetooth.
+- **About one per room.** Rooms without a scanner of their own still work; large or angled rooms gain from a second one.
+- After moving a scanner, learn the rooms around it again briefly.
+
+**Good to know:**
+
+- **Room-level, not to the centimetre.** Bluetooth wavers (your own body damps the signal). Accurona reliably tells the room, not the spot in it.
+- **Everything stays in the house.** The signals are only evaluated in Home Assistant, nothing goes to the internet.
+- **Learn again** when you move scanners or add new ones.
+- **Using Bermuda or ESPresense?** Accurona runs alongside and does not disturb them. Just set your devices up here; once everything works, switch your automations to the new sensors and remove the old tools.
+
+**Getting the key (IRK) of an iPhone or Apple Watch:** the easiest way is the **Accurona key helper** – no Mac needed, the Apple Watch too:
+
+1. Plug an **ESP32** (ESP32, ESP32-C3 or ESP32-S3, about 5 €) into the computer and click **Install** on [neonplan3d.mastershort.de/keys](https://neonplan3d.mastershort.de/keys/) with Chrome or Edge. Then enter your Wi-Fi.
+2. Home Assistant finds **Accurona Key** as an ESPHome device: **Settings → Devices & services → Discovered → Add**.
+3. In the assistant under **Devices → 🔑 Key helper** pick "For an Apple Watch" or "For an iPhone" and pair: on the watch tap "Accurona Key" under **Settings → Bluetooth → Health devices**, on the phone under **Settings → Bluetooth**. The key appears at once – tap **Add**. Afterwards remove "Accurona Key" from the Bluetooth settings again.
+4. **More devices:** tap **🔄 Next device** first – the helper gets a new Bluetooth identity, so the device paired before does not connect in between.
+
+You can reuse the ESP32 afterwards, best as an ESPHome Bluetooth proxy – it then even makes locating faster. The helper is built on [irk-capture](https://github.com/DerekSeaman/irk-capture) by Derek Seaman (MIT licence) – thank you! Another way: with a **Mac** through Keychain Access (the Mac must be on the same iCloud account). Then paste the key in the assistant under **Devices → Paste a key** (as 32 characters or the way the Mac shows it).
 
 ---
 
@@ -870,7 +955,7 @@ Also without a solar system: every device with a power sensor (TV, washing machi
 
 The **Holograms** button in the energy bar (next to ⚡) hides all cards and shows them again – handy when many devices carry one. The card has the button too, or you fix it with `holograms`.
 
-**Wall tablet:** on the tablet level the holograms run without the glass effect and the cables at half the frame rate.
+**Wall tablet:** on the tablet level the holograms run without the glass effect and the cables at about 5 frames a second; 30 seconds after the last touch they stand still until someone taps again.
 
 **When something is missing:** the Setup list at the top of the tool shows what does not fit yet. No hologram usually means: no sensor on the inverter, or not the house view (floor and room views have none). No cable to a device: the device has no power sensor.
 
@@ -888,7 +973,7 @@ Sound & Cinema brings the music into the 3D house. It needs a speaker in the pla
 
 **Smart speakers and displays:** from release 2 the **Home Cinema & Hi-Fi** pack has smart speakers as a ball, cylinder, puck, pod, tall and oval, a compact and a portable multiroom speaker, a premium soundbar and smart displays of 5″, 7″, 8″ and 15″ (wall) – fitting Echo, Nest, HomePod, Sonos and co. With Sound & Cinema their light ring glows in the app's colour while they play, and the displays show the cover. While the card floats over a speaker, its pin steps aside and comes back when the music ends. TVs and screens keep their colours and pictures through **Live screens** (6.3).
 
-**Wall tablet:** on the tablet level the rings run at half the frame rate, the cards without the glass effect.
+**Wall tablet:** on the tablet level the rings run at about 5 frames a second and rest 30 seconds after the last touch, the cards without the glass effect.
 
 **Which speakers fit?** Accurona uses Home Assistant's standard media player interface: what works in Home Assistant's media player dialog works here too. This is an assessment from documentation and experience, not a guarantee for every model:
 
@@ -987,18 +1072,20 @@ Not included are camera pictures (the recorder keeps none) and people and their 
 
 **Requirements:** Home Assistant's recorder (it runs by default) and Home Assistant restarted once after the update. How far back the history reaches is set by the recorder's `purge_keep_days` (default 10 days); time travel needs 24 hours of it, the whole week at least 7 days. If you want the week, keep `purge_keep_days` at 7 or more.
 
-### 6.8 Household Pro (beta)
+### 6.8 Household Pro
 
-> **Beta, first for supporters:** Household Pro is tested by supporters first (it comes with the [Supporter Pass](https://mastershort.de/en/neonplan3d/supporters/)). Feedback is welcome on Discord in **#beta-feedback** or on GitHub.
+> Household Pro is in the [shop](https://mastershort.de/en/neonplan3d/); it comes with the [Supporter Pass](https://mastershort.de/en/neonplan3d/supporters/). Thanks to everyone who tested it in the beta.
 
 Household Pro shows what is due in the household, right where it happens. The waste bins and mailboxes themselves are for everyone (chapter 4.23); Household Pro brings them and other appliances to life. Its fields are in the item's form under **🏠 Household Pro**.
 
-- **Waste bins:** under **Waste calendar or sensor** pick a calendar (e.g. from *Waste Collection Schedule*) or a sensor. In a calendar Accurona finds the entries by the words of the bin's waste (paper, food, packaging, PMD, recycling … in many languages); if that does not fit, enter a **word** of your own. A sensor may report the days to the pickup, a date or "tomorrow"/"in 3 days". Every bin with a pickup wears a small **tag** on its lid – "Today", "Tomorrow", "in 3 days" – in its colour; today and tomorrow stand out. A tap on the bin shows its next pickups. **Glow from / until** sets from when the day before until when on pickup day a bin counts as due (for all bins).
-- **Mailbox:** a **post sensor** – a flag (e.g. an input_boolean "post" set by an automation) or the letter flap – and optionally the **sensor of the emptying door**. While post is in it, the mailbox glows and shows "Post" until it is emptied.
-- **Plants:** a plant (plant.*) or a moisture sensor; below the set value (default 20 %) it shows "Thirsty".
+- **Waste bins:** under **Waste calendar or sensor** pick a calendar (e.g. from *Waste Collection Schedule*) or a sensor. In a calendar Accurona finds the entries by the words of the bin's waste (paper, food, packaging, PMD, recycling … in many languages); if that does not fit, enter a **word** of your own. A sensor may report the days to the pickup, a date or "tomorrow"/"in 3 days". The calendar is read six weeks ahead. Every bin with a pickup wears a small **tag** on its lid – "Today", "Tomorrow", "in 3 days" – in light letters on a dark plate with an edge in its colour; today and tomorrow stand out. Bins standing together share **one tag** with a line per bin in pickup order; tags that would cover each other move up. The tags (the mailbox's and the plants' too) grow with the **Symbol size** like the pins' labels and never shrink to unreadable from afar. A tap on the bin shows its next pickups. **Glow from / until** sets from when the day before until when on pickup day a bin counts as due (for all bins). In the Day and Blueprint looks, bins and pack furniture with colours of their own (a Halloween pumpkin, say) keep their colour down to the ground.
+  - **Label only the next pickup:** only the bin(s) with the earliest pickup wear a tag. **Show tags only … days before:** a tag appears only that many days before the pickup (empty = always, 0 = on pickup day only). Both apply to all bins; bins without a tag still show in "Today in the household" and show their pickups when tapped. Without these settings everything stays as before.
+  - **Put out:** optionally a helper (`input_boolean`), switch or binary sensor that is on while the bin stands outside. The bin then stops glowing, its tag says "put out ✓" (green edge) and "Today in the household" ticks it off. A tap on the bin shows **Mark as put out** below its pickups – it switches a helper or switch. Typical: an automation that switches the helper off again every night (or after the pickup).
+- **Mailbox:** a **post sensor** – a flag (e.g. an input_boolean "post" set by an automation) or the letter flap – and optionally the **sensor of the emptying door**. While post is in it, the mailbox glows and shows "Post" until it is emptied. From afar it shows a round **letter symbol** instead of the small text; the text appears when you zoom in.
+- **Plants:** a plant (plant.*) or a moisture sensor; below the set value (default 20 %) it shows "Thirsty" – from afar as a round **plant symbol**.
 - **Pinboard:** under **⚙ Settings → House → Pinboard (text helper)** pick a text helper (`input_text`) or sensor. Its text stands at the top of "Today in the household", several lines separated by `|` – automations write into it ("parcel for Alla is in the garage", "plumber tomorrow at 10"), the card shows it.
-- **Washer, dryer, dishwasher:** with a **time-left sensor** the pin shows "23 min left"; afterwards "Done!" until the door opens (**door sensor**) or it runs again. Accurona tells "done" from the appliance's state (finished, done …) or from it having stopped running.
-- **Service and consumables:** any electric item can have a sensor for a filter, salt or rinse aid – a binary sensor (on = due), a number (percent or days left, due at the set value) or a date. When due the item glows yellow.
+- **Washer, dryer, dishwasher:** with a **time-left sensor** the pin shows "23 min left"; afterwards "Done!" until the door opens (**door sensor**) or it runs again. Accurona tells "done" from the appliance's state (finished, done …) or from it having stopped running. The time left shows only while the appliance runs: when its state says off, ready or standby, or its power is at standby, Accurona shows no time left – even if the time-left sensor still reports minutes (after a power cut, say).
+- **Service and consumables:** any electric item can have a sensor for a filter, salt or rinse aid – a binary sensor (on = due), a number (percent or days left, due at the set value) or a date. When due the item glows yellow. Once a sensor is chosen there is a **Second service** with its own threshold – a robot vacuum's brush and its dock's dust bag, say. Each one due is a line of its own in "Today in the household".
 - **Fridge:** when a door stands open longer than set (default 2 minutes), Accurona warns at the top of the view. The **smart fridge** (side-by-side with moving doors) in the furniture library comes with it.
 - **Today in the household:** a glass card at the top right lists what is due – bins today and tomorrow, post, finished appliances, thirsty plants, services due, open fridge doors. A tap opens the device, its header folds it. In the dashboard card `household_card: false` switches it off.
 
@@ -1087,10 +1174,11 @@ A **module** is a pack that carries code: Accurona loads it and runs it in the h
 **How a module works – step by step:**
 
 1. **Get it:** put the module into the shop's basket (free ones too), order, done. It then lies in your customer account like every pack.
-2. **Install it:** with Accurona connected to the shop (7.1) it stands under Extensions → **Install/update all** – one tap. Without the connection download the `.fp3dpack` file from the account and import it: **⚙ Settings → 🧩 Modules → Import a module …** or here in the **Modules** section. Nothing more to do – no restart, no reload.
-3. **See it:** the module stands in both lists as "Module by Mastershort · v2". What it does is in its shop description; the sentences of a voice module show at once under **🎙 Voice control → What Accurona understands**, a module's warnings in the warning bar, its cards over the house.
-4. **Updates:** a new release is fetched by the daily shop check by itself; without the connection import the new file – the same id replaces the old one.
-5. **Remove:** **Remove** in the list, like a pack. Your plan stays untouched.
+2. **Install it:** with Accurona connected to the shop (7.1) it stands under Extensions → **Install/update all** – one tap. Without the connection download the `.fp3dpack` file from the account and import it: **⚙ Settings → 🧩 Modules → Import a module …** or here in the **Modules** section.
+3. **Approve it (since 1.24):** a module runs only once an administrator has seen and approved its code. The **Modules** section then says "waits for your approval" – **View code & approve** shows the publisher, version, size, fingerprint and the whole code; **Approve** starts exactly this code, without a restart.
+4. **See it:** the module stands in both lists as "Module by Mastershort · v2". What it does is in its shop description; the sentences of a voice module show at once under **🎙 Voice control → What Accurona understands**, a module's warnings in the warning bar, its cards over the house.
+5. **Updates:** a new release is fetched by the daily shop check by itself; without the connection import the new file. **New code never runs by itself:** the update waits beside the running release ("Update to v4 waits for your approval") until you confirm it with **View update & approve**. Until then the old release keeps running. Furniture and feature packs without code update as before.
+6. **Remove:** **Remove** in the list, like a pack. Your plan stays untouched.
 
 Security: a module runs only with a valid signature and on the installation it was bought for. You can read the code in the file (it is not obfuscated) but not pass it on – the Elastic License 2.0 applies.
 
@@ -1187,7 +1275,7 @@ idle_orbit: false
 Accurona is built for wall tablets such as the Amazon Fire:
 
 - **No work while idle.** If nothing changes, the view draws not a single frame. The FPS display then reads "At rest (0 fps)".
-- **Tablet quality level:** "Auto" picks it by itself on Fire tablets. Patterns, shadows, halos and particles are left out, animations run at half rate.
+- **Tablet quality level:** "Auto" picks it by itself on Fire tablets. Patterns, shadows, halos and particles are left out. Moving decorations (energy flow, solar fields, sound rings, pool water, robot vacuums, colour effects, pets) run at about 5 frames a second and stand still 30 seconds after the last touch; a tap, or something new that starts to move, wakes them. Measured values alone (watts, temperature) show at most every 2 seconds, switches, doors and alarms at once.
 - **Kiosk options of the card:** After a few minutes without a touch the card returns to the start view. At night it dims by the sun or by the clock. As a screensaver the house turns slowly.
 - **Warnings** can jump into the affected room by themselves.
 - In portrait the room panel appears at the bottom.
@@ -1225,6 +1313,11 @@ Home Assistant's own backup includes Accurona completely as well.
 - Accurona only connects to the internet if you enter a licence key. Then it asks mastershort.de once a day for updates and sends the key and the anonymous installation id.
 - Camera pictures, history and states stay in Home Assistant and are only shown in the browser.
 - Time travel reads the history from Home Assistant's recorder, only for the devices of the plan. It never reads people or their trackers.
+- **Locating** evaluates the Bluetooth signals only in Home Assistant. Nothing about who is where leaves your house.
+- **Help make Accurona better (voluntary, off by default):** under **⚙ Settings → 🛟 Help improve** you can switch on anonymous usage and error reports. An admin who has not switched them on sees one invitation in the editor; **Have a look** opens the setting, **Not now** hides it for good on that device. Then at most one report a day (and at most one batch of error messages an hour) goes to api.mastershort.de.
+  - **Sent:** a random id (not Home Assistant's, made when you switch it on), the versions of Accurona, Home Assistant and Python, the language, the installed packs and Pro add-ons, counts from the plan (floors, rooms, furniture, linked devices, cameras), device type, browser and system of the screens with frame rate and graphics class, how often each view was opened, and Accurona's error messages without names and addresses.
+  - **Never sent:** names, entities, areas, the shape of your floor plan, IP addresses, your Home Assistant installation's id, user names, your licence key – and nothing from locating.
+  - **"View report"** shows exactly the next report before it is sent. **"Delete data"** removes everything already sent. Switching off forgets the id.
 
 ---
 
@@ -1248,7 +1341,7 @@ After an update the old version still runs in the background. Restart Home Assis
 That is no crash: the Home Assistant app has gestures of its own. If a two-finger swipe has an action there (e.g. to the start page), the app runs it and leaves the page. In the app, set the two-finger gestures under **Settings → Companion App → Gestures** to **None**. It never happens in Safari.
 
 **A device is missing in a room's device list.**
-The room needs an area, and the device must belong to that area, either the device or the entity itself. If the entity sits under a device with several entities, it is behind "+n more". The search field finds it directly.
+The room needs an area, and the device must belong to that area, either the device or the entity itself. If the entity sits under a device with several entities, it is behind "+n more". The search field finds it directly. Entities hidden or disabled in Home Assistant are never taken in by themselves; one that was placed in the room before stays in the list, so you can remove it or hide it with 👁.
 
 **A camera is hard to hit.**
 Tap its wedge on the floor, it counts like the camera.

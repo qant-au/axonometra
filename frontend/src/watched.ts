@@ -27,7 +27,7 @@ export interface WatchLinks {
 
 /** Every entity the view watches, each once, in a stable order. */
 export function watchedEntities(hass: HomeAssistant, b: Building, w: WatchLinks): string[] {
-  const links = [...w.openings.values()].flatMap((e) => [e.cover, e.contact, e.tilt, e.contact2 ?? null, e.tilt2 ?? null, e.position ?? null, e.tiltAngle ?? null]);
+  const links = [...w.openings.values()].flatMap((e) => [e.cover, e.contact, e.tilt, e.contact2 ?? null, e.tilt2 ?? null, e.position ?? null, e.tiltAngle ?? null, e.lock ?? null]);
   const placed = placedEntities(b);
   const cameraSensors = placed.filter((id) => kindOf(id) === "camera").flatMap((id) => cameraMotionSensors(hass, id));
   const power = placed.map((id) => powerSensorFor(hass, id));

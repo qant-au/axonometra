@@ -33,6 +33,18 @@ export interface ControlEvents {
 }
 
 const HOLD_MS = 500;
+/**
+ * A move or wheel event this old when it is handled waited out a freeze (building the house just after
+ * opening, a slow tablet): it is dropped, not replayed – replayed, the view caught up seconds later and landed
+ * somewhere else in the house (#712). A second, so a slow wall tablet (a frame of half a second) still turns.
+ */
+const STALE_MS = 1000;
+
+/** The event waited longer than STALE_MS to be handled (timestamps on the performance clock, as all browsers now). */
+export function stale(e: { timeStamp: number }, now: number): boolean {
+  const age = now - e.timeStamp;
+  return age > STALE_MS && age < 60_000;
+}
 
 const MIN_PHI = 0.12;
 const MAX_PHI = 1.35;
@@ -124,14 +136,15 @@ export class OrbitControls {
     return active;
   }
 
-  flyTo(to: Partial<OrbitView>, duration = 700): void {
+  /** `saved`: a start view saved for the house, a floor or a room – its angle applies even under the 3D lock (#645). */
+  flyTo(to: Partial<OrbitView>, duration = 700, saved = false): void {
     const from = { ...this.view, target: this.view.target.clone() };
     // take the short way round
     let theta = to.theta ?? from.theta;
     while (theta - from.theta > Math.PI) theta -= 2 * Math.PI;
     while (theta - from.theta < -Math.PI) theta += 2 * Math.PI;
     // locked: the flight moves and zooms, the angle stays
-    const target = this.angleLock
+    const target = this.angleLock && !saved
       ? { target: (to.target ?? from.target).clone(), radius: to.radius ?? from.radius, theta: from.theta, phi: from.phi }
       : { target: (to.target ?? from.target).clone(), radius: to.radius ?? from.radius, theta, phi: to.phi ?? from.phi };
     this.velocity = { theta: 0, phi: 0 };
@@ -188,6 +201,13 @@ export class OrbitControls {
     if (!p) return;
     if (this.grabbing) {
       if (this.events.drag) this.events.drag(...this.local(e));
+      return;
+    }
+    if (stale(e, performance.now()) && !this.swiping) {
+      // only the position is taken: the next fresh move continues from here
+      p.x = e.clientX;
+      p.y = e.clientY;
+      if (this.pointers.size > 1) this.pinch = this.pinchState();
       return;
     }
     const dx = e.clientX - p.x;
@@ -288,6 +308,7 @@ export class OrbitControls {
 
   private onWheel(e: WheelEvent): void {
     e.preventDefault();
+    if (stale(e, performance.now())) return;
     this.flight = null;
     this.zoom(Math.exp(e.deltaY * (e.deltaMode === 1 ? 0.05 : 0.0015)));
     this.events.change();

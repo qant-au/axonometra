@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { isLamp, newFloor } from "./model.ts";
+import { isLamp, newFloor, setTerrain, type Building, type Furniture } from "./model.ts";
 import { isCooktopZone, isPackCooktop, furnitureSize, isElectric, mountBase, packDisplay, packItem, packItemName, packName, packType, setPacks, type FurniturePack } from "./packs.ts";
 
 const pack: FurniturePack = {
@@ -102,4 +102,19 @@ test("a pack cooktop is found by its zones: thin discs on its top (they glow whi
   // only items named like a cooktop count (a round coaster on a sideboard is no hob)
   assert.ok(!isPackCooktop(packType("test.kitchen", "sideboard")));
   setPacks([]);
+});
+
+test("items outside the rooms stand on the ground beneath them, also when it lies lower than the floor (#708)", () => {
+  const floor = { ...newFloor("eg", "EG", 0), rooms: [{ id: "r", name: "R", area_id: null, points: [[0, 0], [4, 0], [4, 3], [0, 3]], floor_material: "wood" }] } as Building["floors"][number];
+  const item = (type: string, x: number) => ({ id: type, type, x, z: 1, w: 0.6, d: 0.6, h: 1, rotation: 0, variant: null }) as Furniture;
+  setTerrain({ settings: { terrain: { level: -0.55 } } } as unknown as Building);
+  try {
+    // in the room on the floor, in the garden on the lowered ground
+    assert.equal(mountBase(floor, item("waste_bin", 2)), 0);
+    assert.equal(mountBase(floor, item("waste_bin", 6)), -0.55);
+    // a wall cabinet keeps its own height outside too
+    assert.equal(mountBase(floor, item("kitchen_wall", 6)), 1.45);
+  } finally {
+    setTerrain(null);
+  }
 });

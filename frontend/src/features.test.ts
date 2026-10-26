@@ -31,9 +31,9 @@ test("manual and shop links follow the language and point Pro add-ons at their s
 test("an unreleased add-on shows only to whoever has its pack", async () => {
   const { released, UNRELEASED } = await import("./features.ts");
   const { setPacks } = await import("./packs.ts");
-  assert.ok(UNRELEASED.includes("diagnostics"));
+  assert.ok(!UNRELEASED.includes("diagnostics"));
   setPacks([]);
-  assert.equal(released("diagnostics"), false);
+  assert.equal(released("diagnostics"), true);
   assert.equal(released("auto_pro"), true);
   // Pool Pro is not released: hidden, unless the module is installed
   assert.equal(released("pool"), false);

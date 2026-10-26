@@ -33,7 +33,7 @@ LOADER_URL = f"{URL_BASE}/{LOADER_FILE}"
 OLD_LOADER_URL = f"/local/{LOADER_DIR}/{LOADER_FILE}"
 
 # tries every 5 s for 15 minutes; the first try is awaited, so a dashboard normally waits for the card as before
-_LOADER = """// Accurona: loads the dashboard card. Written by the integration; changes here are overwritten.
+_LOADER = """// Accurona: loads the dashboard card. Served from the integration's own path, never written to disk.
 // While Home Assistant is still starting, the card's script is not served yet: then it tries again (#461).
 const url = "{url}";
 const tag = "accurona-card";

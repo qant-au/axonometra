@@ -2,7 +2,7 @@
 // describes them (plan units in metres, x to the right, z down the plan) become a clean Accurona plan – rooms
 // tidied and joined, every door and window placed on a room edge, furniture mapped to Accurona's types.
 
-import type { Building, Floor, FreeWall, Furniture, FurnitureType, Opening, Room, Vec2 } from "../model.ts";
+import type { Building, Floor, FreeWall, Furniture, FurnitureType, Opening, Room, SillBoard, Vec2 } from "../model.ts";
 import { canLift, emptyBuilding, FURNITURE_SIZE, FURNITURE_TYPES, newFloor, normalizeBuilding, pointInPolygon, polygonArea } from "../model.ts";
 import { closeGaps, suggestedThickness } from "../geometry/gaps.ts";
 import { bridgeGaps, cleanPolygon, faces, squareUp, type Seg } from "./geom.ts";
@@ -29,6 +29,8 @@ export interface RawOpening {
   height: number;
   /** Bottom edge above the floor. */
   sill: number;
+  /** Windows: board and sill as the plan says (default automatic, #655). */
+  sill_board?: SillBoard;
 }
 
 export interface RawFurniture {
@@ -323,8 +325,10 @@ export function buildPlan(raw: RawPlan, options: BuildOptions = {}): BuildResult
       const sill = r3(clamp(o.sill, 0, Math.max(0, floor.height - height)));
       let type: Opening["type"] = o.kind ?? (sill < 0.15 && height > 1.7 ? "door" : "window");
       if (type === "door" && width >= 2.2) type = "garage";
-      // the same opening twice (both rooms of a wall listed it): keep one
-      if (openings.some((x) => x.room_id === best!.room.id && x.edge === best!.edge && (x.wall ?? null) === wallId && Math.abs(x.offset - offset) < 0.2)) continue;
+      // the same opening twice (both rooms of a wall listed it): keep one – a window above another one
+      // (a transom light, a split front) is no duplicate
+      const bottom = type === "window" ? sill : 0;
+      if (openings.some((x) => x.room_id === best!.room.id && x.edge === best!.edge && (x.wall ?? null) === wallId && Math.abs(x.offset - offset) < 0.2 && x.sill < bottom + height - 0.05 && bottom < x.sill + x.height - 0.05)) continue;
       openings.push({
         id: id("opening"),
         room_id: best.room.id,
@@ -342,6 +346,7 @@ export function buildPlan(raw: RawPlan, options: BuildOptions = {}): BuildResult
         contact: null,
         contact2: null,
         tilt: null,
+        ...(type === "window" && o.sill_board && o.sill_board !== "auto" ? { sill_board: o.sill_board } : {}),
       });
       if (type === "window") stats.windows++;
       else stats.doors++;

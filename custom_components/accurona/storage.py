@@ -31,6 +31,7 @@ from .const import (
     STORAGE_MINOR_VERSION,
     STORAGE_VERSION,
 )
+from .packs import module_sha
 from .schema import BUILDING_SCHEMA, empty_building, image_ids
 
 _LOGGER = logging.getLogger(__name__)
@@ -187,14 +188,49 @@ class FloorplanData:
 
     async def async_add_pack(
         self, payload: dict[str, Any], signed: tuple[dict[str, Any], dict[str, str]] | None = None
-    ) -> None:
+    ) -> bool:
         """Keep an imported pack; a newer file of the same pack replaces the old one. The payload as signed
-        and the signature stay with it, so a backup can carry the pack and a restore can check it again."""
-        entry = {**payload, "imported_at": time.time()}
+        and the signature stay with it, so a backup can carry the pack and a restore can check it again.
+
+        Module code runs only once an admin has approved it (`approved` holds the approved code's fingerprint).
+        New module code for an installed module does not replace the running one: it waits beside it as
+        `pending` until an admin approves it. Returns True when the pack waits for an admin's approval."""
+        entry: dict[str, Any] = {**payload, "imported_at": time.time()}
         if signed:
             entry["source"], entry["signature"] = signed
+        old = next((p for p in self.packs if p["id"] == payload["id"]), None)
+        sha = module_sha(entry)
+        if sha is not None and old is not None and module_sha(old) is not None:
+            if sha == old.get("approved"):
+                # the same code again (a re-import, a release with new furniture only): stays approved
+                entry["approved"] = sha
+            else:
+                kept = {k: v for k, v in old.items() if k != "pending"}
+                kept["pending"] = entry
+                self.packs = [kept if p["id"] == payload["id"] else p for p in self.packs]
+                await self._pack_store.async_save({"packs": self.packs})
+                return True
         self.packs = [p for p in self.packs if p["id"] != payload["id"]] + [entry]
         await self._pack_store.async_save({"packs": self.packs})
+        return sha is not None and entry.get("approved") != sha
+
+    async def async_approve_module(self, pack_id: str, sha: str) -> bool:
+        """An admin approved the module code with this fingerprint (the waiting update or the installed code)."""
+        pack = next((p for p in self.packs if p["id"] == pack_id), None)
+        if pack is None:
+            return False
+        pending = pack.get("pending")
+        if isinstance(pending, dict) and module_sha(pending) == sha:
+            approved = {**pending, "approved": sha}
+        elif module_sha(pack) == sha:
+            approved = {**{k: v for k, v in pack.items() if k != "pending"}, "approved": sha}
+            if isinstance(pending, dict):
+                approved["pending"] = pending
+        else:
+            return False
+        self.packs = [approved if p["id"] == pack_id else p for p in self.packs]
+        await self._pack_store.async_save({"packs": self.packs})
+        return True
 
     @property
     def images(self) -> dict[str, str]:

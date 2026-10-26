@@ -222,6 +222,7 @@ const DEVICES = [
   // Haushalt Pro: an invented waste calendar and a "post" flag set by an automation
   entity("calendar.abfallkalender", null, "off", { friendly_name: "Abfallkalender", message: "Papier", all_day: true }),
   entity("input_boolean.post_da", null, "on", { friendly_name: "Post da" }),
+  entity("input_boolean.restmuell_rausgestellt", null, "on", { friendly_name: "Restmüll rausgestellt" }),
   entity("sensor.monstera_feuchte", null, "14", { friendly_name: "Monstera Feuchte", device_class: "moisture", unit_of_measurement: "%" }),
   entity("sensor.waschmaschine_restzeit", null, "23", { friendly_name: "Waschmaschine Restzeit", unit_of_measurement: "min" }),
   entity("binary_sensor.kuehlschrank_filter", null, "on", { friendly_name: "Kühlschrank Wasserfilter", device_class: "problem" }),

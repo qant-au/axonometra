@@ -1,7 +1,7 @@
 {
   "domain": "accurona",
   "name": "Accurona",
-  "after_dependencies": ["recorder"],
+  "after_dependencies": ["bluetooth", "recorder"],
   "codeowners": ["@qant-au"],
   "config_flow": true,
   "dependencies": ["frontend", "http", "panel_custom", "websocket_api"],
@@ -11,5 +11,5 @@
   "issue_tracker": "https://github.com/qant-au/accurona/issues",
   "requirements": [],
   "single_config_entry": true,
-  "version": "1.23.1"
+  "version": "2.0.4"
 }

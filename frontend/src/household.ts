@@ -23,10 +23,15 @@ export interface HouseholdItem {
 /** A pack item that is a plant: most of its parts are leaves or a pot. */
 export function isPackPlant(type: string): boolean {
   const item = packItem(type);
-  if (!item || item.light) return false;
+  if (!item) return false;
+  // named or tagged as a plant (the Deco pack's plants have leaf colours of their own, #712)
+  if (PLANT_WORDS.test([item.id, ...(item.tags ?? []), ...Object.values(item.name ?? {})].join(" "))) return !item.light || /plant|pflanz/i.test(item.id);
+  if (item.light) return false;
   const green = item.parts.filter((p) => p.color === "plant").length;
   return green > 0 && green + item.parts.filter((p) => p.color === "pot").length >= item.parts.length / 2;
 }
+
+const PLANT_WORDS = /plant|pflanz|palm|monstera|ficus|feige|\bfig\b|fig_|bonsai|kaktus|cactus|yucca|orchid|bambus|bamboo|bogenhanf|snake_|einblatt|lily|gummibaum|rubber|olive|kräuter|\bherb|\bfarn|\bfern\b|\befeu\b|\bivy\b|blumen|flower|tulp|tulip/i;
 
 export const BIN_SHAPES = ["bin120", "bin240", "bin1100", "multi", "bag", "caddy", "underground"] as const;
 export type BinShape = (typeof BIN_SHAPES)[number];
@@ -283,6 +288,96 @@ export function binDue(f: Pick<Furniture, "bin_kind" | "bin_source" | "bin_match
   return { days, day, summary: String(st.attributes.friendly_name ?? ""), glow: binGlows(days, now, hours) };
 }
 
+/** An entity that says "on" (input_boolean, switch, binary_sensor …), null when unset or unknown. */
+function onEntity(id: EntityRef | undefined, hass: HomeAssistant): boolean {
+  const ref = typeof id === "string" && id !== "none" ? id : null;
+  const st = ref ? hass.states[ref] : undefined;
+  return !!st && ON.has(String(st.state).toLowerCase());
+}
+
+/** Whether a bin has been put out: its "put out" entity (an input_boolean a nightly automation resets) is on. */
+export function binOut(f: Pick<Furniture, "bin_out">, hass: HomeAssistant): boolean {
+  return onEntity(f.bin_out, hass);
+}
+
+/** A "put out" entity a tap can switch: an input_boolean or a switch (a binary sensor is only read). */
+export function binOutToggleable(f: Pick<Furniture, "bin_out">): boolean {
+  return typeof f.bin_out === "string" && /^(input_boolean|switch)\./.test(f.bin_out);
+}
+
+/** A tag that stands on a household item: a bin's pickup, a mailbox's post, a thirsty plant. */
+export interface HouseholdTag {
+  id: string;
+  floorId: string;
+  x: number;
+  z: number;
+  /** Height of the item's top above its floor. */
+  y: number;
+  /** The item's footprint radius (half its longer side), to find bins standing together. */
+  r: number;
+  name: string;
+  color: string;
+  when: string;
+  /** Today or tomorrow (a bin), or something to do now: bright. */
+  soon?: boolean;
+  /** Days to a bin's pickup (sorts the lines of a merged tag); -1 for a mailbox or a plant. */
+  days: number;
+  /** The bin is out already ("put out ✓"). */
+  out?: boolean;
+  /** A mailbox or a plant: from afar a round symbol instead of the tiny text. */
+  icon?: "mail" | "plant";
+}
+
+/** One tag in the view: one item, or bins standing together with one line each in pickup order. */
+export interface TagGroup {
+  floorId: string;
+  x: number;
+  z: number;
+  y: number;
+  lines: HouseholdTag[];
+}
+
+/**
+ * Bins standing together share one tag (their tags covered each other): bins on one floor whose footprints come
+ * closer than `gap` metres form a group, its lines sorted by pickup (then by name). A mailbox or a plant keeps its own.
+ */
+export function groupTags(tags: readonly HouseholdTag[], gap = 0.3): TagGroup[] {
+  const bins = tags.filter((t) => !t.icon);
+  const parent = bins.map((_, i) => i);
+  const root = (i: number): number => (parent[i] === i ? i : (parent[i] = root(parent[i])));
+  for (let i = 0; i < bins.length; i++)
+    for (let j = i + 1; j < bins.length; j++) {
+      const a = bins[i];
+      const b = bins[j];
+      if (a.floorId === b.floorId && Math.hypot(a.x - b.x, a.z - b.z) <= a.r + b.r + gap) parent[root(j)] = root(i);
+    }
+  const groups = new Map<number, HouseholdTag[]>();
+  bins.forEach((t, i) => groups.set(root(i), [...(groups.get(root(i)) ?? []), t]));
+  const out: TagGroup[] = [];
+  for (const lines of groups.values()) {
+    lines.sort((a, b) => a.days - b.days || a.name.localeCompare(b.name));
+    out.push({ floorId: lines[0].floorId, x: lines.reduce((s, t) => s + t.x, 0) / lines.length, z: lines.reduce((s, t) => s + t.z, 0) / lines.length, y: Math.max(...lines.map((t) => t.y)), lines });
+  }
+  for (const t of tags) if (t.icon) out.push({ floorId: t.floorId, x: t.x, z: t.z, y: t.y, lines: [t] });
+  return out;
+}
+
+/** The plan's choices for the bins' tags: only the next pickup, only from some days before (null = always). */
+export interface BinTagOptions {
+  nextOnly?: boolean | null;
+  ahead?: number | null;
+}
+
+/**
+ * Which bins wear a tag: every bin with a pickup (as before), or – by the plan's settings – only the bins of the
+ * earliest pickup and/or only from `ahead` days before it. Bins without a tag still glow and can be tapped.
+ */
+export function binTagsShown(bins: readonly { id: string; days: number }[], o: BinTagOptions = {}): Set<string> {
+  const ahead = typeof o.ahead === "number" && o.ahead >= 0 ? o.ahead : null;
+  const first = bins.length ? Math.min(...bins.map((b) => b.days)) : 0;
+  return new Set(bins.filter((b) => (ahead === null || b.days <= ahead) && (!o.nextOnly || b.days === first)).map((b) => b.id));
+}
+
 /** Days until the pickup a sensor tells: a number, a date or a timestamp, or Waste Collection Schedule's `daysTo`. */
 /**
  * A date written inside a sensor's text, as Waste Collection Schedule's own formats show it: "on Mon, 26.10.2026",
@@ -366,7 +461,7 @@ export function mailboxPost(f: Pick<Furniture, "entity" | "mailbox_door">, hass:
 
 /** The entity fields of the household items, for the watched list. */
 export function householdEntities(f: Furniture): EntityRef[] {
-  if (f.type === "waste_bin") return [f.bin_source ?? null];
+  if (f.type === "waste_bin") return [f.bin_source ?? null, f.bin_out ?? null];
   if (f.type === "mailbox") return [f.entity ?? null, f.mailbox_door ?? null];
   return householdExtras(f);
 }
@@ -423,6 +518,23 @@ export function isFinishedState(st: HassEntity | undefined): boolean {
   return FINISHED.has(s);
 }
 
+/** States of an appliance (or of its status sensor) that say it runs no program. */
+const IDLE = new Set(["off", "idle", "standby", "stand_by", "ready", "inactive", "sleep", "sleeping", "power_off", "aus", "bereit", "unavailable"]);
+
+/**
+ * Whether an appliance's own readings say it is idle, so a time left on its display sensor is a leftover (after a
+ * power cut the sensor may keep its last minutes): its state entity is off or idle, or its power is at standby –
+ * unless its state entity (a status sensor, the appliance's own entity) tells a program running. A smart plug's switch
+ * that is on tells nothing. Without a power reading or a state nothing is known: not idle.
+ */
+export function applianceIdle(st: HassEntity | undefined, power: number | null, runW: number): boolean {
+  const s = st ? String(st.state).toLowerCase().replace(/\s+/g, "_") : null;
+  if (s !== null && IDLE.has(s)) return true;
+  const plug = !!st && /^(switch|input_boolean|light)\./.test(st.entity_id);
+  const reportsRun = !!st && !plug && s !== null && (s === "on" || /run|wash|dry|rinse|spin|clean|läuft|laeuft|betrieb/.test(s));
+  return power !== null && power <= runW && !reportsRun;
+}
+
 /** Text of the minutes left: "23 min", "1:05 h". */
 export function remainingText(min: number): string {
   return min >= 60 ? `${Math.floor(min / 60)}:${String(min % 60).padStart(2, "0")} h` : `${min} min`;
@@ -433,14 +545,29 @@ export function remainingText(min: number): string {
  * or below its threshold (percent or days left; null: 10), a date or timestamp that is reached.
  */
 export function serviceDue(f: Pick<Furniture, "service" | "service_min">, hass: HomeAssistant, now = new Date()): boolean {
-  const id = typeof f.service === "string" && f.service !== "none" ? f.service : null;
+  return entityDue(f.service, f.service_min, hass, now);
+}
+
+function entityDue(ref: EntityRef | undefined, min: number | null | undefined, hass: HomeAssistant, now: Date): boolean {
+  const id = typeof ref === "string" && ref !== "none" ? ref : null;
   const st = id ? hass.states[id] : undefined;
   if (!id || !st || st.state === "unavailable" || st.state === "unknown") return false;
   if (id.startsWith("binary_sensor.") || id.startsWith("input_boolean.")) return st.state === "on";
   const v = num(st);
-  if (v !== null) return v <= (f.service_min ?? 10);
+  if (v !== null) return v <= (min ?? 10);
   const d = dayOf(st.state);
   return !!d && d.getTime() <= startOfDay(now).getTime();
+}
+
+/**
+ * The services of an item that are due now: its first one and a second one (a robot vacuum's brushes and its dock's
+ * dust bag, say), each with its own threshold; the due entities in that order.
+ */
+export function servicesDue(f: Pick<Furniture, "service" | "service_min" | "service2" | "service2_min">, hass: HomeAssistant, now = new Date()): string[] {
+  const out: string[] = [];
+  if (entityDue(f.service, f.service_min, hass, now)) out.push(f.service as string);
+  if (f.service2 !== f.service && entityDue(f.service2, f.service2_min, hass, now)) out.push(f.service2 as string);
+  return out;
 }
 
 /** The door sensors of an item (a fridge's two doors, an appliance's door). */
@@ -501,5 +628,5 @@ export class FinishedMemory {
 
 /** The household's entity fields of part 2, for the watched list. */
 export function householdExtras(f: Furniture): EntityRef[] {
-  return [f.moisture ?? null, f.remaining ?? null, f.service ?? null];
+  return [f.moisture ?? null, f.remaining ?? null, f.service ?? null, f.service2 ?? null];
 }

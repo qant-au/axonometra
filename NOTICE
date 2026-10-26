@@ -20,3 +20,33 @@ for NeonPlan 3D keep working; it does not redistribute them.
 
 Bundled fonts carry their own licences, next to each font file in
 custom_components/accurona/frontend/fonts/.
+
+The Ship-D hull parameterisation in frontend/src/hull/shipd.ts is a
+TypeScript port of HullParameterization.py by Noah J. Bagazinski, from
+https://github.com/noahbagz/C_ShipGen, used under the MIT License below. The
+parameterisation and the Ship-D dataset are described in Bagazinski, N. J. and
+Ahmed, F., "Ship-D: Ship Hull Dataset for Design Optimization using Machine
+Learning" (2023). The hull vectors in frontend/src/hull/fixtures/shipd.json
+come from that dataset (Harvard Dataverse, doi:10.7910/DVN/MMGAUS, CC0 1.0).
+
+  MIT License
+
+  Copyright (c) 2024 Noah J. Bagazinski
+
+  Permission is hereby granted, free of charge, to any person obtaining a copy
+  of this software and associated documentation files (the "Software"), to deal
+  in the Software without restriction, including without limitation the rights
+  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+  copies of the Software, and to permit persons to whom the Software is
+  furnished to do so, subject to the following conditions:
+
+  The above copyright notice and this permission notice shall be included in all
+  copies or substantial portions of the Software.
+
+  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+  SOFTWARE.

@@ -16,11 +16,12 @@ updates:
       prefix: build(deps)
       prefix-development: build(deps-dev)
 
-  # Our own workflow (fork.yml) is ours to keep current; upstream's follow upstream.
+  # Security updates only here too: Dependabot bumps every workflow, upstream's ci.yml and
+  # release.yml included, and those follow upstream. fork.yml uses the same actions.
   - package-ecosystem: github-actions
     directory: /
     schedule:
       interval: weekly
-    open-pull-requests-limit: 3
+    open-pull-requests-limit: 0
     commit-message:
       prefix: ci

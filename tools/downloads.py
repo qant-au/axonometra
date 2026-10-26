@@ -1,6 +1,6 @@
 """How often the Mastershort integrations were installed or updated through HACS: the download counts
-of the release zip of every GitHub release (HACS downloads exactly this file, see zip_release in
-hacs.json).
+of the release zip of every GitHub release (HACS downloaded exactly this file while hacs.json set
+zip_release; from 2.0.1 on HACS fetches single files, so newer releases count manual downloads only).
 
     python tools/downloads.py                       (all repos below; needs the GitHub CLI "gh")
     python tools/downloads.py cyd-studio            (one repo)

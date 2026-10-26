@@ -18,7 +18,12 @@ const simple = {
         { name: "kaputt", points: [[0, 0], [1, 1]] },
       ],
       doors: [{ at: [600, 225], width: 90 }],
-      windows: [{ at: [300, 0], width: 150, sill: 90 }],
+      windows: [
+        { at: [300, 0], width: 150, sill: 90 },
+        // a transom light directly above the kitchen window: not a duplicate, and its sill setting is kept (#655)
+        { at: [800, 0], width: 120, sill: 90, height: 100 },
+        { at: [800, 0], width: 120, sill: 190, height: 50, sill_board: "none" },
+      ],
       furniture: [
         { type: "sofa", at: [300, 300], rotation: 180 },
         { name: "Esstisch", at: [800, 200], width: 160, depth: 90, height: 75 },
@@ -35,8 +40,10 @@ test("the simple format: units, doors and windows on their edges, furniture by k
   assert.equal(b.floors[1].elevation, 2.8);
   assert.equal(b.floors[0].rooms.length, 2);
   assert.equal(stats.doors, 1);
-  assert.equal(stats.windows, 1);
+  assert.equal(stats.windows, 3);
   assert.equal(b.floors[0].openings.find((o) => o.type === "window")!.width, 1.5);
+  const stacked = b.floors[0].openings.filter((o) => o.type === "window" && o.width === 1.2);
+  assert.deepEqual(stacked.map((o) => [o.sill, o.height, o.sill_board]), [[0.9, 1, undefined], [1.9, 0.5, "none"]]);
   assert.deepEqual(b.floors[0].furniture.map((f) => f.type), ["sofa", "table"]);
   assert.ok(warnings.some((w) => w.code === "rooms_skipped"));
 });

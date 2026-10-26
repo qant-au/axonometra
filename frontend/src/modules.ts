@@ -2,7 +2,7 @@
 // a small, versioned interface. A module is an ES module whose default export is a `NeonModule`; the backend
 // checked its signature and binding like a furniture pack's, so what runs here is what we signed.
 
-import type { Building, OutdoorArea, PoolPipe, PoolPort, Vec2 } from "./model.ts";
+import type { Building, Furniture, OutdoorArea, PoolPipe, PoolPort, Vec2 } from "./model.ts";
 import type { PipePlanner } from "./pipe-planner.ts";
 import type { HomeAssistant } from "./types.ts";
 
@@ -154,6 +154,8 @@ export interface ModuleHost {
   newId?(prefix: string): string;
   /** Where a pool's water stands and where its floor lies (floor coordinates), null for an area that is no pool. */
   waterLevel?(floorId: string, areaId: string): { y: number; floorY: number | null } | null;
+  /** The height of the ground at a point outside (floor coordinates: a lawn's surface, the terrain), 0 without one. */
+  groundAt?(floorId: string, x: number, z: number): number;
   /** Something the view should show again (a module keeps state of its own, e.g. a target just set). */
   refresh?(): void;
   /** Lays pipes the way the editor's wall view does: walls, node positions, connections through holes (host geometry). */
@@ -184,6 +186,82 @@ export type ScenePiece =
       furnitureId: string;
       color: [number, number, number];
       level: number;
+      /** A band of light round the item at mid height instead of its screen. */
+      band?: boolean;
+      /** Layers: light round the item from its foot (`color`) up to its top (this colour) – a tank warm above, cool below. */
+      top?: [number, number, number];
+    }
+  | {
+      /**
+       * A line along points (floor coordinates, y above the floor), drawn like the energy cables: a pipe, a loop in
+       * the ground. Light runs along it from the first point to the last.
+       */
+      kind: "line";
+      floorId: string;
+      points: [number, number, number][];
+      /** One colour, or one per point (the colour runs along the line). */
+      colors: [number, number, number][];
+      /** How fast the light runs, like watts on a cable (0: it rests and glows faintly, 100 slow … 2500 fast). */
+      flow: number;
+      /** Its width against an energy cable's (1 … 3; a pipe is wider). */
+      width?: number;
+      /**
+       * "flow" (default): a glowing cable with comets like the energy cables. "pipe": a solid pipe in its colour with
+       * a dark edge, readable on bright floors, with a soft light running along it while it flows.
+       */
+      look?: "flow" | "pipe";
+      /**
+       * "house": shown only in the house view (hidden while a floor is opened); "floor": only while a floor is opened
+       * (hidden in the house view); "all" (default): always. Applies to the "pipe" look.
+       */
+      views?: "all" | "house" | "floor";
+    }
+  | {
+      /**
+       * A round symbol marker on a piece of furniture, like the device markers (a technical device's symbol). A tap opens
+       * the module's card `card` (unfolds it and flies there).
+       */
+      kind: "marker";
+      id: string;
+      floorId: string;
+      furnitureId: string;
+      /** A 24 × 24 line icon as an SVG path (stroke drawn); without one the `text` alone shows. */
+      path?: string;
+      /** The short state under the symbol ("heizt", "3,8 kW"). */
+      text?: string;
+      name: string;
+      /** The colour (0..1) of its glow while active. */
+      color?: [number, number, number];
+      active?: boolean;
+      /** The id of the module's card a tap opens. */
+      card?: string;
+      /** Height of the marker above the floor (m; default the item's top). */
+      y?: number;
+    }
+  | {
+      /** A see-through surface over an area (floor coordinates; y above the floor): a tint on a room's floor, soil under a lawn. */
+      kind: "patch";
+      floorId: string;
+      points: Vec2[];
+      y: number;
+      color: [number, number, number];
+      /** 0 (invisible) … 1 (covering). */
+      opacity: number;
+      /** Adds light instead of tinting: the surface glows (a heated floor), drawn like light on the floor. */
+      glow?: boolean;
+    }
+  | {
+      /** A small label floating at a point (floor coordinates): a value and what it is. */
+      kind: "tag";
+      id: string;
+      floorId: string;
+      at: [number, number, number];
+      text: string;
+      sub?: string;
+      /** CSS colour of the value. */
+      color?: string;
+      /** "house": only in the house view; "floor": only while a floor is opened; "all" (default): always. */
+      views?: "all" | "house" | "floor";
     }
   | {
       /** The water in an area's pipes: which pipe carries water now and in what colour (the host draws the pipes). */
@@ -200,6 +278,19 @@ export interface CardRow {
   color?: string;
   /** Where the value sits on its scale (a marker on a bar), 0..100. */
   at?: number;
+  /** A filled bar up to `at` instead of a marker (a tank's temperature). */
+  fill?: boolean;
+  /** Less important: left out on the tablet level and on narrow screens. */
+  minor?: boolean;
+}
+
+/** A small value with its label (a cell of a card's grid, a step of its chain). */
+export interface CardCell {
+  label: string;
+  value: string;
+  color?: string;
+  /** Less important: left out on the tablet level and on narrow screens. */
+  minor?: boolean;
 }
 
 export interface CardButton {
@@ -220,15 +311,27 @@ export interface ModuleCard {
   title: string;
   /** What is live now ("heizt", "Pumpe läuft"); shown in the head. */
   live?: string;
-  /** The big number and its colour, and a smaller line beside it. */
-  main?: { text: string; color?: string; sub?: string };
+  /** The live text's colour (a state in plain words: heating orange, a fault red). */
+  liveColor?: string;
+  /** A state line under the head, larger than the live text: an icon, the state in plain words, since when. */
+  status?: { icon?: string; text: string; since?: string; color?: string };
+  /** The big number and its colour, and a smaller line beside it; `side` a second value beside it (a COP and its grade). */
+  main?: { text: string; color?: string; sub?: string; side?: { text: string; sub?: string; color?: string } };
+  /** A chain of values with arrows between them (source → device → supply / return), and a note under it. */
+  chain?: { items: CardCell[]; note?: string; noteColor?: string };
   rows?: CardRow[];
+  /** Small values in a grid of cells (today's figures). */
+  cells?: CardCell[];
+  /** A highlighted hint (something worth a look). */
+  hint?: { text: string; color?: string };
   /** Plain lines under the rows. */
   lines?: string[];
   /** Groups of chips (ball valves, the six-way valve's positions). */
   chips?: { title: string; items: CardButton[] }[];
   /** The buttons at the bottom (−/+, on/off, open/close …). */
   buttons?: CardButton[];
+  /** A small curve under the rows (the last hours), oldest value first, with a caption. */
+  spark?: { values: number[]; color?: string; label?: string; minor?: boolean };
 }
 
 /** A warning a module raises; the host shows it like its own (banner, pulsing rooms). */
@@ -303,6 +406,10 @@ export interface NeonModule {
   alerts?(host: ModuleHost): ModuleAlert[];
   /** Fields the module adds to an outdoor area's form in the editor (a pool's entities, an assistant). */
   areaFields?(host: ModuleHost, area: OutdoorArea): ModuleField[];
+  /** Fields the module adds to a piece of furniture's form in the editor (a device's entities, a setup assistant). */
+  furnitureFields?(host: ModuleHost, item: Furniture): ModuleField[];
+  /** The module's own settings (the editor's module dialog shows them under its name). */
+  settings?(host: ModuleHost): ModuleField[];
   /** The module's knowledge about drawing pipes (the host's pipe tools show only with it). */
   pipes?: PipeRules;
   /** Pool Pro: the pools as the voice modules ask for them. */
@@ -324,7 +431,12 @@ const urls = new Map<string, string>();
 export interface ModulePack {
   id: string;
   release?: number;
-  module?: { api: number; kind: string };
+  module?: { api: number; kind: string; approved?: boolean };
+}
+
+/** A module whose code an admin still has to read and approve (new, or an update waiting beside the running code). */
+export function moduleWaits(pack: { module?: { approved?: boolean }; pending?: unknown }): boolean {
+  return !!pack.module && (pack.module.approved !== true || !!pack.pending);
 }
 
 async function fetchCode(hass: HomeAssistant, packId: string): Promise<{ code: string; release: number; api: number }> {
@@ -356,7 +468,8 @@ async function load(hass: HomeAssistant, pack: ModulePack): Promise<Loaded | nul
  * module never stop the others – a broken module is simply not there.
  */
 export async function syncModules(hass: HomeAssistant, packs: readonly ModulePack[]): Promise<void> {
-  const wanted = new Map(packs.filter((p) => p.module && p.module.api === MODULE_API).map((p) => [p.id, p]));
+  // only code an admin has read and approved runs (HACS review): a module waiting for approval is not loaded
+  const wanted = new Map(packs.filter((p) => p.module && p.module.api === MODULE_API && p.module.approved === true).map((p) => [p.id, p]));
   for (const id of [...loaded.keys()]) if (!wanted.has(id)) loaded.delete(id);
   await Promise.all(
     [...wanted.values()].map((p) => {
@@ -428,6 +541,22 @@ export function moduleWatched(host: ModuleHost): string[] {
 
 export function moduleAreaFields(host: ModuleHost, area: OutdoorArea): ModuleField[] {
   return collect((m) => m.areaFields?.(host, area));
+}
+
+export function moduleFurnitureFields(host: ModuleHost, item: Furniture): ModuleField[] {
+  return collect((m) => m.furnitureFields?.(host, item));
+}
+
+/** The settings of the module loaded from a pack (empty without a module, or one without settings). */
+export function moduleSettings(packId: string, host: ModuleHost): ModuleField[] {
+  const m = loaded.get(packId);
+  if (!m?.module.settings) return [];
+  try {
+    return m.module.settings(host) ?? [];
+  } catch (err) {
+    console.warn(`Accurona: module ${m.id} failed`, err);
+    return [];
+  }
 }
 
 export function modulePools(host: ModuleHost): SpokenPool[] {

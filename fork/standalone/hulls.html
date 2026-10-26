@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Accurona hulls</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+        background: #070b14;
+      }
+      #hulls {
+        height: 100%;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="hulls"></div>
+    <script type="module">
+      // Every hull the hull code builds, in 3D on the water with its numbers. ?hull=<name> opens one.
+      import { mountHullViewer } from "./accurona-hulls.js";
+
+      window.hullViewer = mountHullViewer(document.querySelector("#hulls"));
+    </script>
+  </body>
+</html>

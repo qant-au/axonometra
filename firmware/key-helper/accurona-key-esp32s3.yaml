@@ -1,0 +1,41 @@
+# Accurona key helper: an ESP32 that reads the Bluetooth identity key (IRK) of an iPhone, Apple Watch or Android
+# phone while it pairs, so Accurona's locating can recognise the device. Flashed from the browser (site/keys),
+# Wi-Fi is set up right after flashing (Improv), Home Assistant then finds it as an ESPHome device.
+# Built on irk-capture by Derek Seaman (MIT, https://github.com/DerekSeaman/irk-capture), itself based on
+# KyleTeal/irk-capture and ESPresense enrollment. Pinned to a tested commit.
+substitutions:
+  irk_component_ref: 109413e31282ea1845e33a2fc68a62a0c0f02b11
+
+esphome:
+  name: accurona-key
+  friendly_name: Accurona Key
+  name_add_mac_suffix: true
+  project:
+    name: mastershort.accurona_key
+    version: "1.0.0"
+
+esp32:
+  board: esp32-s3-devkitc-1
+  framework:
+    type: esp-idf
+
+api:
+
+ota:
+  - platform: esphome
+
+wifi:
+  ap: {}
+
+improv_serial:
+
+captive_portal:
+
+irk_capture:
+  ble_name: "Accurona Key"
+
+packages:
+  base:
+    url: https://github.com/DerekSeaman/irk-capture
+    ref: 109413e31282ea1845e33a2fc68a62a0c0f02b11
+    file: ESPHome Devices/irk-capture-base.yaml
