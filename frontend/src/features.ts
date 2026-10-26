@@ -15,7 +15,7 @@ export const FEATURES: readonly Feature[] = ["camera_cockpit", "weather", "scree
  */
 export const FUN: readonly Feature[] = ["fun_pets", "fun_halloween"];
 /** Free features built but not released yet (no pack unlocks them; only the lab switch shows them). */
-export type FreeFeature = "diagnostics";
+export type FreeFeature = "diagnostics" | "locate";
 export type Gated = Feature | FreeFeature;
 
 /**
@@ -23,7 +23,7 @@ export type Gated = Feature | FreeFeature;
  * unlocked (the tester has the pack) or the lab switch is on (localStorage "accurona.lab" = "1").
  * A release takes a feature off this list.
  */
-export const UNRELEASED: readonly Gated[] = ["diagnostics", "pool"];
+export const UNRELEASED: readonly Gated[] = ["pool"];
 
 export function labOn(): boolean {
   try {
@@ -51,9 +51,11 @@ export function projectionOn(): boolean {
 
 /** Whether an add-on may be shown and advertised: released, or unlocked, or the lab switch is on. */
 export function released(feature: Gated): boolean {
-  // Accurona: without the author's shop nothing is sold, so an add-on shows only once unlocked (upstream.ts)
-  const listed = upstreamServices() && !UNRELEASED.includes(feature);
-  return listed || (feature !== "diagnostics" && hasFeature(feature)) || labOn();
+  // Accurona: without the author's services nothing is sold and no report reaches him, so a Pro add-on or fun pack
+  // shows only once unlocked and the usage reports not at all; a free feature shows as upstream releases it (upstream.ts)
+  const free = feature !== "diagnostics" && !(FEATURES as readonly Gated[]).includes(feature) && !(FUN as readonly Gated[]).includes(feature);
+  const listed = !UNRELEASED.includes(feature) && (upstreamServices() || free);
+  return listed || (feature !== "diagnostics" && feature !== "locate" && hasFeature(feature)) || labOn();
 }
 
 /** Features unlocked by a pack but not listed anywhere (exclusive items). */
@@ -92,7 +94,7 @@ const MANUAL_FEATURE: Record<string, { de: string; en: string }> = {
   auto_pro: { de: "pro-erweiterungen/#66-auto-pro", en: "pro-add-ons/#66-auto-pro" },
   time_travel: { de: "pro-erweiterungen/#67-zeitreise", en: "pro-add-ons/#67-time-travel" },
   pool: { de: "pro-erweiterungen/#68-pool-pro", en: "pro-add-ons/#68-pool-pro" },
-  household: { de: "pro-erweiterungen/#68-haushalt-pro-beta", en: "pro-add-ons/#68-household-pro-beta" },
+  household: { de: "pro-erweiterungen/#68-haushalt-pro", en: "pro-add-ons/#68-household-pro" },
   extensions: { de: "erweiterungen-shop-moebel-packs/", en: "extensions-shop-furniture-packs/" },
 };
 

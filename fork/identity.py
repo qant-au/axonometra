@@ -52,12 +52,13 @@ EXCLUDE = [
     "custom_components/accurona/upstream.py", "frontend/src/upstream.ts",
 ]
 # Upstream files the fork does not carry: his product roadmap, his shop's server code,
-# his donation link, and the workflows that post to his Discord, probe his shop and
-# publish his site (see fork/README.md for the repo decisions).
+# his donation link, and the workflows that post to his Discord, probe his shop, publish his
+# site and check his HACS releases download (Accurona publishes none yet; see fork/README.md
+# for the repo decisions).
 DELETE = [
     "ROADMAP.md", "tools/shop/*", ".github/FUNDING.yml",
     ".github/workflows/discord-release.yml", ".github/workflows/shop-check.yml",
-    ".github/workflows/pages.yml",
+    ".github/workflows/pages.yml", ".github/workflows/hacs-check.yml", "tools/hacs_download_check.py",
 ]
 BUILT = "custom_components/*/frontend/*.js"
 
@@ -77,7 +78,7 @@ ELEMENTS = re.compile(
 # markers below. (Pack ids such as `mastershort.living` are not hosts and are not touched.)
 AUTHOR_URL = re.compile(
     r"(?:https?://)?(?:[\w-]+\.)*mastershort\.(?:de|com)\b[\w./%#?=&:~+-]*"
-    r"|(?:https?://)?github\.com/mastershort/[\w./%#?=&:~+-]*",
+    r"|(?:https?://)?(?:raw\.githubusercontent|github)\.com/mastershort/[\w./%#?=&:~+-]*",
     re.IGNORECASE,
 )
 PROTECT = [

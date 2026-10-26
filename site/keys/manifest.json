@@ -1,0 +1,12 @@
+{
+  "name": "Accurona Key",
+  "version": "1.0.0",
+  "home_assistant_domain": "esphome",
+  "new_install_prompt_erase": true,
+  "new_install_improv_wait_time": 15,
+  "builds": [
+    { "chipFamily": "ESP32", "parts": [{ "path": "accurona-key-esp32.factory.bin", "offset": 0 }] },
+    { "chipFamily": "ESP32-C3", "parts": [{ "path": "accurona-key-esp32c3.factory.bin", "offset": 0 }] },
+    { "chipFamily": "ESP32-S3", "parts": [{ "path": "accurona-key-esp32s3.factory.bin", "offset": 0 }] }
+  ]
+}

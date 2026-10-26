@@ -13,3 +13,8 @@ private/
 
 # Accurona: the standalone build (fork/build-standalone.mjs)
 dist/
+
+# local test harnesses (screenshots, probes) – never in the repository
+frontend/_*.mjs
+frontend/_*.mts
+frontend/_*.ts

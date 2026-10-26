@@ -44,3 +44,14 @@ test("a place on the furniture is reached with a last hop, and left with a first
   assert.ok(back && back.length >= 2);
   assert.equal(pet.obstacleAt(back[0], 0), null, "first hop down to the floor");
 });
+
+test("an outer door upstairs leads nowhere unless a balcony is drawn behind it; downstairs it leads into the garden (#766)", () => {
+  const french = { id: "fd", room_id: "r", edge: 0, offset: 4, width: 1.2, type: "window" as const, sill: 0, height: 2.2, hinge: "left" as const, leaves: 2 as const, swing: "in" as const, cover: null, contact: null, contact2: null, tilt: null };
+  const up = { ...newFloor("og", "OG", 2.8), rooms: [rect("r", 0, 0, 8, 5)], openings: [french] };
+  assert.equal(new FloorMap({ ...emptyBuilding(), floors: [up] }, up).doors.length, 0);
+  // the room's edge 0 runs along z = 0: a balcony in front of it (z < 0)
+  const withBalcony = { ...up, outdoor: [{ id: "b", type: "terrace", points: [[2, -2], [6, -2], [6, 0], [2, 0]] }] } as typeof up;
+  assert.equal(new FloorMap({ ...emptyBuilding(), floors: [withBalcony] }, withBalcony).doors.length, 1);
+  const down = { ...up, elevation: 0 };
+  assert.equal(new FloorMap({ ...emptyBuilding(), floors: [down] }, down).doors.length, 1);
+});

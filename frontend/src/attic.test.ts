@@ -3,7 +3,7 @@ import { test } from "node:test";
 import type { BufferGeometry } from "three";
 import type { Floor, Room, RoofSection } from "./model.ts";
 import { newFloor } from "./model.ts";
-import { headroomLines, ROOF_THICK, roofUnderAt } from "./roof-sections.ts";
+import { activeSections, headroomLines, ROOF_THICK, roofUnderAt, sectionAbove, sectionCutsBelow } from "./roof-sections.ts";
 import { buildFloorGeometry } from "./viewer/build.ts";
 
 function rect(id: string, x0: number, z0: number, x1: number, z1: number): Room {
@@ -84,4 +84,55 @@ test("headroom lines run along the ridge where the slope leaves 1.5 m", () => {
   }
   // a flat section has no slope and no line
   assert.equal(headroomLines({ settings: { roof: { ...building.settings.roof, sections: [{ ...section, shape: "flat" }] } } }, 2.75, 1.5).length, 0);
+});
+
+test("a lower storey's roof under an upper floor does not cut that floor's walls (#621)", () => {
+  // the reporter's plan: a narrow gable strip at the ground floor's eave height (2.66 m), its ridge only
+  // poking a few centimetres through the upper floor's slab at 2.81 m
+  const low: RoofSection = { id: "low", x0: 2.13, z0: 4.883, x1: 11.4, z1: 6.155, shape: "gable", axis: "x", eave_a: 2.66, eave_b: 2.66, pitch_a: 22, pitch_b: 22, base: 2.66 };
+  const b = { settings: { roof: { type: "custom" as const, pitch: 22, overhang: 0.05, sections: [low] } } };
+  const level = 2.81;
+  // it would cut below the upper floor's ceiling …
+  assert.ok(sectionCutsBelow(low, level + 2.51));
+  // … but its underside never rises above that floor, so it is no ceiling there
+  assert.equal(sectionAbove(low, level), false);
+  assert.equal(roofUnderAt(b, 11.39, 5.58, level), null);
+  // without a floor level (and for the ground floor) it still counts
+  assert.ok(roofUnderAt(b, 11.39, 5.58) !== null);
+  assert.equal(sectionAbove(low, 0), true);
+  // an attic roof whose eave lies below the attic floor still is its ceiling
+  assert.equal(sectionAbove(section, 3.8), true);
+  assert.ok(roofUnderAt(building, 4, 3, 3.8) !== null);
+});
+
+test("sections switched off (a single gable roof again) no longer cut the walls (#621)", () => {
+  // the reporter's plan: roof type "gable" with the sections of an earlier custom roof still stored
+  const off = { settings: { roof: { ...building.settings.roof, type: "gable" as const } } };
+  assert.equal(activeSections(off).length, 0);
+  assert.equal(roofUnderAt(off, 4, 3), null);
+  assert.equal(headroomLines(off, 2.75, 1.5).length, 0);
+  assert.equal(activeSections(building).length, 1);
+  assert.ok(roofUnderAt(building, 4, 3) !== null);
+});
+
+test("a loft wider than the half-hip above it leaves no wall stub standing out of the roof (#638)", () => {
+  // half-hip over 7.5 × 10 m, eaves at 3.31 m, 45°, 0.7 m overhang; the loft floor at 5.32 m reaches the gables
+  const halfhip: RoofSection = { id: "h", x0: -0.24, z0: -0.24, x1: 7.74, z1: 10.24, shape: "halfhip", axis: "z", eave_a: 3.31, eave_b: 3.31, pitch_a: 45, pitch_b: 45, base: 3.31, overhang: 0.7 };
+  const b = { settings: { roof: { type: "custom" as const, pitch: 45, overhang: 0.7, sections: [halfhip] } } };
+  const floor: Floor = { ...newFloor("sb", "Loft", 5.32), height: 1.88, rooms: [rect("l", 1.6, 0, 5.9, 10)] };
+  const under = (x: number, z: number) => {
+    const y = roofUnderAt(b, x, z);
+    return y === null ? null : y - floor.elevation;
+  };
+  const geo = buildFloorGeometry(floor, 0.24, 0.12, [], [], under);
+  const p = geo.walls.getAttribute("position");
+  let worst = -Infinity;
+  for (let i = 0; i < p.count; i++) {
+    const r = roofUnderAt(b, p.getX(i), p.getZ(i));
+    // above the roof's top face (its underside plus the slab) a wall would show outside
+    if (r !== null) worst = Math.max(worst, p.getY(i) + floor.elevation - (r + ROOF_THICK));
+  }
+  assert.ok(worst < 0.005, `a wall stands ${worst.toFixed(3)} m out of the roof`);
+  // the walls under the ridge are still there
+  assert.ok(maxY(geo.walls, (x, z) => x > 3.5 && x < 4 && z < 0.1) > 0.5, "gable wall under the ridge");
 });

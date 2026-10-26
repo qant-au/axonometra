@@ -26,7 +26,7 @@ test("the hooks stay in place across upstream merges", () => {
     assert.ok(panel.includes(hook), `panel.ts: ${hook}`);
   }
   const editor = read("./components/editor.ts");
-  for (const hook of ['const haOnly: SettingsTopic[] = ["director", "voice", "favorites"];', "${ha ? this.renderEnergyChecklist() : nothing}", "haFeatures(this.hass) ? this.renderDeviceList(room) : nothing"]) {
+  for (const hook of ['const haOnly: SettingsTopic[] = ["director", "voice", "locate", "favorites"];', "${ha ? this.renderEnergyChecklist() : nothing}", "haFeatures(this.hass) ? this.renderDeviceList(room) : nothing"]) {
     assert.ok(editor.includes(hook), `editor.ts: ${hook}`);
   }
   assert.ok(read("./components/view3d.ts").includes("!this.isConnected || !haFeatures(hass)) return;"), "view3d.ts: Assist");

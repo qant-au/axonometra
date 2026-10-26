@@ -2,7 +2,7 @@
 // up/stop/down for blinds, on/off for switches, with a slider and a way to the full details.
 
 import { css, html, LitElement, nothing } from "lit";
-import { type CarState, entityName, isUnavailable, kindOf } from "../devices.ts";
+import { type CarState, coverTiltButtons, entityName, isUnavailable, kindOf } from "../devices.ts";
 import { hasFeature } from "../features.ts";
 import { translate, type I18nKey } from "../i18n.ts";
 import { openMoreInfo, stateText } from "../markers.ts";
@@ -45,6 +45,7 @@ export class Fp3dQuickMenu extends LitElement {
     car: { attribute: false },
     presets: { attribute: false },
     confirmSwitch: { type: Boolean },
+    doorLock: { type: Boolean },
     pro: { type: Boolean },
     low: { type: Boolean, reflect: true },
     _tick: { state: true },
@@ -58,6 +59,8 @@ export class Fp3dQuickMenu extends LitElement {
   declare presets: { id: string; label: string; type: string; content: string }[];
   /** Ask before the power button switches. */
   declare confirmSwitch: boolean;
+  /** The smart lock of a door that was tapped (#682): lock or unlock, always asking first. */
+  declare doorLock: boolean;
   /** The camera cockpit is unlocked (otherwise the look-through button shows a lock). */
   declare pro: boolean;
   /** Tablet level: no blur behind the menu. */
@@ -215,7 +218,7 @@ export class Fp3dQuickMenu extends LitElement {
           aria-label=${this.t("cover_tilt")}
           @change=${(e: Event) => this.call("cover", "set_cover_tilt_position", { tilt_position: Number((e.target as HTMLInputElement).value) })}
       /></label>`;
-    if (features & (COVER_OPEN_TILT | COVER_CLOSE_TILT))
+    if (coverTiltButtons(st))
       return html`<div class="qm-tilt-buttons">
         ${features & COVER_OPEN_TILT ? html`<button class="qm-swatch qm-slot" @click=${() => this.call("cover", "open_cover_tilt")}>${this.t("cover_tilt_open")}</button>` : nothing}
         ${features & COVER_CLOSE_TILT ? html`<button class="qm-swatch qm-slot" @click=${() => this.call("cover", "close_cover_tilt")}>${this.t("cover_tilt_close")}</button>` : nothing}
@@ -314,6 +317,21 @@ export class Fp3dQuickMenu extends LitElement {
       </div>`;
   }
 
+  /** A door's smart lock: one button that locks or unlocks by the state, asking first either way (#682). */
+  private renderDoorLock(st: HassEntity) {
+    const locked = st.state === "locked" || st.state === "locking" || st.state === "jammed";
+    const name = entityName(this.hass, this.entity);
+    const act = () => {
+      if (!confirm(this.t(locked ? "door_unlock_confirm" : "door_lock_confirm", { name }))) return;
+      this.call("lock", locked ? "unlock" : "lock");
+      this.close();
+    };
+    return html`<p class="qm-car-line">${stateText(this.hass, st)}</p>
+      <div class="qm-car">
+        <button class="qm-swatch qm-slot ${locked ? "qm-slot-on" : ""}" @click=${act}>${locked ? `🔓 ${this.t("door_unlock_btn")}` : `🔒 ${this.t("door_lock_btn")}`}</button>
+      </div>`;
+  }
+
   private renderToggle(st: HassEntity) {
     const on = st.state === "on" || st.state === "unlocked" || st.state === "playing";
     const domain = st.entity_id.split(".")[0];
@@ -337,6 +355,8 @@ export class Fp3dQuickMenu extends LitElement {
       ? this.renderCar(this.car)
       : isUnavailable(st)
       ? html`<p class="qm-note">${stateText(this.hass, st)}</p>`
+      : this.doorLock && kind === "lock"
+        ? this.renderDoorLock(st)
       : kind === "light"
         ? this.renderLight(st)
         : kind === "cover"

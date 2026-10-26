@@ -54,6 +54,7 @@ export class FurnitureLibrary extends LitElement {
     _fav: { state: true },
     _recent: { state: true },
     _thumbs: { state: true },
+    _shown: { state: true },
     _limits: { state: true },
   };
 
@@ -77,6 +78,8 @@ export class FurnitureLibrary extends LitElement {
   private declare _fav: string[];
   private declare _recent: string[];
   private declare _thumbs: Map<string, string>;
+  /** The variant whose picture a family card shows (its first key -> the variant's key), set by hovering a chip. */
+  private declare _shown: Map<string, string>;
   private declare _limits: Map<string, number>;
   private roomTouched = false;
   private observer: IntersectionObserver | null = null;
@@ -103,6 +106,7 @@ export class FurnitureLibrary extends LitElement {
     this._fav = load<string[]>(STORE_FAV, []);
     this._recent = load<string[]>(STORE_RECENT, []);
     this._thumbs = new Map();
+    this._shown = new Map();
     this._limits = new Map();
   }
 
@@ -151,6 +155,22 @@ export class FurnitureLibrary extends LitElement {
 
   private get byKey(): Map<string, LibraryEntry> {
     return new Map(this.entries.map((e) => [e.key, e]));
+  }
+
+  /**
+   * A family card shows the picture of the variant under the pointer (a sofa in five widths, a corner for the
+   * left or the right): its picture is drawn on demand. Without card pictures the big preview shows it instead.
+   */
+  private showVariant(cardKey: string, entry: LibraryEntry | null, el: HTMLElement | null): void {
+    if (this.lite || !this.thumb) {
+      this.preview(entry?.type ?? null, el);
+      return;
+    }
+    const next = new Map(this._shown);
+    if (entry) next.set(cardKey, entry.key);
+    else next.delete(cardKey);
+    this._shown = next;
+    if (entry) this.want(entry);
   }
 
   /** Asks for an item's picture once; at most two are drawn at a time so the editor stays smooth. */
@@ -280,9 +300,12 @@ export class FurnitureLibrary extends LitElement {
     const first = c.entries[0];
     const family = c.entries.length > 1;
     const fav = this._fav.includes(first.key);
-    const pic = this._thumbs.get(first.type);
+    // a family card shows the variant under the pointer (its picture once drawn, the first one meanwhile)
+    const shownKey = this._shown.get(first.key);
+    const shown = (shownKey && c.entries.find((e) => e.key === shownKey)) || first;
+    const pic = this._thumbs.get(shown.type) ?? this._thumbs.get(first.type);
     const badge = first.light ? "💡" : first.electric ? "⚡" : "";
-    return html`<div class="fp3d-lc ${family ? "fp3d-lc-family" : ""}" title=${first.label}>
+    return html`<div class="fp3d-lc ${family ? "fp3d-lc-family" : ""}" title=${shown.label} @mouseleave=${() => family && this.showVariant(first.key, null, null)}>
       <button
         class="fp3d-lc-main"
         ?disabled=${!this.admin}
@@ -292,7 +315,7 @@ export class FurnitureLibrary extends LitElement {
         @mouseleave=${() => this.preview(null, null)}
         @blur=${() => this.preview(null, null)}
       >
-        ${this.lite ? nothing : html`<span class="fp3d-lc-pic" data-key=${first.key}>${pic ? html`<img src=${pic} alt="" loading="lazy" class=${first.mirror ? "fp3d-lc-mirrored" : ""} />` : html`<span class="fp3d-lc-wait"></span>`}</span>`}
+        ${this.lite ? nothing : html`<span class="fp3d-lc-pic" data-key=${first.key}>${pic ? html`<img src=${pic} alt="" loading="lazy" class=${(this._thumbs.has(shown.type) ? shown : first).mirror ? "fp3d-lc-mirrored" : ""} />` : html`<span class="fp3d-lc-wait"></span>`}</span>`}
         <span class="fp3d-lc-label">${c.label}${badge ? html` <span class="fp3d-lc-badge">${badge}</span>` : nothing}</span>
         <span class="fp3d-lc-sub">${family ? t("lib_sizes", { n: c.entries.length }) : sizeText(first.size, this.language)}${first.packLabel ? html` · ${first.packLabel}` : html` · ${t("lib_basic")}`}</span>
       </button>
@@ -300,12 +323,12 @@ export class FurnitureLibrary extends LitElement {
         ? html`<div class="fp3d-lc-chips">
             ${c.entries.map(
               (e) => html`<button
-                class="fp3d-lc-chip"
                 title="${e.label} · ${sizeText(e.size, this.language)}"
                 ?disabled=${!this.admin}
+                class="fp3d-lc-chip ${shown.key === e.key && family && shownKey ? "on" : ""}"
                 @click=${() => this.pick(e)}
-                @mouseenter=${(ev: Event) => this.preview(e.type, ev.currentTarget as HTMLElement)}
-                @focus=${(ev: Event) => this.preview(e.type, ev.currentTarget as HTMLElement)}
+                @mouseenter=${(ev: Event) => this.showVariant(first.key, e, ev.currentTarget as HTMLElement)}
+                @focus=${(ev: Event) => this.showVariant(first.key, e, ev.currentTarget as HTMLElement)}
                 @mouseleave=${() => this.preview(null, null)}
                 @blur=${() => this.preview(null, null)}
               >${e.variant ?? e.label}</button>`,
@@ -487,7 +510,8 @@ export class FurnitureLibrary extends LitElement {
         cursor: pointer;
         white-space: nowrap;
       }
-      .fp3d-lc-chip:hover {
+      .fp3d-lc-chip:hover,
+      .fp3d-lc-chip.on {
         border-color: var(--fp3d-accent);
         color: var(--fp3d-accent);
       }

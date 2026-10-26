@@ -209,8 +209,15 @@ export function powerSensorFor(hass: HomeAssistant, entityId: string): string | 
   const device = hass.entities?.[entityId]?.device_id;
   if (!device) return null;
   const hub = isHubDevice(hass, device);
-  const area = hub ? entityAreaId(hass, entityId) : null;
-  return powerSensorsOf(hass, device).find((e) => e !== entityId && (!hub || (area !== null && entityAreaId(hass, e) === area))) ?? null;
+  const area = entityAreaId(hass, entityId);
+  const list = powerSensorsOf(hass, device).filter((e) => e !== entityId);
+  // the entity's own meter first: PowerCalc names it after the entity (sensor.<light>_power); then one in the same
+  // area; a meter filed under another room belongs to another light of the device (#743)
+  const own = `sensor.${entityId.slice(entityId.indexOf(".") + 1)}_power`;
+  if (list.includes(own)) return own;
+  const same = list.find((e) => area !== null && entityAreaId(hass, e) === area);
+  if (same || hub) return same ?? null;
+  return list.find((e) => area === null || entityAreaId(hass, e) === null || entityAreaId(hass, e) === area) ?? null;
 }
 
 /** Placed entities that report power, with their position and current power. */
@@ -354,7 +361,54 @@ function buildGraph(floor: Floor, exterior: number, interior: number): Graph {
     const b = attach(g, w.roomRight, m);
     if (a !== null && b !== null) link(g, a, b);
   }
+  bridgeGaps(g);
   return g;
+}
+
+/** Rooms drawn a little apart (no shared wall between them) are still one house: up to this gap a cable crosses. */
+const BRIDGE_GAP = 1.0;
+
+/**
+ * Links the parts of the cable graph that no shared wall joins (rooms drawn with a gap, #731) at their closest
+ * ring points – as long as the gap is a wall's width, not a garden between a house and a detached garage.
+ */
+function bridgeGaps(g: Graph): void {
+  const rooms = [...g.rings.entries()];
+  for (;;) {
+    // the part of the graph each node belongs to
+    const part = new Array<number>(g.pos.length).fill(-1);
+    let parts = 0;
+    for (let start = 0; start < g.pos.length; start++) {
+      if (part[start] >= 0) continue;
+      const stack = [start];
+      part[start] = parts;
+      while (stack.length) for (const { to } of g.adj[stack.pop()!]) if (part[to] < 0) stack.push(to), (part[to] = parts);
+      parts++;
+    }
+    if (parts < 2) return;
+    // the closest ring corner of one part to a ring edge of another
+    let best: { a: number; room: string; d: number } | null = null;
+    for (const [, segsA] of rooms)
+      for (const a of new Set(segsA.flat()))
+        for (const [roomB, segsB] of rooms) {
+          if (part[segsB[0][0]] === part[a]) continue;
+          for (const [s0, s1] of segsB) {
+            const p = g.pos[a];
+            const q0 = g.pos[s0];
+            const q1 = g.pos[s1];
+            const dx = q1[0] - q0[0];
+            const dz = q1[1] - q0[1];
+            const t = Math.min(1, Math.max(0, ((p[0] - q0[0]) * dx + (p[1] - q0[1]) * dz) / (dx * dx + dz * dz || 1)));
+            const d = Math.hypot(p[0] - q0[0] - dx * t, p[1] - q0[1] - dz * t);
+            if (!best || d < best.d) best = { a, room: roomB, d };
+          }
+        }
+    // the rings keep a little distance from the walls: their gap is the rooms' gap plus that
+    if (!best || best.d > BRIDGE_GAP + 2 * RING_GAP) return;
+    const b = attach(g, best.room, g.pos[best.a]);
+    if (b === null) return;
+    link(g, best.a, b);
+  }
 }
 
 /** New node at the point of a room's ring closest to p, linked to that segment's ends. */

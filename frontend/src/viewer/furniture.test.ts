@@ -3,7 +3,7 @@ import { test } from "node:test";
 import type { Furniture } from "../model.ts";
 import { mountBase, setPacks, type FurniturePack } from "../packs.ts";
 import { newFloor } from "../model.ts";
-import { packMotionParts, pushFurniture } from "./furniture.ts";
+import { hasFixedColors, packGlowCentre, packMotionParts, pushFurniture, setLightLook } from "./furniture.ts";
 import { packMotion, type PackItem } from "../packs.ts";
 import { GeoBuffer, LineBuffer } from "./geo.ts";
 
@@ -190,4 +190,95 @@ test("a motorised curtain opens to both ends and a roll-down screen rolls up wit
   // half up: the cloth is half as long and still hangs from the top
   const half = packMotionParts(screen, "screen", 0.5);
   assert.ok(Math.abs(half[0].y + half[0].h - 0.92) < 1e-9 && Math.abs(half[0].h - 0.425) < 1e-9);
+});
+
+test("pack parts in a colour of their own keep it down to the ground in the light looks (#609)", () => {
+  const pumpkin: FurniturePack = {
+    id: "t.fun",
+    name: "Fun",
+    publisher: "t",
+    licensee: null,
+    items: [
+      {
+        id: "pumpkin",
+        name: { de: "Kürbis", en: "Pumpkin" },
+        size: [0.4, 0.4, 0.4],
+        parts: [
+          { shape: "loft", x: 0, z: 0, w: 0.6, d: 0.6, y: 0, h: 0.5, color: "#c4500a", tx: 0, tz: 0, tw: 1, td: 1 },
+          { shape: "box", x: 0, z: 0, w: 0.4, d: 0.4, y: 0.5, h: 0.5, color: "dark" },
+        ],
+      },
+    ],
+  };
+  setPacks([pumpkin]);
+  assert.ok(hasFixedColors("pack:t.fun:pumpkin"));
+  assert.ok(!hasFixedColors("pack:t.cars:wedge") && !hasFixedColors("sofa"));
+  const f: Furniture = { id: "p", type: "pack:t.fun:pumpkin", x: 0, z: 0, rotation: 0, w: 0.4, d: 0.4, h: 0.4, variant: null, entity: null, power: null };
+  const colours = (light: boolean) => {
+    setLightLook(light);
+    const buf = new GeoBuffer();
+    pushFurniture(buf, new LineBuffer(), new GeoBuffer(), f);
+    setLightLook(false);
+    const out: number[][] = [];
+    for (let i = 0; i + 2 < buf.c.length; i += 3) out.push([buf.c[i], buf.c[i + 1], buf.c[i + 2]]);
+    return out;
+  };
+  // the looks keep a colour that is bright (> 0.45) and strong (saturation > 0.45)
+  const kept = (c: number[]) => {
+    const mx = Math.max(...c);
+    return mx > 0.45 && (mx - Math.min(...c)) / mx > 0.45;
+  };
+  const orange = (c: number[]) => c[0] > c[1] * 1.5 && c[0] > c[2] * 3;
+  const neon = colours(false).filter(orange);
+  const light = colours(true).filter(orange);
+  assert.ok(neon.some((c) => !kept(c)), "in neon the shading darkens the lower part");
+  assert.ok(light.length > 0 && light.every(kept), "in the light looks every orange vertex stays a signal colour");
+  // the neon look is unchanged
+  assert.deepEqual(colours(false), colours(false));
+});
+
+test("a pack wall lamp's light sits in its glowing parts, turned and mirrored with it (#680)", () => {
+  // a wall lantern 0.2 wide, 0.24 deep, 0.4 tall: a back plate at the wall (-z), the glass box out front, a small LED
+  const lantern = {
+    id: "lantern",
+    name: { de: "Laterne", en: "Lantern" },
+    size: [0.2, 0.24, 0.4],
+    parts: [
+      { shape: "box", x: 0, z: -0.45, w: 1, d: 0.1, y: 0, h: 1, color: "body" },
+      { shape: "box", x: 0.1, z: 0.2, w: 0.6, d: 0.5, y: 0.25, h: 0.5, color: "glass", glow: true },
+    ],
+  } as unknown as PackItem;
+  const f = { x: 2, z: 1, rotation: 0, w: 0.2, d: 0.24, h: 0.4, mirror: false };
+  const near = (a: number[] | null, b: number[]) => !!a && a.every((v, i) => Math.abs(v - b[i]) < 1e-9);
+  // the glass's centre: 0.1 × 0.2 to the side, 0.2 × 0.24 out from the middle, halfway up the glass above the mount
+  assert.ok(near(packGlowCentre(lantern, f, 1.8), [2.02, 1.8 + 0.2, 1.048]), String(packGlowCentre(lantern, f, 1.8)));
+  // mirrored: the side offset changes sides; turned by 90°: the depth points along -x
+  assert.ok(near(packGlowCentre(lantern, { ...f, mirror: true }, 1.8), [1.98, 2, 1.048]));
+  assert.ok(near(packGlowCentre(lantern, { ...f, rotation: 90 }, 1.8), [2 - 0.048, 2, 1.02]));
+  // no glowing part: null (the lamp keeps its old halo and light)
+  assert.equal(packGlowCentre({ ...lantern, parts: [lantern.parts[0]] } as PackItem, f, 1.8), null);
+});
+
+test("round things cast a round shadow, lying on the ground they stand on (#719, #708)", async () => {
+  const { pushFurniture, roundFootprint } = await import("./furniture.ts");
+  const { GeoBuffer, LineBuffer } = await import("./geo.ts");
+  const part = { shape: "cyl" as const, x: 0, z: 0, w: 1, d: 1, y: 0, h: 0.2, color: "wood" };
+  setPacks([{ id: "g", name: "G", publisher: "G", licensee: null, items: [{ id: "trampoline", name: { en: "Trampoline" }, size: [3, 3, 0.9], parts: [part] }, { id: "box", name: { en: "Box" }, size: [1, 1, 1], parts: [{ ...part, shape: "box" }] }] } as FurniturePack]);
+  try {
+    assert.equal(roundFootprint({ type: "pack:g:trampoline" }), true);
+    assert.equal(roundFootprint({ type: "pack:g:box" }), false);
+    assert.equal(roundFootprint({ type: "table_round" }), true);
+    assert.equal(roundFootprint({ type: "sofa" }), false);
+    // the shadow of an item on a lawn 0.55 m below the floor lies on that lawn
+    const shadow = new GeoBuffer();
+    const f = { id: "t", type: "pack:g:trampoline", x: 0, z: 0, w: 3, d: 3, h: 0.9, rotation: 0, variant: null } as Furniture;
+    pushFurniture(new GeoBuffer(), new LineBuffer(), shadow, f, -0.55);
+    const ys = new Set<number>();
+    for (let i = 1; i < shadow.p.length; i += 3) ys.add(Math.round(shadow.p[i] * 1000) / 1000);
+    assert.deepEqual([...ys], [-0.547]);
+    // round: many more corners than a square's
+    assert.ok(shadow.p.length / 9 > 40);
+  } finally {
+    setPacks([]);
+  }
 });

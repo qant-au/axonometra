@@ -4,9 +4,11 @@
 import { Color } from "three";
 import type { Building, Floor, Vec2 } from "../model.ts";
 import { areaGround, OUTDOOR_TOP, outdoorStanding, pointInPolygon, terrainAt } from "../model.ts";
-import { floorOutline } from "../roof-sections.ts";
+import { earthOutline, inGround, wellBelowGround } from "../geometry/wells.ts";
 import { SLAB, type OpeningInfo } from "./build.ts";
 import { GeoBuffer, LineBuffer } from "./geo.ts";
+
+export { inGround };
 
 const EARTH = new Color(0x172334);
 const EARTH_LOW = new Color(0x080e19);
@@ -41,18 +43,6 @@ interface Well {
   rim: number;
 }
 
-/** Whether a floor reaches below the ground somewhere along its outer walls (and so gets earth). */
-export function inGround(b: Building, floor: Floor): boolean {
-  if (b.settings.terrain?.earth === false || floor.elevation > 0.3) return false;
-  const outline = outlineOf(b, floor);
-  return !!outline && outline.some(([x, z]) => terrainAt(x, z) - floor.elevation > -0.15);
-}
-
-function outlineOf(b: Building, floor: Floor): Vec2[] | null {
-  if (!floor.rooms.some((r) => r.points.length >= 3)) return null;
-  return floorOutline(floor.rooms, floor.walls ?? [], b.settings.wall_exterior, b.settings.wall_interior);
-}
-
 /**
  * How far an outdoor area lying over point `p` (lawn, path, terrace, gravel …) stands above `ground` there, in the
  * heights of `floor`; 0 without one. A light well under such an area would vanish below its surface (#524).
@@ -78,7 +68,7 @@ function coverAbove(b: Building, floor: Floor, p: Vec2, ground: number): number 
  */
 export function buildEarth(b: Building, floor: Floor, openings: readonly OpeningInfo[], lowest = false): EarthGeometry | null {
   if (b.settings.terrain?.earth === false || floor.elevation > 0.3) return null;
-  const outline = outlineOf(b, floor);
+  const outline = earthOutline(b, floor);
   if (!outline) return null;
   const local = (x: number, z: number) => terrainAt(x, z) - floor.elevation;
   // the slab reaches 0.2 m down (the lawn of a flat plot lies there): the plinth starts below it
@@ -121,7 +111,8 @@ export function buildEarth(b: Building, floor: Floor, openings: readonly Opening
       const s = (cx - a[0]) * ax[0] + (cz - a[1]) * ax[1];
       const d = Math.abs((cx - a[0]) * n[0] + (cz - a[1]) * n[1]);
       if (d > 0.08 || s < -0.05 || s > len + 0.05) continue;
-      if (o.sill >= ground(cx, cz) - 0.05) continue;
+      // the same decision the editor offers its "Light well" switch by (#524)
+      if (!wellBelowGround(b, floor, o.exterior, o.sill, [cx, cz])) continue;
       holes.push({ s0: Math.max(0, s - o.width / 2 - WELL_SIDE), s1: Math.min(len, s + o.width / 2 + WELL_SIDE), bottom: Math.max(bottom + 0.05, o.sill - WELL_BELOW), rim: o.opening.well_rim ?? 0 });
     }
     // the earth in pieces of at most half a metre, lower where a light well is

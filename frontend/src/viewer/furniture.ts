@@ -6,7 +6,7 @@
 import { Color } from "three";
 import type { Furniture, Vec2 } from "../model.ts";
 import { builtinBase, gangsOf, stairsULayout, POOL_VALVE_Y } from "../model.ts";
-import { mountBase, packItem, packMotion, packMovingPart, packScreen, type PackItem, type PackMotion } from "../packs.ts";
+import { isRobotVacuum, mountBase, packItem, packMotion, packMovingPart, packRobotCentre, packRobotPart, packScreen, type PackItem, type PackMotion, type PackPart } from "../packs.ts";
 import { fitParts } from "../pack-scale.ts";
 import { binColors, binShape, householdCountry, mailboxShape, type BinShape, type MailboxShape } from "../household.ts";
 import type { Floor } from "../model.ts";
@@ -43,6 +43,11 @@ class Builder {
   private readonly tf: Tf;
   /** The transform mirrors (negative determinant): parts not wound by ccw() come out inside out. */
   readonly mirrored: boolean;
+
+  /** The vertex colours drawn so far (a part's own range is lifted for the light looks). */
+  get colors(): number[] {
+    return this.buf.c;
+  }
 
   constructor(buf: GeoBuffer, lines: LineBuffer, tf: Tf) {
     this.buf = buf;
@@ -1482,12 +1487,43 @@ function builtInScreen(f: Furniture, w: number, d: number, h: number, floor?: Fl
   return null;
 }
 
-/** Soft contact shadow under an item: a dark core that fades out beyond its footprint. */
-function contactShadow(shadow: GeoBuffer, tf: Tf, w: number, d: number, strength: number): void {
+/** Round things cast a round shadow: a round table, a plant, a pack item whose largest part is an upright cylinder (#719). */
+export function roundFootprint(f: Pick<Furniture, "type">): boolean {
+  if (f.type === "table_round" || f.type === "plant") return true;
+  const item = packItem(f.type);
+  if (!item?.parts.length) return false;
+  const big = item.parts.reduce((m, p) => (p.w * p.d > m.w * m.d ? p : m), item.parts[0]);
+  return big.shape === "cyl" && (big.axis ?? "y") === "y" && big.w >= 0.85 && big.d >= 0.85;
+}
+
+/**
+ * Soft contact shadow under an item: a dark core that fades out beyond its footprint – round under round things.
+ * `y`: the ground it lies on (an item in the garden stands lower than the floor, #708).
+ */
+function contactShadow(shadow: GeoBuffer, tf: Tf, w: number, d: number, strength: number, round = false, ground = 0): void {
   const grow = Math.min(0.14, Math.max(0.06, Math.min(w, d) * 0.15));
   const dark = new Color(1 - strength, 1 - strength, 1 - strength);
   const clear = new Color(1, 1, 1);
-  const y = 0.003;
+  const y = ground + 0.003;
+  if (round) {
+    const P = (p: Vec2) => [p[0], y, p[1]];
+    const n = 24;
+    const at = (i: number, rx: number, rz: number) => tf(Math.cos((i / n) * 2 * Math.PI) * rx, Math.sin((i / n) * 2 * Math.PI) * rz);
+    const s0 = shadow.p.length;
+    const c = P(tf(0, 0));
+    for (let i = 0; i < n; i++) {
+      const a0 = P(at(i, w / 2, d / 2));
+      const a1 = P(at(i + 1, w / 2, d / 2));
+      const o0 = P(at(i, w / 2 + grow, d / 2 + grow));
+      const o1 = P(at(i + 1, w / 2 + grow, d / 2 + grow));
+      // the same turn as the square shadow's triangles
+      shadow.tri(c, a0, a1, dark);
+      shadow.tri(a0, o0, o1, dark, clear, clear);
+      shadow.tri(a0, o1, a1, dark, clear, dark);
+    }
+    if (tfMirrors(tf)) flipWinding(shadow, s0);
+    return;
+  }
   const inner = [tf(-w / 2, -d / 2), tf(w / 2, -d / 2), tf(w / 2, d / 2), tf(-w / 2, d / 2)];
   const outer = [tf(-w / 2 - grow, -d / 2 - grow), tf(w / 2 + grow, -d / 2 - grow), tf(w / 2 + grow, d / 2 + grow), tf(-w / 2 - grow, d / 2 + grow)];
   const P = (p: Vec2) => [p[0], y, p[1]];
@@ -1502,10 +1538,11 @@ function contactShadow(shadow: GeoBuffer, tf: Tf, w: number, d: number, strength
   if (tfMirrors(tf)) flipWinding(shadow, s0);
 }
 
-export function pushFurniture(buf: GeoBuffer, lines: LineBuffer, shadow: GeoBuffer, f: Furniture, base = 0): void {
+/** `still`: a picture of the item (a preview), so a pack's robot vacuum keeps its robot instead of driving it (#645). */
+export function pushFurniture(buf: GeoBuffer, lines: LineBuffer, shadow: GeoBuffer, f: Furniture, base = 0, still = false): void {
   // a mirrored item needs no rewinding here: boxes, lofts and upright cylinders wind themselves (ccw),
   // lying cylinders and the contact shadow rewind themselves when the transform mirrors (#159)
-  pushUpright(buf, lines, shadow, f, base);
+  pushUpright(buf, lines, shadow, f, base, still);
 }
 
 /** Swap the second and third vertex of every triangle from `from` on (positions, colours, folds, uvs, tiles). */
@@ -1530,20 +1567,23 @@ export function flipWinding(buf: GeoBuffer, from: number): void {
   }
 }
 
-function pushUpright(buf: GeoBuffer, lines: LineBuffer, shadow: GeoBuffer, f: Furniture, base: number): void {
+function pushUpright(buf: GeoBuffer, lines: LineBuffer, shadow: GeoBuffer, f: Furniture, base: number, still = false): void {
   // pack items place their parts at `base` themselves; built-in models are drawn on the floor and
   // lifted as a whole (a dryer on the washer, a shelf on the wall), without a shadow on the floor
   // the mount height is absolute: a wall cabinet drawn at 1.45 m moves by the difference (up or down)
   const lift = packItem(f.type) ? 0 : base - builtinBase(f);
-  if (packItem(f.type) || Math.abs(lift) < 0.001) return buildFurniture(buf, lines, shadow, f, base);
+  if (packItem(f.type) || Math.abs(lift) < 0.001) return buildFurniture(buf, lines, shadow, f, base, still);
   const p0 = buf.p.length;
   const l0 = lines.p.length;
+  const s0 = shadow.p.length;
   buildFurniture(buf, lines, base < 0.05 ? shadow : new GeoBuffer(), f, 0);
   for (let i = p0 + 1; i < buf.p.length; i += 3) buf.p[i] += lift;
   for (let i = l0 + 1; i < lines.p.length; i += 3) lines.p[i] += lift;
+  // in the garden the item stands lower than the floor: its shadow goes down with it
+  if (base < 0) for (let i = s0 + 1; i < shadow.p.length; i += 3) shadow.p[i] += lift;
 }
 
-function buildFurniture(buf: GeoBuffer, lines: LineBuffer, shadow: GeoBuffer, f: Furniture, base: number): void {
+function buildFurniture(buf: GeoBuffer, lines: LineBuffer, shadow: GeoBuffer, f: Furniture, base: number, still = false): void {
   const a = f.rotation * DEG;
   const c = Math.cos(a);
   const s = Math.sin(a);
@@ -1790,15 +1830,25 @@ function buildFurniture(buf: GeoBuffer, lines: LineBuffer, shadow: GeoBuffer, f:
     default: {
       const item = packItem(f.type);
       if (item) {
-        // a motorised curtain's fabric or a roll-down screen's cloth is drawn with its cover's state (pushPackMotion)
+        // a motorised curtain's fabric or a roll-down screen's cloth is drawn with its cover's state (pushPackMotion);
+        // a pack's robot vacuum drives around as the viewer's robot (pushPackRobot), only its dock stays here (#645)
         const motion = packMotion(f.type);
-        packModel(b, item, w, d, h, base, null, null, motion ? (p) => packMovingPart(motion, p) : null);
+        const skip = motion ? (p: PackPart) => packMovingPart(motion, p) : isRobotVacuum(f.type) && !still ? packRobotPart : null;
+        packModel(b, item, w, d, h, base, null, null, skip);
         // items on furniture, walls or ceilings cast no shadow on the floor
         if (base > 0.05) return;
       } else b.box(-w / 2, w / 2, 0, h, -d / 2, d / 2, C.body, C.bodyTop, EDGE_FURN);
     }
   }
-  contactShadow(shadow, tf, w, d, f.type === "plant" ? 0.35 : 0.5);
+  contactShadow(shadow, tf, w, d, f.type === "plant" ? 0.35 : 0.5, roundFootprint(f), Math.min(0, base));
+}
+
+/**
+ * A pack item with parts in a colour of their own ("#rrggbb", a pumpkin's orange): the light looks keep such colours
+ * only while bright and strong enough, so these parts are drawn anew on a look change (#609).
+ */
+export function hasFixedColors(type: string): boolean {
+  return !!packItem(type)?.parts.some((p) => p.color?.startsWith("#") || p.top?.startsWith("#"));
 }
 
 /** Colour of a pack part: a palette role (so packs follow the look) or "#rrggbb". */
@@ -1833,6 +1883,7 @@ function packModel(
     const top = lit ? glow : (packColor(p.top, false) ?? packColor(p.color, true) ?? shade(side, 1.25).getHex());
     const y0 = base + p.y * h;
     const y1 = base + Math.min(h, (p.y + p.h) * h);
+    const c0 = b.colors.length;
     // "glow" lines are as bright as the wall lines, so a pack item can be drawn like the walls
     const edges = p.edges === "glow" ? EDGE_TOP : p.edges === "faint" ? EDGE_FAINT : p.edges ? EDGE_FURN : null;
     // a turned part draws through a builder whose coordinates turn around the part's centre
@@ -1847,6 +1898,10 @@ function packModel(
       const td = p.td ?? p.d;
       bb.loft([(p.x - p.w / 2) * w, (p.x + p.w / 2) * w, (p.z - p.d / 2) * d, (p.z + p.d / 2) * d], [(tx - tw / 2) * w, (tx + tw / 2) * w, (tz - td / 2) * d, (tz + td / 2) * d], y0, y1, side, top, edges);
     } else bb.box((p.x - p.w / 2) * w, (p.x + p.w / 2) * w, y0, y1, (p.z - p.d / 2) * d, (p.z + p.d / 2) * d, side, top, edges);
+    // a part in a colour of its own keeps it in the light looks down to the ground, like a waste bin (#609): the
+    // shading towards the floor would push its lower half under the looks' signal-colour threshold (palette roles
+    // follow the look and stay as they are)
+    if (lightLook && !lit && !onlyGlow && (p.color?.startsWith("#") || p.top?.startsWith("#"))) keepBright(b.colors, c0);
   }
 }
 
@@ -1876,6 +1931,26 @@ export function pushCameraModel(buf: GeoBuffer, model: "camera_wall" | "camera_c
   b.loft([-0.035, 0.035, -0.03, 0.09], [-0.04, 0.04, -0.03, 0.09], y + 0.02, y + 0.09, body, bodyTop);
   b.lyingCyl("z", 0, 0.1, y + 0.03, y + 0.08, 0.03, 0.05, lens, C.accent, 10);
   b.box(-0.006, 0.006, y + 0.075, y + 0.085, 0.085, 0.09, 0xff3b4f, 0xff3b4f);
+}
+
+/**
+ * The robot of a pack's robot vacuum (the parts in front of its dock) as a model of its own, centred on the robot
+ * and standing on y = 0, facing +z – the viewer drives it around (#645). Returns the robot's radius and height, for
+ * the status light on top.
+ */
+export function pushPackRobot(buf: GeoBuffer, item: PackItem, w: number, d: number, h: number): { radius: number; top: number } {
+  const cz = packRobotCentre(item) * d;
+  const b = new Builder(buf, new LineBuffer(), (x, z) => [x, z - cz]);
+  packModel(b, item, Math.max(0.05, w), Math.max(0.05, d), Math.max(0.005, h), 0, null, packRobotPart);
+  let radius = 0;
+  let top = 0;
+  for (const p of fitParts(item, w, d, h)) {
+    if (!packRobotPart(p)) continue;
+    const r = Math.min(p.w * w, p.d * d) / 2;
+    if (p.shape === "cyl" && r > radius) radius = r;
+    top = Math.max(top, Math.min(h, (p.y + p.h) * h));
+  }
+  return { radius: radius || 0.17, top: top || 0.09 };
 }
 
 /** The glowing parts of a pack item that is no lamp (a smart speaker's light ring) in `color`: for the screen layer. */
@@ -1926,6 +2001,42 @@ export function packMotionParts(item: PackItem, kind: PackMotion, open: number, 
 }
 
 /** A pack lamp into the lamp buffer: glowing parts in the light's colour (`glow`), or dark when off. */
+/**
+ * Where a pack lamp's light comes from (#680): the centre of its glowing parts – each weighed by its size, so the
+ * glass of a lantern counts more than a small indicator – turned and mirrored like the item, as plan x and z and the
+ * height y. Null for an item without glowing parts.
+ */
+export function packGlowCentre(item: PackItem, f: Pick<Furniture, "x" | "z" | "rotation" | "w" | "d" | "h" | "mirror">, base: number): [number, number, number] | null {
+  const w = Math.max(0.05, f.w);
+  const d = Math.max(0.05, f.d);
+  const h = Math.max(0.005, f.h);
+  let weight = 0;
+  let sx = 0;
+  let sy = 0;
+  let sz = 0;
+  for (const p of fitParts(item, w, d, h)) {
+    if (!p.glow) continue;
+    // a loft's centre lies between its bottom and its top rectangle; a turned part turns around its own centre
+    const x = ((p.x + (p.shape === "loft" ? (p.tx ?? p.x) : p.x)) / 2) * w;
+    const z = ((p.z + (p.shape === "loft" ? (p.tz ?? p.z) : p.z)) / 2) * d;
+    const y0 = p.y * h;
+    const y1 = Math.min(h, (p.y + p.h) * h);
+    const k = Math.max(1e-6, p.w * w * p.d * d * Math.max(0, y1 - y0));
+    weight += k;
+    sx += x * k;
+    sy += ((y0 + y1) / 2) * k;
+    sz += z * k;
+  }
+  if (!weight) return null;
+  const x = sx / weight;
+  const z = sz / weight;
+  const a = f.rotation * DEG;
+  const c = Math.cos(a);
+  const s = Math.sin(a);
+  const mx = f.mirror ? -1 : 1;
+  return [f.x + mx * x * c - z * s, base + sy / weight, f.z + mx * x * s + z * c];
+}
+
 export function pushPackLamp(buf: GeoBuffer, item: PackItem, f: Pick<Furniture, "x" | "z" | "rotation" | "w" | "d" | "h" | "mirror">, base: number, glow: number): void {
   const a = f.rotation * DEG;
   const c = Math.cos(a);

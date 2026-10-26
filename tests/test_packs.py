@@ -172,6 +172,67 @@ async def test_import_list_and_remove(hass: HomeAssistant, hass_ws_client, monke
     assert (await client.receive_json())["result"]["packs"] == []
 
 
+async def test_module_code_runs_only_after_an_admin_approved_it(
+    hass: HomeAssistant, hass_ws_client, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """HACS review: module code is shown and approved by an admin before it runs, and an update never replaces
+    the running code by itself."""
+    private, keys = _key()
+    monkeypatch.setattr(packs, "PACK_PUBLIC_KEYS", keys)
+    await async_setup_component(hass, "http", {})
+    entry = MockConfigEntry(domain=DOMAIN, data={})
+    entry.add_to_hass(hass)
+    assert await hass.config_entries.async_setup(entry.entry_id)
+    await hass.async_block_till_done()
+    client = await hass_ws_client(hass)
+
+    async def call(**msg):
+        await client.send_json_auto_id(msg)
+        return await client.receive_json()
+
+    module = {**PAYLOAD, "id": "mastershort.window_watch", "items": [], "release": 1}
+    v1 = {**module, "module": {"api": 1, "kind": "stage", "code": "export default { api: 1, id: 'v1' };"}}
+    res = await call(type="accurona/packs/import", pack=_sign(private, keys, v1))
+    assert res["success"] and res["result"]["approval"] is True
+    listed = (await call(type="accurona/packs/list"))["result"]["packs"][0]
+    assert listed["module"]["approved"] is False and "code" not in listed["module"]
+    # not approved: its code is not served
+    res = await call(type="accurona/modules/code", pack_id="mastershort.window_watch")
+    assert res["error"]["code"] == "not_approved"
+    # the admin reads it, then approves exactly that code
+    review = (await call(type="accurona/modules/review", pack_id="mastershort.window_watch"))["result"]
+    assert "id: 'v1'" in review["code"]
+    assert not (await call(type="accurona/modules/approve", pack_id="mastershort.window_watch", sha="0" * 64))[
+        "success"
+    ]
+    assert (await call(type="accurona/modules/approve", pack_id="mastershort.window_watch", sha=review["sha"]))[
+        "success"
+    ]
+    assert (
+        "id: 'v1'" in (await call(type="accurona/modules/code", pack_id="mastershort.window_watch"))["result"]["code"]
+    )
+
+    # a new release waits beside the running code
+    v2 = {**module, "release": 2, "module": {"api": 1, "kind": "stage", "code": "export default { api: 1, id: 'v2' };"}}
+    assert (await call(type="accurona/packs/import", pack=_sign(private, keys, v2)))["result"]["approval"] is True
+    listed = (await call(type="accurona/packs/list"))["result"]["packs"][0]
+    assert listed["module"]["approved"] is True and listed["release"] == 1
+    assert listed["pending"]["release"] == 2
+    assert (
+        "id: 'v1'" in (await call(type="accurona/modules/code", pack_id="mastershort.window_watch"))["result"]["code"]
+    )
+    pending = (await call(type="accurona/modules/review", pack_id="mastershort.window_watch", pending=True))["result"]
+    assert "id: 'v2'" in pending["code"]
+    assert (await call(type="accurona/modules/approve", pack_id="mastershort.window_watch", sha=pending["sha"]))[
+        "success"
+    ]
+    listed = (await call(type="accurona/packs/list"))["result"]["packs"][0]
+    assert listed["release"] == 2 and listed["module"]["approved"] is True and "pending" not in listed
+    assert (
+        "id: 'v2'" in (await call(type="accurona/modules/code", pack_id="mastershort.window_watch"))["result"]["code"]
+    )
+
+
 def test_publisher_key_is_configured() -> None:
     # the published integration accepts packs of the publisher's key only
     assert len(packs.PACK_PUBLIC_KEYS) >= 1

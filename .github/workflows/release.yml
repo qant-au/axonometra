@@ -1,8 +1,10 @@
 name: Release
 
 # On a published GitHub release: check that the tag matches the manifest version, pack the integration
-# as accurona.zip (HACS installs this file because hacs.json sets zip_release) and attach it. The
-# asset's download count is the number of HACS installs and updates of that version.
+# as accurona.zip and attach it for manual installs. HACS no longer uses it: since GitHub's release
+# download redirects carry a header over aiohttp's 8 KB limit (hacs/integration#5643, October 2026),
+# hacs.json has no zip_release, so HACS fetches the files of custom_components/accurona one by one.
+# Switch zip_release back on once HACS can download release assets again.
 on:
   release:
     types: [published]

@@ -22,6 +22,9 @@ test("without the shop, an add-on shows only once its pack is installed", () => 
   assert.equal(released("auto_pro"), false);
   assert.equal(released("camera_cockpit"), false);
   assert.equal(released("diagnostics"), false);
+  assert.equal(released("fun_halloween"), false);
+  // a free feature is not sold: it shows as upstream releases it
+  assert.equal(released("locate"), true);
   setPacks([{ id: "mastershort.pro_auto", name: "Pro: Auto Pro", items: [], features: ["auto_pro"] } as never]);
   assert.equal(released("auto_pro"), true);
   setPacks([]);

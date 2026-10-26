@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { binColors, binDue, binGlows, binNext, FinishedMemory, fridgeOpenTooLong, isFinishedState, mailboxBase, mailboxPost, nextFridgeCheck, pickupsOf, plantThirsty, remainingMinutes, remainingText, sensorDays, serviceDue, wasteCalendars, wasteColors, wasteMatches } from "./household.ts";
+import { applianceIdle, binColors, binDue, binGlows, binNext, binOut, binOutToggleable, binTagsShown, FinishedMemory, fridgeOpenTooLong, groupTags, householdEntities, isFinishedState, mailboxBase, mailboxPost, nextFridgeCheck, pickupsOf, plantThirsty, remainingMinutes, remainingText, sensorDays, serviceDue, servicesDue, wasteCalendars, wasteColors, wasteMatches, type HouseholdTag } from "./household.ts";
 import type { Furniture } from "./model.ts";
 import type { HassEntity, HomeAssistant } from "./types.ts";
 
@@ -217,4 +217,91 @@ test("the pickup day across a clock change is the right calendar day (D576)", ()
   const due = binDue({ bin_kind: "bio", bin_source: "sensor.bio", bin_match: null }, hass, new Map(), now);
   assert.equal(due?.day.getDate(), 28);
   assert.equal(due?.day.getDay(), 3);
+});
+
+const tag = (id: string, x: number, days: number, extra: Partial<HouseholdTag> = {}): HouseholdTag => ({ id, floorId: "eg", x, z: 0, y: 1, r: 0.37, name: id, color: "#888888", when: `${days}`, days, ...extra });
+
+test("bins standing together share one tag, its lines in pickup order; a mailbox and bins far apart keep their own", () => {
+  const groups = groupTags([tag("paper", 0.65, 1), tag("rest", 0, 0), tag("bio", 1.3, 3), tag("far", 5, 0), tag("mail", 0.3, -1, { icon: "mail" }), tag("other floor", 0.65, 2, { floorId: "og" })]);
+  assert.equal(groups.length, 4);
+  const row = groups.find((g) => g.lines.length === 3)!;
+  assert.deepEqual(row.lines.map((l) => l.id), ["rest", "paper", "bio"]);
+  assert.ok(Math.abs(row.x - 0.65) < 1e-9);
+  assert.ok(groups.some((g) => g.lines[0].id === "mail" && g.lines.length === 1));
+  assert.ok(groups.some((g) => g.lines[0].id === "far"));
+  assert.ok(groups.some((g) => g.lines[0].id === "other floor"));
+});
+
+test("tags only for the next pickup and only some days before; by default every bin keeps its tag", () => {
+  const bins = [
+    { id: "rest", days: 0 },
+    { id: "rest2", days: 0 },
+    { id: "paper", days: 1 },
+    { id: "bio", days: 5 },
+  ];
+  assert.deepEqual([...binTagsShown(bins)], ["rest", "rest2", "paper", "bio"]);
+  assert.deepEqual([...binTagsShown(bins, { nextOnly: true })], ["rest", "rest2"]);
+  assert.deepEqual([...binTagsShown(bins, { ahead: 1 })], ["rest", "rest2", "paper"]);
+  assert.deepEqual([...binTagsShown(bins, { ahead: 0, nextOnly: true })], ["rest", "rest2"]);
+  assert.deepEqual([...binTagsShown([{ id: "bio", days: 5 }], { ahead: 2 })], []);
+  assert.deepEqual([...binTagsShown([{ id: "bio", days: 5 }], { nextOnly: true, ahead: null })], ["bio"]);
+});
+
+test("a bin is put out while its helper is on; only a helper or a switch can be tapped", () => {
+  const hass = hassOf(st("input_boolean.rest_out", "on"), st("binary_sensor.paper_out", "off"));
+  assert.ok(binOut({ bin_out: "input_boolean.rest_out" }, hass));
+  assert.ok(!binOut({ bin_out: "binary_sensor.paper_out" }, hass));
+  assert.ok(!binOut({ bin_out: null }, hass));
+  assert.ok(!binOut({ bin_out: "input_boolean.missing" }, hass));
+  assert.ok(binOutToggleable({ bin_out: "switch.x" }) && binOutToggleable({ bin_out: "input_boolean.x" }));
+  assert.ok(!binOutToggleable({ bin_out: "binary_sensor.x" }) && !binOutToggleable({}));
+  assert.deepEqual(householdEntities({ type: "waste_bin", bin_source: "calendar.a", bin_out: "input_boolean.rest_out" } as Furniture), ["calendar.a", "input_boolean.rest_out"]);
+});
+
+test("a robot vacuum's second service (its dock) is due on its own threshold", () => {
+  const hass = hassOf(st("sensor.brush", "40"), st("sensor.dock_bag", "3"), st("binary_sensor.filter", "on"));
+  assert.deepEqual(servicesDue({ service: "sensor.brush", service_min: 10, service2: "sensor.dock_bag", service2_min: 5 }, hass), ["sensor.dock_bag"]);
+  assert.deepEqual(servicesDue({ service: "binary_sensor.filter", service2: "sensor.dock_bag", service2_min: 2 }, hass), ["binary_sensor.filter"]);
+  assert.deepEqual(servicesDue({ service: "binary_sensor.filter", service2: "sensor.dock_bag" }, hass), ["binary_sensor.filter", "sensor.dock_bag"]);
+  // the same entity twice is one line
+  assert.deepEqual(servicesDue({ service: "binary_sensor.filter", service2: "binary_sensor.filter" }, hass), ["binary_sensor.filter"]);
+  assert.deepEqual(servicesDue({}, hass), []);
+});
+
+test("no time left while the appliance is off or idle: a leftover on its display after a power cut", () => {
+  // its plug off, its own state idle, its status sensor ready
+  assert.ok(applianceIdle(st("switch.washer_plug", "off"), null, 10));
+  assert.ok(applianceIdle(st("sensor.dishwasher_status", "Ready", { device_class: "enum" }), null, 10));
+  assert.ok(applianceIdle(st("binary_sensor.washer_running", "off"), 50, 10));
+  // standby power: idle, even while the plug's switch is on
+  assert.ok(applianceIdle(st("switch.washer_plug", "on"), 1.5, 10));
+  assert.ok(applianceIdle(undefined, 0.4, 10));
+  // running: power above the threshold, or a status that tells a program (a soak with little power)
+  assert.ok(!applianceIdle(st("switch.washer_plug", "on"), 1800, 10));
+  assert.ok(!applianceIdle(st("sensor.washer_status", "Running", { device_class: "enum" }), 2, 10));
+  assert.ok(!applianceIdle(st("binary_sensor.washer_running", "on"), 2, 10));
+  // nothing known: not idle (the time left alone tells it runs)
+  assert.ok(!applianceIdle(undefined, null, 10));
+  assert.ok(!applianceIdle(st("switch.washer_plug", "on"), null, 10));
+});
+
+test("pack plants are plants by their name, not only by the palette's leaf colour (#712)", async () => {
+  const { setPacks, packType } = await import("./packs.ts");
+  const { isPackPlant } = await import("./household.ts");
+  const part = (color: string) => ({ shape: "box", x: 0, y: 0, z: 0, w: 0.1, h: 0.1, d: 0.1, color });
+  setPacks([
+    {
+      id: "deco",
+      name: "Deko",
+      items: [
+        { id: "plant_monstera_m", name: { de: "Monstera mittel" }, size: [0.6, 0.6, 1.2], parts: [part("pot"), part("#2f6b4a"), part("#1e4a3a")] },
+        { id: "humidifier", name: { de: "Luftbefeuchter", en: "Humidifier" }, size: [0.3, 0.3, 0.4], parts: [part("white")] },
+        { id: "tv_stand", name: { de: "Fernseher auf Standfuß" }, size: [1, 0.5, 1.5], parts: [part("dark")] },
+      ],
+    } as never,
+  ]);
+  assert.equal(isPackPlant(packType("deco", "plant_monstera_m")), true);
+  assert.equal(isPackPlant(packType("deco", "humidifier")), false);
+  assert.equal(isPackPlant(packType("deco", "tv_stand")), false);
+  setPacks([]);
 });

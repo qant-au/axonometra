@@ -39,13 +39,15 @@ from .const import (
 )
 from .diagnostics_report import DiagnosticsReporter
 from .license import FIRST_CHECK_DELAY, REFRESH_INTERVAL, async_refresh_quietly
+from .locate.service import DATA_LOCATE, LocateService
 from .storage import FloorplanData
-from .voice import async_setup_voice, async_unload_voice
+from .voice import async_remove_sentences, async_setup_voice, async_unload_voice
 from .websocket import async_register_commands
 
 _LOGGER = logging.getLogger(__name__)
 
 CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
+PLATFORMS = ["sensor"]
 
 _STATIC_REGISTERED = f"{DOMAIN}_static_registered"
 
@@ -138,8 +140,14 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     hass.data[DATA_DIAGNOSTICS] = reporter
     entry.async_on_unload(reporter.start())
 
-    # Assist asks the house: service, intent and the sentences Assist understands
+    # locating (who and what is where, from the Bluetooth scanners): idle unless an admin switched it on
+    locate = LocateService(hass)
+    await locate.async_load()
+    hass.data[DATA_LOCATE] = locate
+
+    # Assist asks the house: service, intent and the sentences Assist understands (with the names locating knows)
     await async_setup_voice(hass)
+    await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 
     await _async_register_static(hass)
 
@@ -171,6 +179,9 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     with contextlib.suppress(KeyError, ValueError):
         frontend.remove_extra_js_url(hass, await _async_main_url(hass))
     async_unload_voice(hass)
+    await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
+    if (locate := hass.data.pop(DATA_LOCATE, None)) is not None:
+        locate.stop()
     hass.data.pop(DOMAIN, None)
     hass.data.pop(DATA_DIAGNOSTICS, None)
     return True
@@ -182,3 +193,6 @@ async def async_remove_entry(hass: HomeAssistant, entry: ConfigEntry) -> None:
     await async_remove_card_resource(hass)
     with contextlib.suppress(OSError):
         await hass.async_add_executor_job(remove_loader, Path(hass.config.path("www")))
+    # the Assist sentence files Accurona wrote (a file the user changed stays)
+    with contextlib.suppress(OSError):
+        await async_remove_sentences(hass)

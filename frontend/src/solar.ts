@@ -7,7 +7,7 @@
 import type { Building, Floor, RoofSection, RoofWindow, SolarField, Vec2 } from "./model.ts";
 import { outdoorGround, pointInPolygon } from "./model.ts";
 import { generateWalls } from "./geometry/walls.ts";
-import { sectionFrame, sectionOverhang, sectionProfile } from "./roof-sections.ts";
+import { endRuns, sectionEnds, sectionFrame, sectionOverhang, sectionProfile } from "./roof-sections.ts";
 
 const DEG = Math.PI / 180;
 type V3 = [number, number, number];
@@ -192,12 +192,17 @@ function sectionFaces(s: RoofSection, ov: { u0: number; u1: number; a: number; b
     return [flatFace(s.id, s.id, Math.min(a[0], c[0]), Math.min(a[1], c[1]), Math.max(a[0], c[0]), Math.max(a[1], c[1]), s.eave_a + FLAT_SLAB)];
   }
   if (s.shape === "pent") return [slopeFace(`${s.id}:a`, s.id, "a", P(U0, -oa, pr.y(-oa)), P(U1, -oa, pr.y(-oa)), P(U0, fr.w + ob, pr.y(fr.w + ob)), s.pitch_a, () => [0, lu])];
-  // a pyramid is a hip whose ridge has no length; half-hip and mansard place their modules like a gable
-  const hip = s.shape === "hip" || s.shape === "pyramid";
-  const d = s.shape === "pyramid" ? (fr.u1 - fr.u0) / 2 : hip ? Math.min((fr.u1 - fr.u0) / 2, Math.min(pr.vr, fr.w - pr.vr) || fr.w / 2) : 0;
+  // a pyramid is a hip whose ridge has no length; half-hip and mansard place their modules like a gable; a
+  // gable, hip or half-hip section may end differently at each end (#466)
+  const ends = sectionEnds(s);
+  const runs = ends ? endRuns(s, ends) : null;
+  const hip0 = s.shape === "pyramid" || ends?.[0] === "hip";
+  const hip1 = s.shape === "pyramid" || ends?.[1] === "hip";
+  const d0 = s.shape === "pyramid" ? (fr.u1 - fr.u0) / 2 : hip0 ? runs!.d0 : 0;
+  const d1 = s.shape === "pyramid" ? (fr.u1 - fr.u0) / 2 : hip1 ? runs!.d1 : 0;
   // a hip slope narrows from the full eave (with the overhang) to the ridge, which starts d in from the walls
-  const in0 = hip ? fr.u0 + d - U0 : 0;
-  const in1 = hip ? U1 - (fr.u1 - d) : 0;
+  const in0 = hip0 ? fr.u0 + d0 - U0 : 0;
+  const in1 = hip1 ? U1 - (fr.u1 - d1) : 0;
   const out: RoofFace[] = [];
   if (pr.vr > 0.3) {
     const len = Math.hypot(pr.vr + oa, pr.rh - pr.y(-oa));
@@ -209,14 +214,13 @@ function sectionFaces(s: RoofSection, ov: { u0: number; u1: number; a: number; b
     out.push(slopeFace(`${s.id}:b`, s.id, "b", P(U1, fr.w + ob, pr.y(fr.w + ob)), P(U0, fr.w + ob, pr.y(fr.w + ob)), P(U1, pr.vr, pr.rh), s.pitch_b, (t) => [in1 * (t / len), lu - in0 * (t / len)]));
   }
   // the hip ends: triangles from the end eave up to where the ridge starts (D134, D158)
-  if (hip) {
+  if (hip0 || hip1) {
     const ya = pr.y(-oa);
     const yb = pr.y(fr.w + ob);
-    const ends: [string, "c" | "d", V3, V3, V3][] = [
-      [`${s.id}:c`, "c", P(U0, fr.w + ob, yb), P(U0, -oa, ya), P(fr.u0 + d, pr.vr, pr.rh)],
-      [`${s.id}:d`, "d", P(U1, -oa, ya), P(U1, fr.w + ob, yb), P(fr.u1 - d, pr.vr, pr.rh)],
-    ];
-    for (const [key, side, o, e, apex] of ends) {
+    const hipEnds: [string, "c" | "d", V3, V3, V3][] = [];
+    if (hip0) hipEnds.push([`${s.id}:c`, "c", P(U0, fr.w + ob, yb), P(U0, -oa, ya), P(fr.u0 + d0, pr.vr, pr.rh)]);
+    if (hip1) hipEnds.push([`${s.id}:d`, "d", P(U1, -oa, ya), P(U1, fr.w + ob, yb), P(fr.u1 - d1, pr.vr, pr.rh)]);
+    for (const [key, side, o, e, apex] of hipEnds) {
       const face = triangleFace(key, s.id, side, o, e, apex);
       if (face) out.push(face);
     }

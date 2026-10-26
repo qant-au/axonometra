@@ -19,7 +19,8 @@ import { furnitureName } from "./furniture-names.ts";
 import { confirmEntities, defaultHeight, entityName, kindOf } from "./devices.ts";
 import { canLift, zonesOf, type LampMount } from "./model.ts";
 import { mountBase, packsVersion } from "./packs.ts";
-import { hasFeature, registerUrl, UNRELEASED } from "./features.ts";
+import { hasFeature, labOn, registerUrl, UNRELEASED } from "./features.ts";
+import { mountLocateLab } from "./locate-lab.ts";
 import { directorOnHere } from "./director.ts";
 import { loadVoice, micProbeDone, screenName, voiceOnHere } from "./load-voice.ts";
 import type { ClockPos } from "./card-config.ts";
@@ -30,6 +31,9 @@ import type { Feature } from "./features.ts";
 import { haFeatures } from "./homeassistant.ts";
 import { upstreamServices } from "./upstream.ts";
 import type { FloorStack, Quality, WallMode } from "./viewer/viewer3d.ts";
+
+/** The corners of the clock, as arrows in the view menu (the full name is the button's title). */
+const CLOCK_ARROW: Record<Exclude<ClockPos, "off">, string> = { tl: "↖", tr: "↗", bl: "↙", br: "↘" };
 
 type Mode = "view" | "editor" | "extensions";
 
@@ -161,6 +165,7 @@ export class Floorplan3dPanel extends LitElement {
   private declare _screen: string;
 
   private readonly data = new BuildingController(this);
+  private locateLab: (() => void) | null = null;
   /** Time travel (Pro): the last 24 hours replayed, read-only. */
   private readonly tt = new TimeTravel(this);
   /** A ?tt= link was looked at (it starts the time travel once). */
@@ -499,6 +504,10 @@ export class Floorplan3dPanel extends LitElement {
   }
 
   protected updated(): void {
+    // lab: the locating recorder box for admins (feasibility test, not a feature yet)
+    if (!this.locateLab && this.hass?.user?.is_admin && this.data.building && labOn()) {
+      this.locateLab = mountLocateLab(() => ({ hass: this.hass, building: this.data.building }));
+    }
     // a link with ?tt=07:42 or ?tt=-3h opens the time travel there, once the plan and the packs are loaded
     if (this.ttLinked || !this.data.building || !packsVersion() || this._mode !== "view" || !this.view3d()) return;
     this.ttLinked = true;
@@ -544,6 +553,8 @@ export class Floorplan3dPanel extends LitElement {
     super.disconnectedCallback();
     window.removeEventListener("keydown", this.onKey);
     this.tt.stop();
+    this.locateLab?.();
+    this.locateLab = null;
   }
 
   protected render() {
@@ -625,16 +636,18 @@ export class Floorplan3dPanel extends LitElement {
                     : nothing}
                 </label>
               </div>
-              <div class="fp3d-seg fp3d-quality" role="group" aria-label=${this.t("clock")}>
+              <div class="fp3d-seg fp3d-quality" role="group" aria-label=${this.t("clock")} title=${this.t("clock")}>
+                <span class="fp3d-seg-label" aria-hidden="true">🕐</span>
                 ${(["off", "tl", "tr", "bl", "br"] as ClockPos[]).map(
                   (p) =>
-                    html`<button aria-pressed=${this._clock === p} title=${this.t("clock")} @click=${() => {
+                    html`<button aria-pressed=${this._clock === p} title=${this.t(`clock_${p}`)} aria-label=${this.t(`clock_${p}`)} @click=${() => {
                       this._clock = p;
                       prefs.set("clock", p);
                     }}>
-                      ${this.t(`clock_${p}`)}
+                      ${p === "off" ? this.t("clock_off") : CLOCK_ARROW[p]}
                     </button>`,
                 )}
+              </div>
               <div class="fp3d-seg fp3d-quality" role="group" aria-label=${this.t("markers")}>
                 ${(["none", "room", "important", "all"] as MarkerMode[]).map(
                   (m) =>
@@ -1598,6 +1611,12 @@ export class Floorplan3dPanel extends LitElement {
       .fp3d-caret {
         font-size: 0.8em;
         opacity: 0.7;
+      }
+      .fp3d-seg-label {
+        display: inline-flex;
+        align-items: center;
+        padding: 0 4px 0 8px;
+        opacity: 0.75;
       }
       .fp3d-quality button {
         padding: 5px 11px;

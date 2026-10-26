@@ -312,7 +312,7 @@ async def async_install(hass: HomeAssistant, data: FloorplanData, pack_id: str) 
     except PackError as err:
         raise LicenseError(err.code, err.detail) from err
     before = next((p for p in data.packs if p["id"] == payload["id"]), None)
-    await data.async_add_pack(payload, parts_of(text))
+    waits = await data.async_add_pack(payload, parts_of(text))
     # installed: its "ready" notice goes
     persistent_notification.async_dismiss(hass, _notice_id(payload["id"]))
     persistent_notification.async_dismiss(hass, GROUP_NOTICE)
@@ -339,6 +339,8 @@ async def async_install(hass: HomeAssistant, data: FloorplanData, pack_id: str) 
         "licensee": payload["licensee"],
         "release": payload["release"],
         "items": len(payload["items"]),
+        # module code runs only after an admin approved it (see storage.async_add_pack)
+        "approval": waits,
     }
 
 
@@ -368,7 +370,11 @@ async def async_refresh(hass: HomeAssistant, data: FloorplanData, install_update
         }
     )
     if install_updates:
-        installed = {p["id"]: int(p.get("release") or 1) for p in data.packs}
+        # a module update that waits for the admin's approval counts as fetched
+        installed = {
+            p["id"]: max(int(p.get("release") or 1), int((p.get("pending") or {}).get("release") or 1))
+            for p in data.packs
+        }
         fetched = 0
         for p in catalog["packs"]:
             if p["id"] in installed and p["release"] > installed[p["id"]]:

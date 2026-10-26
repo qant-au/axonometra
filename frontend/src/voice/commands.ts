@@ -36,14 +36,22 @@ export function findPlace(sentence: string, building: Building, alias?: RoomAlia
   if (!text) return null;
   let best: Place | null = null;
   let len = 0;
+  // between names of the same length: a room's own name before an outdoor area's, and both before a further name
+  // (the Home Assistant area's, an alias) – "Garage" is the room in the cellar, not the driveway linked to the
+  // garage's area (#668)
+  let rank = -1;
   for (const floor of building.floors) {
     // outdoor areas acting as rooms ("Garten", "Terrasse") too; a room answers to its Home Assistant area's name as well
     for (const room of zonesOf(floor)) {
-      for (const name of [room.name, ...([] as (string | null | undefined)[]).concat(alias?.(room) ?? []), ...(room.aliases ?? [])]) {
+      const indoor = room.outdoor ? 0 : 1;
+      const further = ([] as (string | null | undefined)[]).concat(alias?.(room) ?? [], room.aliases ?? []);
+      for (const [name, own] of [[room.name, true], ...further.map((n) => [n, false] as const)] as const) {
         const n = name ? normalize(name) : "";
-        if (n.length > len && says(text, n)) {
+        const r = (own ? 2 : 0) + indoor;
+        if ((n.length > len || (n.length === len && r > rank)) && says(text, n)) {
           best = { kind: "room", floorId: floor.id, roomId: room.id, name: room.name };
           len = n.length;
+          rank = r;
         }
       }
     }

@@ -76,3 +76,30 @@ test("furniture answers to its kind, its own name, everyday words and its sensor
   // the room still wins over a device that only shares its name
   assert.equal(t("Zeig das Wohnzimmer", items)?.kind, "room");
 });
+
+test("a room's own name wins over an outdoor area answering to the same name (#668)", () => {
+  // the driveway on the ground floor is linked to the Home Assistant area "Garage"; the room "Garage" is in the cellar
+  const square: [number, number][] = [
+    [0, 0],
+    [4, 0],
+    [4, 4],
+    [0, 4],
+  ];
+  const drive = { id: "drive", type: "driveway" as const, points: square, area_id: "garage", name: "" };
+  const eg = { ...newFloor("eg", "Erdgeschoss", 0), rooms: [room("wz", "Wohnzimmer")], outdoor: [drive] };
+  const kg = { ...newFloor("kg", "Keller", -2.5), rooms: [room("vl", "Vorratslager"), { ...room("ga", "Garage"), area_id: "garage" }] };
+  const b = { ...emptyBuilding(), floors: [eg, kg] };
+  const areas: Record<string, string> = { garage: "Garage" };
+  const alias = (r: Room) => (r.area_id ? areas[r.area_id] : null);
+  assert.deepEqual(showTarget("Zeige mir Garage", b, [], alias), { kind: "room", floorId: "kg", roomId: "ga", name: "Garage" });
+  assert.deepEqual(showTarget("Zeige mir Vorratslager", b, [], alias), { kind: "room", floorId: "kg", roomId: "vl", name: "Vorratslager" });
+  // a device in the driveway called "Garage" (the door's drive) does not take the room's place either
+  const opener: Shown[] = [{ id: "cover.garage", entity: "cover.garage", name: "Garage", room: "", camera: false }];
+  assert.equal(showTarget("Zeige mir Garage", b, opener, alias)?.kind, "room");
+  // the room's own name only, without Home Assistant's area name: the same
+  const b2 = { ...b, floors: [eg, { ...kg, rooms: [room("vl", "Vorratslager"), room("ga", "Garage")] }] };
+  assert.equal((showTarget("Zeige mir Garage", b2, [], alias) as { roomId: string }).roomId, "ga");
+  // an outdoor area's own name still beats a further name (alias) of a room
+  const b3 = { ...b, floors: [{ ...eg, outdoor: [{ ...drive, name: "Einfahrt" }] }, { ...kg, rooms: [{ ...room("ga", "Garage"), aliases: ["Einfahrt"] }] }] };
+  assert.equal((showTarget("Zeige die Einfahrt", b3, [], alias) as { roomId: string }).roomId, "drive");
+});

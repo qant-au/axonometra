@@ -27,6 +27,10 @@ export interface Ask {
   screen: string | null;
   /** The view speaks its answer (a satellite that asked speaks itself). */
   speak: boolean;
+  /** Plan rooms to fly into instead of a sentence ("Where is Torsten?": his room; "Who is home?": a tour). */
+  show_rooms?: string[];
+  /** The rooms are people's while people are shown to admins only: only an admin's view flies there. */
+  admins_only?: boolean;
 }
 
 export function subscribeAsk(hass: HomeAssistant, callback: (ask: Ask) => void): Promise<() => Promise<void>> {
@@ -83,6 +87,30 @@ export interface ImportedPack {
   publisher: string;
   licensee: string | null;
   items: number;
+  /** Module code that waits for an admin's approval on the extensions page before it runs. */
+  approval?: boolean;
+}
+
+/** A module's code for an admin to read before approving it (the installed code or the waiting update). */
+export interface ModuleReview {
+  id: string;
+  name: string;
+  publisher: string;
+  licensee: string | null;
+  release: number;
+  api: number;
+  kind: string;
+  sha: string;
+  code: string;
+}
+
+export function reviewModule(hass: HomeAssistant, packId: string, pending: boolean): Promise<ModuleReview> {
+  return hass.callWS<ModuleReview>({ type: "accurona/modules/review", pack_id: packId, pending });
+}
+
+/** Approves exactly the reviewed code (by its fingerprint); from then on it runs. */
+export async function approveModule(hass: HomeAssistant, packId: string, sha: string): Promise<void> {
+  await hass.callWS({ type: "accurona/modules/approve", pack_id: packId, sha });
 }
 
 /** Import a pack file; the backend checks its signature (errors carry a code, e.g. "bad_signature"). */
@@ -274,6 +302,6 @@ export async function getVoiceSettings(hass: HomeAssistant): Promise<{ sentences
   return hass.callWS({ type: "accurona/voice/settings" });
 }
 
-export async function setVoiceSentences(hass: HomeAssistant, sentences: SentenceMode): Promise<{ sentences: SentenceMode }> {
+export async function setVoiceSentences(hass: HomeAssistant, sentences: SentenceMode): Promise<{ sentences: SentenceMode; kept?: string[] }> {
   return hass.callWS({ type: "accurona/voice/settings/set", sentences });
 }

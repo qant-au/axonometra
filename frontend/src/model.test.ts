@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { emptyBuilding, gangEntities, gangPlateWidth, gangsOf, floorElevation, newFloor, outdoorZones, zonesOf, openingPreset, openingStyle, normalizeBuilding, outdoorDrop, outdoorGround, resizeFurniture, roomTiles, sidelightLayout, spotGrid, surfaceHeight, type Furniture } from "./model.ts";
+import { emptyBuilding, lockAlong, gangEntities, gangPlateWidth, gangsOf, floorElevation, newFloor, outdoorZones, zonesOf, openingPreset, openingStyle, normalizeBuilding, outdoorDrop, outdoorGround, resizeFurniture, roomTiles, sidelightLayout, spotGrid, surfaceHeight, type Furniture } from "./model.ts";
 
 test("a sidelight sits opposite the hinge, on the hinge side when asked, and keeps the leaf at least half a metre", () => {
   const none = {};
@@ -209,4 +209,16 @@ test("a lamp fits under a high worktop step and stands on the floor; on a kitche
   assert.equal(surfaceHeight(floor, 1, 1), 1.6);
   floor.furniture = [top(0.92)];
   assert.equal(surfaceHeight(floor, 1, 1, 0.45), 0.92);
+});
+
+test("a lock sits on the main leaf of a double door, not on the seam (#645)", () => {
+  const terrace = { type: "window" as const, style: null, width: 2, leaves: 2 as const };
+  assert.equal(lockAlong(terrace, true), 0.5);
+  assert.equal(lockAlong(terrace, false), 1.5);
+  const single = { type: "door" as const, style: null, width: 0.9, leaves: 1 as const };
+  assert.equal(lockAlong(single, true), 0.45);
+  // a sidelight opposite the hinge: the lock stays on the leaf
+  const lit = { type: "door" as const, style: "sidelight" as const, width: 1.6, leaves: 1 as const };
+  const l = sidelightLayout(1.6, "sidelight", true, {})!;
+  assert.ok(Math.abs(lockAlong(lit, true) - (l.x0 + l.x1) / 2) < 1e-9);
 });

@@ -1,6 +1,10 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { browserOf, deviceClass, gpuTier, osOf, ourFrame, scrubMessage } from "./diagnostics.ts";
+import { setUpstreamServices } from "./upstream.ts";
+
+// Accurona: upstream's tests exercise the report code, so it stays maintained; in use it is off (upstream.ts)
+setUpstreamServices(true);
 
 test("error messages lose URLs, addresses, entity ids, tokens and long ids", () => {
   assert.equal(scrubMessage("TypeError: x is undefined"), "TypeError: x is undefined");
@@ -78,8 +82,8 @@ test("the GPU is reported as a rough class only", () => {
   assert.equal(gpuTier(null), null);
 });
 
-test("the unreleased switch hides the reports unless the lab is on", async () => {
+test("the reports are released (2.0.1): the switch shows for admins, off until they turn it on", async () => {
   const { released, UNRELEASED } = await import("./features.ts");
-  assert.ok(UNRELEASED.includes("diagnostics"));
-  assert.equal(released("diagnostics"), false);
+  assert.ok(!UNRELEASED.includes("diagnostics"));
+  assert.equal(released("diagnostics"), true);
 });

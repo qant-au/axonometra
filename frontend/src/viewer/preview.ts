@@ -33,7 +33,7 @@ function buildModel(item: PreviewItem, rotation = 0): { buf: GeoBuffer; lines: L
     pushLampModel(buf, { x: 0, z: 0, size: [item.w, item.d, item.h], base: 0, rotation, variant: item.variant ?? null, lamp: item.lamp }, Math.max(item.h + 0.15, 0.6), 0xffb547);
   } else {
     const f: Furniture = { id: "preview", type: item.type, x: 0, z: 0, rotation, w: item.w, d: item.d, h: item.h, variant: item.variant ?? null, entity: null, power: null };
-    pushFurniture(buf, lines, new GeoBuffer(), f);
+    pushFurniture(buf, lines, new GeoBuffer(), f, 0, true);
   }
   return { buf, lines };
 }

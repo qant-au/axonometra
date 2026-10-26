@@ -16,6 +16,11 @@ export type FunLib = Pick<typeof THREE, "Group" | "Mesh" | "MeshBasicMaterial" |
 export interface PetViewer {
   floorMap: Map<string, { group: THREE.Group; floor: Floor }>;
   invalidate(): void;
+  /** A decoration moved: a frame soon (on the tablet level at its slower pace, none while it rests). */
+  animate(): void;
+  /** The tablet level, and whether its decorative animations rest (nobody touched the view for a while). */
+  readonly low: boolean;
+  readonly resting: boolean;
 }
 
 export interface PetsContext {
@@ -794,12 +799,20 @@ export function startPets(ctx: PetsContext): PetsController {
 
   const tick = (now: number) => {
     raf = 0;
-    const dt = last ? Math.min(0.1, (now - last) / 1000) : 0;
+    // tablet level, nobody touched the view for a while: they hold still (nothing is drawn) until the next touch
+    if (viewer.resting) {
+      last = 0;
+      timer = setTimeout(() => (raf = requestAnimationFrame(tick)), 1000);
+      return;
+    }
+    // the tablet level draws them about 5 times a second: they step as often, so a step may be longer
+    const dt = last ? Math.min(viewer.low ? 0.3 : 0.1, (now - last) / 1000) : 0;
     last = now;
     let active = false;
     for (const a of animals) if (step(a, dt, now)) active = true;
-    if (active) viewer.invalidate();
-    if (active) raf = requestAnimationFrame(tick);
+    if (active) viewer.animate();
+    if (active && viewer.low) timer = setTimeout(() => (raf = requestAnimationFrame(tick)), 180);
+    else if (active) raf = requestAnimationFrame(tick);
     else {
       // all of them rest: wake up when the first one wants to go on
       const wait = Math.max(500, Math.min(...animals.map((a) => a.until - performance.now()), 60000));
@@ -848,7 +861,7 @@ export function startPets(ctx: PetsContext): PetsController {
       }
     }
     const swim = () => {
-      if (document.hidden) return;
+      if (document.hidden || viewer.resting) return;
       const t = performance.now() / 1000;
       for (const fi of fishes) {
         const s = Math.sin(t * fi.speed + fi.phase);
@@ -857,7 +870,7 @@ export function startPets(ctx: PetsContext): PetsController {
         // facing the way it swims
         fi.g.scale.x = Math.cos(t * fi.speed + fi.phase) >= 0 ? 1 : -1;
       }
-      viewer.invalidate();
+      viewer.animate();
     };
     if (fishes.length) {
       swim();

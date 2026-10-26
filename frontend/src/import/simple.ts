@@ -3,8 +3,8 @@
 // proper plan. And the check for complete Accurona plans that were written by hand or by an AI: broken parts are
 // repaired or left out, with a warning for each.
 
-import type { Building, FurnitureType, Vec2 } from "../model.ts";
-import { FURNITURE_SIZE, FURNITURE_TYPES, normalizeBuilding, uid } from "../model.ts";
+import type { Building, FurnitureType, SillBoard, Vec2 } from "../model.ts";
+import { FURNITURE_SIZE, FURNITURE_TYPES, SILL_BOARDS, normalizeBuilding, uid } from "../model.ts";
 import type { RawFloor, RawPlan, Warning } from "./builder.ts";
 import { cleanPolygon } from "./geom.ts";
 import { furnitureType } from "./furniture-map.ts";
@@ -27,7 +27,7 @@ interface SimpleFloor {
   rooms?: { name?: string; points?: unknown[] }[];
   walls?: { from?: unknown; to?: unknown; thickness?: number; height?: number }[];
   doors?: { at?: unknown; width?: number; height?: number }[];
-  windows?: { at?: unknown; width?: number; height?: number; sill?: number }[];
+  windows?: { at?: unknown; width?: number; height?: number; sill?: number; sill_board?: string }[];
   furniture?: { type?: string; name?: string; at?: unknown; width?: number; depth?: number; height?: number; rotation?: number; elevation?: number }[];
 }
 
@@ -64,7 +64,8 @@ export function readSimple(data: unknown): RawPlan {
         }),
         ...(f.windows ?? []).flatMap((o) => {
           const at = u(pt(o.at));
-          return at ? [{ kind: "window" as const, at, width: n(o.width, unit === 1 ? 1.2 : 120) * unit, height: n(o.height, unit === 1 ? 1.3 : 130) * unit, sill: n(o.sill, unit === 1 ? 0.9 : 90) * unit }] : [];
+          const sill_board = (SILL_BOARDS as readonly string[]).includes(o.sill_board ?? "") ? (o.sill_board as SillBoard) : undefined;
+          return at ? [{ kind: "window" as const, at, width: n(o.width, unit === 1 ? 1.2 : 120) * unit, height: n(o.height, unit === 1 ? 1.3 : 130) * unit, sill: n(o.sill, unit === 1 ? 0.9 : 90) * unit, sill_board }] : [];
         }),
       ],
       furniture: (f.furniture ?? []).flatMap((m) => {
