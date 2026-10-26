@@ -21,7 +21,7 @@ See [NOTICE](NOTICE) for the credit and [LICENSE](LICENSE) for the terms.
 
 ## Status
 
-Early. The engine is NeonPlan 3D 1.23.1's plan model, editor and 3D view, under its own
+Early. The engine is NeonPlan 3D 2.0.4's plan model, editor and 3D view, under its own
 name, and it runs in two hosts:
 
 - **Standalone**, with no Home Assistant anywhere: a plan kept in the browser, embeddable
