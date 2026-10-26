@@ -86,9 +86,9 @@ const foils = (specs: FoilSpec[]) => specs.map((f) => foilGeometry(f));
  * twin extra-long-shaft outboards: cut down with a motor well, or whole with the motors on a bracket or a platform. She
  * floats as fitted: her plating, the two outboards on their mounts, fuel, framing and two crew.
  */
-const plateFishing = (transom: OpenHullSpec["transom"]): CatalogueHull => {
+const plateFishing = (transom: OpenHullSpec["transom"], sole = 0.15): CatalogueHull => {
   const body = plateHull({ length: 6.5, beam: 2.45, transom: 2.3, chineBeam: 2.0, draft: 0.36, freeboard: 0.88, deadrise: 18 }).bodies[0];
-  const shell = openHull(body, { plating: 0.005, sole: 0.15, transom });
+  const shell = openHull(body, { plating: 0.005, sole, transom });
   const mounts = outboardMounts(shell, 2);
   const weights: Weight[] = [
     ...mounts.map((m): Weight => ({ name: `${m.name} (150 hp)`, mass: 230, at: [m.at[0] - 0.25, m.at[1] + 0.25, m.at[2]] })),
@@ -125,8 +125,8 @@ export const CATALOGUE: CatalogueEntry[] = [
   {
     name: "plate-alloy-fishing-6.5m-bracket",
     group: "Small craft",
-    note: "the same boat with a whole transom and the twin outboards on a 0.75 m bracket",
-    build: () => plateFishing({ height: SHAFT.xl, width: 1.4, setback: { length: 0.75, kind: "bracket" } }),
+    note: "the same boat with a whole transom and the twin outboards on a 0.75 m bracket: no buoyancy aft, so she sits by the stern and her sole is 10 cm higher to drain",
+    build: () => plateFishing({ height: SHAFT.xl, width: 1.4, setback: { length: 0.75, kind: "bracket" } }, 0.25),
   },
   {
     name: "stepped-planing-10m",
