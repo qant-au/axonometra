@@ -13,6 +13,12 @@ by Mastershort (MIT). Upstream releases are merged in on a schedule, and there i
 to merge Accurona back: it is going somewhere a house-planning project would not carry.
 See [NOTICE](NOTICE) for the credit and [LICENSE](LICENSE) for the terms.
 
+> **Early days.** Accurona is in its early stages, with a lot of work planned and new things
+> landing all the time. The [samples below](#homes-and-rooms) are current as of 26 October 2026,
+> and more are on the way, so check back soon. If you'd like to follow along, a star or a watch
+> on the repository is very welcome, and so are suggestions: open an
+> [issue](https://github.com/qant-au/accurona/issues) with yours.
+
 ## Status
 
 Early. The engine is NeonPlan 3D 1.23.1's plan model, editor and 3D view, under its own
@@ -40,6 +46,33 @@ What stays compatible with NeonPlan 3D:
 3. **A first-run wizard**, once there is a library of boats and equipment to pick from:
    read the boat's details from Signal K, pick a hull, confirm the equipment, and land on
    your boat on the water in 3D, as an ordinary plan the editor then refines.
+
+## Homes and Rooms
+
+Accurona plans a whole building or just the rooms inside one. These example plans are the
+starting set: the structure only, not yet furnished. Each opens in the standalone page with
+`index.html?example=<name>` (see [demos](demos/README.md)).
+
+![A two-storey family home](docs/demos/plan-family-home-two-storey.gif)
+![A ranch home with a full basement](docs/demos/plan-ranch-home-basement.gif)
+![A large acreage home](docs/demos/plan-acreage-home.gif)
+![A small peptide laboratory behind its airlocks](docs/demos/plan-peptide-lab.gif)
+![A real estate office for eight staff](docs/demos/plan-real-estate-office.gif)
+![A shed with a double garage and a workshop](docs/demos/plan-shed-workshop.gif)
+
+## Boats and Ships
+
+Accurona plans homes, and it is being built to plan boats and ships too. This is a preview
+of that work: hull design, the first part of it. Hull shapes, what is fixed to them, and how
+they float and heel are in; decks, rooms, equipment, and live data from the boat are still
+to come.
+
+![A 10 m sailing yacht with its fin keel, bulb and rudder](docs/demos/hull-sailing-yacht-10m-keel.gif)
+![A 6.5 m RIB with its tube](docs/demos/hull-rib-6.5m-with-tube.gif)
+![A 6.5 m plate aluminium fishing boat](docs/demos/hull-plate-alloy-fishing-6.5m.gif)
+![A 12 m cruising catamaran](docs/demos/hull-catamaran-12m.gif)
+![A 25 m SWATH: two submerged hulls under thin struts](docs/demos/hull-swath-25m.gif)
+![A 300 m container ship with its bulbous bow](docs/demos/hull-container-ship-300m.gif)
 
 ## Embedding
 
