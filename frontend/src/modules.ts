@@ -353,7 +353,17 @@ export type ModuleField =
   | { kind: "entity"; label: string; value: string | null; auto?: string | null; filter(id: string): boolean; set(v: string | null): void }
   | { kind: "select"; label: string; value: string; options: { id: string; label: string }[]; set(v: string): void }
   | { kind: "check"; label: string; value: boolean; set(v: boolean): void }
+  // Accurona: a number (null when the field is left empty: the module's default applies)
+  | { kind: "number"; label: string; value: number | null; min?: number; max?: number; step?: number; placeholder?: string; set(v: number | null): void }
   | { kind: "button"; label: string; primary?: boolean; title?: string; onTap(): void };
+
+/** Accurona: a number field's typed text as its value: empty (or not a number) is null, else held within its bounds. */
+export function numberField(text: string, min?: number, max?: number): number | null {
+  if (text.trim() === "") return null;
+  const v = Number(text);
+  if (!Number.isFinite(v)) return null;
+  return Math.min(max ?? Infinity, Math.max(min ?? -Infinity, v));
+}
 
 /** A pool's pipe as the module's flow logic sees it. */
 export interface PipeFlowDevice {

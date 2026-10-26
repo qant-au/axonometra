@@ -90,6 +90,7 @@ function copyFonts() {
   }
 }
 
+// Accurona: 3D 824 KB and editor 940 KB on 2026-10-26 for mass calculation (the switch, the default masses, the number field)
 // main 674 KB and 3D 812 KB on 2026-10-22 for richer module cards (a state line, a second value, a chain, cells, a hint), module markers and solid module pipes
 // main 668 KB and 3D 808 KB on 2026-10-22 for what modules may draw: lines in the flow layer, surfaces over floors and lawns, labels, layered light on an item, a card curve, fields on furniture and module settings
 // 3D 796 KB and editor 916 KB on 2026-10-21 for roof sections that cut each other, wings meeting a roof in valleys (#466, #605) and the ends per section
@@ -129,7 +130,7 @@ function copyFonts() {
 // main 694 KB on 2026-10-25 (was 692): people without a tracker in Home Assistant still show where they are located (#744)
 // card editor 268 KB on 2026-10-25 (was 267): the texts of the invitation to the usage reports
 // 3D 816 KB on 2026-10-25 (was 812): free walls drawn as outer walls find their outside (blinds, glass), pets walk on at their own pace on tablets, door glass on both faces
-const BUDGET = { "accurona.js": 694 * 1024, "accurona-fun.js": 40 * 1024, "accurona-voice.js": 60 * 1024, "accurona-locate.js": 160 * 1024, "accurona-timetravel.js": 120 * 1024, "accurona-3d.js": 816 * 1024, "accurona-editor.js": 930 * 1024, "accurona-card-editor.js": 268 * 1024, "accurona-vessel.js": 64 * 1024 };
+const BUDGET = { "accurona.js": 694 * 1024, "accurona-fun.js": 40 * 1024, "accurona-voice.js": 60 * 1024, "accurona-locate.js": 160 * 1024, "accurona-timetravel.js": 120 * 1024, "accurona-3d.js": 824 * 1024, "accurona-editor.js": 940 * 1024, "accurona-card-editor.js": 268 * 1024, "accurona-vessel.js": 64 * 1024 };
 
 copyFonts();
 if (watch) {

@@ -5,6 +5,7 @@
 
 import { BufferGeometry, CircleGeometry, DoubleSide, EdgesGeometry, Float32BufferAttribute, Group, LineBasicMaterial, LineSegments, Mesh, MeshBasicMaterial, Quaternion, Uint32BufferAttribute, Vector3, type Material } from "three";
 import { loadVessel } from "../load-vessel.ts";
+import { massOn } from "../vessel/mass.ts";
 import { vesselOf, type Weighted } from "../vessel/spec.ts";
 
 const WATER = 0x1d4e7a;
@@ -22,9 +23,11 @@ export class VesselLayer {
   /** Show the hull of the plan's vessel (nothing for a building); a changed recipe or a moved weight is drawn anew. */
   async set(building: unknown): Promise<void> {
     const spec = vesselOf(building);
-    const floors = (building as { floors?: { elevation: number; furniture: (Weighted & { x: number; z: number; h: number; mount_y?: number | null })[] }[] }).floors ?? [];
-    const weighted = floors.flatMap((f) => f.furniture.filter((i) => i.component).map((i) => [f.elevation, i.x, i.z, i.h, i.mount_y ?? 0, i.component!.mass]));
-    const key = spec ? JSON.stringify([spec, weighted]) : "";
+    // with masses on, every item on the decks counts (its default mass when none is entered), so any of them can move her
+    const floors = (building as { floors?: { elevation: number; furniture: (Weighted & { type: string; x: number; z: number; w: number; d: number; h: number; mount_y?: number | null })[] }[] }).floors ?? [];
+    const mass = massOn(building);
+    const weighted = mass ? floors.flatMap((f) => f.furniture.map((i) => [f.elevation, i.type, i.x, i.z, i.w, i.d, i.h, i.mount_y ?? 0, i.component?.mass ?? null])) : [];
+    const key = spec ? JSON.stringify([spec, mass, weighted]) : "";
     if (key === this.key) return;
     this.key = key;
     this.clear();

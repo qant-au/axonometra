@@ -54,7 +54,8 @@ import { furnishRoom, PACKAGES, type PackageId } from "../packages.ts";
 import { edgeReach, generateWalls, locateOpening, openingHost, pointOnRoomEdge, type Wall } from "../geometry/walls.ts";
 import { formatNumber, languageReady, loadLanguage, translate, type I18nKey } from "../i18n.ts";
 import { iconPath } from "../icons.ts";
-import { moduleAreaFields, moduleFurnitureFields, moduleHelp, modulePipeRules, moduleSettings, moduleWaits, syncModules, type ModuleField, type ModuleHost, type PipeRules } from "../modules.ts";
+import { moduleAreaFields, moduleFurnitureFields, moduleHelp, modulePipeRules, moduleSettings, moduleWaits, numberField, syncModules, type ModuleField, type ModuleHost, type PipeRules } from "../modules.ts";
+import { massFields, massSettingFields } from "../vessel/mass.ts";
 import { pipePlanner } from "../pipe-planner.ts";
 import {
   bounds,
@@ -9704,6 +9705,19 @@ export class Fp3dEditor extends LitElement {
           >`;
         case "check":
           return html`<label class="fp3d-check fp3d-wide"><input type="checkbox" .checked=${f.value} ?disabled=${!admin} @change=${(e: Event) => f.set((e.target as HTMLInputElement).checked)} /> ${f.label}</label>`;
+        case "number":
+          return html`<label class="fp3d-field fp3d-wide"
+            >${f.label}
+            <input
+              type="number"
+              .value=${f.value === null ? "" : String(f.value)}
+              min=${f.min ?? nothing}
+              max=${f.max ?? nothing}
+              step=${f.step ?? "any"}
+              placeholder=${f.placeholder ?? ""}
+              ?disabled=${!admin}
+              @change=${(e: Event) => f.set(numberField((e.target as HTMLInputElement).value, f.min, f.max))}
+          /></label>`;
         case "button":
           return html`<button class="fp3d-btn ${f.primary ? "fp3d-primary" : ""} fp3d-wide" ?disabled=${!admin} title=${f.title ?? ""} @click=${() => f.onTap()}>${f.label}</button>`;
       }
@@ -11030,6 +11044,7 @@ export class Fp3dEditor extends LitElement {
         : nothing}
       ${isElectric(f.type) ? this.renderFurnitureLinks(f) : !NO_STATE_TYPES.has(f.type) ? html`<div class="fp3d-form fp3d-links">${this.renderStateLinks(f)}</div>` : nothing} ${GANG_TYPES.has(f.type) ? this.renderGangsForm(f) : nothing} ${TECH_TYPES.has(f.type) ? this.renderTechForm(f) : nothing} ${f.type === "parking" ? this.renderParkingForm(f) : nothing} ${f.type === "waste_bin" || f.type === "mailbox" ? this.renderHouseholdForm(f) : this.renderHouseholdExtras(f)}
       ${this.renderModuleFurnitureFields(f)}
+      ${this.renderFields(massFields(this._doc, f, this.hass?.language ?? "en", (mass) => this.updateFurniture({ component: mass === null ? undefined : { mass } } as Partial<Furniture>)))}
       ${f.type.startsWith("pack:mastershort.vehicles:") && this.isAdmin
         ? html`<section>
             <p class="fp3d-sub">${this.t("vehicle_to_spot_hint")}</p>
@@ -13160,6 +13175,7 @@ export class Fp3dEditor extends LitElement {
         >
         ${this.entitySelect(this.t("hh_notes"), s.household?.notes ?? null, undefined, this.entityOptions((id) => /^(input_text|text|sensor)\./.test(id)), (v) => this.setHousehold({ notes: v === "none" ? null : v }))}
         <p class="fp3d-sub fp3d-wide">${this.t("hh_notes_hint")}</p>
+        ${this.renderFields(massSettingFields(this._doc, this.hass?.language ?? "en", (on) => set({ mass: on } as Partial<Building["settings"]>)), false)}
       </div>
       <p class="fp3d-sub">${this.t("north_hint")}</p>
     </details>`;

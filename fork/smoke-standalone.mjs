@@ -117,6 +117,64 @@ try {
   } catch {
     failures.push("?example=fishing-boat-6.5m does not open the boat's cockpit and motor well");
   }
+
+  // mass calculation, off and on (frontend/src/vessel/mass.ts): the house settings show the switch as the plan has
+  // it; with it on, an item on the deck has a mass field showing its default, and a mass typed in is saved with it
+  const boat = await page.evaluate(async () => (await window.accurona.element.hass.callWS({ type: "accurona/building/get" })).building);
+  for (const mass of [false, true]) {
+    const label = `mass ${mass ? "on" : "off"}`;
+    await page.goto(url.replace("?fresh", `?plan=smoke-mass-${mass}`), { waitUntil: "networkidle0" });
+    await page.waitForFunction(() => window.accurona?.element?.hass, { timeout: 15000 });
+    await page.evaluate(async (boat, mass) => {
+      const hass = window.accurona.element.hass;
+      const sideboard = { id: "smoke_item", type: "sideboard", x: 3, z: 0, rotation: 0, w: 0.6, d: 0.6, h: 0.5, variant: null, entity: null, power: null };
+      const floors = boat.floors.map((f, i) => (i === 0 ? { ...f, furniture: [sideboard] } : f));
+      await hass.callWS({ type: "accurona/building/save", building: { ...boat, floors, settings: { ...boat.settings, mass } } });
+    }, boat, mass);
+    await page.reload({ waitUntil: "networkidle0" });
+    await page.waitForFunction(() => window.accurona?.element?.shadowRoot?.querySelector(".fp3d-seg button"), { timeout: 15000 });
+    await page.evaluate(() => {
+      const tabs = [...window.accurona.element.shadowRoot.querySelectorAll(".fp3d-seg button")];
+      tabs.find((b) => b.getAttribute("aria-pressed") === "false" && !b.classList.contains("fp3d-tab-ext"))?.click();
+    });
+    const editor = () => window.accurona.element.shadowRoot.querySelector("accurona-editor");
+    await page.waitForFunction((editor) => new Function(`return (${editor})()`)()?.shadowRoot?.querySelector(".fp3d-seg-settings button"), { timeout: 15000 }, editor.toString());
+    const shown = await page.evaluate(async (mass) => {
+      const ed = window.accurona.element.shadowRoot.querySelector("accurona-editor");
+      const settle = () => new Promise((ok) => setTimeout(ok, 200));
+      ed.shadowRoot.querySelector(".fp3d-seg-settings button").click();
+      await settle();
+      [...ed.shadowRoot.querySelectorAll(".fp3d-menu-item")].find((b) => b.textContent.includes("House"))?.click();
+      await settle();
+      ed.shadowRoot.querySelector(".fp3d-dialog details")?.setAttribute("open", "");
+      await settle();
+      const check = [...ed.shadowRoot.querySelectorAll(".fp3d-dialog label.fp3d-check")].find((l) => l.textContent.includes("Calculate masses"));
+      const out = { check: check ? check.querySelector("input").checked : null };
+      ed.shadowRoot.querySelector(".fp3d-dialog-head button")?.click();
+      // the item's form: selected as a tap on it would
+      ed._furnitureId = "smoke_item";
+      ed.requestUpdate();
+      await settle();
+      const field = [...ed.shadowRoot.querySelectorAll("label.fp3d-field")].find((l) => l.textContent.includes("Mass (kg)"));
+      out.field = field ? field.querySelector("input").placeholder : null;
+      if (field && mass) {
+        const input = field.querySelector("input");
+        input.value = "42";
+        input.dispatchEvent(new Event("change"));
+        await settle();
+        field.scrollIntoView({ block: "center" });
+      }
+      return out;
+    }, mass);
+    if (shown.check !== mass) failures.push(`${label}: the house settings' switch reads ${shown.check}`);
+    if (mass ? shown.field !== "Default 40 kg" : shown.field !== null) failures.push(`${label}: the item's mass field is ${JSON.stringify(shown.field)}`);
+    if (mass) {
+      await new Promise((ok) => setTimeout(ok, 2500));
+      const saved = await page.evaluate(async () => (await window.accurona.element.hass.callWS({ type: "accurona/building/get" })).building.floors[0].furniture[0].component);
+      if (saved?.mass !== 42) failures.push(`${label}: the mass typed in was saved as ${JSON.stringify(saved)}`);
+    }
+    await page.screenshot({ path: join(root, `dist/standalone-smoke-mass-${mass ? "on" : "off"}.png`) });
+  }
 } finally {
   await browser.close();
   server.close();
@@ -126,4 +184,4 @@ if (failures.length) {
   console.error(failures.map((f) => `FAIL ${f}`).join("\n"));
   process.exit(1);
 }
-console.log("ok   standalone planner mounts, opens the editor, keeps a saved plan, hides Home Assistant's parts unless asked, opens an example plan and an example vessel (dist/standalone-smoke.png)");
+console.log("ok   standalone planner mounts, opens the editor, keeps a saved plan, hides Home Assistant's parts unless asked, opens an example plan and an example vessel, and takes masses with the switch off and on (dist/standalone-smoke*.png)");
