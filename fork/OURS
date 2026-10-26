@@ -15,3 +15,6 @@ frontend/src/hull
 demos
 docs/demos
 frontend/src/plans
+frontend/src/vessel
+frontend/src/load-vessel.ts
+frontend/src/viewer/vessel.ts

@@ -50,6 +50,7 @@ import { recolorLamps, SHADE_SENTINEL, shadeFactors } from "./lamp-colors.ts";
 import { centroid, GANG_TYPES, outdoorZones, pointInPolygon, openingStyle, setTerrain, WALL_LAMP_Y, zonesOf } from "../model.ts";
 import { placeWallPlate } from "../geometry/walls.ts";
 import { buildEarth } from "./earth.ts";
+import { VesselLayer } from "./vessel.ts";
 import { clampIntoRoom } from "../geometry/snap.ts";
 import { activeSections, roofRider, roofUnderAt, sectionAbove, sectionCutsBelow } from "../roof-sections.ts";
 import { buildFloorGeometry, SLAB, stairHoleParts, type FloorGeometry } from "./build.ts";
@@ -599,6 +600,8 @@ export class FloorplanViewer {
   private readonly ground: Mesh;
   private floors: FloorView[] = [];
   private building: Building | null = null;
+  /** Accurona: the hull of a plan drawn in a vessel, on the water (vessel.ts). */
+  private readonly vessel = new VesselLayer(() => this.invalidate());
   private floorId: string | null = null;
   private roomId: string | null = null;
   private wallMode: WallMode = "auto";
@@ -880,6 +883,8 @@ export class FloorplanViewer {
     // this bundle's own copy of the ground (outdoor areas, earth around cellars)
     setTerrain(building);
     this.rebuild();
+    if (!this.vessel.group.parent) this.scene.add(this.vessel.group);
+    void this.vessel.set(building);
     if (first) this.fit(0);
     this.invalidate();
   }
@@ -1852,6 +1857,7 @@ export class FloorplanViewer {
     this.controls.dispose();
     this.clear();
     this.disposeRetired();
+    this.vessel.dispose();
     this.building = null;
     this.buildRoofMesh();
     this.ground.geometry.dispose();

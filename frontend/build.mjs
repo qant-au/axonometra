@@ -19,7 +19,9 @@ const common = {
   logLevel: "info",
 };
 
-const viewerConfig = { ...common, entryPoints: ["src/viewer/viewer3d.ts"], outfile: `${out}/accurona-3d.js` };
+// Accurona: a vessel plan's hull (src/vessel/) loads only for a plan drawn in a vessel; the 3D bundle knows its hash
+const vesselConfig = { ...common, entryPoints: ["src/vessel/entry.ts"], outfile: `${out}/accurona-vessel.js` };
+const viewerConfig = { ...common, entryPoints: ["src/viewer/viewer3d.ts"], outfile: `${out}/accurona-3d.js`, define: { __FP3D_VESSEL_HASH__: '"dev"' } };
 // the card's visual editor only loads in the dashboard's card dialog
 // the language files (lang/*.json) are fetched with a hash of their content, so a new text is never stale
 const LANGS = ["fr", "es", "nl", "it", "hu", "da", "sv", "nb", "nn", "fi", "cs", "pl", "ro", "sl", "zh", "pt"];
@@ -127,13 +129,15 @@ function copyFonts() {
 // main 694 KB on 2026-10-25 (was 692): people without a tracker in Home Assistant still show where they are located (#744)
 // card editor 268 KB on 2026-10-25 (was 267): the texts of the invitation to the usage reports
 // 3D 816 KB on 2026-10-25 (was 812): free walls drawn as outer walls find their outside (blinds, glass), pets walk on at their own pace on tablets, door glass on both faces
-const BUDGET = { "accurona.js": 694 * 1024, "accurona-fun.js": 40 * 1024, "accurona-voice.js": 60 * 1024, "accurona-locate.js": 160 * 1024, "accurona-timetravel.js": 120 * 1024, "accurona-3d.js": 816 * 1024, "accurona-editor.js": 930 * 1024, "accurona-card-editor.js": 268 * 1024 };
+const BUDGET = { "accurona.js": 694 * 1024, "accurona-fun.js": 40 * 1024, "accurona-voice.js": 60 * 1024, "accurona-locate.js": 160 * 1024, "accurona-timetravel.js": 120 * 1024, "accurona-3d.js": 816 * 1024, "accurona-editor.js": 930 * 1024, "accurona-card-editor.js": 268 * 1024, "accurona-vessel.js": 64 * 1024 };
 
 copyFonts();
 if (watch) {
   // in watch mode the hash is not tracked; a dev reload fetches the bundle anyway
-  for (const c of [viewerConfig, editorConfig("dev", "dev"), cardEditorConfig, timeTravelConfig, funConfig, voiceConfig, locateConfig, mainConfig("dev", "dev", "dev", "dev", "dev", "dev", "dev")]) await (await context(c)).watch();
+  for (const c of [vesselConfig, viewerConfig, editorConfig("dev", "dev"), cardEditorConfig, timeTravelConfig, funConfig, voiceConfig, locateConfig, mainConfig("dev", "dev", "dev", "dev", "dev", "dev", "dev")]) await (await context(c)).watch();
 } else {
+  await build(vesselConfig);
+  viewerConfig.define.__FP3D_VESSEL_HASH__ = JSON.stringify(hashOf(vesselConfig.outfile));
   await build(viewerConfig);
   await build(locateConfig);
   const editor = editorConfig(hashOf(viewerConfig.outfile), hashOf(locateConfig.outfile));

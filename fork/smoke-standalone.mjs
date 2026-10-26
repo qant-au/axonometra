@@ -107,6 +107,16 @@ try {
   } catch {
     failures.push("?example=peptide-lab does not open the lab's 13 rooms");
   }
+
+  // a plan drawn in a vessel loads the vessel bundle (the hull) and shows its decks' rooms (frontend/src/vessel/)
+  const vesselBundle = page.waitForResponse((r) => r.url().includes("accurona-vessel.js") && r.status() === 200, { timeout: 15000 }).catch(() => null);
+  await page.goto(url.replace("?fresh", "?example=fishing-boat-6.5m"), { waitUntil: "networkidle0" });
+  if (!(await vesselBundle)) failures.push("?example=fishing-boat-6.5m does not load accurona-vessel.js");
+  try {
+    await page.waitForFunction(() => window.accurona?.element?.shadowRoot?.querySelectorAll(".fp3d-room-chip").length === 2, { timeout: 15000 });
+  } catch {
+    failures.push("?example=fishing-boat-6.5m does not open the boat's cockpit and motor well");
+  }
 } finally {
   await browser.close();
   server.close();
@@ -116,4 +126,4 @@ if (failures.length) {
   console.error(failures.map((f) => `FAIL ${f}`).join("\n"));
   process.exit(1);
 }
-console.log("ok   standalone planner mounts, opens the editor, keeps a saved plan, hides Home Assistant's parts unless asked, opens an example plan (dist/standalone-smoke.png)");
+console.log("ok   standalone planner mounts, opens the editor, keeps a saved plan, hides Home Assistant's parts unless asked, opens an example plan and an example vessel (dist/standalone-smoke.png)");

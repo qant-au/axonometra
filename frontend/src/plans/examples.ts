@@ -9,6 +9,10 @@
 import type { Building, BuildingSettings, OpeningStyle, RoofSettings, Vec2 } from "../model.ts";
 import { buildPlan, type RawFloor, type RawOpening, type Warning } from "../import/builder.ts";
 import { pointOnRoomEdge } from "../geometry/walls.ts";
+import { PLATE_FISHING_6_5 } from "../hull/plate.ts";
+import { SHAFT } from "../hull/open.ts";
+import { vesselBuilding } from "../vessel/plan.ts";
+import type { VesselSpec } from "../vessel/spec.ts";
 
 export interface ExampleRoom {
   name: string;
@@ -492,6 +496,15 @@ export const EXAMPLE_PLANS: Record<string, ExamplePlan> = {
   "shed-workshop": SHED_WORKSHOP,
 };
 
+/** Plans drawn in a vessel (vessel/): the boat's recipe, its decks made from it. */
+export const EXAMPLE_VESSELS: Record<string, { title: string; note: string; spec: VesselSpec }> = {
+  "fishing-boat-6.5m": {
+    title: "Plate alloy fishing boat",
+    note: "A 6.5 m open plate aluminium boat: a self-draining sole, and a motor well behind the transom's cut-out for twin outboards",
+    spec: { hull: { plate: PLATE_FISHING_6_5 }, open: { plating: 0.005, sole: 0.15, transom: { height: SHAFT.xl, width: 1.4, well: 0.75 } } },
+  },
+};
+
 const ROTATION: Record<ExampleStairs["rises"], number> = { "-z": 0, "+x": 90, "+z": 180, "-x": 270 };
 
 function rawFloor(f: ExampleFloor): RawFloor {
@@ -508,6 +521,8 @@ function rawFloor(f: ExampleFloor): RawFloor {
 
 /** An example as a plan, with what the importer had to say about it (an example should give no warnings). */
 export function examplePlan(name: string): { building: Building; warnings: Warning[] } {
+  const vessel = EXAMPLE_VESSELS[name];
+  if (vessel) return { building: vesselBuilding(vessel.spec), warnings: [] };
   const plan = EXAMPLE_PLANS[name];
   if (!plan) throw new Error(`no example plan "${name}"`);
   const { building, warnings } = buildPlan({ source: "Accurona", floors: plan.floors.map(rawFloor) }, { lang: "en", square: false });

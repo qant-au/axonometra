@@ -62,6 +62,9 @@ function section(s: PlateHullSpec, u: number): Section {
   return { x, points };
 }
 
+/** The 6.5 m plate aluminium fishing boat (the hull viewer's, and the example vessel's): drawn for her loaded condition. */
+export const PLATE_FISHING_6_5: PlateHullSpec = { length: 6.5, beam: 2.45, transom: 2.3, chineBeam: 2.0, draft: 0.36, freeboard: 0.88, deadrise: 18 };
+
 /** The hull: one body on the centre line. */
 export function plateHull(spec: PlateHullSpec): Hull {
   const n = Math.max(3, Math.round(spec.stations ?? 81));

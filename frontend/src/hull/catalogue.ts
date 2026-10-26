@@ -5,7 +5,7 @@
 import { SHIPD_EXAMPLES } from "./examples.ts";
 import { asymmetricBody, foilOutrigger, outriggerBodies, placeBody, steppedBody, strutBody } from "./forms.ts";
 import { parametricHull } from "./parametric.ts";
-import { plateHull } from "./plate.ts";
+import { PLATE_FISHING_6_5, plateHull } from "./plate.ts";
 import type { Weight } from "./loads.ts";
 import { asFitted, openBodies, openHull, outboardMounts, SHAFT, type Mount, type OpenHull, type OpenHullSpec } from "./open.ts";
 import { bulbGeometry, foilGeometry, type FoilSpec, type PartGeometry } from "./parts.ts";
@@ -87,7 +87,7 @@ const foils = (specs: FoilSpec[]) => specs.map((f) => foilGeometry(f));
  * floats as fitted: her plating, the two outboards on their mounts, fuel, framing and two crew.
  */
 const plateFishing = (transom: OpenHullSpec["transom"], sole = 0.15): CatalogueHull => {
-  const body = plateHull({ length: 6.5, beam: 2.45, transom: 2.3, chineBeam: 2.0, draft: 0.36, freeboard: 0.88, deadrise: 18 }).bodies[0];
+  const body = plateHull(PLATE_FISHING_6_5).bodies[0];
   const shell = openHull(body, { plating: 0.005, sole, transom });
   const mounts = outboardMounts(shell, 2);
   const weights: Weight[] = [

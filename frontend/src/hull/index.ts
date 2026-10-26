@@ -4,7 +4,7 @@ export type { Hull, HullBody, Section, SectionPoint } from "./types.ts";
 export { bodyOutlineAt, bodyRange, bottomAt, halfAt, outlineAt, sampleXs, sectionAt, sheerAt } from "./sections.ts";
 export { hydrostatics, SEA_WATER, type Hydrostatics } from "./hydrostatics.ts";
 export { parametricHull, type ParametricHullSpec } from "./parametric.ts";
-export { plateHull, type PlateHullSpec } from "./plate.ts";
+export { PLATE_FISHING_6_5, plateHull, type PlateHullSpec } from "./plate.ts";
 export { aboveWater, asFitted, drains, openBodies, openHull, outboardMounts, shellWeights, SHAFT, type Mount, type OpenHull, type OpenHullSpec, type Piece } from "./open.ts";
 export { ALUMINIUM, combine, type Weight } from "./loads.ts";
 export { ShipD, shipdBody, shipdConstraints, shipdFeasible, SHIPD_PARAMETERS, type ShipDBodyOptions } from "./shipd.ts";
