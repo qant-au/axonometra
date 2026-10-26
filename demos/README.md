@@ -37,7 +37,7 @@ Recorded by [`hulls.mjs`](hulls.mjs) from the hull viewer ([`frontend/src/hull/v
 | `hull-catamaran-12m` | A 12 m cruising catamaran: two demihulls 5.2 m apart |
 | `hull-swath-25m` | A 25 m SWATH: two submerged hulls under thin struts |
 | `hull-container-ship-300m` | A 300 m container ship with its bulbous bow |
-| `hull-plate-alloy-fishing-6.5m` | A 6.5 m plate aluminium fishing boat: hard chine, 18° deadrise aft, a transom wide enough for twin outboards |
+| `hull-plate-alloy-fishing-6.5m` | A 6.5 m open plate aluminium fishing boat: a self-draining sole, and the transom cut down for twin outboards behind a motor well (the cyan points are their mounts), floating as fitted |
 
 These are previews of the hull work: hull shapes and what is fixed to them, floating on the water. Decks, rooms,
 equipment and live data come later.
