@@ -6,7 +6,7 @@ import type { Building, Floor, Room, Vec2 } from "../model.ts";
 import { emptyBuilding, newFloor } from "../model.ts";
 import type { OpenHull } from "../hull/open.ts";
 import { halfAt, sheerAt } from "../hull/sections.ts";
-import { vesselShell } from "./meshes.ts";
+import { vesselShell } from "./shell.ts";
 import type { VesselSpec } from "./spec.ts";
 
 /** How deep a floor's slab is drawn below it (viewer/build.ts SLAB): the outline is taken there, so it stays inside. */

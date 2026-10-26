@@ -3,7 +3,8 @@ import { test } from "node:test";
 import { halfAt } from "../hull/sections.ts";
 import { pointInPolygon } from "../model.ts";
 import { EXAMPLE_VESSELS, examplePlan } from "../plans/examples.ts";
-import { vesselMeshes, vesselShell } from "./meshes.ts";
+import { vesselMeshes } from "./meshes.ts";
+import { vesselShell } from "./shell.ts";
 import { vesselBuilding, vesselFloors } from "./plan.ts";
 import { vesselOf } from "./spec.ts";
 
