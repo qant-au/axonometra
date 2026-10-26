@@ -7,6 +7,9 @@ import type { OpenHullSpec } from "../hull/open.ts";
 import type { PlateHullSpec } from "../hull/plate.ts";
 
 export interface VesselSpec {
+  /** Her name and MMSI, when the owner gave them (the first-run wizard). */
+  name?: string;
+  mmsi?: string;
   /** The hull: a plate hull for now (the other hull sources follow). */
   hull: { plate: PlateHullSpec };
   /** The open boat on it: plating, sole, transom. */

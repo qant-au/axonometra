@@ -22,6 +22,8 @@ const common = {
 // Accurona: a vessel plan's hull (src/vessel/) loads only for a plan drawn in a vessel; the 3D bundle knows its hash
 const vesselConfig = { ...common, entryPoints: ["src/vessel/entry.ts"], outfile: `${out}/accurona-vessel.js` };
 const viewerConfig = { ...common, entryPoints: ["src/viewer/viewer3d.ts"], outfile: `${out}/accurona-3d.js`, define: { __FP3D_VESSEL_HASH__: '"dev"' } };
+// Accurona: the first-run wizard (src/wizard/) loads only when an empty planner opens it; the main bundle knows its hash
+const wizardConfig = { ...common, entryPoints: ["src/wizard/entry.ts"], outfile: `${out}/accurona-wizard.js` };
 // the card's visual editor only loads in the dashboard's card dialog
 // the language files (lang/*.json) are fetched with a hash of their content, so a new text is never stale
 const LANGS = ["fr", "es", "nl", "it", "hu", "da", "sv", "nb", "nn", "fi", "cs", "pl", "ro", "sl", "zh", "pt"];
@@ -52,7 +54,7 @@ const importConfig = { ...common, entryPoints: ["src/import/app.ts"], outfile: "
 // never taken from the browser cache (the integration version only changes after a restart).
 // the frontend knows its own version, to notice a backend that still runs an older one
 const version = JSON.parse(readFileSync("../custom_components/accurona/manifest.json", "utf8")).version;
-const mainConfig = (viewerHash, editorHash, cardEditorHash, timeTravelHash, funHash, voiceHash, locateHash) => ({
+const mainConfig = (viewerHash, editorHash, cardEditorHash, timeTravelHash, funHash, voiceHash, locateHash, wizardHash) => ({
   ...common,
   entryPoints: ["src/main.ts"],
   outfile: `${out}/accurona.js`,
@@ -64,6 +66,7 @@ const mainConfig = (viewerHash, editorHash, cardEditorHash, timeTravelHash, funH
     __FP3D_FUN_HASH__: JSON.stringify(funHash),
     __FP3D_VOICE_HASH__: JSON.stringify(voiceHash),
     __FP3D_LOCATE_HASH__: JSON.stringify(locateHash),
+    __FP3D_WIZARD_HASH__: JSON.stringify(wizardHash),
     __FP3D_VERSION__: JSON.stringify(version),
     __FP3D_LANG_HASH__: JSON.stringify(langHash),
   },
@@ -130,12 +133,13 @@ function copyFonts() {
 // main 694 KB on 2026-10-25 (was 692): people without a tracker in Home Assistant still show where they are located (#744)
 // card editor 268 KB on 2026-10-25 (was 267): the texts of the invitation to the usage reports
 // 3D 816 KB on 2026-10-25 (was 812): free walls drawn as outer walls find their outside (blinds, glass), pets walk on at their own pace on tablets, door glass on both faces
-const BUDGET = { "accurona.js": 694 * 1024, "accurona-fun.js": 40 * 1024, "accurona-voice.js": 60 * 1024, "accurona-locate.js": 160 * 1024, "accurona-timetravel.js": 120 * 1024, "accurona-3d.js": 824 * 1024, "accurona-editor.js": 940 * 1024, "accurona-card-editor.js": 268 * 1024, "accurona-vessel.js": 64 * 1024 };
+// Accurona: the first-run wizard on 2026-10-26: its own bundle 64 KB (the steps, the hull library, the equipment it proposes), main 696 KB for its loader and button
+const BUDGET = { "accurona-wizard.js": 64 * 1024, "accurona.js": 696 * 1024, "accurona-fun.js": 40 * 1024, "accurona-voice.js": 60 * 1024, "accurona-locate.js": 160 * 1024, "accurona-timetravel.js": 120 * 1024, "accurona-3d.js": 824 * 1024, "accurona-editor.js": 940 * 1024, "accurona-card-editor.js": 268 * 1024, "accurona-vessel.js": 64 * 1024 };
 
 copyFonts();
 if (watch) {
   // in watch mode the hash is not tracked; a dev reload fetches the bundle anyway
-  for (const c of [vesselConfig, viewerConfig, editorConfig("dev", "dev"), cardEditorConfig, timeTravelConfig, funConfig, voiceConfig, locateConfig, mainConfig("dev", "dev", "dev", "dev", "dev", "dev", "dev")]) await (await context(c)).watch();
+  for (const c of [vesselConfig, wizardConfig, viewerConfig, editorConfig("dev", "dev"), cardEditorConfig, timeTravelConfig, funConfig, voiceConfig, locateConfig, mainConfig("dev", "dev", "dev", "dev", "dev", "dev", "dev", "dev")]) await (await context(c)).watch();
 } else {
   await build(vesselConfig);
   viewerConfig.define.__FP3D_VESSEL_HASH__ = JSON.stringify(hashOf(vesselConfig.outfile));
@@ -148,7 +152,8 @@ if (watch) {
   await build(funConfig);
   await build(voiceConfig);
   await build(importConfig);
-  await build(mainConfig(hashOf(viewerConfig.outfile), hashOf(editor.outfile), hashOf(cardEditorConfig.outfile), hashOf(timeTravelConfig.outfile), hashOf(funConfig.outfile), hashOf(voiceConfig.outfile), hashOf(locateConfig.outfile)));
+  await build(wizardConfig);
+  await build(mainConfig(hashOf(viewerConfig.outfile), hashOf(editor.outfile), hashOf(cardEditorConfig.outfile), hashOf(timeTravelConfig.outfile), hashOf(funConfig.outfile), hashOf(voiceConfig.outfile), hashOf(locateConfig.outfile), hashOf(wizardConfig.outfile)));
   let over = false;
   // old Fire-tablet WebViews (Chrome before 91, e.g. Fully Kiosk on a Fire 7) throw on an optional call with spread
   // arguments, `a?.b(...x)` – the roof failed there; lowering the target for it would cost ~11 KB, so it is banned

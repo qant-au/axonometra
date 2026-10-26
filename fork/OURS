@@ -18,3 +18,5 @@ frontend/src/plans
 frontend/src/vessel
 frontend/src/load-vessel.ts
 frontend/src/viewer/vessel.ts
+frontend/src/wizard
+frontend/src/load-wizard.ts

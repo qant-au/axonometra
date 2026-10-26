@@ -5,6 +5,7 @@ import { css, html, LitElement, nothing, type PropertyValues } from "lit";
 import { BuildingController } from "./building-controller.ts";
 import { countView } from "./diagnostics.ts";
 import { loadEditor } from "./load-editor.ts";
+import { firstRunLabel, loadWizard } from "./load-wizard.ts";
 import "./components/room-panel.ts";
 import "./components/view3d.ts";
 import { languageReady, loadLanguage, translate, type I18nKey } from "./i18n.ts";
@@ -236,6 +237,11 @@ export class Floorplan3dPanel extends LitElement {
     // a language beyond German and English: its texts are fetched first, then everything renders
     if (changed.has("hass") && this.hass && !languageReady(this.hass.language)) void loadLanguage(this.hass.language).then(() => this.requestUpdate());
     const b = this.data.building;
+    // Accurona: an empty plan opens the first-run wizard once per page (load-wizard.ts)
+    if (b && !b.floors.length && this.isAdmin && !this.firstRunShown) {
+      this.firstRunShown = true;
+      this.openFirstRun();
+    }
     if (b && this._floorId && !b.floors.some((f) => f.id === this._floorId)) {
       this._floorId = null;
       this._roomId = null;
@@ -244,6 +250,18 @@ export class Floorplan3dPanel extends LitElement {
 
   private get isAdmin(): boolean {
     return this.hass?.user?.is_admin ?? false;
+  }
+
+  private firstRunShown = false;
+
+  /** Accurona: the first-run wizard writes the plan, then the planner goes where it says. */
+  private openFirstRun(): void {
+    void loadWizard().then((m) =>
+      m.openFirstRun(this.hass?.language ?? "en", (r) => {
+        this.data.edit(r.building);
+        this.setMode(r.open);
+      }),
+    );
   }
 
   private setMode(mode: Mode): void {
@@ -889,7 +907,8 @@ export class Floorplan3dPanel extends LitElement {
       return html`<div class="fp3d-empty">
         <p>${this.t(this.isAdmin ? "no_building_admin" : "no_building")}</p>
         ${this.isAdmin
-          ? html`<button class="fp3d-btn fp3d-primary" @click=${() => this.setMode("editor")}>${this.t("open_editor")}</button>
+          ? html`<button class="fp3d-btn fp3d-primary" data-first-run @click=${() => this.openFirstRun()}>${firstRunLabel(this.hass?.language)}</button>
+              <button class="fp3d-btn" @click=${() => this.setMode("editor")}>${this.t("open_editor")}</button>
               <p class="fp3d-phone-only">${this.t("phone_hint")}</p>`
           : nothing}
       </div>`;

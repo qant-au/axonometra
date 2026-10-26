@@ -118,9 +118,88 @@ try {
     failures.push("?example=fishing-boat-6.5m does not open the boat's cockpit and motor well");
   }
 
+  // the example boat, kept for the mass checks below (the wizard runs replace the page's plan)
+  const boat = await page.evaluate(async () => (await window.accurona.element.hass.callWS({ type: "accurona/building/get" })).building);
+  // the first-run wizard (frontend/src/wizard/): an empty plan opens it by itself; a boat from the example readings
+  // goes through every step and lands on the water with her decks; a building lands in the editor, empty
+  const wizard = async (kind, source) => {
+    await page.goto(url, { waitUntil: "networkidle0" });
+    try {
+      await page.waitForFunction(() => document.querySelector("accurona-first-run")?.shadowRoot?.querySelector("[data-kind]"), { timeout: 15000 });
+    } catch {
+      failures.push("an empty plan does not open the first-run wizard");
+      return null;
+    }
+    return page.evaluate(
+      async (kind, source) => {
+        const settle = () => new Promise((ok) => setTimeout(ok, 150));
+        const root = () => document.querySelector("accurona-first-run")?.shadowRoot;
+        const seen = [];
+        const click = async (sel) => {
+          const b = root().querySelector(sel);
+          if (!b || b.disabled) throw new Error(`${sel} is ${b ? "disabled" : "missing"} on ${seen.at(-1)}`);
+          b.click();
+          await settle();
+        };
+        const step = () => root().querySelector("section").dataset.body;
+        seen.push(step());
+        await click(`[data-kind="${kind}"]`);
+        if (kind === "vessel") {
+          seen.push(step());
+          await click(`[data-source="${source}"]`);
+          if (source === "manual") {
+            const len = root().querySelector('[data-field="length"]');
+            len.value = "7.2";
+            len.dispatchEvent(new Event("change"));
+            await settle();
+          }
+          while (root().querySelector("[data-next]")) {
+            seen.push(step());
+            await click("[data-next]");
+          }
+        }
+        seen.push(step());
+        await click("[data-finish]");
+        // the planner saves an edit after a short pause
+        let building;
+        for (let i = 0; i < 40; i++) {
+          ({ building } = await window.accurona.element.hass.callWS({ type: "accurona/building/get" }));
+          if (kind !== "vessel" || building.vessel) break;
+          await settle();
+        }
+        return { seen, open: !!root(), vessel: building.vessel ?? null, floors: building.floors.length };
+      },
+      kind,
+      source,
+    );
+  };
+  const boatRun = await wizard("vessel", "example");
+  if (boatRun) {
+    if (boatRun.seen.join(",") !== "kind,source,details,hull,equipment,review") failures.push(`the wizard's steps for a boat were ${boatRun.seen}`);
+    if (boatRun.open) failures.push("the wizard stays open after finishing");
+    if (boatRun.vessel?.name !== "Example" || boatRun.vessel?.outboards !== 2 || boatRun.vessel?.components?.length !== 4) failures.push(`the wizard's boat came out as ${JSON.stringify(boatRun.vessel)}`);
+    try {
+      await page.waitForFunction(() => window.accurona.element.shadowRoot.querySelectorAll(".fp3d-room-chip").length === 2, { timeout: 15000 });
+    } catch {
+      failures.push("the wizard's boat does not land in 3D with her cockpit and motor well");
+    }
+    await new Promise((ok) => setTimeout(ok, 1500));
+    await page.screenshot({ path: join(root, "dist/standalone-smoke-wizard-boat.png") });
+  }
+  const typed = await wizard("vessel", "manual");
+  if (typed && typed.vessel?.hull?.plate?.length !== 7.2) failures.push(`a boat typed in at 7.2 m came out as ${JSON.stringify(typed?.vessel?.hull)}`);
+  const house = await wizard("building");
+  if (house) {
+    if (house.seen.join(",") !== "kind,review" || house.vessel || house.floors !== 0) failures.push(`the wizard's building run was ${JSON.stringify(house)}`);
+    try {
+      await page.waitForFunction(() => window.accurona.element.shadowRoot.querySelector("accurona-editor"), { timeout: 15000 });
+    } catch {
+      failures.push("finishing the wizard with a building does not open the editor");
+    }
+  }
+
   // mass calculation, off and on (frontend/src/vessel/mass.ts): the house settings show the switch as the plan has
   // it; with it on, an item on the deck has a mass field showing its default, and a mass typed in is saved with it
-  const boat = await page.evaluate(async () => (await window.accurona.element.hass.callWS({ type: "accurona/building/get" })).building);
   for (const mass of [false, true]) {
     const label = `mass ${mass ? "on" : "off"}`;
     await page.goto(url.replace("?fresh", `?plan=smoke-mass-${mass}`), { waitUntil: "networkidle0" });
@@ -184,4 +263,4 @@ if (failures.length) {
   console.error(failures.map((f) => `FAIL ${f}`).join("\n"));
   process.exit(1);
 }
-console.log("ok   standalone planner mounts, opens the editor, keeps a saved plan, hides Home Assistant's parts unless asked, opens an example plan and an example vessel, and takes masses with the switch off and on (dist/standalone-smoke*.png)");
+console.log("ok   standalone planner mounts, opens the editor, keeps a saved plan, hides Home Assistant's parts unless asked, opens an example plan and an example vessel, walks the first-run wizard for a boat and a building, and takes masses with the switch off and on (dist/standalone-smoke*.png)");

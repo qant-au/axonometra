@@ -13,6 +13,13 @@ test("the 3D view draws a vessel plan's hull, and the build makes its bundle", (
   for (const hook of ['entryPoints: ["src/vessel/entry.ts"]', "viewerConfig.define.__FP3D_VESSEL_HASH__ = ", '"accurona-vessel.js": ']) assert.ok(build.includes(hook), `build.mjs: ${hook}`);
 });
 
+test("an empty planner opens the first-run wizard, and the build makes its bundle", () => {
+  const panel = read("../panel.ts");
+  for (const hook of ['import { firstRunLabel, loadWizard } from "./load-wizard.ts";', "if (b && !b.floors.length && this.isAdmin && !this.firstRunShown) {", "m.openFirstRun(this.hass?.language ?? \"en\", (r) => {", "data-first-run @click=${() => this.openFirstRun()}"]) assert.ok(panel.includes(hook), `panel.ts: ${hook}`);
+  const build = read("../../build.mjs");
+  for (const hook of ['entryPoints: ["src/wizard/entry.ts"]', "__FP3D_WIZARD_HASH__: JSON.stringify(wizardHash)", "hashOf(wizardConfig.outfile)", '"accurona-wizard.js": ']) assert.ok(build.includes(hook), `build.mjs: ${hook}`);
+});
+
 test("the editor shows the mass switch and an item's mass field, and draws a module's number field", () => {
   const editor = read("../components/editor.ts");
   for (const hook of ['import { massFields, massSettingFields } from "../vessel/mass.ts";', "this.renderFields(massFields(this._doc, f, ", "this.renderFields(massSettingFields(this._doc, ", 'case "number":', "f.set(numberField("]) assert.ok(editor.includes(hook), `editor.ts: ${hook}`);
