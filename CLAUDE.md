@@ -28,4 +28,9 @@
   run `npm run build` before committing.
 - Checks: `npm test`, `npm run typecheck`, `npm run build` (size budgets), `ruff check`,
   `ruff format --check`, `mypy custom_components/accurona`, `pytest -q`.
+- The Python tools live in the project's own `.venv/` (gitignored), never in the system Python:
+  `python3 -m venv .venv && .venv/bin/pip install -r requirements_test.txt ruff mypy`, then
+  `.venv/bin/ruff`, `.venv/bin/mypy`, `.venv/bin/pytest`; `RUFF=.venv/bin/ruff` for
+  `fork/merge-upstream.sh`. Home Assistant's test package pins its own versions of shared
+  libraries (it downgraded cryptography system-wide once).
 - Never commit real floor plans, boat data, IPs or device names.
