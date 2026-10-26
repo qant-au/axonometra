@@ -39,9 +39,10 @@ function resample(s: Section, n: number): { y: number[]; port: number[]; starboa
 
 /**
  * The body as a mesh: each section a ring (up the starboard side, across the deck, down the port side). Closed
- * unless `open` leaves the deck off, to look into it (an inner skin).
+ * unless `open` leaves the deck off, to look into it (an inner skin, an open boat); `stern` false leaves the transom
+ * uncapped too (an open boat's transom is a plate of its own, with its cut-out).
  */
-export function bodyMesh(body: HullBody, levels = 32, open = false): Mesh {
+export function bodyMesh(body: HullBody, levels = 32, open = false, stern = true): Mesh {
   const positions: number[] = [];
   const indices: number[] = [];
   const rings: Vec3[][] = [];
@@ -82,7 +83,7 @@ export function bodyMesh(body: HullBody, levels = 32, open = false): Mesh {
       else indices.push(c, a, b);
     }
   };
-  cap(0, false);
+  if (stern) cap(0, false);
   cap(rings.length - 1, true);
   return { positions, indices };
 }
@@ -146,6 +147,22 @@ export function tubeGeometry(t: Tube, points = 16): PartGeometry {
     }));
   }
   return { rings };
+}
+
+/** A mesh's surface area (m²) and the centroid of that area: a plate's mass is its area times its thickness and density. */
+export function meshArea(m: Mesh): { area: number; centroid: Vec3 } {
+  let area = 0;
+  const c: Vec3 = [0, 0, 0];
+  const p = m.positions;
+  for (let i = 0; i < m.indices.length; i += 3) {
+    const [a, b, d] = [m.indices[i] * 3, m.indices[i + 1] * 3, m.indices[i + 2] * 3];
+    const u = [p[b] - p[a], p[b + 1] - p[a + 1], p[b + 2] - p[a + 2]];
+    const v = [p[d] - p[a], p[d + 1] - p[a + 1], p[d + 2] - p[a + 2]];
+    const t = Math.hypot(u[1] * v[2] - u[2] * v[1], u[2] * v[0] - u[0] * v[2], u[0] * v[1] - u[1] * v[0]) / 2;
+    area += t;
+    for (let k = 0; k < 3; k++) c[k] += (t * (p[a + k] + p[b + k] + p[d + k])) / 3;
+  }
+  return { area, centroid: area > 0 ? [c[0] / area, c[1] / area, c[2] / area] : [0, 0, 0] };
 }
 
 /** The volume a closed mesh encloses (the divergence theorem over its triangles): a check that it is closed and outward. */

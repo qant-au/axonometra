@@ -6,10 +6,13 @@ import { SHIPD_EXAMPLES } from "./examples.ts";
 import { asymmetricBody, foilOutrigger, outriggerBodies, placeBody, steppedBody, strutBody } from "./forms.ts";
 import { parametricHull } from "./parametric.ts";
 import { plateHull } from "./plate.ts";
+import type { Weight } from "./loads.ts";
+import { asFitted, openBodies, openHull, outboardMounts, SHAFT, type Mount, type OpenHull, type OpenHullSpec } from "./open.ts";
 import { bulbGeometry, foilGeometry, type FoilSpec, type PartGeometry } from "./parts.ts";
 import { pontoonBody, revolutionBody } from "./revolution.ts";
 import { shipdBody } from "./shipd.ts";
 import { ribTube, type Tube } from "./tube.ts";
+import type { Load } from "./stability.ts";
 import type { Hull } from "./types.ts";
 
 export interface CatalogueHull {
@@ -19,6 +22,14 @@ export interface CatalogueHull {
   tubes?: Tube[];
   /** Where the water is (m, the hull's frame) when it floats as built; 0 unless it is a submerged hull. */
   waterline?: number;
+  /** An open boat: its plating, sole and transom, drawn instead of a closed hull (the hull is its `openBodies`). */
+  shell?: OpenHull;
+  /** Where things mount on it: the outboards' clamping points. */
+  mounts?: Mount[];
+  /** What it floats with, when it is known (an open boat as fitted); otherwise its design displacement. */
+  load?: Load;
+  /** What the load is made of. */
+  weights?: Weight[];
 }
 
 export interface CatalogueEntry {
@@ -70,6 +81,24 @@ const submarineRadius = (L: number, D: number, nose: number, tail: number) => (x
 
 const foils = (specs: FoilSpec[]) => specs.map((f) => foilGeometry(f));
 
+/**
+ * The 6.5 m plate aluminium fishing boat, open, with a self-draining sole 15 cm above her waterline and a transom for
+ * twin extra-long-shaft outboards: cut down with a motor well, or whole with the motors on a bracket or a platform. She
+ * floats as fitted: her plating, the two outboards on their mounts, fuel, framing and two crew.
+ */
+const plateFishing = (transom: OpenHullSpec["transom"]): CatalogueHull => {
+  const body = plateHull({ length: 6.5, beam: 2.45, transom: 2.3, chineBeam: 2.0, draft: 0.36, freeboard: 0.88, deadrise: 18 }).bodies[0];
+  const shell = openHull(body, { plating: 0.005, sole: 0.15, transom });
+  const mounts = outboardMounts(shell, 2);
+  const weights: Weight[] = [
+    ...mounts.map((m): Weight => ({ name: `${m.name} (150 hp)`, mass: 230, at: [m.at[0] - 0.25, m.at[1] + 0.25, m.at[2]] })),
+    { name: "fuel, 200 L", mass: 150, at: [1.8, 0.2, 0] },
+    { name: "framing and fit-out", mass: 250, at: [2.8, 0.3, 0] },
+    { name: "two crew", mass: 170, at: [2.5, 1.0, 0] },
+  ];
+  return { hull: openBodies(shell), shell, mounts, weights, load: asFitted(shell, weights) };
+};
+
 export const CATALOGUE: CatalogueEntry[] = [
   ...SHIPD_EXAMPLES.map((e) => ({ name: e.name, group: GROUPS[e.name] ?? "Other", note: e.note, build: () => shipd(e.name) })),
   {
@@ -84,8 +113,20 @@ export const CATALOGUE: CatalogueEntry[] = [
   {
     name: "plate-alloy-fishing-6.5m",
     group: "Small craft",
-    note: "plate aluminium fishing boat: hard chine, 18° deadrise aft, a wide transom for twin outboards",
-    build: () => ({ hull: plateHull({ length: 6.5, beam: 2.45, transom: 2.3, chineBeam: 2.0, draft: 0.3, freeboard: 0.9, deadrise: 18 }) }),
+    note: "open plate aluminium fishing boat: self-draining sole, transom cut for twin outboards behind a motor well",
+    build: () => plateFishing({ height: SHAFT.xl, width: 1.4, well: 0.75 }),
+  },
+  {
+    name: "plate-alloy-fishing-6.5m-platform",
+    group: "Small craft",
+    note: "the same boat with a whole transom and a 0.6 m platform pod aft, the twin outboards on its face",
+    build: () => plateFishing({ height: SHAFT.xl, width: 1.4, setback: { length: 0.6, kind: "platform" } }),
+  },
+  {
+    name: "plate-alloy-fishing-6.5m-bracket",
+    group: "Small craft",
+    note: "the same boat with a whole transom and the twin outboards on a 0.75 m bracket",
+    build: () => plateFishing({ height: SHAFT.xl, width: 1.4, setback: { length: 0.75, kind: "bracket" } }),
   },
   {
     name: "stepped-planing-10m",

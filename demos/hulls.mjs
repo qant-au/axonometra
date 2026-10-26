@@ -16,7 +16,7 @@ const HULLS = {
   "catamaran-12m": 18,
   "swath-25m": 12,
   "container-ship-300m": 16,
-  "plate-alloy-fishing-6.5m": 10,
+  "plate-alloy-fishing-6.5m": 24,
 };
 
 const names = process.argv.slice(2).length ? process.argv.slice(2) : Object.keys(HULLS);
