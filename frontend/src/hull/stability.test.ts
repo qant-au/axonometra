@@ -127,3 +127,13 @@ test("stability: a catamaran's lever peaks where the windward hull lifts out, th
   // far stiffer than a monohull of its length: the lever at 5° is over a metre
   assert.ok(curve[0].gz > 1);
 });
+
+test("a V section with straight sides keeps its keel: the bottom is not simplified away", () => {
+  // the keel is both the first starboard point and the last port point of the section's polygon; with points evenly
+  // along each straight side, a corner measured against its own twin lay on a line and was dropped, V and all
+  const v = (x: number) => ({ x, points: [...[0, 1, 2, 3, 4].map((k): [number, number] => [-1 + k * 0.25, k * 0.25]), [1, 1] as [number, number]] });
+  const hull: Hull = { bodies: [{ center: 0, sections: [v(0), v(4)] }] };
+  // straight up to a chine at the waterline, then a vertical side: below y = 0 a triangle 1 deep and 2 wide, 4 long
+  near(immersion(hull, { heel: 0, trim: 0, level: 0 }).volume, 4, 1e-9, "volume");
+  near(hydrostatics(hull, 0).volume, 4, 1e-9, "hydrostatics agree");
+});
