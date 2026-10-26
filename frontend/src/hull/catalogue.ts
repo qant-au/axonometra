@@ -3,6 +3,7 @@
 // parts builders.
 
 import { SHIPD_EXAMPLES } from "./examples.ts";
+import { SHIPD_DATASET } from "./shipd-dataset.ts";
 import { asymmetricBody, foilOutrigger, outriggerBodies, placeBody, steppedBody, strutBody } from "./forms.ts";
 import { parametricHull } from "./parametric.ts";
 import { PLATE_FISHING_6_5, plateHull } from "./plate.ts";
@@ -101,6 +102,13 @@ const plateFishing = (transom: OpenHullSpec["transom"], sole = 0.15): CatalogueH
 
 export const CATALOGUE: CatalogueEntry[] = [
   ...SHIPD_EXAMPLES.map((e) => ({ name: e.name, group: GROUPS[e.name] ?? "Other", note: e.note, build: () => shipd(e.name) })),
+  // hulls picked from the Ship-D dataset itself, at 8 m (shipd-dataset.ts)
+  ...SHIPD_DATASET.map((e) => ({
+    name: `shipd-set1-row-${e.row}`,
+    group: "Ship-D dataset",
+    note: `Ship-D, constrained random set 1, row ${e.row}: ${e.note}`,
+    build: (): CatalogueHull => ({ hull: { bodies: [shipdBody([8, ...e.vector.slice(1)])] } }),
+  })),
   {
     name: "rib-6.5m-with-tube",
     group: "Small craft",
