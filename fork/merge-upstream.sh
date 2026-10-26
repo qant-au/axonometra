@@ -43,7 +43,11 @@ python3 fork/identity.py
 "$ruff" format -q custom_components tests
 (cd frontend && npm ci --no-audit --no-fund >/dev/null && npm run build)
 echo "$ref" > fork/UPSTREAM
-git add -A
+# staged with main's ignore rules: upstream's .gitignore knows nothing of our local build output (dist/)
+excludes="$(mktemp)"
+git show "$main:.gitignore" > "$excludes"
+git -c core.excludesFile="$excludes" add -A
+rm -f "$excludes"
 python3 fork/identity.py --check
 git commit -q -m "Upstream $ref, with Accurona's identity"
 
