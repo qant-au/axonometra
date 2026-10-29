@@ -1,5 +1,5 @@
 // Listening: one sentence from the microphone, written down by Home Assistant's Assist (its pipeline stops after
-// speech to text, so Accurona decides what the sentence means), and handing a sentence to Assist's conversation.
+// speech to text, so Axonometra decides what the sentence means), and handing a sentence to Assist's conversation.
 
 import type { HomeAssistant } from "../types.ts";
 

@@ -1,10 +1,10 @@
-// Builds the two bundles into custom_components/accurona/frontend and checks the size budgets.
+// Builds the two bundles into custom_components/axonometra/frontend and checks the size budgets.
 
 import { build, context } from "esbuild";
 import { createHash } from "node:crypto";
 import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, statSync } from "node:fs";
 
-const out = "../custom_components/accurona/frontend";
+const out = "../custom_components/axonometra/frontend";
 const watch = process.argv.includes("--watch");
 
 const common = {
@@ -19,7 +19,7 @@ const common = {
   logLevel: "info",
 };
 
-const viewerConfig = { ...common, entryPoints: ["src/viewer/viewer3d.ts"], outfile: `${out}/accurona-3d.js` };
+const viewerConfig = { ...common, entryPoints: ["src/viewer/viewer3d.ts"], outfile: `${out}/axonometra-3d.js` };
 // the card's visual editor only loads in the dashboard's card dialog
 // the language files (lang/*.json) are fetched with a hash of their content, so a new text is never stale
 const LANGS = ["fr", "es", "nl", "it", "hu", "da", "sv", "nb", "nn", "fi", "cs", "pl", "ro", "sl", "zh", "pt"];
@@ -27,33 +27,33 @@ const langHash = createHash("sha256")
   .update(LANGS.map((l) => (existsSync(`lang/${l}.json`) ? readFileSync(`lang/${l}.json`) : "")).join("\n"))
   .digest("hex")
   .slice(0, 12);
-const cardEditorConfig = { ...common, entryPoints: ["src/card-editor.ts"], outfile: `${out}/accurona-card-editor.js`, define: { __FP3D_LANG_HASH__: JSON.stringify(langHash) } };
+const cardEditorConfig = { ...common, entryPoints: ["src/card-editor.ts"], outfile: `${out}/axonometra-card-editor.js`, define: { __FP3D_LANG_HASH__: JSON.stringify(langHash) } };
 // the editor is only needed by admins who open it, so it is a bundle of its own as well
 // (it draws furniture previews with the 3D bundle, so it knows that bundle's hash too)
 const editorConfig = (viewerHash, locateHash) => ({
   ...common,
   entryPoints: ["src/components/editor.ts"],
-  outfile: `${out}/accurona-editor.js`,
+  outfile: `${out}/axonometra-editor.js`,
   define: { __FP3D_VIEWER_HASH__: JSON.stringify(viewerHash), __FP3D_LANG_HASH__: JSON.stringify(langHash), __FP3D_LOCATE_HASH__: JSON.stringify(locateHash) },
 });
 // the time travel (Pro) only loads when it starts; its texts come from the main bundle
-const timeTravelConfig = { ...common, entryPoints: ["src/timetravel/entry.ts"], outfile: `${out}/accurona-timetravel.js` };
+const timeTravelConfig = { ...common, entryPoints: ["src/timetravel/entry.ts"], outfile: `${out}/axonometra-timetravel.js` };
 // the fun packs (pets …) only load when one is unlocked and switched on; three.js is lent by the 3D bundle
-const funConfig = { ...common, entryPoints: ["src/fun/entry.ts"], outfile: `${out}/accurona-fun.js` };
+const funConfig = { ...common, entryPoints: ["src/fun/entry.ts"], outfile: `${out}/axonometra-fun.js` };
 // voice (the microphone probe for now) only loads when it is asked for
-const voiceConfig = { ...common, entryPoints: ["src/voice/entry.ts"], outfile: `${out}/accurona-voice.js` };
+const voiceConfig = { ...common, entryPoints: ["src/voice/entry.ts"], outfile: `${out}/axonometra-voice.js` };
 // the locating setup assistant only loads when an admin opens it
-const locateConfig = { ...common, entryPoints: ["src/locate/entry.ts"], outfile: `${out}/accurona-locate.js` };
-// the import page of the website (other programs' plans to Accurona, in the browser): not part of the integration
+const locateConfig = { ...common, entryPoints: ["src/locate/entry.ts"], outfile: `${out}/axonometra-locate.js` };
+// the import page of the website (other programs' plans to Axonometra, in the browser): not part of the integration
 const importConfig = { ...common, entryPoints: ["src/import/app.ts"], outfile: "../site/import/neonplan-import.js" };
 // The main bundle loads the 3D bundle with a hash of its content in the URL, so a new 3D bundle is
 // never taken from the browser cache (the integration version only changes after a restart).
 // the frontend knows its own version, to notice a backend that still runs an older one
-const version = JSON.parse(readFileSync("../custom_components/accurona/manifest.json", "utf8")).version;
+const version = JSON.parse(readFileSync("../custom_components/axonometra/manifest.json", "utf8")).version;
 const mainConfig = (viewerHash, editorHash, cardEditorHash, timeTravelHash, funHash, voiceHash, locateHash) => ({
   ...common,
   entryPoints: ["src/main.ts"],
-  outfile: `${out}/accurona.js`,
+  outfile: `${out}/axonometra.js`,
   define: {
     __FP3D_VIEWER_HASH__: JSON.stringify(viewerHash),
     __FP3D_EDITOR_HASH__: JSON.stringify(editorHash),
@@ -127,7 +127,7 @@ function copyFonts() {
 // main 694 KB on 2026-10-25 (was 692): people without a tracker in Home Assistant still show where they are located (#744)
 // card editor 268 KB on 2026-10-25 (was 267): the texts of the invitation to the usage reports
 // 3D 816 KB on 2026-10-25 (was 812): free walls drawn as outer walls find their outside (blinds, glass), pets walk on at their own pace on tablets, door glass on both faces
-const BUDGET = { "accurona.js": 694 * 1024, "accurona-fun.js": 40 * 1024, "accurona-voice.js": 60 * 1024, "accurona-locate.js": 160 * 1024, "accurona-timetravel.js": 120 * 1024, "accurona-3d.js": 816 * 1024, "accurona-editor.js": 930 * 1024, "accurona-card-editor.js": 268 * 1024 };
+const BUDGET = { "axonometra.js": 694 * 1024, "axonometra-fun.js": 40 * 1024, "axonometra-voice.js": 60 * 1024, "axonometra-locate.js": 160 * 1024, "axonometra-timetravel.js": 120 * 1024, "axonometra-3d.js": 816 * 1024, "axonometra-editor.js": 930 * 1024, "axonometra-card-editor.js": 268 * 1024 };
 
 copyFonts();
 if (watch) {

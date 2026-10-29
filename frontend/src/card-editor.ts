@@ -64,7 +64,7 @@ export class Floorplan3dCardEditor extends LitElement {
 
   constructor() {
     super();
-    this._config = { type: "custom:accurona-card" };
+    this._config = { type: "custom:axonometra-card" };
     this._floors = [];
   }
 
@@ -468,4 +468,4 @@ export class Floorplan3dCardEditor extends LitElement {
   `;
 }
 
-if (!customElements.get("accurona-card-editor")) customElements.define("accurona-card-editor", Floorplan3dCardEditor);
+if (!customElements.get("axonometra-card-editor")) customElements.define("axonometra-card-editor", Floorplan3dCardEditor);

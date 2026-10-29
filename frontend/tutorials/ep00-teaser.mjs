@@ -1,4 +1,4 @@
-// Tutorial episode 0 – the teaser "Das ist Accurona": the first video of the playlist, 2–3 minutes of the full
+// Tutorial episode 0 – the teaser "Das ist Axonometra": the first video of the playlist, 2–3 minutes of the full
 // demo house at its best in short scenes with hard cuts (each scene loads the preview fresh): the flight in, floors,
 // lights and colours, the room panel, blinds, heatmap, sun and evening, weather, warnings, Energy Pro, cameras,
 // search, the dashboard card and the wall tablet, a glimpse of the editor, the extensions, and the way into episode 1.
@@ -17,7 +17,7 @@ const out = process.argv[2] ?? "tutorial-ep00";
 const R = await startRecorder({ outDir: out, width: 1920, height: 1080, lang: "de" });
 const N = narration(R, process.argv.slice(3));
 const { sayOver, chapter } = N;
-const VERSION = `<br><span style="font-size:20px;opacity:.7">aufgenommen mit Accurona ${appVersion()}</span>`;
+const VERSION = `<br><span style="font-size:20px;opacity:.7">aufgenommen mit Axonometra ${appVersion()}</span>`;
 const PLAN = join(import.meta.dirname, "assets", "bauplan-eg.png");
 
 // every scene starts from the stored defaults (the panel remembers the look, hidden bars and more per device)
@@ -32,13 +32,13 @@ await R.page.evaluateOnNewDocument(() => {
 R.page.on("dialog", (d) => void d.accept());
 
 // ---------------------------------------------------------------- helpers
-const VIEW = `const v = document.querySelector("accurona-panel").shadowRoot.querySelector("accurona-view3d");
+const VIEW = `const v = document.querySelector("axonometra-panel").shadowRoot.querySelector("axonometra-view3d");
   const viewer = Object.values(v).find((x) => x && x.floors && x.floorMap);`;
 /** Set the 3D camera, with an optional target point [x, y, z]. */
 const cam = (c) =>
   R.page.evaluate(
     (code, c) => {
-      const v = document.querySelector("accurona-panel").shadowRoot.querySelector("accurona-view3d");
+      const v = document.querySelector("axonometra-panel").shadowRoot.querySelector("axonometra-view3d");
       const viewer = Object.values(v).find((x) => x && x.floors && x.floorMap);
       const { target, ...rest } = c;
       if (target) viewer.controls.view.target.set(target[0], target[1], target[2]);
@@ -133,10 +133,10 @@ const quiet = async (target, wait = 300) => {
   await R.page.mouse.click(b.x, b.y);
   await R.sleep(wait);
 };
-const flash = (on) => R.page.evaluate((on) => (document.querySelector("accurona-panel").shadowRoot.querySelector("accurona-view3d")._flash = on), on);
+const flash = (on) => R.page.evaluate((on) => (document.querySelector("axonometra-panel").shadowRoot.querySelector("axonometra-view3d")._flash = on), on);
 
 // ---------------------------------------------------------------- 1. The flight in, title card
-await chapter("Das ist Accurona");
+await chapter("Das ist Axonometra");
 await scene("flows");
 await clean();
 {
@@ -145,10 +145,10 @@ await clean();
   const near = { theta: -0.45, phi: 0.88, radius: 30, target: [6.8, 3.0, 4.6] };
   await cam(far);
   await R.sleep(1200);
-  await R.title("Accurona", `Dein Zuhause in 3D – live mit Home Assistant${VERSION}`);
+  await R.title("Axonometra", `Dein Zuhause in 3D – live mit Home Assistant${VERSION}`);
   // a moment of picture before the first word
   await live(R.time + 0.8, far, mix(far, mid, 0.08));
-  let end = await line("Das ist Accurona: dein Zuhause in 3D – live mit Home Assistant.");
+  let end = await line("Das ist Axonometra: dein Zuhause in 3D – live mit Home Assistant.");
   await live(end, mix(far, mid, 0.08), mid);
   await R.untitle();
   end = await line("Jeder Raum, jedes Licht, jedes Fenster – genau da, wo es bei dir wirklich ist.");
@@ -332,7 +332,7 @@ await R.sleep(1000);
   const b = { theta: -0.35, phi: 0.85, radius: 19 };
   await cam(a);
   await R.sleep(1000);
-  let end = await line("Offene Fenster leuchten – und regnet es rein, sagt dir Accurona Bescheid.");
+  let end = await line("Offene Fenster leuchten – und regnet es rein, sagt dir Axonometra Bescheid.");
   const t0 = R.time;
   await live(t0 + 1.4, a, mix(a, b, 0.25));
   await setStates({ "weather.zuhause": { state: "pouring", attributes: { cloud_coverage: 85, wind_speed: 25, wind_speed_unit: "km/h" } } });
@@ -406,7 +406,7 @@ await scene("", true);
 await scene("card", true);
 await R.sleep(1500);
 {
-  let end = await line("Als Karte kommt Accurona auf dein Dashboard – mit einem eigenen Editor für alle Einstellungen.");
+  let end = await line("Als Karte kommt Axonometra auf dein Dashboard – mit einem eigenen Editor für alle Einstellungen.");
   await R.move(300, 300, 0.5);
   try {
     await R.pickOption("Look", "Blueprint", 0.5);
@@ -434,7 +434,7 @@ await R.sleep(1500);
     card.replaceWith(bezel);
     bezel.append(screen);
     screen.append(card);
-    card.setConfig({ type: "custom:accurona-card", quality: "low", floor: "eg", height: 838, flows: false, controls: true, fullscreen_button: false, floor_thumbs: true, idle_return: 1, idle_orbit: true });
+    card.setConfig({ type: "custom:axonometra-card", quality: "low", floor: "eg", height: 838, flows: false, controls: true, fullscreen_button: false, floor_thumbs: true, idle_return: 1, idle_orbit: true });
   });
   await R.sleep(2500);
   end = await line("Und es läuft sogar auf alten Wandtablets – mit einer eigenen, sparsamen Stufe dafür.");
@@ -451,7 +451,7 @@ await quiet({ text: "Erdgeschoss", nth: 0 });
 await R.sleep(500);
 {
   const png = "data:image/png;base64," + readFileSync(PLAN).toString("base64");
-  await R.page.evaluate((png) => window.fp3dPanel.hass.callWS({ type: "accurona/image/set", image_id: "img_plan", data: png }), png);
+  await R.page.evaluate((png) => window.fp3dPanel.hass.callWS({ type: "axonometra/image/set", image_id: "img_plan", data: png }), png);
   await R.editor(`e.change((doc, f) => { f.background = { image_id: "img_plan", width: 12, rotation: 0, x: -1.5, z: -1.5, opacity: 0.6 }; }); e.past = []; e._canUndo = false; e.fit();`);
   await R.sleep(800);
   await quiet({ text: "3D daneben", exact: true });
@@ -498,7 +498,7 @@ await clean();
   const b = { theta: 1.5, phi: 1.0, radius: 29, target: [6.8, 3.0, 4.6] };
   await cam(a);
   await R.sleep(1200);
-  const end = await line("Accurona ist kostenlos und Open Source.");
+  const end = await line("Axonometra ist kostenlos und Open Source.");
   await live(end, a, b);
 }
 await scene("flows");
@@ -518,7 +518,7 @@ await clean();
   const b = { theta: 2.6, phi: 0.95, radius: 34, target: [6.8, 3.0, 4.6] };
   await cam(a);
   await R.sleep(1200);
-  await R.title("Folge 1: Dein erster Grundriss", `Accurona – Tutorials · kostenlos und Open Source${VERSION}`);
+  await R.title("Folge 1: Dein erster Grundriss", `Axonometra – Tutorials · kostenlos und Open Source${VERSION}`);
   const end = await line("In dieser Playlist zeige ich dir Schritt für Schritt, wie du dein eigenes Zuhause baust – los geht's mit Folge 1.");
   await live(end + 1.5, a, b);
 }

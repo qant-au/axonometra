@@ -48,7 +48,7 @@ test("the simple format: units, doors and windows on their edges, furniture by k
   assert.ok(warnings.some((w) => w.code === "rooms_skipped"));
 });
 
-test("a Accurona plan written by an AI with mistakes is repaired", () => {
+test("a Axonometra plan written by an AI with mistakes is repaired", () => {
   const b = emptyBuilding();
   const f = newFloor("eg", "EG", 0);
   f.rooms = [
@@ -81,7 +81,7 @@ test("a Accurona plan written by an AI with mistakes is repaired", () => {
 test("files are told apart by name and content", async () => {
   const enc = (o: unknown) => new TextEncoder().encode(JSON.stringify(o));
   assert.equal((await readFile("plan.json", enc(simple))).kind, "simple");
-  assert.equal((await readFile("x.json", enc({ format: "neonplan3d", version: 1, building: { ...emptyBuilding(), floors: [newFloor("a", "A", 0)] } }))).kind, "accurona");
+  assert.equal((await readFile("x.json", enc({ format: "neonplan3d", version: 1, building: { ...emptyBuilding(), floors: [newFloor("a", "A", 0)] } }))).kind, "axonometra");
   await assert.rejects(readFile("x.json", enc({ hello: 1 })), /unknown_format/);
   await assert.rejects(readFile("x.json", new TextEncoder().encode("{ broken")), /not_json/);
 });

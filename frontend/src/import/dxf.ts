@@ -185,7 +185,7 @@ export function readDxf(text: string, roles: Record<string, LayerRole> = {}, uni
   const span = all.length ? Math.max(Math.max(...all.map((q) => q[0])) - Math.min(...all.map((q) => q[0])), Math.max(...all.map((q) => q[1])) - Math.min(...all.map((q) => q[1]))) : 0;
   const fromHeader: Record<number, number> = { 1: 0.0254, 2: 0.3048, 4: 0.001, 5: 0.01, 6: 1 };
   const u = unit ?? fromHeader[insUnits] ?? (span > 2500 ? 0.001 : span > 150 ? 0.01 : 1);
-  // DXF y runs up the drawing, Accurona's z down the plan
+  // DXF y runs up the drawing, Axonometra's z down the plan
   const m = ([x, y]: Vec2): Vec2 => [x * u, -y * u];
 
   const walls: RawPlan["floors"][number]["walls"] = [];

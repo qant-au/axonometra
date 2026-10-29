@@ -1,4 +1,4 @@
-// Accurona: the example plans build cleanly and make sense as buildings: every door and window lands where the
+// Axonometra: the example plans build cleanly and make sense as buildings: every door and window lands where the
 // example puts it, no two rooms overlap, and every room can be walked to from outside.
 
 import assert from "node:assert/strict";

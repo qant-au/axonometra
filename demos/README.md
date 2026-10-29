@@ -1,6 +1,6 @@
 # Demos
 
-The animated GIFs in [`docs/demos`](../docs/demos) are recorded from Accurona itself. Nothing is drawn for the
+The animated GIFs in [`docs/demos`](../docs/demos) are recorded from Axonometra itself. Nothing is drawn for the
 recording: each GIF is the planner's 3D view or the hull viewer showing one of the built-in examples, turned a full
 circle. They are previews of work in progress.
 
@@ -21,7 +21,7 @@ planner.
 | `plan-real-estate-office` | A shopfront real estate office for eight staff: reception, interview rooms, open office, kitchen and washrooms |
 | `plan-shed-workshop` | A 10 x 10 m steel shed: an oversized double garage, a workshop and a store |
 
-The lab and the office are rooms fitted out inside a larger building, which is the point of them: Accurona plans a room
+The lab and the office are rooms fitted out inside a larger building, which is the point of them: Axonometra plans a room
 or a suite of rooms as readily as a whole building. The standalone page opens any of them with
 `index.html?example=<name>`.
 
@@ -37,7 +37,7 @@ Recorded by [`hulls.mjs`](hulls.mjs) from the hull viewer ([`frontend/src/hull/v
 | `hull-catamaran-12m` | A 12 m cruising catamaran: two demihulls 5.2 m apart |
 | `hull-swath-25m` | A 25 m SWATH: two submerged hulls under thin struts |
 | `hull-container-ship-300m` | A 300 m container ship with its bulbous bow |
-| `hull-plate-alloy-fishing-6.5m` | A 6.5 m plate aluminium fishing boat: hard chine, 18° deadrise aft, a transom wide enough for twin outboards |
+| `hull-plate-alloy-fishing-6.5m` | A 6.5 m open plate aluminium fishing boat: a self-draining sole, and the transom cut down for twin outboards behind a motor well (the cyan points are their mounts), floating as fitted |
 
 These are previews of the hull work: hull shapes and what is fixed to them, floating on the water. Decks, rooms,
 equipment and live data come later.

@@ -20,7 +20,7 @@ import { helpers, tap } from "./ep02-common.mjs";
 const out = process.argv[2] ?? "tutorial-ep08";
 const PART = process.argv[3] === "b" ? "b" : "a";
 const FAST = !!process.env.EP08_FAST;
-const VERSION = `<br><span style="font-size:20px;opacity:.7">aufgenommen mit Accurona ${appVersion()}</span>`;
+const VERSION = `<br><span style="font-size:20px;opacity:.7">aufgenommen mit Axonometra ${appVersion()}</span>`;
 
 // ---------------------------------------------------------------- the invented house (episode 7, with an attic)
 const rect = (id, name, area_id, x0, z0, x1, z1, floor_material = "wood") => ({ id, name, area_id, points: [[x0, z0], [x1, z0], [x1, z1], [x0, z1]], floor_material });
@@ -412,7 +412,7 @@ const sideTop = async (seconds = 0.4) => {
 };
 /** A point in the 3D half (for pointing at the roof): plan x, height y, plan z. */
 const panePoint = (x, y, z) =>
-  R.editor(`const v = e.renderRoot.querySelector("accurona-view3d"); const viewer = Object.values(v).find((o) => o && o.floors && o.floorMap);
+  R.editor(`const v = e.renderRoot.querySelector("axonometra-view3d"); const viewer = Object.values(v).find((o) => o && o.floors && o.floorMap);
     const fv = viewer.floorMap.get("eg"); const p = fv.group.position.clone().set(${x}, ${y}, ${z}); fv.group.localToWorld(p);
     p.project(viewer.camera); const c = (v.renderRoot ?? v.shadowRoot).querySelector("canvas").getBoundingClientRect();
     return { x: c.left + ((p.x + 1) / 2) * c.width, y: c.top + ((1 - p.y) / 2) * c.height };`);
@@ -480,7 +480,7 @@ const start = async (floors = HOUSE) => {
 /** The main 3D view (3D tab): theta, phi, radius and, if given, the target; returns the view. */
 const setMain = (cam) =>
   R.page.evaluate((cam) => {
-    const v = document.querySelector("accurona-panel").shadowRoot.querySelector("accurona-view3d");
+    const v = document.querySelector("axonometra-panel").shadowRoot.querySelector("axonometra-view3d");
     const viewer = Object.values(v).find((x) => x && x.floors && x.floorMap);
     const { target, ...rest } = cam;
     Object.assign(viewer.controls.view, rest);
@@ -584,7 +584,7 @@ if (PART === "a") {
     const C = { theta: -2.9, phi: 0.85, radius: 13, target: { x: 0, y: 3, z: 0 } };
     await setMain(fit(A));
     await R.sleep(1500);
-    await R.title("Dächer Teil 2: Gauben, Dachfenster, Dachschrägen, Carport", `Accurona · Folge 8 · Teil 1${VERSION}`);
+    await R.title("Dächer Teil 2: Gauben, Dachfenster, Dachschrägen, Carport", `Axonometra · Folge 8 · Teil 1${VERSION}`);
     await sayOver("Eine Gaube, ein Zwerchgiebel, ein Dachfenster und ein Carport – und darunter ein Dachgeschoss mit echten Schrägen.");
     await glideMainT(A, B, 6);
     await R.untitle();
@@ -755,7 +755,7 @@ if (PART === "a") {
 
   // ---------------------------------------------------------------- the cross gable
   await chapter("Der Zwerchgiebel");
-  await sayOver("Ein Zwerchgiebel ist ein Giebel, der aus der Traufseite vortritt – typisch beim Drei-Giebel-Haus. In Accurona ist das eine breite Gaube, deren Traufe auf der Wandoberkante liegt.");
+  await sayOver("Ein Zwerchgiebel ist ein Giebel, der aus der Traufseite vortritt – typisch beim Drei-Giebel-Haus. In Axonometra ist das eine breite Gaube, deren Traufe auf der Wandoberkante liegt.");
   await R.clickOn({ text: "‹ Dachflächen" }, 0.5).catch(() => {});
   await pointPlan(7, 0.6, 0.6);
   await R.hold(1.5);
@@ -815,10 +815,10 @@ if (PART === "a") {
 
   // ---------------------------------------------------------------- outro
   await chapter("Wie geht es weiter");
-  await R.title("Teil 2: Dachfenster, Flachdach, Terrassendach und Carport", `Accurona – läuft auch auf alten Wandtablets${VERSION}`);
+  await R.title("Teil 2: Dachfenster, Flachdach, Terrassendach und Carport", `Axonometra – läuft auch auf alten Wandtablets${VERSION}`);
   await say("Das war Teil eins: Kniestock und Dachschrägen, die Kopfhöhe im Plan, die Gaube als Sattel oder Pult mit ihrem Fenster und der Zwerchgiebel.");
   await say("In Teil zwei kommen Dachfenster mit Rollladen und Kontakt, ein Flachdach als freie Form, Terrassendach und Carport – und der Schalter „Dach bleibt“.");
-  await say("Links zur Online-Demo und zur Anleitung stehen in der Beschreibung. Accurona läuft übrigens auch auf alten Wandtablets. Bis gleich in Teil zwei!");
+  await say("Links zur Online-Demo und zur Anleitung stehen in der Beschreibung. Axonometra läuft übrigens auch auf alten Wandtablets. Bis gleich in Teil zwei!");
   await R.hold(0.6);
 } else {
   // ================================================================ PART 2: Dachfenster, Flachdach und Carport
@@ -837,7 +837,7 @@ if (PART === "a") {
     const C = { theta: -1.4, phi: 0.95, radius: 30, target: home.target };
     await setMain(fit(A));
     await R.sleep(1500);
-    await R.title("Dachfenster, Flachdach, Terrassendach und Carport", `Accurona · Folge 8 · Teil 2${VERSION}`);
+    await R.title("Dachfenster, Flachdach, Terrassendach und Carport", `Axonometra · Folge 8 · Teil 2${VERSION}`);
     await sayOver("Ein Dachfenster, das live aufgeht, ein Terrassendach und ein Carport auf Pfosten.");
     await glideMainT(A, B, 2.5);
     await h.setState(RWIN.motor, "open", { current_position: 100 });
@@ -1003,7 +1003,7 @@ if (PART === "a") {
   await R.hold(0.6);
   await dragPlan(TERRACE.x0, TERRACE.z0, TERRACE.x1, TERRACE.z1, 1.5);
   console.log("terrace:", JSON.stringify(await selected()));
-  await sayOver("Accurona macht daraus von selbst eine Überdachung: ein flaches Pultdach auf 2,4 Metern, getragen von Pfosten und Balken, mit durchsichtiger Dachfläche.");
+  await sayOver("Axonometra macht daraus von selbst eine Überdachung: ein flaches Pultdach auf 2,4 Metern, getragen von Pfosten und Balken, mit durchsichtiger Dachfläche.");
   await glide3d(cam(-2.75, 1.0, 26, T_CAN), cam(-3.2, 1.05, 20, { x: 3, y: 1.5, z: -1 }), 7);
   await sayOver("An der Hauswand liegt es auf. Im Formular ist dafür „Überdachung“ angehakt, und Liste und Plan zeigen „Überdachung“.");
   await R.moveTo({ text: "Überdachung (Pfosten" }, 0.5);
@@ -1062,10 +1062,10 @@ if (PART === "a") {
 
   // ---------------------------------------------------------------- outro
   await chapter("Wie geht es weiter");
-  await R.title("Nächste Folge: Außenbereich und Garten", `Accurona – läuft auch auf alten Wandtablets${VERSION}`);
+  await R.title("Nächste Folge: Außenbereich und Garten", `Axonometra – läuft auch auf alten Wandtablets${VERSION}`);
   await say("Das war Teil zwei: Dachfenster mit Rollladen, Kontakt und Motor, das Flachdach als freie Form, Terrassendach und Carport und der Schalter „Dach bleibt“.");
   await say("In der nächsten Folge geht es nach draußen: Außenbereich und Garten mit Wegen, Zäunen, Bäumen und Licht.");
-  await say("Links zur Online-Demo und zur Anleitung stehen in der Beschreibung. Und Accurona läuft auch auf alten Wandtablets. Bis zum nächsten Mal!");
+  await say("Links zur Online-Demo und zur Anleitung stehen in der Beschreibung. Und Axonometra läuft auch auf alten Wandtablets. Bis zum nächsten Mal!");
   await R.hold(0.6);
 }
 

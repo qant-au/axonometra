@@ -1,6 +1,6 @@
 // Invented history for the preview's time travel: a week of an ordinary household, relative to now and the
-// same on every load (seeded). It answers accurona/timetravel/history in the compact format of the
-// integration (see custom_components/accurona/timetravel_rows.py). Nobody's real data.
+// same on every load (seeded). It answers axonometra/timetravel/history in the compact format of the
+// integration (see custom_components/axonometra/timetravel_rows.py). Nobody's real data.
 
 const DAYS = 7;
 const STEP = 300;

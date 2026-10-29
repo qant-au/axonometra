@@ -74,7 +74,7 @@ const SHOW = /\b(zeig|zeige|zeigt|geh|gehe|wechsel|wechsle|oeffne|offne|spring|s
 const FILLER = new Set("das den dem die der ins in im zum zur ins nach bitte mal mir mich the to please me my het de naar le la les au a la il lo al el ett en till".split(" "));
 
 /**
- * What a spoken sentence asks Accurona to show: a place, when the sentence says "show/go to …" or is no more than a
+ * What a spoken sentence asks Axonometra to show: a place, when the sentence says "show/go to …" or is no more than a
  * place's name ("Wohnzimmer", "das Obergeschoss bitte"). Null otherwise – the sentence is for Assist then ("Licht im
  * Wohnzimmer an" names the room but switches a light).
  */

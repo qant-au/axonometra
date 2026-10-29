@@ -250,7 +250,7 @@ export function classify(packId: string, item: PackItem): { kind: Kind; rooms: R
   return { kind: "deco", rooms: ownRooms ?? packRooms };
 }
 
-/** Which room kind a room is, by its name (German, English and the languages Accurona speaks); null when unclear. */
+/** Which room kind a room is, by its name (German, English and the languages Axonometra speaks); null when unclear. */
 export function roomKindOf(name: string): Room | null {
   const n = name.toLowerCase();
   const table: [RegExp, Room][] = [

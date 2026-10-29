@@ -118,6 +118,13 @@ function polygons(body: HullBody, split: number): { xs: number[]; polys: ([numbe
 /** A closed polygon without the points that lie within eps of the line joining their neighbours. */
 function simplify(poly: [number, number][] | null, eps: number): [number, number][] | null {
   if (!poly || poly.length < 4) return poly;
+  // repeated points first (a V section's keel is its last port point and its first starboard one): measured against
+  // its own twin, a corner lies on the line through it and would be dropped, cutting the whole V off
+  poly = poly.filter((p, i) => {
+    const q = poly![(i + 1) % poly!.length];
+    return Math.hypot(p[0] - q[0], p[1] - q[1]) > eps;
+  });
+  if (poly.length < 4) return poly.length >= 3 ? poly : null;
   const out: [number, number][] = [];
   for (let i = 0; i < poly.length; i++) {
     const a = out.length ? out[out.length - 1] : poly[poly.length - 1];

@@ -11,8 +11,8 @@ from homeassistant.core import HomeAssistant
 from homeassistant.setup import async_setup_component
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
-from custom_components.accurona import packs
-from custom_components.accurona.const import DOMAIN
+from custom_components.axonometra import packs
+from custom_components.axonometra.const import DOMAIN
 from tests.test_init import BUILDING
 
 PAYLOAD = {
@@ -54,14 +54,14 @@ async def test_backup_round_trip(hass: HomeAssistant, hass_ws_client, monkeypatc
     client = await hass_ws_client(hass)
 
     # an imported pack keeps its signature
-    await client.send_json_auto_id({"type": "accurona/packs/import", "pack": _sign(private, keys, PAYLOAD)})
+    await client.send_json_auto_id({"type": "axonometra/packs/import", "pack": _sign(private, keys, PAYLOAD)})
     assert (await client.receive_json())["success"]
     building = json.loads(json.dumps(BUILDING))
     building["floors"][0]["name"] = "Backup floor"
-    await client.send_json_auto_id({"type": "accurona/building/save", "building": building})
+    await client.send_json_auto_id({"type": "axonometra/building/save", "building": building})
     assert (await client.receive_json())["success"]
 
-    await client.send_json_auto_id({"type": "accurona/backup/export"})
+    await client.send_json_auto_id({"type": "axonometra/backup/export"})
     backup = (await client.receive_json())["result"]
     assert backup["format"] == "neonplan3d-backup"
     assert backup["building"]["floors"][0]["name"] == "Backup floor"
@@ -74,7 +74,7 @@ async def test_backup_round_trip(hass: HomeAssistant, hass_ws_client, monkeypatc
     unsigned = {k: v for k, v in backup["packs"][0].items() if k != "signature"}
     unsigned["id"] = "test.unsigned"
     backup["building"]["floors"][0]["name"] = "Restored floor"
-    restore = {"type": "accurona/backup/import", "building": backup["building"]}
+    restore = {"type": "axonometra/backup/import", "building": backup["building"]}
     await client.send_json_auto_id({**restore, "packs": [*backup["packs"], tampered, unsigned]})
     result = await client.receive_json()
     assert result["success"], result
@@ -82,11 +82,11 @@ async def test_backup_round_trip(hass: HomeAssistant, hass_ws_client, monkeypatc
     assert sorted(s["id"] for s in result["result"]["skipped"]) == ["test.tampered", "test.unsigned"]
     assert result["result"]["building"]["floors"][0]["name"] == "Restored floor"
 
-    await client.send_json_auto_id({"type": "accurona/packs/list"})
+    await client.send_json_auto_id({"type": "axonometra/packs/list"})
     listed = (await client.receive_json())["result"]["packs"]
     assert [p["id"] for p in listed] == ["test.backup"]
 
     # a broken building is refused before anything changes
-    await client.send_json_auto_id({"type": "accurona/backup/import", "building": {"version": 99}, "packs": []})
+    await client.send_json_auto_id({"type": "axonometra/backup/import", "building": {"version": 99}, "packs": []})
     result = await client.receive_json()
     assert not result["success"] and result["error"]["code"] == "invalid_format"

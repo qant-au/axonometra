@@ -1,4 +1,4 @@
-// Accurona: what a host gives the engine. Home Assistant is one host (the integration); the standalone
+// Axonometra: what a host gives the engine. Home Assistant is one host (the integration); the standalone
 // host here is another, and a Signal K host will be a third. The engine itself only ever sees the
 // HomeAssistant-shaped object that createHass() builds from these.
 

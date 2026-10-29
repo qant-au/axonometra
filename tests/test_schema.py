@@ -3,7 +3,7 @@
 import pytest
 import voluptuous as vol
 
-from custom_components.accurona.schema import (
+from custom_components.axonometra.schema import (
     FURNITURE_SCHEMA,
     HOLOGRAM_SCHEMA,
     OPENING_SCHEMA,
@@ -87,7 +87,7 @@ def test_furniture_block() -> None:
 
 def test_pool_depth_rim_and_port_depth() -> None:
     """A pool's basin depth and rim, and how deep an inlet sits below the water line."""
-    from custom_components.accurona.schema import OUTDOOR_SCHEMA, POOL_PORT_SCHEMA
+    from custom_components.axonometra.schema import OUTDOOR_SCHEMA, POOL_PORT_SCHEMA
 
     pool = {"id": "p", "type": "pool", "points": [[0, 0], [8, 0], [8, 4], [0, 4]]}
     assert OUTDOOR_SCHEMA(pool)["depth"] is None

@@ -11,7 +11,7 @@ export const PLAN = join(import.meta.dirname, "assets", "bauplan-l.png");
 export const PTS = JSON.parse(readFileSync(join(import.meta.dirname, "assets", "bauplan-l.json"), "utf-8"));
 /** The picture's true width in the plan (17.5 m at 100 px per metre) and its turn. */
 export const PLAN_WIDTH = 17.5;
-export const VERSION = `<br><span style="font-size:20px;opacity:.7">aufgenommen mit Accurona ${appVersion()}</span>`;
+export const VERSION = `<br><span style="font-size:20px;opacity:.7">aufgenommen mit Axonometra ${appVersion()}</span>`;
 
 /** The traced rooms (plan metres; the house corner at 0/0). */
 export const ROOMS = {
@@ -44,7 +44,7 @@ export function helpers(R) {
   const editorEval = (fn, ...args) =>
     R.page.evaluate(
       (src, ...args) => {
-        const e = document.querySelector("accurona-panel").shadowRoot.querySelector("accurona-editor");
+        const e = document.querySelector("axonometra-panel").shadowRoot.querySelector("axonometra-editor");
         return new Function("e", "args", src)(e, args);
       },
       fn,
@@ -122,7 +122,7 @@ export function helpers(R) {
         if (target.label) {
           for (const el of walk(document)) {
             if (el.tagName !== "LABEL" || !shown(el) || !text(el).startsWith(target.label)) continue;
-            const input = el.querySelector("input, select, textarea, accurona-entity-picker");
+            const input = el.querySelector("input, select, textarea, axonometra-entity-picker");
             if (input && shown(input)) hit = input;
           }
         } else {
@@ -226,13 +226,13 @@ export function helpers(R) {
               if (el.shadowRoot) yield* walk(el.shadowRoot);
             }
           };
-          const all = [...walk(document)].filter((el) => el.tagName === "LABEL" && el.querySelector("accurona-entity-picker") && el.getBoundingClientRect().width > 0);
+          const all = [...walk(document)].filter((el) => el.tagName === "LABEL" && el.querySelector("axonometra-entity-picker") && el.getBoundingClientRect().width > 0);
           const text = (el) => el.textContent.replace(/\s+/g, " ").trim();
           let hits = all.filter((el) => text(el) === label);
           if (!hits.length) hits = all.filter((el) => text(el).startsWith(label));
           const hit = typeof nth === "number" ? hits[nth] : hits[hits.length - 1];
           if (!hit) return null;
-          const r = hit.querySelector("accurona-entity-picker").getBoundingClientRect();
+          const r = hit.querySelector("axonometra-entity-picker").getBoundingClientRect();
           return { x: r.left + Math.min(120, r.width / 2), y: r.top + r.height / 2 };
         },
         label,
@@ -286,7 +286,7 @@ export function helpers(R) {
     /** The camera of the 3D half beside the plan (theta, phi, radius, target). */
     view3d(cam) {
       return editorEval(
-        `const v = e.renderRoot.querySelector("accurona-view3d"); if (!v) return null;
+        `const v = e.renderRoot.querySelector("axonometra-view3d"); if (!v) return null;
          const viewer = Object.values(v).find((x) => x && x.floors && x.floorMap); if (!viewer) return null;
          if (args[0]) { const { target, ...rest } = args[0]; Object.assign(viewer.controls.view, rest); if (target) Object.assign(viewer.controls.view.target, target); viewer.invalidate(); }
          return JSON.parse(JSON.stringify(viewer.controls.view));`,
@@ -351,7 +351,7 @@ export async function traceHouse(R, { walls = true, openings = false } = {}) {
   await tap(R, { text: "Erdgeschoss", nth: 0 });
   await R.sleep(500);
   const png = "data:image/png;base64," + readFileSync(PLAN).toString("base64");
-  await R.page.evaluate((png) => window.fp3dPanel.hass.callWS({ type: "accurona/image/set", image_id: "img_plan", data: png }), png);
+  await R.page.evaluate((png) => window.fp3dPanel.hass.callWS({ type: "axonometra/image/set", image_id: "img_plan", data: png }), png);
   await h.editorEval(
     `const [rooms, walls, openings, W, asp, u, v, a] = args;
      const H = W * asp, r = a * Math.PI / 180, L = [u * W - W / 2, v * H - H / 2];

@@ -34,8 +34,9 @@ function lines(s: PlateHullSpec, u: number) {
   const sheer = s.freeboard * (1 + 0.38 * u * u);
   // the deck line: the transom's width aft, the greatest beam amidships, closing to the stem
   const half = u <= 0.5 ? s.transom / 2 + (s.beam / 2 - s.transom / 2) * Math.sin((Math.PI / 2) * (u / 0.5)) : (s.beam / 2) * (1 - Math.pow(fwd, 1.9));
-  // the keel: level aft, rising forward of amidships to just under the stem head
-  const keel = -s.draft + (sheer - 0.02 + s.draft) * Math.pow(fwd, 2.2);
+  // the keel: level aft and through most of the length, so the waterline is long, then sweeping up into the stem
+  const forefoot = clamp01((u - 0.55) / 0.45);
+  const keel = -s.draft + (sheer - 0.02 + s.draft) * Math.pow(forefoot, 2.6);
   const deadrise = s.deadrise + (60 - s.deadrise) * Math.pow(clamp01((u - 0.4) / 0.6), 1.5);
   let chine = Math.max(0, Math.min((s.chineBeam / 2) * (1 - Math.pow(fwd, 1.6)), half - 0.08));
   // the chine stays below the sheer: forward, where the bottom is steep, it is held lower and closer in
@@ -60,6 +61,9 @@ function section(s: PlateHullSpec, u: number): Section {
   for (let j = 0; j <= 2; j++) points.push([chineY + lip + ((sheer - chineY - lip) * j) / 2, out + ((half - out) * j) / 2]);
   return { x, points };
 }
+
+/** The 6.5 m plate aluminium fishing boat (the hull viewer's, and the example vessel's): drawn for her loaded condition. */
+export const PLATE_FISHING_6_5: PlateHullSpec = { length: 6.5, beam: 2.45, transom: 2.3, chineBeam: 2.0, draft: 0.36, freeboard: 0.88, deadrise: 18 };
 
 /** The hull: one body on the centre line. */
 export function plateHull(spec: PlateHullSpec): Hull {

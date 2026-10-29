@@ -19,7 +19,7 @@ export type Gated = Feature | FreeFeature;
 
 /**
  * Pro add-ons (and free features) built but not released yet: they show nowhere (extensions page, teasers) unless they are
- * unlocked (the tester has the pack) or the lab switch is on (localStorage "accurona.lab" = "1").
+ * unlocked (the tester has the pack) or the lab switch is on (localStorage "axonometra.lab" = "1").
  * A release takes a feature off this list.
  */
 export const UNRELEASED: readonly Gated[] = ["pool"];
@@ -28,9 +28,9 @@ export function labOn(): boolean {
   try {
     // "?fp3d_lab=1" in the address bar switches it on (and "=0" off) – easier than the browser console on a tablet
     const flag = new URLSearchParams(location.search).get("fp3d_lab");
-    if (flag === "1") localStorage.setItem("accurona.lab", "1");
-    else if (flag === "0") localStorage.removeItem("accurona.lab");
-    return localStorage.getItem("accurona.lab") === "1";
+    if (flag === "1") localStorage.setItem("axonometra.lab", "1");
+    else if (flag === "0") localStorage.removeItem("axonometra.lab");
+    return localStorage.getItem("axonometra.lab") === "1";
   } catch {
     return false;
   }
@@ -40,9 +40,9 @@ export function labOn(): boolean {
 export function projectionOn(): boolean {
   try {
     const flag = new URLSearchParams(location.search).get("fp3d_projection");
-    if (flag === "1") localStorage.setItem("accurona.projection", "1");
-    else if (flag === "0") localStorage.removeItem("accurona.projection");
-    return localStorage.getItem("accurona.projection") === "1";
+    if (flag === "1") localStorage.setItem("axonometra.projection", "1");
+    else if (flag === "0") localStorage.removeItem("axonometra.projection");
+    return localStorage.getItem("axonometra.projection") === "1";
   } catch {
     return false;
   }
@@ -66,7 +66,7 @@ export const PRO_URL = "https://mastershort.de/neonplan3d/";
 
 const isGerman = (lang: string | undefined) => (lang ?? navigator.language).toLowerCase().startsWith("de");
 
-/** The Accurona page of the shop in the user's language (?lang= makes the site keep that language). */
+/** The Axonometra page of the shop in the user's language (?lang= makes the site keep that language). */
 /**
  * The shop's sign-up page: a free customer account with its licence key (and the free fun packs). Marked as coming
  * from the app. (The exact address comes from the shop – see "Rueckmeldung Claude Desktop - Fun-Pack Halloween.md".)

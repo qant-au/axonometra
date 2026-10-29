@@ -8,16 +8,16 @@ from unittest.mock import patch
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import intent
 
-from custom_components.accurona.const import DOMAIN
-from custom_components.accurona.voice import remove_sentences, sentences_yaml, write_sentences
+from custom_components.axonometra.const import DOMAIN
+from custom_components.axonometra.voice import remove_sentences, sentences_yaml, write_sentences
 
 from .test_init import _setup
 
 
 async def _view(hass_ws_client, hass: HomeAssistant):
-    """An open Accurona view: subscribed to the sentences."""
+    """An open Axonometra view: subscribed to the sentences."""
     client = await hass_ws_client(hass)
-    await client.send_json({"id": 1, "type": "accurona/voice/subscribe"})
+    await client.send_json({"id": 1, "type": "axonometra/voice/subscribe"})
     assert (await client.receive_json())["success"]
     return client
 
@@ -41,11 +41,11 @@ async def test_service_hands_the_sentence_to_the_views_and_returns_the_first_ans
     assert (await other.receive_json())["event"]["ask_id"] == ask["ask_id"]
 
     await view.send_json(
-        {"id": 2, "type": "accurona/voice/answer", "ask_id": ask["ask_id"], "text": "Ich zeige das Wohnzimmer."}
+        {"id": 2, "type": "axonometra/voice/answer", "ask_id": ask["ask_id"], "text": "Ich zeige das Wohnzimmer."}
     )
     assert (await view.receive_json())["result"] == {"taken": True}
     # the second view is late
-    await other.send_json({"id": 2, "type": "accurona/voice/answer", "ask_id": ask["ask_id"], "text": "Wohnzimmer"})
+    await other.send_json({"id": 2, "type": "axonometra/voice/answer", "ask_id": ask["ask_id"], "text": "Wohnzimmer"})
     assert (await other.receive_json())["result"] == {"taken": False}
 
     assert await task == {"answered": True, "answer": "Ich zeige das Wohnzimmer.", "screen_open": True}
@@ -53,7 +53,7 @@ async def test_service_hands_the_sentence_to_the_views_and_returns_the_first_ans
 
 async def test_service_without_an_open_view_says_so(hass: HomeAssistant) -> None:
     await _setup(hass)
-    with patch("custom_components.accurona.voice.ANSWER_TIMEOUT", 0.05):
+    with patch("custom_components.axonometra.voice.ANSWER_TIMEOUT", 0.05):
         result = await hass.services.async_call(
             DOMAIN, "ask", {"text": "Zeig die Küche", "screen": "Flur"}, blocking=True, return_response=True
         )
@@ -68,14 +68,16 @@ async def test_intent_speaks_the_answer_or_that_nothing_was_understood(hass: Hom
 
     async def answer(text: str, answered: bool) -> intent.IntentResponse:
         task = hass.async_create_task(
-            intent.async_handle(hass, "test", "AccuronaAsk", {"text": {"value": text}}, text_input=text, language="de")
+            intent.async_handle(
+                hass, "test", "AxonometraAsk", {"text": {"value": text}}, text_input=text, language="de"
+            )
         )
         ask = (await view.receive_json())["event"]
         assert ask["text"] == text
         await view.send_json(
             {
                 "id": next(ids),
-                "type": "accurona/voice/answer",
+                "type": "axonometra/voice/answer",
                 "ask_id": ask["ask_id"],
                 "text": "Drei Fenster sind offen.",
                 "answered": answered,
@@ -85,21 +87,21 @@ async def test_intent_speaks_the_answer_or_that_nothing_was_understood(hass: Hom
         return await task
 
     assert (await answer("Was ist offen", True)).speech["plain"]["speech"] == "Drei Fenster sind offen."
-    assert (await answer("Blubb", False)).speech["plain"]["speech"] == "Das hat Accurona nicht verstanden."
+    assert (await answer("Blubb", False)).speech["plain"]["speech"] == "Das hat Axonometra nicht verstanden."
 
 
 async def test_intent_without_a_view(hass: HomeAssistant) -> None:
     await _setup(hass)
-    with patch("custom_components.accurona.voice.ANSWER_TIMEOUT", 0.05):
+    with patch("custom_components.axonometra.voice.ANSWER_TIMEOUT", 0.05):
         response = await intent.async_handle(
-            hass, "test", "AccuronaAsk", {"text": {"value": "living room"}}, language="en"
+            hass, "test", "AxonometraAsk", {"text": {"value": "living room"}}, language="en"
         )
-    assert response.speech["plain"]["speech"] == "No Accurona screen is open right now."
+    assert response.speech["plain"]["speech"] == "No Axonometra screen is open right now."
 
 
 def test_sentences_are_written_only_on_request_and_never_over_a_changed_file(tmp_path: Path) -> None:
-    de = tmp_path / "custom_sentences" / "de" / "accurona.yaml"
-    en = tmp_path / "custom_sentences" / "en" / "accurona.yaml"
+    de = tmp_path / "custom_sentences" / "de" / "axonometra.yaml"
+    en = tmp_path / "custom_sentences" / "en" / "axonometra.yaml"
     hashes, kept, changed = write_sentences(tmp_path, "distinct", {})
     assert changed and kept == []
     text = de.read_text(encoding="utf-8")
@@ -121,7 +123,7 @@ def test_sentences_are_written_only_on_request_and_never_over_a_changed_file(tmp
     assert de.read_text(encoding="utf-8") == "my own sentences"
     hashes, kept, _ = write_sentences(tmp_path, "off", hashes)
     assert kept == ["de"] and de.exists() and not en.exists()
-    # removing the integration takes only Accurona's own files
+    # removing the integration takes only Axonometra's own files
     hashes, _, _ = write_sentences(tmp_path, "distinct", hashes)
     remove_sentences(tmp_path, hashes)
     assert not en.exists()
@@ -130,13 +132,13 @@ def test_sentences_are_written_only_on_request_and_never_over_a_changed_file(tmp
 
 def test_a_file_an_older_version_wrote_is_still_ours(tmp_path: Path) -> None:
     """Files from 1.22.0 - 1.24.0 (older header lines) are replaced, not kept as the user's own."""
-    de = tmp_path / "custom_sentences" / "de" / "accurona.yaml"
+    de = tmp_path / "custom_sentences" / "de" / "axonometra.yaml"
     de.parent.mkdir(parents=True)
     de.write_text(
         sentences_yaml("de", "distinct").replace(
-            "# understands answers). Put your own sentences for AccuronaAsk into another file.\n",
+            "# understands answers). Put your own sentences for AxonometraAsk into another file.\n",
             "# understands answers). Rewritten on every start: "
-            "put your own sentences for AccuronaAsk into another file.\n",
+            "put your own sentences for AxonometraAsk into another file.\n",
         ),
         encoding="utf-8",
     )
@@ -160,11 +162,11 @@ async def test_unload_removes_service_and_intent(hass: HomeAssistant) -> None:
 
 
 # a file an early version wrote with its own, shorter set of sentences (seen on a real installation)
-_EARLY_FILE = """# Written by Accurona: the sentences Assist hands to the open Accurona views (the first one that
-# understands answers). Rewritten on every start: put your own sentences for AccuronaAsk into another file.
+_EARLY_FILE = """# Written by Axonometra: the sentences Assist hands to the open Axonometra views (the first one that
+# understands answers). Rewritten on every start: put your own sentences for AxonometraAsk into another file.
 language: "de"
 intents:
-  AccuronaAsk:
+  AxonometraAsk:
     data:
       - sentences:
           - "zeig[e] [mir] [mal] [bitte] {text}"
@@ -177,9 +179,9 @@ lists:
 
 
 def test_an_early_file_with_other_sentences_is_still_ours(tmp_path: Path) -> None:
-    """Only Accurona's sentences under Accurona's header: replaced (it lacked "wer ist zu hause"); one sentence of
+    """Only Axonometra's sentences under Axonometra's header: replaced (it lacked "wer ist zu hause"); one sentence of
     the user's own in it, and it stays."""
-    de = tmp_path / "custom_sentences" / "de" / "accurona.yaml"
+    de = tmp_path / "custom_sentences" / "de" / "axonometra.yaml"
     de.parent.mkdir(parents=True)
     de.write_text(_EARLY_FILE, encoding="utf-8")
     _, kept, changed = write_sentences(tmp_path, "distinct", {})
@@ -195,26 +197,26 @@ def test_an_early_file_with_other_sentences_is_still_ours(tmp_path: Path) -> Non
 def test_the_names_locating_knows_are_a_list_not_a_wildcard(tmp_path: Path) -> None:
     """ "Wo ist Frauke?" matches a list of names exactly, so Assist handles it locally and an AI agent behind it
     never gets the question."""
-    de = tmp_path / "custom_sentences" / "de" / "accurona.yaml"
+    de = tmp_path / "custom_sentences" / "de" / "axonometra.yaml"
     hashes, _, _ = write_sentences(tmp_path, "distinct", {}, ["Torsten Apple Watch", "Torsten", 'Frau "K"'])
     text = de.read_text(encoding="utf-8")
-    assert "wo (ist|steckt|sind) [der|die|das|mein|meine] {accurona_who}" in text
+    assert "wo (ist|steckt|sind) [der|die|das|mein|meine] {axonometra_who}" in text
     assert '      - "Torsten Apple Watch"' in text and '      - "Frau \\"K\\""' in text
     # the names change: the file follows; no names: the list goes
     _, _, changed = write_sentences(tmp_path, "distinct", hashes, ["Torsten"])
     assert changed and "Apple Watch" not in de.read_text(encoding="utf-8")
     write_sentences(tmp_path, "distinct", {}, [])
-    assert "accurona_who" not in de.read_text(encoding="utf-8")
+    assert "axonometra_who" not in de.read_text(encoding="utf-8")
 
 
 def test_an_older_file_with_fewer_sentences_is_still_ours(tmp_path: Path) -> None:
     """A file of an older version had fewer sentences (no "wer ist zu hause"): replaced, not kept as the user's."""
-    de = tmp_path / "custom_sentences" / "de" / "accurona.yaml"
+    de = tmp_path / "custom_sentences" / "de" / "axonometra.yaml"
     de.parent.mkdir(parents=True)
     de.write_text(
-        "# Written by Accurona: the sentences Assist hands to the open Accurona views (the first one that\n"
-        "# understands answers). Rewritten on every start: put your own sentences for AccuronaAsk into another file.\n"
-        'language: "de"\nintents:\n  AccuronaAsk:\n    data:\n      - sentences:\n'
+        "# Written by Axonometra: the sentences Assist hands to the open Axonometra views (the first one that\n"
+        "# understands answers). Rewritten on every start: put your own sentences for AxonometraAsk into another file.\n"
+        'language: "de"\nintents:\n  AxonometraAsk:\n    data:\n      - sentences:\n'
         '          - "zeig[e] [mir] [mal] [bitte] {text}"\n          - "wo (ist|sind|steht|stehen) {text}"\n'
         "lists:\n  text:\n    wildcard: true\n",
         encoding="utf-8",
@@ -234,10 +236,10 @@ def test_an_older_file_with_fewer_sentences_is_still_ours(tmp_path: Path) -> Non
 
 def test_the_names_locating_knows_are_sentences(tmp_path: Path) -> None:
     """ "Wo ist Frauke?" as a list of names (no wildcard): Assist matches it locally even with an AI agent."""
-    de = tmp_path / "custom_sentences" / "de" / "accurona.yaml"
+    de = tmp_path / "custom_sentences" / "de" / "axonometra.yaml"
     hashes, _, _ = write_sentences(tmp_path, "distinct", {}, ["Frauke", "Torstens iPhone"])
     text = de.read_text(encoding="utf-8")
-    assert "{accurona_who}" in text and '      - "Torstens iPhone"' in text
+    assert "{axonometra_who}" in text and '      - "Torstens iPhone"' in text
     # names changed: the file is ours, so it is rewritten
     _, kept, changed = write_sentences(tmp_path, "distinct", hashes, ["Frauke"])
     assert kept == [] and changed and "Torstens iPhone" not in de.read_text(encoding="utf-8")

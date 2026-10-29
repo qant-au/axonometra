@@ -23,7 +23,7 @@
  "Genauso zeichne ich darunter Flur, Bad und Schlafzimmer – immer an den Wänden der Vorlage entlang.": "The same way I draw the hallway, bathroom and bedroom below – always along the walls of the template.",
  "Die Räume heißen noch „Raum 1“ bis „Raum 5“. Für L-förmige Räume gibt es übrigens „Freie Form“.": "The rooms are still called “Raum 1” to “Raum 5”. For L-shaped rooms there's “Free shape”, by the way – „Freie Form“.",
  "Jetzt der wichtigste Schritt: Jeder Raum bekommt seinen Bereich aus Home Assistant.": "Now the most important step: every room gets its area from Home Assistant.",
- "Darüber weiß Accurona, welche Lichter, Sensoren und Rollläden in welchem Raum sind. Noch steht hier „Kein Bereich“,": "That's how Accurona knows which lights, sensors and shutters are in which room. Right now it says “No area” – „Kein Bereich“ –",
+ "Darüber weiß Axonometra, welche Lichter, Sensoren und Rollläden in welchem Raum sind. Noch steht hier „Kein Bereich“,": "That's how Axonometra knows which lights, sensors and shutters are in which room. Right now it says “No area” – „Kein Bereich“ –",
  "und unten bei „Geräte“ nur ein Hinweis.": "and under “Devices”, „Geräte“, there's only a note.",
  "Also: auf „Bereich“ klicken und das Wohnzimmer wählen.": "So: click “Area” – „Bereich“ – and choose the living room, „Wohnzimmer“.",
  "Schon heißt der Raum Wohnzimmer: Ohne eigenen Namen übernimmt er den Namen des Bereichs.": "The room is now called Wohnzimmer: without a name of its own, it takes the name of the area.",
@@ -40,10 +40,10 @@
  "Rechts wählst du die Art: Tür, Fenster, Terrassentür und mehr. Darunter Breite und Höhe.": "On the right you choose the type: door, window, terrace door and more. Below that, width and height.",
  "Geht die Tür falsch herum auf, hilft „Anschlag wechseln“.": "If the door opens the wrong way, “Swap hinge side” helps – „Anschlag wechseln“.",
  "Noch eine Tür ins Bad, und eine in die Außenwand vom Flur.": "One more door into the bathroom, and one in the outer wall of the hallway.",
- "In der Außenwand macht Accurona daraus automatisch eine Haustür.": "In an outer wall, Accurona automatically makes it a front door.",
+ "In der Außenwand macht Axonometra daraus automatisch eine Haustür.": "In an outer wall, Axonometra automatically makes it a front door.",
  "Jetzt die Fenster: wieder „Tür & Fenster“, auf die Außenwand, und rechts auf „Fenster“.": "Now the windows: “Doors & windows” again, click the outer wall, and on the right click “Window” – „Fenster“.",
  "Und eins für die Küche.": "And one for the kitchen.",
- "Kontakte und Rollläden sucht sich Accurona selbst aus dem Bereich des Raums – noch ein Grund für die Verknüpfung.": "Accurona finds contacts and shutters by itself in the area of the room – one more reason to link them.",
+ "Kontakte und Rollläden sucht sich Axonometra selbst aus dem Bereich des Raums – noch ein Grund für die Verknüpfung.": "Axonometra finds contacts and shutters by itself in the area of the room – one more reason to link them.",
  "Jetzt das Obergeschoss: zurück zur Etage und noch einmal „Etage hinzufügen“.": "Now the upper floor: back to the floor, and “Add floor” once more.",
  "Es liegt automatisch über dem Erdgeschoss: 2,75 Meter – Raumhöhe plus Decke. Das Erdgeschoss siehst du gestrichelt darunter.": "It automatically sits above the ground floor: 2.75 metres – ceiling height plus the ceiling. You see the ground floor dashed below.",
  "Hier zeichne ich zwei Räume und wähle gleich den Bereich: zuerst das Kinderzimmer,": "Here I draw two rooms and choose the area right away: first the kids' room,",
@@ -55,5 +55,5 @@
  "An jedem Raum stehen Temperatur und Luftfeuchtigkeit, live aus Home Assistant. Und die zwei Fenster leuchten, weil sie in der Demo offen sind –": "Every room shows its temperature and humidity, live from Home Assistant. And the two windows glow because they're open in the demo –",
  "ganz ohne ein einziges Gerät zu platzieren.": "without placing a single device.",
  "Das war dein erster Grundriss. In Folge zwei geht es ausführlich um den Bauplan als Vorlage, danach um Geräte, Lampen und Möbel.": "That was your first floor plan. Episode two is all about the floor-plan picture as a template, then devices, lamps and furniture.",
- "Links zur Online-Demo und zur Anleitung findest du in der Beschreibung. Und Accurona läuft auch auf alten Wandtablets. Bis zum nächsten Mal!": "Links to the online demo and the manual are in the description. And Accurona also runs on old wall tablets. See you next time!"
+ "Links zur Online-Demo und zur Anleitung findest du in der Beschreibung. Und Axonometra läuft auch auf alten Wandtablets. Bis zum nächsten Mal!": "Links to the online demo and the manual are in the description. And Axonometra also runs on old wall tablets. See you next time!"
 }

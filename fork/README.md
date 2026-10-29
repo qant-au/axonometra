@@ -5,7 +5,7 @@ merges never touch them.
 
 | Path | What it is |
 |---|---|
-| `identity.py` | Renames upstream's tree to Accurona. Re-run after every upstream merge; `--check` must be clean. |
+| `identity.py` | Renames upstream's tree to Axonometra. Re-run after every upstream merge; `--check` must be clean. |
 | `merge-upstream.sh`, `MERGING.md` | Merging an upstream release, and the procedure behind it. |
 | `OURS` | Files that are wholly ours; a merge puts them back rather than taking upstream's. |
 | `UPSTREAM` | The upstream release the tree was last synced to. |
@@ -36,18 +36,18 @@ merges never touch them.
 
 NeonPlan 3D sells its Pro add-ons and packs through its author's shop (mastershort.de), and
 the app talks to it: licence keys, the pack catalogue and downloads, offers, the newsletter,
-gift and news notices, Pro teasers linking to the shop, and opt-in usage reports. Accurona
+gift and news notices, Pro teasers linking to the shop, and opt-in usage reports. Axonometra
 keeps all of that code in the tree and maintained, so it could be switched on with the
 author's cooperation, but it is **off**: nothing reaches his servers and none of it shows.
 
-- **The switches.** `custom_components/accurona/upstream.py` (`UPSTREAM_SERVICES = False`)
+- **The switches.** `custom_components/axonometra/upstream.py` (`UPSTREAM_SERVICES = False`)
   and `frontend/src/upstream.ts` (`upstreamServices()` returns false). They are the only
   places to change, together, and only after agreeing it with the author.
 - **Where they bite.** Backend: the shop's and the usage report's single request function
   (`license._post`, `DiagnosticsReporter._post`). Frontend: `released()` in `features.ts`
   (an add-on is advertised only once a pack unlocks it), the Extensions tab and route,
   the offers check and gift notice, the news notice, four Pro teasers in the editor, and
-  the import page's stats beacon. Each hook is one line marked `Accurona:`.
+  the import page's stats beacon. Each hook is one line marked `Axonometra:`.
 - **Still maintained.** Upstream's tests run with the services on (`tests/conftest.py`,
   `features.test.ts`), so the shop code stays tested through every merge.
   `tests/test_upstream_services.py` and `frontend/src/upstream.test.ts` prove that, switched

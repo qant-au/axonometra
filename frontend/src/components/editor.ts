@@ -723,7 +723,7 @@ export class Fp3dEditor extends LitElement {
     this._cardJoin = null;
     this._wallView3d = (() => {
       try {
-        return localStorage.getItem("accurona.wall3d") !== "0";
+        return localStorage.getItem("axonometra.wall3d") !== "0";
       } catch {
         return true;
       }
@@ -741,20 +741,20 @@ export class Fp3dEditor extends LitElement {
     this._phoneHint = true;
     this._diagInvite = false;
     try {
-      this._phoneHint = localStorage.getItem("accurona.phoneHint") !== "0";
+      this._phoneHint = localStorage.getItem("axonometra.phoneHint") !== "0";
     } catch {
       // no storage: shown until closed
     }
     let split = false;
     try {
-      split = localStorage.getItem("accurona.editor3d") === "1";
+      split = localStorage.getItem("axonometra.editor3d") === "1";
     } catch {
       // no storage
     }
     this._split = split;
     this._splitRatio = 0.55;
     try {
-      const saved = Number(localStorage.getItem("accurona.editorSplit"));
+      const saved = Number(localStorage.getItem("axonometra.editorSplit"));
       if (saved >= 20 && saved <= 80) this._splitRatio = saved / 100;
     } catch {
       /* no storage */
@@ -763,7 +763,7 @@ export class Fp3dEditor extends LitElement {
     // the 3D pane's wall view stays as it was last set on this device (#309)
     this._wall3d = "cut";
     try {
-      if (localStorage.getItem("accurona.walls3d") === "auto") this._wall3d = "auto";
+      if (localStorage.getItem("axonometra.walls3d") === "auto") this._wall3d = "auto";
     } catch {
       // no storage: the default
     }
@@ -771,14 +771,14 @@ export class Fp3dEditor extends LitElement {
     this._sideOpen = false;
     let pinned = true;
     try {
-      pinned = localStorage.getItem("accurona.sidePinned") !== "0";
+      pinned = localStorage.getItem("axonometra.sidePinned") !== "0";
     } catch {
       // no storage
     }
     this._sidePinned = pinned;
     let min = false;
     try {
-      min = localStorage.getItem("accurona.sideMin") === "1";
+      min = localStorage.getItem("axonometra.sideMin") === "1";
     } catch {
       // no storage
     }
@@ -792,7 +792,7 @@ export class Fp3dEditor extends LitElement {
     this._settingsMenu = false;
     let width = 320;
     try {
-      width = Number(localStorage.getItem("accurona.sideWidth")) || 320;
+      width = Number(localStorage.getItem("axonometra.sideWidth")) || 320;
     } catch {
       // no storage: the default width
     }
@@ -895,7 +895,7 @@ export class Fp3dEditor extends LitElement {
       handle.removeEventListener("pointerup", up);
       handle.removeEventListener("pointercancel", up);
       try {
-        localStorage.setItem("accurona.editorSplit", String(Math.round(this._splitRatio * 100)));
+        localStorage.setItem("axonometra.editorSplit", String(Math.round(this._splitRatio * 100)));
       } catch {
         /* no storage */
       }
@@ -909,7 +909,7 @@ export class Fp3dEditor extends LitElement {
   private toggleSplit(): void {
     this._split = !this._split;
     try {
-      localStorage.setItem("accurona.editor3d", this._split ? "1" : "0");
+      localStorage.setItem("axonometra.editor3d", this._split ? "1" : "0");
     } catch {
       // no storage: the choice lasts for this page
     }
@@ -1118,7 +1118,7 @@ export class Fp3dEditor extends LitElement {
   }
 
   private render3d() {
-    return html`<div class="accurona-editor-3d">
+    return html`<div class="axonometra-editor-3d">
       ${this.houseTool
         ? nothing
         : html`<div class="fp3d-seg fp3d-3d-walls">
@@ -1126,7 +1126,7 @@ export class Fp3dEditor extends LitElement {
             <button aria-pressed=${this._wall3d === "cut"} @click=${() => this.setWall3d("cut")}>${this.t("walls_cut")}</button>
           </div>`}
       ${this.render3dBar()}
-      <accurona-view3d
+      <axonometra-view3d
               .walkable=${false}
         .hass=${this.hass}
         .building=${this._doc3d}
@@ -1173,14 +1173,14 @@ export class Fp3dEditor extends LitElement {
           if (e.detail.roomId) this.selectFrom3d("room", e.detail.roomId);
           else this._sideOpen = false;
         }}
-      ></accurona-view3d>
+      ></axonometra-view3d>
     </div>`;
   }
 
   private setWall3d(mode: WallMode): void {
     this._wall3d = mode;
     try {
-      localStorage.setItem("accurona.walls3d", mode);
+      localStorage.setItem("axonometra.walls3d", mode);
     } catch {
       // no storage: not remembered
     }
@@ -1191,7 +1191,7 @@ export class Fp3dEditor extends LitElement {
     if (this.diagInviteChecked || !this.hass || !this.isAdmin || !released("diagnostics")) return;
     this.diagInviteChecked = true;
     try {
-      if (localStorage.getItem("accurona.diagInvite") === "0") return;
+      if (localStorage.getItem("axonometra.diagInvite") === "0") return;
     } catch {
       return;
     }
@@ -1203,7 +1203,7 @@ export class Fp3dEditor extends LitElement {
   private closeDiagInvite(): void {
     this._diagInvite = false;
     try {
-      localStorage.setItem("accurona.diagInvite", "0");
+      localStorage.setItem("axonometra.diagInvite", "0");
     } catch {
       // no storage: gone for this visit
     }
@@ -1233,7 +1233,7 @@ export class Fp3dEditor extends LitElement {
     if (this.reframe3d) {
       this.reframe3d = false;
       // after the 3D half got its new floor (and built the roof): frame it
-      setTimeout(() => (this.renderRoot.querySelector("accurona-view3d") as (HTMLElement & { resetView(): void }) | null)?.resetView(), 250);
+      setTimeout(() => (this.renderRoot.querySelector("axonometra-view3d") as (HTMLElement & { resetView(): void }) | null)?.resetView(), 250);
     }
     const bg = this.floor?.background;
     if (bg && !this._images[bg.image_id] && !this.loadingImages.has(bg.image_id)) void this.loadImage(bg.image_id);
@@ -4117,8 +4117,8 @@ export class Fp3dEditor extends LitElement {
       <h3>${this.t("help_title")}</h3>
       <p class="fp3d-sub">${this.t("help_hint")}</p>
       <div class="fp3d-actions">
-        <a class="fp3d-btn" href="https://github.com/qant-au/accurona/issues/new/choose" target="_blank" rel="noopener">🐞 ${this.t("help_issue")}</a>
-        <a class="fp3d-btn" href="https://github.com/qant-au/accurona/discussions" target="_blank" rel="noopener">💡 ${this.t("help_idea")}</a>
+        <a class="fp3d-btn" href="https://github.com/qant-au/axonometra/issues/new/choose" target="_blank" rel="noopener">🐞 ${this.t("help_issue")}</a>
+        <a class="fp3d-btn" href="https://github.com/qant-au/axonometra/discussions" target="_blank" rel="noopener">💡 ${this.t("help_idea")}</a>
       </div>
     </section>`;
   }
@@ -5263,7 +5263,7 @@ export class Fp3dEditor extends LitElement {
     const item = news.find((n) => {
       if (UNRELEASED.includes(n.feature) || hasFeature(n.feature) || !customer) return false;
       try {
-        return localStorage.getItem(`accurona.news.${n.id}`) !== "never";
+        return localStorage.getItem(`axonometra.news.${n.id}`) !== "never";
       } catch {
         return true;
       }
@@ -5271,7 +5271,7 @@ export class Fp3dEditor extends LitElement {
     if (!item) return nothing;
     const never = () => {
       try {
-        localStorage.setItem(`accurona.news.${item.id}`, "never");
+        localStorage.setItem(`axonometra.news.${item.id}`, "never");
       } catch {
         // a private window: it only stays away for this visit
       }
@@ -5681,7 +5681,7 @@ export class Fp3dEditor extends LitElement {
     const walls = floor ? generateWalls(floor.rooms, { exterior: this._doc.settings.wall_exterior, interior: this._doc.settings.wall_interior }, floor.walls ?? []) : null;
     return html`
       ${this.renderPreview()} ${this.renderWallView()} ${this.renderPartCard()} ${this.renderDiagnosticsView()} ${this.renderNews()} ${this.renderSettingsDialog()}
-      <div class="accurona-editor ${this.narrow ? "fp3d-narrow" : ""}" style=${`--fp3d-side-w:${this._sideWidth}px`}>
+      <div class="axonometra-editor ${this.narrow ? "fp3d-narrow" : ""}" style=${`--fp3d-side-w:${this._sideWidth}px`}>
         <div class="fp3d-main">
           <div class="fp3d-toolbar">
             ${this._wallPick ? html`<div class="fp3d-pick-tip" style=${`left:${this.wallPickTip[0]}px;top:${this.wallPickTip[1]}px`} @click=${() => (this._wallPick = false)}>${this.t("hint_wall_pick")}</div>` : nothing}
@@ -5699,7 +5699,7 @@ export class Fp3dEditor extends LitElement {
                     @click=${() => {
                       this._phoneHint = false;
                       try {
-                        localStorage.setItem("accurona.phoneHint", "0");
+                        localStorage.setItem("axonometra.phoneHint", "0");
                       } catch {
                         // no storage: gone for this visit
                       }
@@ -6460,7 +6460,7 @@ export class Fp3dEditor extends LitElement {
     this._wallView3d = on;
     this.wall3dKey = "";
     try {
-      localStorage.setItem("accurona.wall3d", on ? "1" : "0");
+      localStorage.setItem("axonometra.wall3d", on ? "1" : "0");
     } catch {
       // not remembered
     }
@@ -7111,7 +7111,7 @@ export class Fp3dEditor extends LitElement {
                   : nothing}
               </div>`}
         ${this._wallView3d
-          ? html`<accurona-view3d
+          ? html`<axonometra-view3d
               .walkable=${false}
               class="fp3d-wv-3d"
               ${ref((el) => el && this.setupWall3d(el as HTMLElement, room, v.edge))}
@@ -7149,7 +7149,7 @@ export class Fp3dEditor extends LitElement {
                 else this._wallSel = id;
               }}
               @furniture-move=${this.onFurnitureMoved3d}
-            ></accurona-view3d>
+            ></axonometra-view3d>
             <div class="fp3d-wv-lift" hidden title=${this.t("wall_view_lift")} @pointerdown=${(e: PointerEvent) => this.liftDown(e)} @pointermove=${(e: PointerEvent) => this.liftMove(e)} @pointerup=${() => this.liftUp()} @pointercancel=${() => this.liftUp()}>
               <span>↕</span><b></b>
             </div>`
@@ -7531,8 +7531,8 @@ export class Fp3dEditor extends LitElement {
 
   private rememberWallType(type: string): void {
     try {
-      const list = JSON.parse(localStorage.getItem("accurona.wallRecent") ?? "[]") as string[];
-      localStorage.setItem("accurona.wallRecent", JSON.stringify([type, ...list.filter((t) => t !== type)].slice(0, 6)));
+      const list = JSON.parse(localStorage.getItem("axonometra.wallRecent") ?? "[]") as string[];
+      localStorage.setItem("axonometra.wallRecent", JSON.stringify([type, ...list.filter((t) => t !== type)].slice(0, 6)));
     } catch {
       // no storage
     }
@@ -7540,7 +7540,7 @@ export class Fp3dEditor extends LitElement {
 
   private wallRecent(): string[] {
     try {
-      const list = JSON.parse(localStorage.getItem("accurona.wallRecent") ?? "[]");
+      const list = JSON.parse(localStorage.getItem("axonometra.wallRecent") ?? "[]");
       return Array.isArray(list) ? list.filter((t): t is string => typeof t === "string" && (FURNITURE_TYPES.includes(t as never) || !!packItem(t))) : [];
     } catch {
       return [];
@@ -10170,7 +10170,7 @@ export class Fp3dEditor extends LitElement {
     this._sidePinned = pinned;
     this._sideOpen = false;
     try {
-      localStorage.setItem("accurona.sidePinned", pinned ? "1" : "0");
+      localStorage.setItem("axonometra.sidePinned", pinned ? "1" : "0");
     } catch {
       // no storage
     }
@@ -10184,7 +10184,7 @@ export class Fp3dEditor extends LitElement {
     }
     this._sideMin = folded;
     try {
-      localStorage.setItem("accurona.sideMin", folded ? "1" : "0");
+      localStorage.setItem("axonometra.sideMin", folded ? "1" : "0");
     } catch {
       // no storage
     }
@@ -10206,7 +10206,7 @@ export class Fp3dEditor extends LitElement {
       this.sideDrag = null;
       (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId);
       try {
-        localStorage.setItem("accurona.sideWidth", String(this._sideWidth));
+        localStorage.setItem("axonometra.sideWidth", String(this._sideWidth));
       } catch {
         // no storage: the width lasts for this visit
       }
@@ -10641,7 +10641,7 @@ export class Fp3dEditor extends LitElement {
     const current = value === null ? (autoLabel !== null ? "__auto" : "none") : value;
     return html`<label class="fp3d-field fp3d-wide"
       >${label}
-      <accurona-entity-picker
+      <axonometra-entity-picker
         .options=${options}
         .fixed=${fixed}
         .value=${current}
@@ -10651,7 +10651,7 @@ export class Fp3dEditor extends LitElement {
           e.stopPropagation();
           onChange(e.detail.value === "__auto" ? null : e.detail.value);
         }}
-      ></accurona-entity-picker></label
+      ></axonometra-entity-picker></label
     >`;
   }
 
@@ -11300,7 +11300,7 @@ export class Fp3dEditor extends LitElement {
 
   /** The camera of the editor's 3D pane as it stands right now, rounded for the plan (null: no pane). */
   private paneView(): StartView | null {
-    const pane = this.renderRoot.querySelector("accurona-view3d") as (HTMLElement & { currentView(): StartView | null }) | null;
+    const pane = this.renderRoot.querySelector("axonometra-view3d") as (HTMLElement & { currentView(): StartView | null }) | null;
     const v = pane?.currentView();
     if (!v) return null;
     const t = v.target;
@@ -12233,7 +12233,7 @@ export class Fp3dEditor extends LitElement {
         : nothing}
       ${groups.map(
         (g) => html`<div class="fp3d-picture-group">
-          <accurona-entity-picker
+          <axonometra-entity-picker
             .options=${entities}
             .value=${g.entity}
             .placeholder=${this.t("entity_search")}
@@ -12242,7 +12242,7 @@ export class Fp3dEditor extends LitElement {
               e.stopPropagation();
               patchGroup(g, { entity: e.detail.value });
             }}
-          ></accurona-entity-picker>
+          ></axonometra-entity-picker>
           <select
             ?disabled=${!admin}
             title=${this.t("picture_attribute")}
@@ -12296,7 +12296,7 @@ export class Fp3dEditor extends LitElement {
                 }}
               />
               ${cameras.length
-                ? html`<accurona-entity-picker
+                ? html`<axonometra-entity-picker
                     class="fp3d-picture-camera"
                     .options=${cameras}
                     .fixed=${[{ id: "none", label: this.t("picture_camera_none") }]}
@@ -12308,7 +12308,7 @@ export class Fp3dEditor extends LitElement {
                       if (e.detail.value !== "none") patchRow(i, { image: `camera:${e.detail.value}` });
                       else if (cameraOf(r)) patchRow(i, { image: "" });
                     }}
-                  ></accurona-entity-picker>`
+                  ></axonometra-entity-picker>`
                 : nothing}
               <span class="fp3d-sub">${hit ? this.t("picture_matches") : ""}</span>
               <button class="fp3d-btn" ?disabled=${!admin} title=${this.t("delete")} @click=${() => set(rules.filter((_, j) => j !== i))}>✕</button>
@@ -12382,7 +12382,7 @@ export class Fp3dEditor extends LitElement {
     return html`<section>
       <h3>${this.t("furniture_add")}</h3>
       <p class="fp3d-sub">${room ? this.t("furniture_into", { room: room.name }) : this.t("furniture_pick_room")}</p>
-      <accurona-library
+      <axonometra-library
         .entries=${this.libraryEntries(lang)}
         .language=${lang}
         .roomHint=${room ? roomKindOf(room.name) : null}
@@ -12394,7 +12394,7 @@ export class Fp3dEditor extends LitElement {
           if (e.detail.type && e.detail.element) void this.showPreview(e.detail.type, e.detail.element);
           else this._preview = null;
         }}
-      ></accurona-library>
+      ></axonometra-library>
     </section>
     <div class="fp3d-ext-teaser">
       <b>${this.t("ext_teaser_title")}</b>
@@ -12831,7 +12831,7 @@ export class Fp3dEditor extends LitElement {
     try {
       this._diag = action === "delete" ? await deleteDiagnostics(this.hass) : await setDiagnostics(this.hass, action === "on");
       if (action === "delete") this._diagNote = this.t("diag_deleted");
-      window.dispatchEvent(new CustomEvent("accurona-diagnostics", { detail: { enabled: this._diag.enabled } }));
+      window.dispatchEvent(new CustomEvent("axonometra-diagnostics", { detail: { enabled: this._diag.enabled } }));
     } catch {
       this._diagNote = this.t(action === "delete" ? "diag_delete_failed" : "save_error");
     }
@@ -12919,7 +12919,7 @@ export class Fp3dEditor extends LitElement {
         }
       }
       const day = new Date().toISOString().slice(0, 10);
-      download(`accurona-${this.t("export_name_full")}-${day}.json`, JSON.stringify({ ...base, exported_at: new Date().toISOString(), images }));
+      download(`axonometra-${this.t("export_name_full")}-${day}.json`, JSON.stringify({ ...base, exported_at: new Date().toISOString(), images }));
     } catch (err) {
       alert(this.t("backup_import_error", { error: String((err as { message?: string })?.message ?? err) }));
     } finally {
@@ -12973,7 +12973,7 @@ export class Fp3dEditor extends LitElement {
 
   private exportPlan(shareable: boolean): void {
     const day = new Date().toISOString().slice(0, 10);
-    download(`accurona-${this.t(shareable ? "export_name_template" : "export_name_backup")}-${day}.json`, JSON.stringify(exportFile(this._doc, shareable), null, 2));
+    download(`axonometra-${this.t(shareable ? "export_name_template" : "export_name_backup")}-${day}.json`, JSON.stringify(exportFile(this._doc, shareable), null, 2));
   }
 
   private async importPlan(e: Event): Promise<void> {
@@ -13254,14 +13254,14 @@ export class Fp3dEditor extends LitElement {
         display: block;
         height: 100%;
       }
-      .accurona-editor {
+      .axonometra-editor {
         position: relative;
         display: grid;
         grid-template-columns: 1fr var(--fp3d-side-w, 320px);
         height: 100%;
         min-height: 0;
       }
-      .accurona-editor:has(> .fp3d-side-strip) {
+      .axonometra-editor:has(> .fp3d-side-strip) {
         grid-template-columns: 1fr 52px;
       }
       .fp3d-side-strip {
@@ -13322,7 +13322,7 @@ export class Fp3dEditor extends LitElement {
         border-radius: 999px;
         padding: 4px 10px;
       }
-      .accurona-editor.fp3d-narrow {
+      .axonometra-editor.fp3d-narrow {
         grid-template-columns: 1fr;
         grid-template-rows: minmax(360px, 62vh) auto;
         height: auto;
@@ -13494,7 +13494,7 @@ export class Fp3dEditor extends LitElement {
       .fp3d-split-handle:hover {
         background: var(--fp3d-accent);
       }
-      .accurona-editor-3d {
+      .axonometra-editor-3d {
         position: relative;
         overflow: hidden;
         flex: 1 1 0;
@@ -13504,7 +13504,7 @@ export class Fp3dEditor extends LitElement {
         container-type: size;
         container-name: fp3d;
       }
-      .accurona-editor-3d accurona-view3d {
+      .axonometra-editor-3d axonometra-view3d {
         display: block;
         height: 100%;
       }
@@ -13541,7 +13541,7 @@ export class Fp3dEditor extends LitElement {
       .fp3d-narrow .fp3d-split > .fp3d-canvas-wrap {
         flex: 1 1 auto;
       }
-      .fp3d-narrow .accurona-editor-3d {
+      .fp3d-narrow .axonometra-editor-3d {
         flex: 0 0 42%;
         min-width: 0;
         border-left: none;
@@ -13837,13 +13837,13 @@ export class Fp3dEditor extends LitElement {
         font-size: 13px;
         font-variant-numeric: tabular-nums;
       }
-      .accurona-library {
+      .axonometra-library {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(118px, 1fr));
         gap: 6px;
         margin-top: 8px;
       }
-      .accurona-library .fp3d-btn {
+      .axonometra-library .fp3d-btn {
         font-weight: 500;
         font-size: 13px;
       }
@@ -16172,7 +16172,7 @@ export class Fp3dEditor extends LitElement {
   ];
 }
 
-if (!customElements.get("accurona-editor")) customElements.define("accurona-editor", Fp3dEditor);
+if (!customElements.get("axonometra-editor")) customElements.define("axonometra-editor", Fp3dEditor);
 
 // the extensions page is part of this bundle: the panel loads it the same way as the editor
 import "./extensions.ts";

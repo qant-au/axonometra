@@ -4,6 +4,8 @@ import { CATALOGUE } from "./catalogue.ts";
 import { SHIPD_EXAMPLES } from "./examples.ts";
 import { hydrostatics } from "./hydrostatics.ts";
 import { meshVolume, bodyMesh } from "./mesh.ts";
+import { drains } from "./open.ts";
+import { float } from "./stability.ts";
 
 test("catalogue: every hull builds, floats, and its mesh holds its volume", () => {
   const names = new Set<string>();
@@ -23,4 +25,14 @@ test("catalogue: every hull builds, floats, and its mesh holds its volume", () =
   }
   // every Ship-D example is in it, grouped
   for (const x of SHIPD_EXAMPLES) assert.notEqual(CATALOGUE.find((e) => e.name === x.name)?.group, "Other", x.name);
+});
+
+test("catalogue: every open boat floats as fitted and drains herself at rest", () => {
+  const open = CATALOGUE.map((e) => ({ name: e.name, c: e.build() })).filter((x) => x.c.shell);
+  assert.ok(open.length >= 3);
+  for (const { name, c } of open) {
+    assert.ok(c.load && c.mounts?.length, `${name}: a load and mounts`);
+    const d = drains(c.shell!, float(c.hull, c.load!, 0).attitude);
+    assert.ok(d.ok, `${name}: ${JSON.stringify(d)}`);
+  }
 });

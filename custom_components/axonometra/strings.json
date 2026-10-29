@@ -1,0 +1,33 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Axonometra",
+        "description": "Adds a sidebar page where you draw your home and see it in 3D."
+      }
+    },
+    "abort": {
+      "single_instance_allowed": "Axonometra is already set up."
+    }
+  },
+  "services": {
+    "ask": {
+      "name": "Ask the house",
+      "description": "Hands a sentence to the open Axonometra views: \"Show the living room\" shows it, questions are answered by the installed modules (\"What is open?\"). The first view that understands answers.",
+      "fields": {
+        "text": {
+          "name": "Sentence",
+          "description": "What to show or ask, as you would say it."
+        },
+        "screen": {
+          "name": "Screen",
+          "description": "Only the view with this screen name reacts (set in the view's settings or the card's option screen). Empty: every open view."
+        },
+        "speak": {
+          "name": "Speak",
+          "description": "The view speaks its answer with Assist's text-to-speech (off: it only shows it)."
+        }
+      }
+    }
+  }
+}

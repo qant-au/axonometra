@@ -1,4 +1,4 @@
-"""Fixtures for Accurona tests."""
+"""Fixtures for Axonometra tests."""
 
 from __future__ import annotations
 

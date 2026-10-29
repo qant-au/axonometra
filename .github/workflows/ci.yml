@@ -24,7 +24,7 @@ jobs:
       - name: Build and check budgets
         run: npm run build
       - name: Committed bundles are up to date
-        run: git diff --exit-code -- ../custom_components/accurona/frontend
+        run: git diff --exit-code -- ../custom_components/axonometra/frontend
 
   python:
     runs-on: ubuntu-latest
@@ -36,7 +36,7 @@ jobs:
       - run: pip install -r requirements_test.txt ruff mypy
       - run: ruff check custom_components tests
       - run: ruff format --check custom_components tests
-      - run: mypy custom_components/accurona
+      - run: mypy custom_components/axonometra
       - run: pytest -q
 
   # The job above gets the newest test harness that still runs on Python 3.13 (an older Home Assistant). Current

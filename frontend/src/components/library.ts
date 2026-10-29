@@ -13,9 +13,9 @@ import { thumbFor } from "../thumbs.ts";
 const RECENT_MAX = 10;
 const PAGE = 24;
 const THUMB_PX = 96;
-const STORE_OPEN = "accurona.lib.open";
-const STORE_FAV = "accurona.lib.fav";
-const STORE_RECENT = "accurona.lib.recent";
+const STORE_OPEN = "axonometra.lib.open";
+const STORE_FAV = "axonometra.lib.fav";
+const STORE_RECENT = "axonometra.lib.recent";
 
 type Translate = (key: string, vars?: Record<string, string | number>) => string;
 
@@ -551,4 +551,4 @@ export class FurnitureLibrary extends LitElement {
   ];
 }
 
-if (!customElements.get("accurona-library")) customElements.define("accurona-library", FurnitureLibrary);
+if (!customElements.get("axonometra-library")) customElements.define("axonometra-library", FurnitureLibrary);

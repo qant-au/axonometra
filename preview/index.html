@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Accurona – Vorschau</title>
+    <title>Axonometra – Vorschau</title>
     <style>
       /* Like HA: the panel's parent has no explicit height, the panel sizes itself. */
       body {
@@ -13,7 +13,7 @@
     </style>
   </head>
   <body>
-    <accurona-panel></accurona-panel>
+    <axonometra-panel></axonometra-panel>
     <script type="module">
       // Mock of the Home Assistant frontend object with invented demo data.
       import { DEMO_AREAS, DEMO_BUILDING, DEMO_FLOORS, DEMO_PACK, DEMO_ENTITIES, DEMO_STATES, DEMO_PICTURES } from "./demo-data.js";
@@ -22,7 +22,7 @@
       const params = new URLSearchParams(location.search);
       // the power flow lines are on with ?flows (and off without, whatever an earlier page stored)
       try {
-        localStorage.setItem("accurona.flows", params.has("flows") ? "1" : "0");
+        localStorage.setItem("axonometra.flows", params.has("flows") ? "1" : "0");
       } catch {}
       // the shop connection of the demo: connected when ?shop is given, with one pack to install and one update
       let license = {
@@ -65,10 +65,10 @@
       async function previewPacks() {
         if (importedPacks === null) {
           importedPacks = [DEMO_PACK];
-          // the demo has Accurona Pro unless ?nopro asks for the locked look
+          // the demo has Axonometra Pro unless ?nopro asks for the locked look
           // add-ons not out yet (Pool Pro) only on a local preview or with ?pool, not on the public demo
           const unreleasedDemo = params.has("pool") || ["localhost", "127.0.0.1"].includes(location.hostname);
-          if (!params.has("nopro")) importedPacks.push({ format: "fp3dpack", version: 1, id: "demo.pro", name: "Accurona Pro (Demo)", publisher: "Mastershort", licensee: null, features: ["camera_cockpit", "weather", "screens", "energy_pro", "sound", "auto_pro", "time_travel", "household", "fun_pets", "fun_halloween", ...(unreleasedDemo ? ["pool"] : [])], items: [] });
+          if (!params.has("nopro")) importedPacks.push({ format: "fp3dpack", version: 1, id: "demo.pro", name: "Axonometra Pro (Demo)", publisher: "Mastershort", licensee: null, features: ["camera_cockpit", "weather", "screens", "energy_pro", "sound", "auto_pro", "time_travel", "household", "fun_pets", "fun_halloween", ...(unreleasedDemo ? ["pool"] : [])], items: [] });
           try {
             const res = await fetch("../private/packs/starter.json");
             if (res.ok) importedPacks.push({ licensee: null, ...(await res.json()) });
@@ -152,7 +152,7 @@
         },
         async callWS(msg) {
           switch (msg.type) {
-            case "accurona/building/get": {
+            case "axonometra/building/get": {
               // the online demo has no private packs: their items would stand as grey boxes, so leave them out
               const packs = await previewPacks();
               const known = new Set(packs.flatMap((p) => p.items.map((it) => `pack:${p.id}:${it.id}`)));
@@ -160,7 +160,7 @@
               for (const f of shown.floors) f.furniture = f.furniture.filter((m) => !m.type.startsWith("pack:") || known.has(m.type));
               return { building: shown, revision };
             }
-            case "accurona/building/save":
+            case "axonometra/building/save":
               // ?savefail simulates a backend that still runs an older version
               if (params.has("savefail")) throw { code: "invalid_format", message: "extra keys not allowed @ data['building']['floors'][0]['furniture'][0]['entity']" };
               building = structuredClone(msg.building);
@@ -168,20 +168,20 @@
               for (const cb of listeners) cb({ revision });
               return { revision };
             // the opt-in reports (only shown with the lab switch): a made-up status and preview
-            case "accurona/diagnostics/client":
+            case "axonometra/diagnostics/client":
               return { enabled: diag.enabled };
-            case "accurona/diagnostics/get":
-            case "accurona/diagnostics/set":
-            case "accurona/diagnostics/delete": {
-              if (msg.type === "accurona/diagnostics/set") diag.enabled = msg.enabled;
-              if (msg.type === "accurona/diagnostics/delete") diag.enabled = false;
+            case "axonometra/diagnostics/get":
+            case "axonometra/diagnostics/set":
+            case "axonometra/diagnostics/delete": {
+              if (msg.type === "axonometra/diagnostics/set") diag.enabled = msg.enabled;
+              if (msg.type === "axonometra/diagnostics/delete") diag.enabled = false;
               return {
                 enabled: diag.enabled,
                 last_daily: null,
                 can_delete: diag.enabled,
                 endpoint: "https://api.mastershort.de/telemetry/v1/report",
                 preview: {
-                  v: 1, id: diag.enabled ? "3f0c9a52-7d1e-4b8a-9c61-2e5f8d4a7b10" : null, kind: "daily", accurona: "1.17.0", ha: "2026.10.1", python: "3.13", lang: "de",
+                  v: 1, id: diag.enabled ? "3f0c9a52-7d1e-4b8a-9c61-2e5f8d4a7b10" : null, kind: "daily", axonometra: "1.17.0", ha: "2026.10.1", python: "3.13", lang: "de",
                   packs: ["mastershort.pro_energy"], pro: ["energy_pro"],
                   plan: { floors: building.floors.length, rooms: building.floors.reduce((n, f) => n + f.rooms.length, 0), furniture: building.floors.reduce((n, f) => n + f.furniture.length, 0), devices_linked: building.floors.reduce((n, f) => n + f.placements.length, 0), outdoor: 0, cameras: 1 },
                   clients: diag.enabled ? [{ device: "tablet", browser: "Silk 120", os: "Android 9", low_end: true, render_scale: 0.75, fps: 24, gpu_tier: "low", views: { "3d": 12, editor: 3 } }] : [],
@@ -189,49 +189,49 @@
                 },
               };
             }
-            case "accurona/history/list":
+            case "axonometra/history/list":
               return { snapshots: history.map(({ building: b, ...rest }) => ({ ...rest, floors: b.floors.length, rooms: b.floors.reduce((n, f) => n + f.rooms.length, 0), furniture: b.floors.reduce((n, f) => n + f.furniture.length, 0) })).reverse() };
-            case "accurona/history/snapshot":
+            case "axonometra/history/snapshot":
               history.push({ id: `s${history.length + 1}`, revision, saved_at: Date.now() / 1000, building: structuredClone(building) });
               return null;
-            case "accurona/history/restore": {
+            case "axonometra/history/restore": {
               const snap = history.find((h) => h.id === msg.snapshot_id);
               building = structuredClone(snap.building);
               revision += 1;
               for (const cb of listeners) cb({ revision });
               return { revision };
             }
-            case "accurona/image/get":
+            case "axonometra/image/get":
               if (!images[msg.image_id]) throw { code: "not_found", message: "Image not found" };
               return { data: images[msg.image_id] };
-            case "accurona/image/set":
+            case "axonometra/image/set":
               images[msg.image_id] = msg.data;
               return null;
-            case "accurona/packs/list":
+            case "axonometra/packs/list":
               return { packs: await previewPacks() };
-            case "accurona/packs/import": {
+            case "axonometra/packs/import": {
               // the preview cannot check signatures: a file with a payload counts as valid
               const data = JSON.parse(msg.pack);
               if (!data.payload || !data.signature) throw { code: "unsigned", message: "unsigned" };
               importedPacks = [...importedPacks.filter((p) => p.id !== data.payload.id), data.payload];
               return { id: data.payload.id, name: data.payload.name, publisher: data.payload.publisher, licensee: data.payload.licensee ?? null, items: data.payload.items.length };
             }
-            case "accurona/packs/remove":
+            case "axonometra/packs/remove":
               importedPacks = importedPacks.filter((p) => p.id !== msg.pack_id);
               return null;
-            case "accurona/license/get":
+            case "axonometra/license/get":
               return license;
-            case "accurona/license/activate":
+            case "axonometra/license/activate":
               if (!/^NP(-[A-Z0-9]{4}){4}$/i.test(msg.key)) throw { code: "invalid_key", message: "unknown" };
               license = { ...license, active: true, key_hint: "…" + msg.key.slice(-4), licensee: "Demo Kunde", checked_at: Date.now() / 1000 };
               return license;
-            case "accurona/license/remove":
+            case "axonometra/license/remove":
               license = { ...license, active: false, key_hint: null, licensee: null, checked_at: null };
               return license;
-            case "accurona/license/refresh":
+            case "axonometra/license/refresh":
               license = { ...license, checked_at: Date.now() / 1000 };
               return license;
-            case "accurona/packs/install":
+            case "axonometra/packs/install":
               license.packs = license.packs.map((p) => (p.id === msg.pack_id ? { ...p, installed: p.release } : p));
               return { id: msg.pack_id, name: msg.pack_id, publisher: "Mastershort", licensee: "Demo Kunde", release: 1, items: 0 };
             case "recorder/statistics_during_period": {
@@ -253,7 +253,7 @@
               });
               return Object.fromEntries((msg.statistic_ids ?? []).map((id) => [id, curve]));
             }
-            case "accurona/timetravel/history":
+            case "axonometra/timetravel/history":
               // the time travel: an invented week of the demo household (?tt=07:42 or ?tt=-3h opens it there)
               if (params.has("nopro")) throw { code: "not_unlocked", message: "Time travel is a Pro add-on" };
               return demoHistory(msg, hass.states);
@@ -289,9 +289,9 @@
         hass.states["weather.zuhause"].state = "rainy";
       }
       let current = hass;
-      await import("../custom_components/accurona/frontend/accurona.js");
+      await import("../custom_components/axonometra/frontend/axonometra.js");
       if (params.has("site")) {
-        // ?site: the public online demo says what it is and where to get Accurona
+        // ?site: the public online demo says what it is and where to get Axonometra
         const de = hass.language === "de";
         // phones: short and at the top of the 3D area, clear of the toolbars at the bottom
         const narrow = innerWidth < 700;
@@ -318,7 +318,7 @@
         // made for and offer the clean view (only the house) or the way to a PC
         let seen = false;
         try {
-          seen = sessionStorage.getItem("accurona.demoPhoneHint") === "1";
+          seen = sessionStorage.getItem("axonometra.demoPhoneHint") === "1";
         } catch {
           /* no storage: show it */
         }
@@ -333,18 +333,18 @@
             `<button style="width:100%;margin-top:10px;padding:11px 14px;border-radius:12px;font:600 15px Figtree,Roboto,sans-serif;cursor:pointer;${primary ? "background:#00e5ff;color:#06101c;border:0" : "background:none;color:#cfe9ff;border:1px solid rgba(0,229,255,.45)"}">${text}</button>`;
           box.innerHTML = de
             ? `<b style="font-size:18px;color:#fff">Willkommen in der Demo 👋</b>
-               <p style="margin:10px 0 0">Accurona ist für <b>Wandtablets, Tablets und den PC</b> gemacht – den Grundriss zeichnet man am PC. Am Handy siehst du nur einen kleinen Ausschnitt, deshalb wirken die vielen Knöpfe hier etwas eng.</p>
+               <p style="margin:10px 0 0">Axonometra ist für <b>Wandtablets, Tablets und den PC</b> gemacht – den Grundriss zeichnet man am PC. Am Handy siehst du nur einen kleinen Ausschnitt, deshalb wirken die vielen Knöpfe hier etwas eng.</p>
                <p style="margin:8px 0 0">Tipp: Handy <b>quer</b> halten oder die Demo am PC öffnen: <span style="color:#00e5ff">neonplan3d.mastershort.de</span></p>
                ${btn("Nur das Haus zeigen", true)}${btn("Alles ansehen", false)}<p style="margin:10px 0 0;font-size:13px;opacity:.75">Das Auge 👁 unten links holt die Knöpfe zurück.</p>`
             : `<b style="font-size:18px;color:#fff">Welcome to the demo 👋</b>
-               <p style="margin:10px 0 0">Accurona is made for <b>wall tablets, tablets and the PC</b> – you draw the floor plan on a PC. A phone shows only a small part, so all the buttons feel a bit cramped here.</p>
+               <p style="margin:10px 0 0">Axonometra is made for <b>wall tablets, tablets and the PC</b> – you draw the floor plan on a PC. A phone shows only a small part, so all the buttons feel a bit cramped here.</p>
                <p style="margin:8px 0 0">Tip: turn your phone <b>sideways</b> or open the demo on a PC: <span style="color:#00e5ff">neonplan3d.mastershort.de</span></p>
                ${btn("Show just the house", true)}${btn("See everything", false)}<p style="margin:10px 0 0;font-size:13px;opacity:.75">The eye 👁 at the bottom left brings the buttons back.</p>`;
           const [clean, all] = box.querySelectorAll("button");
           const done = () => {
             veil.remove();
             try {
-              sessionStorage.setItem("accurona.demoPhoneHint", "1");
+              sessionStorage.setItem("axonometra.demoPhoneHint", "1");
             } catch {
               /* no storage: it may show again on reload */
             }
@@ -352,7 +352,7 @@
           clean.onclick = () => {
             done();
             // the eye of the 3D view: hides every bar so only the house remains (tap the eye again for the buttons)
-            const v = document.querySelector("accurona-panel")?.shadowRoot?.querySelector("accurona-view3d");
+            const v = document.querySelector("axonometra-panel")?.shadowRoot?.querySelector("axonometra-view3d");
             v?.dispatchEvent(new CustomEvent("clean-toggle", { bubbles: true, composed: true }));
           };
           all.onclick = done;
@@ -362,16 +362,16 @@
       }
       if (params.has("card")) {
         // ?card: the dashboard card next to its visual editor (like Home Assistant's card dialog)
-        document.querySelector("accurona-panel").remove();
-        const CardClass = customElements.get("accurona-card");
+        document.querySelector("axonometra-panel").remove();
+        const CardClass = customElements.get("axonometra-card");
         const wrap = document.createElement("div");
         wrap.style.cssText = "display:grid;grid-template-columns:420px 1fr;gap:24px;padding:24px;font-family:Figtree,Roboto,sans-serif;--primary-text-color:#e1e1e1;--secondary-text-color:#9b9b9b;--card-background-color:#1c1c1c;--primary-color:#03a9f4;--divider-color:rgba(225,225,225,.2)";
         const editorBox = document.createElement("div");
         editorBox.style.cssText = "background:#1c1c1c;border-radius:12px;padding:20px";
         const editor = await CardClass.getConfigElement();
-        const card = document.createElement("accurona-card");
+        const card = document.createElement("axonometra-card");
         let config = {
-          type: "custom:accurona-card",
+          type: "custom:axonometra-card",
           quality: "low",
           floor: params.get("floor") || "eg",
           flows: false,
@@ -399,7 +399,7 @@
         document.body.append(wrap);
         window.fp3dCard = card;
       } else {
-        const panel = document.querySelector("accurona-panel");
+        const panel = document.querySelector("axonometra-panel");
         panel.hass = hass;
         window.addEventListener("hass-more-info", (e) => console.log("more-info", e.detail.entityId));
         panel.narrow = window.innerWidth < 870;

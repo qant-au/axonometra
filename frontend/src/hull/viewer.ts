@@ -19,6 +19,7 @@ import {
   PerspectiveCamera,
   Quaternion,
   Scene,
+  SphereGeometry,
   Vector3,
   WebGLRenderer,
 } from "three";
@@ -26,12 +27,13 @@ import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { CATALOGUE, type CatalogueHull } from "./catalogue.ts";
 import { hydrostatics, type Hydrostatics } from "./hydrostatics.ts";
 import { bodyMesh, ringsMesh, tubeGeometry, type Mesh as HullMesh } from "./mesh.ts";
+import { drains } from "./open.ts";
 import { bodyRange } from "./sections.ts";
 import { innerBody } from "./skin.ts";
-import { axes, float, hullMiddle, type Load } from "./stability.ts";
+import { axes, float, hullMiddle, type Attitude, type Load } from "./stability.ts";
 import type { Hull } from "./types.ts";
 
-const COLOURS = { background: 0x070b14, topsides: 0xd4dbe6, boot: 0x1b2433, bottom: 0x8c2f2f, submarine: 0x3a414c, inner: 0xb08a52, part: 0x8a96a8, tube: 0xb4502a, water: 0x1d4e7a, lines: 0x37e0ff };
+const COLOURS = { background: 0x070b14, topsides: 0xd4dbe6, boot: 0x1b2433, bottom: 0x8c2f2f, submarine: 0x3a414c, inner: 0xb08a52, plate: 0xa7b0bd, mount: 0x37e0ff, part: 0x8a96a8, tube: 0xb4502a, water: 0x1d4e7a, lines: 0x37e0ff };
 const DEG = Math.PI / 180;
 
 export interface HullViewer {
@@ -183,7 +185,7 @@ export function mountHullViewer(root: HTMLElement): HullViewer {
   const boat = new Group();
   scene.add(boat);
 
-  let current: { name: string; built: CatalogueHull; hydro: Hydrostatics; load: Load; heel: number; trim: number; gz: number; curve: [number, number][]; size: number; frame: number; middle: Vector3 } | null = null;
+  let current: { name: string; built: CatalogueHull; hydro: Hydrostatics; load: Load; heel: number; trim: number; gz: number; curve: [number, number][]; size: number; frame: number; middle: Vector3; attitude?: Attitude } | null = null;
   let token = 0;
 
   const resize = () => {
@@ -219,8 +221,21 @@ export function mountHullViewer(root: HTMLElement): HullViewer {
     const thickness = Math.max(0.003, current.size / 300);
     q<HTMLSpanElement>("[data-thickness]").textContent = showInner ? `(${fmt(thickness * 1000, 0)} mm plating)` : "";
     const skin = paint(current.size, (current.built.waterline ?? 0) > 0, showInner);
-    for (const body of hull.bodies) boat.add(new Mesh(geometry(bodyMesh(body)), skin));
-    if (showInner) {
+    const shell = current.built.shell;
+    if (shell) {
+      // an open boat: its skin open at the deck and the transom, the inside of the plating, and its plates
+      const plate = new MeshStandardMaterial({ color: COLOURS.plate, roughness: 0.6, metalness: 0.35, side: DoubleSide });
+      const inner = new MeshStandardMaterial({ color: COLOURS.plate, roughness: 0.8, metalness: 0.2, side: DoubleSide });
+      for (const piece of shell.pieces) boat.add(new Mesh(geometry(piece.mesh), piece.name === "skin" ? skin : plate));
+      boat.add(new Mesh(geometry(bodyMesh(shell.inner, 32, true, false)), inner));
+      const dot = new MeshStandardMaterial({ color: COLOURS.mount, emissive: COLOURS.mount, emissiveIntensity: 0.6 });
+      for (const m of current.built.mounts ?? []) {
+        const marker = new Mesh(new SphereGeometry(current.size / 120, 16, 12), dot);
+        marker.position.set(...m.at);
+        boat.add(marker);
+      }
+    } else for (const body of hull.bodies) boat.add(new Mesh(geometry(bodyMesh(body)), skin));
+    if (showInner && !shell) {
       const inner = new MeshStandardMaterial({ color: COLOURS.inner, roughness: 0.8, side: DoubleSide });
       for (const body of hull.bodies) boat.add(new Mesh(geometry(bodyMesh(innerBody(body, thickness), 32, true)), inner));
     }
@@ -247,6 +262,16 @@ export function mountHullViewer(root: HTMLElement): HullViewer {
       ["Righting lever GZ", `${fmt(current.gz, 3)} m`],
       ["Bodies, stations", `${current.built.hull.bodies.length}, ${current.built.hull.bodies.reduce((s, b) => s + b.sections.length, 0)}`],
     ];
+    const { shell, weights } = current.built;
+    if (shell && current.attitude) {
+      const d = drains(shell, current.attitude);
+      const cm = (m: number) => `${fmt(m * 100, 0)} cm`;
+      rows.push(
+        ["Floats with", `${mass(current.load.displacement)}${weights ? `: plating and ${weights.map((w) => w.name).join(", ")}` : ""}`],
+        ["Drains itself", d.ok ? `yes: the sole ${cm(d.sole)} above the water${d.well === null ? "" : `, the well ${cm(d.well)}`}` : `no: the sole ${cm(d.sole)}, the transom's top ${cm(d.transom)} from the water`],
+        ["Motor mounting height", `${fmt(shell.mount - shell.keel)} m above the bottom`],
+      );
+    }
     q<HTMLTableElement>("[data-numbers]").innerHTML = rows.map(([a, b]) => `<tr><td>${a}</td><td>${b}</td></tr>`).join("");
   };
 
@@ -308,6 +333,7 @@ export function mountHullViewer(root: HTMLElement): HullViewer {
     current.heel = f.attitude.heel;
     current.trim = f.attitude.trim;
     current.gz = f.gz;
+    current.attitude = f.attitude;
     place(f.attitude.heel, f.attitude.trim, f.attitude.level);
     numbers();
     chart();
@@ -336,8 +362,9 @@ export function mountHullViewer(root: HTMLElement): HullViewer {
     const size = x1 - x0;
     // a centre of gravity to start from: part way up the metacentric radius, below the deck; under B when submerged
     const vcg = hydro.waterplane > 0 ? Math.min(hydro.vcb + 0.4 * hydro.bmT, 0.5 * Math.max(0, top)) : hydro.vcb - 0.05 * (top - low);
-    const load: Load = { displacement: hydro.displacement, lcg: hydro.lcb, vcg, tcg: hydro.tcb };
-    vcgInput.value = vcg.toFixed(2);
+    // as fitted, when the boat knows what it carries
+    const load: Load = built.load ?? { displacement: hydro.displacement, lcg: hydro.lcb, vcg, tcg: hydro.tcb };
+    vcgInput.value = load.vcg.toFixed(2);
     current = { name: entry.name, built, hydro, load, heel: 0, trim: 0, gz: 0, curve: [], size, frame: size, middle: new Vector3() };
     water.scale.setScalar(size * 8);
     water.position.y = 0;

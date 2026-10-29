@@ -78,14 +78,14 @@ export class Extensions extends LitElement {
     this._licenseMsg = null;
     let open: string[] = [];
     try {
-      open = JSON.parse(localStorage.getItem("accurona.ext.open") ?? "[]") as string[];
+      open = JSON.parse(localStorage.getItem("axonometra.ext.open") ?? "[]") as string[];
     } catch {
       // nothing remembered
     }
     this._open = new Set(open);
     let nl: string | null = null;
     try {
-      nl = localStorage.getItem("accurona.ext.newsletter");
+      nl = localStorage.getItem("axonometra.ext.newsletter");
     } catch {
       // nothing remembered
     }
@@ -95,7 +95,7 @@ export class Extensions extends LitElement {
   private setNewsletter(state: "opened" | "hidden"): void {
     this._nlState = state;
     try {
-      localStorage.setItem("accurona.ext.newsletter", state);
+      localStorage.setItem("axonometra.ext.newsletter", state);
     } catch {
       // a private window: for this visit only
     }
@@ -127,7 +127,7 @@ export class Extensions extends LitElement {
     else next.add(key);
     this._open = next;
     try {
-      localStorage.setItem("accurona.ext.open", JSON.stringify([...next]));
+      localStorage.setItem("axonometra.ext.open", JSON.stringify([...next]));
     } catch {
       // a private window: it stays open for this visit only
     }
@@ -1073,4 +1073,4 @@ export class Extensions extends LitElement {
   ];
 }
 
-if (!customElements.get("accurona-extensions")) customElements.define("accurona-extensions", Extensions);
+if (!customElements.get("axonometra-extensions")) customElements.define("axonometra-extensions", Extensions);

@@ -1,5 +1,5 @@
 {
- "Accurona ist kostenlos – alles aus den bisherigen Folgen gehört dazu, ohne Abo und ohne Konto.": "Accurona is free – everything from the episodes so far is included, with no subscription and no account.",
+ "Axonometra ist kostenlos – alles aus den bisherigen Folgen gehört dazu, ohne Abo und ohne Konto.": "Axonometra is free – everything from the episodes so far is included, with no subscription and no account.",
  "Dazu gibt es Erweiterungen: Möbel-Packs mit mehr Möbeln und Pro-Funktionen, zum Beispiel den Regen am Haus.": "On top of that there are extensions: furniture packs with more furniture, and Pro features – for example the rain on the house.",
  "In dieser Folge geht es um den Reiter „Erweiterungen“: was kostenlos ist, wie du den Shop verbindest und Packs installierst.": "This episode is about the Extensions tab – in German „Erweiterungen“: what's free, how to connect the shop and how to install packs.",
  "Pro-Funktionen erkennst du am Schloss: Unten tragen „Spur“, „Kameras“ und „Wetter“ eins, solange die Erweiterung fehlt.": "You can tell Pro features by the lock: down here, Trail, Cameras and Weather carry one as long as the extension is missing.",
@@ -13,7 +13,7 @@
  "Die Seite sehen nur Administratoren von Home Assistant.": "Only Home Assistant administrators can see this page.",
  "Oben: „Shop öffnen“, „Problem melden“ und „Idee vorschlagen“ auf GitHub, die Community auf Discord und die Anleitung.": "At the top: “Open the shop”, “Report a problem” and “Suggest an idea” on GitHub, the community on Discord, and the manual.",
  "Darunter die Shop-Verbindung, dann die Pro-Erweiterungen und ganz unten die Möbel-Packs.": "Below that the shop connection, then the Pro add-ons, and at the very bottom the furniture packs.",
- "Ohne Lizenzschlüssel fragt Accurona den Shop übrigens nie – es geht nichts ins Internet.": "By the way: without a licence key, Accurona never contacts the shop – nothing goes out to the internet.",
+ "Ohne Lizenzschlüssel fragt Axonometra den Shop übrigens nie – es geht nichts ins Internet.": "By the way: without a licence key, Axonometra never contacts the shop – nothing goes out to the internet.",
  "Sechs Pro-Erweiterungen gibt es im Moment: Kamera-Cockpit, Wetter draußen, Bildschirme live, Energie Pro, Klang und Kino und Auto Pro.": "There are six Pro add-ons right now: Camera cockpit, Weather outside, Live screens, Energy Pro, Sound and cinema, and Auto Pro.",
  "Jede Kachel sagt kurz, was sie kann. Ohne Erweiterung steht ein Schloss davor und der Link „Im Shop ansehen“.": "Each tile says briefly what it does. Without the extension it has a lock in front and the link “See in the shop” – „Im Shop ansehen“.",
  "„Mehr erfahren“ öffnet das passende Kapitel der Anleitung.": "“Learn more” – „Mehr erfahren“ – opens the matching chapter of the manual.",
@@ -27,7 +27,7 @@
  "Darunter stehen alle Packs aus deinem Konto, jeweils mit ihrem Stand.": "Below that are all the packs in your account, each with its status.",
  "„Noch nicht installiert“ heißt: gekauft, aber noch nicht hier. „Installieren“ holt das Pack vom Shop – signiert für genau diese Installation.": "“Not installed yet” means: bought, but not here yet. “Install” – „Installieren“ – fetches the pack from the shop, signed for exactly this installation.",
  "Gibt es eine neuere Version, steht da „Update auf v2 verfügbar“, und der Knopf heißt „Aktualisieren“.": "If there's a newer version, it says “update to v2 available”, and the button reads “Update” – „Aktualisieren“.",
- "Meist musst du das gar nicht selbst tun: Einmal am Tag schaut Accurona nach und installiert neue Käufe und Updates von allein.": "Usually you don't even have to do this yourself: once a day Accurona checks and installs new purchases and updates on its own.",
+ "Meist musst du das gar nicht selbst tun: Einmal am Tag schaut Axonometra nach und installiert neue Käufe und Updates von allein.": "Usually you don't even have to do this yourself: once a day Axonometra checks and installs new purchases and updates on its own.",
  "„Jetzt prüfen“ fragt sofort nach. Daneben steht, wann zuletzt geprüft wurde.": "“Check now” – „Jetzt prüfen“ – asks right away. Next to it you see when it last checked.",
  "Kam mit einem Update etwas dazu, sagt dir die Seite das einmal ganz oben – hier zehn neue Möbel für die Küche.": "If an update brought something new, the page tells you once at the very top – here, ten new items for the kitchen.",
  "Mit Shop-Verbindung zeigt die Seite außerdem, was es neu gibt und du noch nicht hast. Frische Sachen tragen „NEU“.": "With the shop connected, the page also shows what's new that you don't have yet. Fresh things carry a “NEW” label.",
@@ -55,10 +55,10 @@
  "Ein Schlüssel gilt für bis zu drei Installationen gleichzeitig. Ziehst du auf neue Hardware um, verbindest du einfach die neue – die älteste fällt heraus.": "One key works for up to three installations at the same time. If you move to new hardware, just connect the new one – the oldest drops out.",
  "Bis zu fünf neue Verbindungen sind pro Jahr möglich. Meldet die Seite, dass das Limit erreicht ist, melde dich bei uns.": "Up to five new connections are possible per year. If the page says the limit is reached, get in touch with us.",
  "Ist der Shop gerade ausgelastet, wartest du eine Minute und drückst noch mal „Aktivieren“.": "If the shop is busy right now, wait a minute and press “Activate” again.",
- "Braucht eine Erweiterung eine neuere Accurona-Version, sagt die Seite das auch: dann zuerst Accurona über HACS aktualisieren.": "If an extension needs a newer Accurona version, the page says so too: then update Accurona through HACS first.",
+ "Braucht eine Erweiterung eine neuere Axonometra-Version, sagt die Seite das auch: dann zuerst Axonometra über HACS aktualisieren.": "If an extension needs a newer Axonometra version, the page says so too: then update Axonometra through HACS first.",
  "Und beim Komplett-Backup sind deine Packs mit drin, der Schlüssel nicht. Mehr dazu in der Folge über Sicherung und Umzug.": "And a full backup includes your packs, but not the key. More on that in the episode about backup and moving.",
  "Kurz zusammengefasst: Alles Grundlegende ist kostenlos. Packs und Pro-Erweiterungen installierst du unter „Erweiterungen“ – per Schlüssel oder per Datei.": "In short: all the basics are free. Packs and Pro add-ons are installed under Extensions – with a key or from a file.",
  "Was du einmal installiert hast, bleibt – auch ohne Shop und ohne Internet.": "What you've installed once stays – even without the shop and without internet.",
  "In der nächsten Folge geht es um Geräte, Lampen und Kameras.": "The next episode is about devices, lamps and cameras.",
- "Links zur Online-Demo und zur Anleitung stehen in der Beschreibung. Und Accurona läuft auch auf alten Wandtablets. Bis zum nächsten Mal!": "Links to the online demo and the manual are in the description. And Accurona runs on old wall tablets too. See you next time!"
+ "Links zur Online-Demo und zur Anleitung stehen in der Beschreibung. Und Axonometra läuft auch auf alten Wandtablets. Bis zum nächsten Mal!": "Links to the online demo and the manual are in the description. And Axonometra runs on old wall tablets too. See you next time!"
 }

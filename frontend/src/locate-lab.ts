@@ -40,7 +40,7 @@ export function mountLocateLab(source: Source): () => void {
     const hass = source().hass;
     if (!hass) return;
     try {
-      status = await hass.callWS<RecStatus>({ type: "accurona/locate/rec", action, ...extra });
+      status = await hass.callWS<RecStatus>({ type: "axonometra/locate/rec", action, ...extra });
       error = "";
     } catch (e) {
       error = (e as { message?: string }).message ?? String(e);

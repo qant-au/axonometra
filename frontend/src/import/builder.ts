@@ -1,6 +1,6 @@
 // The common end of every importer: floors with rooms, walls, doors, windows and furniture as another program
-// describes them (plan units in metres, x to the right, z down the plan) become a clean Accurona plan – rooms
-// tidied and joined, every door and window placed on a room edge, furniture mapped to Accurona's types.
+// describes them (plan units in metres, x to the right, z down the plan) become a clean Axonometra plan – rooms
+// tidied and joined, every door and window placed on a room edge, furniture mapped to Axonometra's types.
 
 import type { Building, Floor, FreeWall, Furniture, FurnitureType, Opening, Room, SillBoard, Vec2 } from "../model.ts";
 import { canLift, emptyBuilding, FURNITURE_SIZE, FURNITURE_TYPES, newFloor, normalizeBuilding, pointInPolygon, polygonArea } from "../model.ts";

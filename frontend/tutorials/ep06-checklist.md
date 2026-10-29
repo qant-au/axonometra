@@ -79,7 +79,7 @@ Zeit = Stelle im fertigen Video (a = ep06a.mp4, 7:11; b = ep06b.mp4, 5:18).
 
 ## Rahmen
 - [x] a 0:00 / 6:50, b 0:00 / 4:56 – Teaser, „In diesem Video …“, Outro mit Rückblick, nächste Folge, Links, alte Wandtablets
-- [x] Titelkarten a+b – Versionszeile „aufgenommen mit Accurona 1.12.6“
+- [x] Titelkarten a+b – Versionszeile „aufgenommen mit Axonometra 1.12.6“
 - [x] a 4:58, b 4:46 – Erweiterungen höchstens ein-, zweimal: Energie Pro (Leistung), Kamera-Cockpit (Kameras)
 
 ## Offen / Hinweise

@@ -1,5 +1,5 @@
 # The fork's own checks, kept out of upstream's ci.yml so merges never touch them. The tree
-# must already carry Accurona's identity (fork/identity.py --check makes no changes).
+# must already carry Axonometra's identity (fork/identity.py --check makes no changes).
 name: Fork
 
 on:

@@ -1,8 +1,8 @@
-"""Create the publisher key and sign furniture packs for Accurona.
+"""Create the publisher key and sign furniture packs for Axonometra.
 
     python tools/fp3dpack.py keygen KEYFILE
         Creates a new signing key (keep it secret, never commit it) and prints the public key line
-        for PACK_PUBLIC_KEYS in custom_components/accurona/packs.py.
+        for PACK_PUBLIC_KEYS in custom_components/axonometra/packs.py.
 
     python tools/fp3dpack.py sign SOURCE.json --key KEYFILE [--licensee "Name"] [--out PACK.fp3dpack]
     python tools/fp3dpack.py canonical SOURCE.json [--out PACK.canonical.json]   (template for the shop)
@@ -29,7 +29,7 @@ from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 
 ROOT = Path(__file__).resolve().parent.parent
-_spec = importlib.util.spec_from_file_location("fp3d_packs", ROOT / "custom_components" / "accurona" / "packs.py")
+_spec = importlib.util.spec_from_file_location("fp3d_packs", ROOT / "custom_components" / "axonometra" / "packs.py")
 assert _spec and _spec.loader
 packs = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(packs)
@@ -59,7 +59,7 @@ def sign(source: Path, key: Path, licensee: str | None, out: Path | None, instan
     payload = json.loads(source.read_text(encoding="utf-8"))
     # the licensee is always present, so a shop can put a buyer's name into the canonical form later
     payload["licensee"] = licensee
-    # a pack bound to one installation (its fingerprint, shown in Accurona under the shop connection)
+    # a pack bound to one installation (its fingerprint, shown in Axonometra under the shop connection)
     payload["instance"] = instance
     packs.validate_payload(payload)
     private = serialization.load_pem_private_key(key.read_bytes(), password=None)

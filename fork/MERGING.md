@@ -1,16 +1,16 @@
 # Merging upstream
 
-Accurona merges NeonPlan 3D's releases on a schedule and never sends anything back. The
-rename to Accurona is a script (`fork/identity.py`), so a merge never re-does it by hand.
+Axonometra merges NeonPlan 3D's releases on a schedule and never sends anything back. The
+rename to Axonometra is a script (`fork/identity.py`), so a merge never re-does it by hand.
 
 ## The two branches
 
-- **`upstream-accurona`** holds one commit per upstream release: upstream's tree with
-  Accurona's identity applied, plus our own files (`fork/OURS`), copied from `main` so
+- **`upstream-axonometra`** holds one commit per upstream release: upstream's tree with
+  Axonometra's identity applied, plus our own files (`fork/OURS`), copied from `main` so
   the snapshot is always made with the current tooling. Each of those commits
   has the upstream tag as a parent, so `git log` shows upstream's history and
   `git merge-base --is-ancestor <tag> main` holds after a merge.
-- **`main`** is where our work happens. It only ever merges `upstream-accurona`, so the
+- **`main`** is where our work happens. It only ever merges `upstream-axonometra`, so the
   merge base is always the previous snapshot and a merge carries exactly what upstream
   changed between two releases, already renamed.
 
@@ -34,7 +34,7 @@ push URL set to `DISABLED`).
 
 2. **Resolve conflicts**, if the merge stops. They happen only where we changed a line
    upstream also changed. Rules:
-   - Built bundles (`custom_components/accurona/frontend/*.js`, `site/import/*.js`):
+   - Built bundles (`custom_components/axonometra/frontend/*.js`, `site/import/*.js`):
      never resolve by hand. Take either side, then `cd frontend && npm run build`.
    - `frontend/package.json` and `package-lock.json`: take upstream's versions unless we
      added a dependency, then re-run `npm install` to regenerate the lock.
@@ -51,10 +51,10 @@ push URL set to `DISABLED`).
    (cd frontend && npm test && npm run typecheck && npm run build)
    git diff --exit-code                    # bundles reproduce
    ruff check custom_components tests && ruff format --check custom_components tests
-   mypy custom_components/accurona && pytest -q
+   mypy custom_components/axonometra && pytest -q
    ```
 
-4. **Push both branches**: `git push origin main upstream-accurona`.
+4. **Push both branches**: `git push origin main upstream-axonometra`.
 
 ## Keeping merges cheap
 

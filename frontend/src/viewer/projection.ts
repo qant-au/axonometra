@@ -114,7 +114,7 @@ export class CameraProjections {
     const ids = [...this.projectors.keys()].join(",");
     if (ids !== this.loggedIds) {
       this.loggedIds = ids;
-      console.info(`Accurona lab: camera projection for ${this.projectors.size} camera(s)`, ids);
+      console.info(`Axonometra lab: camera projection for ${this.projectors.size} camera(s)`, ids);
     }
   }
 
@@ -135,7 +135,7 @@ export class CameraProjections {
         tex.colorSpace = SRGBColorSpace;
         const img = tex.image as { width?: number; height?: number } | undefined;
         if (img?.width && img.height) p.aspect = img.width / img.height;
-        if (!p.texture) console.info(`Accurona lab: first picture of ${p.id}`, img?.width, "x", img?.height);
+        if (!p.texture) console.info(`Axonometra lab: first picture of ${p.id}`, img?.width, "x", img?.height);
         p.texture?.dispose();
         p.texture = tex;
         p.uniforms.uProjTex.value = tex;
@@ -148,7 +148,7 @@ export class CameraProjections {
       () => {
         p.loading = false;
         p.shown = url;
-        console.warn(`Accurona lab: the picture of ${p.id} could not be loaded`);
+        console.warn(`Axonometra lab: the picture of ${p.id} could not be loaded`);
       },
     );
   }
@@ -162,7 +162,7 @@ export class CameraProjections {
       const pose = p.texture ? poseOf(p.id) : null;
       if (p.texture && !pose && !p.noPoseLogged) {
         p.noPoseLogged = true;
-        console.warn(`Accurona lab: ${p.id} is not drawn as a camera in 3D (no position), so its picture is not cast`);
+        console.warn(`Axonometra lab: ${p.id} is not drawn as a camera in 3D (no position), so its picture is not cast`);
       }
       if (!pose) {
         for (const o of p.overlays.values()) o.visible = false;

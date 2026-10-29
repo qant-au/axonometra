@@ -11,9 +11,9 @@ from homeassistant.helpers.dispatcher import async_dispatcher_send
 from homeassistant.setup import async_setup_component
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
-from custom_components.accurona.const import DOMAIN
-from custom_components.accurona.locate.engine import Fingerprints
-from custom_components.accurona.locate.service import DATA_LOCATE, SIGNAL_LOCATE, LocateService
+from custom_components.axonometra.const import DOMAIN
+from custom_components.axonometra.locate.engine import Fingerprints
+from custom_components.axonometra.locate.service import DATA_LOCATE, SIGNAL_LOCATE, LocateService
 
 ROOMS = [
     {"id": "kitchen", "name": "Kitchen", "floor": "Ground", "area_id": "kitchen"},
@@ -35,7 +35,7 @@ async def _setup(hass: HomeAssistant) -> MockConfigEntry:
 async def test_config_without_bluetooth(hass: HomeAssistant, hass_ws_client) -> None:
     await _setup(hass)
     client = await hass_ws_client(hass)
-    await client.send_json_auto_id({"type": "accurona/locate/config"})
+    await client.send_json_auto_id({"type": "axonometra/locate/config"})
     res = await client.receive_json()
     assert res["success"]
     assert res["result"]["enabled"] is False
@@ -48,7 +48,7 @@ async def test_a_device_gets_a_room_sensor(hass: HomeAssistant, hass_ws_client, 
     client = await hass_ws_client(hass)
     await client.send_json_auto_id(
         {
-            "type": "accurona/locate/configure",
+            "type": "axonometra/locate/configure",
             "devices": [WATCH],
             "rooms": ROOMS,
             "doors": [["kitchen", "hall"], ["hall", "living"]],
@@ -80,7 +80,7 @@ async def test_a_device_gets_a_room_sensor(hass: HomeAssistant, hass_ws_client, 
     state = hass.states.get(entity_id)
     assert state.state == "Kitchen"
     assert state.attributes["room_id"] == "kitchen"
-    assert state.attributes["accurona_locate"] is True
+    assert state.attributes["axonometra_locate"] is True
 
     # settings and devices are kept (store), the room samples are not part of the reply
     await hass.async_block_till_done()
@@ -89,12 +89,12 @@ async def test_a_device_gets_a_room_sensor(hass: HomeAssistant, hass_ws_client, 
 async def test_admin_only_commands(hass: HomeAssistant, hass_ws_client, hass_read_only_access_token) -> None:
     await _setup(hass)
     client = await hass_ws_client(hass, hass_read_only_access_token)
-    await client.send_json_auto_id({"type": "accurona/locate/configure", "enabled": True})
+    await client.send_json_auto_id({"type": "axonometra/locate/configure", "enabled": True})
     res = await client.receive_json()
     assert not res["success"]
     assert res["error"]["code"] == "unauthorized"
     # everyone may watch where people are (unless "admins only")
-    await client.send_json_auto_id({"type": "accurona/locate/subscribe"})
+    await client.send_json_auto_id({"type": "axonometra/locate/subscribe"})
     res = await client.receive_json()
     assert res["success"]
 
@@ -185,7 +185,7 @@ async def test_spoken_names_are_matched_tolerantly(hass: HomeAssistant) -> None:
     service.state["w1"] = {"room": "kitchen", "room_name": "Kitchen", "since": now, "last_seen": now}
     service.state["p1"] = {"room": "hall", "room_name": "Hall", "since": now, "last_seen": now}
     service.state["p2"] = {"room": "living", "room_name": "Living", "since": now, "last_seen": now}
-    from custom_components.accurona.locate.answers import async_answer
+    from custom_components.axonometra.locate.answers import async_answer
 
     async def ask(text: str, user: str | None = None) -> str | None:
         return await async_answer(hass, service, text, "de", user)
@@ -205,7 +205,7 @@ async def test_weak_beacons_show_among_nearby_devices(hass: HomeAssistant) -> No
     """The Android app sends its iBeacon at the lowest power by default: it is listed although weak, and first."""
     from types import SimpleNamespace
 
-    from custom_components.accurona.locate.scanners import Reading
+    from custom_components.axonometra.locate.scanners import Reading
 
     await _setup(hass)
     service: LocateService = hass.data[DATA_LOCATE]
@@ -231,7 +231,7 @@ def test_a_person_is_where_the_surer_device_says() -> None:
     a phone that stayed put while the watch walked on was left lying there."""
     from types import SimpleNamespace
 
-    from custom_components.accurona.locate.answers import person_state
+    from custom_components.axonometra.locate.answers import person_state
 
     now = 10_000.0
     watch = {"id": "w", "wearable": True}
@@ -279,9 +279,9 @@ async def test_located_answers_fly_the_views_into_the_room(hass: HomeAssistant) 
     from homeassistant.core import callback
     from homeassistant.helpers.dispatcher import async_dispatcher_connect
 
-    from custom_components.accurona.const import SIGNAL_ASK
-    from custom_components.accurona.locate.answers import Located
-    from custom_components.accurona.voice import show_located
+    from custom_components.axonometra.const import SIGNAL_ASK
+    from custom_components.axonometra.locate.answers import Located
+    from custom_components.axonometra.voice import show_located
 
     await _setup(hass)
     service: LocateService = hass.data[DATA_LOCATE]
@@ -309,19 +309,19 @@ async def test_located_answers_fly_the_views_into_the_room(hass: HomeAssistant) 
 
 
 async def test_a_view_asks_locating_first(hass: HomeAssistant, hass_ws_client) -> None:
-    """The Accurona panel's own microphone gets the locating answer and its rooms (not the modules' guess)."""
+    """The Axonometra panel's own microphone gets the locating answer and its rooms (not the modules' guess)."""
     await _setup(hass)
     service: LocateService = hass.data[DATA_LOCATE]
     client = await hass_ws_client(hass)
-    await client.send_json_auto_id({"type": "accurona/locate/ask", "text": "Wer ist zu Hause?", "language": "de"})
+    await client.send_json_auto_id({"type": "axonometra/locate/ask", "text": "Wer ist zu Hause?", "language": "de"})
     assert (await client.receive_json())["result"] is None
     service.devices = [dict(WATCH, name="Torsten Apple Watch")]
     service.rooms = ROOMS
     service.state = {
         "irk_watch": {"room": "kitchen", "room_name": "Kitchen", "probability": 0.9, "last_seen": time.time()}
     }
-    await client.send_json_auto_id({"type": "accurona/locate/ask", "text": "Wer ist zu Hause?", "language": "de"})
+    await client.send_json_auto_id({"type": "axonometra/locate/ask", "text": "Wer ist zu Hause?", "language": "de"})
     res = (await client.receive_json())["result"]
     assert res == {"text": "Zu Hause: Torsten Apple Watch (Kitchen).", "rooms": ["kitchen"], "admins_only": False}
-    await client.send_json_auto_id({"type": "accurona/locate/ask", "text": "Zeig die Küche", "language": "de"})
+    await client.send_json_auto_id({"type": "axonometra/locate/ask", "text": "Zeig die Küche", "language": "de"})
     assert (await client.receive_json())["result"] is None

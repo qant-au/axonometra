@@ -1,4 +1,4 @@
-// Opt-in "help improve Accurona" reports (custom_components/accurona/diagnostics_report.py).
+// Opt-in "help improve Axonometra" reports (custom_components/axonometra/diagnostics_report.py).
 //
 // Off by default. Only while the user switched it on in the editor, this page collects: its device class,
 // browser and OS (name and major version), the 3D view's quality level, frame rate and GPU tier, how often
@@ -12,7 +12,7 @@ declare const __FP3D_VERSION__: string;
 const VERSION = typeof __FP3D_VERSION__ === "string" ? __FP3D_VERSION__ : "dev";
 
 /** Window event the editor (a bundle of its own) fires after switching the reports on or off. */
-export const DIAGNOSTICS_EVENT = "accurona-diagnostics";
+export const DIAGNOSTICS_EVENT = "axonometra-diagnostics";
 const PUSH_INTERVAL = 10 * 60 * 1000;
 const MAX_ERRORS = 20;
 const MAX_MESSAGE = 200;
@@ -44,13 +44,13 @@ export function scrubMessage(text: unknown): string {
   return out.replace(/\s+/g, " ").trim().slice(0, MAX_MESSAGE);
 }
 
-const OUR_FRAME = /(accurona[\w-]*\.js)(?:\?[^:\s)]*)?:(\d+):(\d+)/;
+const OUR_FRAME = /(axonometra[\w-]*\.js)(?:\?[^:\s)]*)?:(\d+):(\d+)/;
 
-/** Where in our bundles an error was thrown ("accurona-3d.js:1:23456"), or null when it is not ours. */
+/** Where in our bundles an error was thrown ("axonometra-3d.js:1:23456"), or null when it is not ours. */
 export function ourFrame(stack: string | undefined, filename?: string, line?: number, col?: number): string | null {
   const m = OUR_FRAME.exec(stack ?? "");
   if (m) return `${m[1]}:${m[2]}:${m[3]}`;
-  const file = /(accurona[\w-]*\.js)(?:\?|$)/.exec(filename ?? "");
+  const file = /(axonometra[\w-]*\.js)(?:\?|$)/.exec(filename ?? "");
   return file ? `${file[1]}:${line ?? 0}:${col ?? 0}` : null;
 }
 
@@ -240,7 +240,7 @@ export function clientAggregate(): Record<string, unknown> {
 async function push(): Promise<void> {
   const hass = hassRef;
   if (!hass) return;
-  const msg: Record<string, unknown> = { type: "accurona/diagnostics/client" };
+  const msg: Record<string, unknown> = { type: "axonometra/diagnostics/client" };
   if (active) {
     msg.client = clientAggregate();
     msg.errors = errors;

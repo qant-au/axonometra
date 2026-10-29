@@ -3,8 +3,8 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Accurona Key Helper</title>
-    <meta name="description" content="Read the Bluetooth key (IRK) of an iPhone or Apple Watch with an ESP32 – for Accurona's locating. Flashed right from the browser, no Mac needed." />
+    <title>Axonometra Key Helper</title>
+    <meta name="description" content="Read the Bluetooth key (IRK) of an iPhone or Apple Watch with an ESP32 – for Axonometra's locating. Flashed right from the browser, no Mac needed." />
     <script type="module" src="https://unpkg.com/esp-web-tools@10.4.0/dist/web/install-button.js?module"></script>
     <style>
       :root { color-scheme: dark; --ink: #e6f7ff; --muted: #9fb8c8; --neon: #37e0ff; --card: #0f1a2e; --warn: #ffb86b; }
@@ -39,17 +39,17 @@
   <body class="en">
     <main>
       <div class="lang"><button data-set="de">Deutsch</button> <button data-set="en">English</button></div>
-      <h1>🔑 Accurona <span><span data-lang="en">Key Helper</span><span data-lang="de">Schlüssel-Helfer</span></span></h1>
+      <h1>🔑 Axonometra <span><span data-lang="en">Key Helper</span><span data-lang="de">Schlüssel-Helfer</span></span></h1>
 
       <!-- ============================== DEUTSCH ============================== -->
       <div data-lang="de">
-        <p class="sub">Accurona erkennt, in welchem Raum du gerade bist – über die Bluetooth-Empfänger, die Home Assistant schon hat. Ein iPhone und eine Apple Watch wechseln aber ständig ihre Bluetooth-Adresse. Damit Accurona sie trotzdem wiedererkennt, braucht es einmal ihren <b>Schlüssel</b> (IRK). Diese Seite macht aus einem ESP32 für ca. 5 € den <b>Accurona Schlüssel-Helfer</b>, der den Schlüssel beim Koppeln ausliest – ganz ohne Mac.</p>
+        <p class="sub">Axonometra erkennt, in welchem Raum du gerade bist – über die Bluetooth-Empfänger, die Home Assistant schon hat. Ein iPhone und eine Apple Watch wechseln aber ständig ihre Bluetooth-Adresse. Damit Axonometra sie trotzdem wiedererkennt, braucht es einmal ihren <b>Schlüssel</b> (IRK). Diese Seite macht aus einem ESP32 für ca. 5 € den <b>Axonometra Schlüssel-Helfer</b>, der den Schlüssel beim Koppeln ausliest – ganz ohne Mac.</p>
 
         <div class="card">
           <b>Brauche ich das?</b>
           <ul>
-            <li><b>iPhone, Apple Watch:</b> ja – außer du hast den Schlüssel schon; dann trägst du ihn in Accurona unter „Eigenen Schlüssel einfügen“ ein.</li>
-            <li><b>Android-Handy oder -Tablet:</b> nein – und Koppeln hilft hier auch nicht, Android sendet den Schlüssel im Hintergrund nicht. Schalte in der Home-Assistant-App <b>Einstellungen → Companion-App → Sensoren verwalten → BLE-Sender</b> ein, mit Sendeleistung <b>Hoch</b> und Sendemodus <b>Niedrige Latenz</b>. Accurona findet das Handy dann von selbst.</li>
+            <li><b>iPhone, Apple Watch:</b> ja – außer du hast den Schlüssel schon; dann trägst du ihn in Axonometra unter „Eigenen Schlüssel einfügen“ ein.</li>
+            <li><b>Android-Handy oder -Tablet:</b> nein – und Koppeln hilft hier auch nicht, Android sendet den Schlüssel im Hintergrund nicht. Schalte in der Home-Assistant-App <b>Einstellungen → Companion-App → Sensoren verwalten → BLE-Sender</b> ein, mit Sendeleistung <b>Hoch</b> und Sendemodus <b>Niedrige Latenz</b>. Axonometra findet das Handy dann von selbst.</li>
             <li><b>Schlüsselanhänger</b> (Nut, Tile, iBeacon): nein. AirTags gehen leider gar nicht.</li>
           </ul>
         </div>
@@ -60,7 +60,7 @@
             <li>ein <b>ESP32-Board</b> – normaler ESP32 („ESP32 DevKit“, „ESP-WROOM-32“), ESP32-C3 oder ESP32-S3, ca. 5 €</li>
             <li>ein <b>USB-Kabel, das Daten überträgt</b> (manche Ladekabel können nur Strom)</li>
             <li>einen <b>Computer mit Chrome oder Edge</b> (Firefox und Safari können keine Geräte flashen; Handy und Tablet gehen nicht)</li>
-            <li>Accurona ab Version <b>2.0</b> und das WLAN-Passwort</li>
+            <li>Axonometra ab Version <b>2.0</b> und das WLAN-Passwort</li>
           </ul>
         </div>
 
@@ -76,11 +76,11 @@
         </div></div>
 
         <div class="step"><div class="num">3</div><div>
-          <b>In Home Assistant hinzufügen.</b> Nach kurzer Zeit meldet Home Assistant ein neues Gerät: <b>Einstellungen → Geräte &amp; Dienste</b> → oben unter „Entdeckt“ <b>Accurona Key</b> → <b>Hinzufügen</b> → <b>Absenden</b>. (Kommt keine Meldung: „Integration hinzufügen“ → ESPHome → die IP-Adresse des ESP32 eintragen.)
+          <b>In Home Assistant hinzufügen.</b> Nach kurzer Zeit meldet Home Assistant ein neues Gerät: <b>Einstellungen → Geräte &amp; Dienste</b> → oben unter „Entdeckt“ <b>Axonometra Key</b> → <b>Hinzufügen</b> → <b>Absenden</b>. (Kommt keine Meldung: „Integration hinzufügen“ → ESPHome → die IP-Adresse des ESP32 eintragen.)
         </div></div>
 
         <div class="step"><div class="num">4</div><div>
-          <b>In Accurona öffnen.</b> Editor → <b>⚙ Einstellungen → 📡 Ortung</b> → <b>2 · Geräte</b>. Unter <b>🔑 Schlüssel-Helfer</b> steht jetzt „Schlüssel-Helfer gefunden: Accurona Key …“.
+          <b>In Axonometra öffnen.</b> Editor → <b>⚙ Einstellungen → 📡 Ortung</b> → <b>2 · Geräte</b>. Unter <b>🔑 Schlüssel-Helfer</b> steht jetzt „Schlüssel-Helfer gefunden: Axonometra Key …“.
           <ul>
             <li>Wähle <b>⌚ Für Apple Watch</b> oder <b>📱 Für iPhone</b> (der Helfer startet dabei kurz neu).</li>
             <li>Trag einen <b>Namen</b> ein (z. B. „Torstens Watch“) und wähle die <b>Person</b>.</li>
@@ -90,22 +90,22 @@
         <div class="step"><div class="num">5</div><div>
           <b>Koppeln.</b>
           <ul>
-            <li><b>Apple Watch:</b> auf der Uhr <b>Einstellungen → Bluetooth</b>, etwas warten – unter <b>„Gesundheitsgeräte“</b> erscheint <b>Accurona Key</b>. Antippen.</li>
-            <li><b>iPhone:</b> <b>Einstellungen → Bluetooth</b> – unter „Andere Geräte“ <b>Accurona Key</b> antippen (er meldet sich als Tastatur; ein angezeigter Code muss nicht eingetippt werden).</li>
+            <li><b>Apple Watch:</b> auf der Uhr <b>Einstellungen → Bluetooth</b>, etwas warten – unter <b>„Gesundheitsgeräte“</b> erscheint <b>Axonometra Key</b>. Antippen.</li>
+            <li><b>iPhone:</b> <b>Einstellungen → Bluetooth</b> – unter „Andere Geräte“ <b>Axonometra Key</b> antippen (er meldet sich als Tastatur; ein angezeigter Code muss nicht eingetippt werden).</li>
           </ul>
           <p class="sub">Danach steht auf dem Gerät oft „Nicht verbunden“ – das ist richtig: Der Helfer trennt die Verbindung, sobald er den Schlüssel hat.</p>
         </div></div>
 
         <div class="step"><div class="num">6</div><div>
-          <b>Übernehmen.</b> In Accurona erscheint „Gelesener Schlüssel (IRK) des Geräts, das sich gerade gekoppelt hat“. Tippe <b>Als „…“ hinzufügen</b> – das Gerät steht jetzt mit Name und Person in der Liste. Kennt Accurona den Schlüssel schon, steht dort „Gehört zu: …“.
+          <b>Übernehmen.</b> In Axonometra erscheint „Gelesener Schlüssel (IRK) des Geräts, das sich gerade gekoppelt hat“. Tippe <b>Als „…“ hinzufügen</b> – das Gerät steht jetzt mit Name und Person in der Liste. Kennt Axonometra den Schlüssel schon, steht dort „Gehört zu: …“.
         </div></div>
 
         <div class="step"><div class="num">7</div><div>
-          <b>Aufräumen.</b> Auf der Uhr bzw. dem iPhone den Eintrag <b>Accurona Key</b> antippen → ⓘ → <b>„Dieses Gerät ignorieren“</b>.
+          <b>Aufräumen.</b> Auf der Uhr bzw. dem iPhone den Eintrag <b>Axonometra Key</b> antippen → ⓘ → <b>„Dieses Gerät ignorieren“</b>.
         </div></div>
 
         <div class="step"><div class="num">8</div><div>
-          <b>Nächstes Gerät?</b> Erst in Accurona <b>🔄 Nächstes Gerät</b> tippen (der Helfer bekommt eine neue Bluetooth-Kennung, damit sich das vorige Gerät nicht wieder dazwischen verbindet), dann ab Schritt 4.
+          <b>Nächstes Gerät?</b> Erst in Axonometra <b>🔄 Nächstes Gerät</b> tippen (der Helfer bekommt eine neue Bluetooth-Kennung, damit sich das vorige Gerät nicht wieder dazwischen verbindet), dann ab Schritt 4.
         </div></div>
 
         <h2>Installieren</h2>
@@ -125,23 +125,23 @@
             <li>Manche Boards brauchen beim Start den <b>BOOT</b>-Knopf: gedrückt halten, während du auf „Installieren“ klickst.</li>
           </ul>
         </details>
-        <details><summary>Home Assistant findet „Accurona Key“ nicht</summary>
+        <details><summary>Home Assistant findet „Axonometra Key“ nicht</summary>
           <ul>
             <li>Ist der ESP32 im selben Netz wie Home Assistant (nicht im Gäste-WLAN)?</li>
             <li>Von Hand: Einstellungen → Geräte &amp; Dienste → Integration hinzufügen → <b>ESPHome</b> → IP-Adresse des ESP32 (steht in deinem Router).</li>
           </ul>
         </details>
-        <details><summary>Die Uhr zeigt „Accurona Key“ nicht an</summary>
+        <details><summary>Die Uhr zeigt „Axonometra Key“ nicht an</summary>
           <ul>
-            <li>In Accurona muss <b>⌚ Für Apple Watch</b> gewählt sein (Profil „Pulsgurt“). Nach dem Umschalten 20 Sekunden warten.</li>
+            <li>In Axonometra muss <b>⌚ Für Apple Watch</b> gewählt sein (Profil „Pulsgurt“). Nach dem Umschalten 20 Sekunden warten.</li>
             <li>Auf der Uhr unter Bluetooth etwas warten und nach unten scrollen bis „Gesundheitsgeräte“.</li>
-            <li>Hatte sich vorher ein anderes Gerät gekoppelt: in Accurona <b>🔄 Nächstes Gerät</b>.</li>
+            <li>Hatte sich vorher ein anderes Gerät gekoppelt: in Axonometra <b>🔄 Nächstes Gerät</b>.</li>
           </ul>
         </details>
         <details><summary>„Nicht verbunden“ und der Schlüssel ändert sich nicht</summary>
           <ul>
-            <li>Meist verbindet sich ein vorher gekoppeltes Gerät (z. B. das iPhone) immer wieder von selbst. Dort „Accurona Key“ → ⓘ → <b>Dieses Gerät ignorieren</b>, dann in Accurona <b>🔄 Nächstes Gerät</b> und neu koppeln.</li>
-            <li>Steht „Gehört zu: …“, ist der Schlüssel schon in Accurona – das gekoppelte Gerät war ein bekanntes.</li>
+            <li>Meist verbindet sich ein vorher gekoppeltes Gerät (z. B. das iPhone) immer wieder von selbst. Dort „Axonometra Key“ → ⓘ → <b>Dieses Gerät ignorieren</b>, dann in Axonometra <b>🔄 Nächstes Gerät</b> und neu koppeln.</li>
+            <li>Steht „Gehört zu: …“, ist der Schlüssel schon in Axonometra – das gekoppelte Gerät war ein bekanntes.</li>
           </ul>
         </details>
         <details><summary>Und danach?</summary>
@@ -151,13 +151,13 @@
 
       <!-- ============================== ENGLISH ============================== -->
       <div data-lang="en">
-        <p class="sub">Accurona finds out which room you are in – from the Bluetooth scanners Home Assistant already has. An iPhone and an Apple Watch keep changing their Bluetooth address, though. So that Accurona recognises them anyway, it needs their <b>key</b> (IRK) once. This page turns an ESP32 for about 5 € into the <b>Accurona Key Helper</b>, which reads the key while the device pairs – no Mac needed.</p>
+        <p class="sub">Axonometra finds out which room you are in – from the Bluetooth scanners Home Assistant already has. An iPhone and an Apple Watch keep changing their Bluetooth address, though. So that Axonometra recognises them anyway, it needs their <b>key</b> (IRK) once. This page turns an ESP32 for about 5 € into the <b>Axonometra Key Helper</b>, which reads the key while the device pairs – no Mac needed.</p>
 
         <div class="card">
           <b>Do I need it?</b>
           <ul>
-            <li><b>iPhone, Apple Watch:</b> yes – unless you have the key already; then enter it in Accurona under "Paste a key you already have".</li>
-            <li><b>Android phone or tablet:</b> no – and pairing does not help here, Android does not send the key in the background. Switch on <b>Settings → Companion app → Manage sensors → BLE Transmitter</b> in the Home Assistant app, with transmit power <b>High</b> and advertise mode <b>Low latency</b>. Accurona then finds the phone by itself.</li>
+            <li><b>iPhone, Apple Watch:</b> yes – unless you have the key already; then enter it in Axonometra under "Paste a key you already have".</li>
+            <li><b>Android phone or tablet:</b> no – and pairing does not help here, Android does not send the key in the background. Switch on <b>Settings → Companion app → Manage sensors → BLE Transmitter</b> in the Home Assistant app, with transmit power <b>High</b> and advertise mode <b>Low latency</b>. Axonometra then finds the phone by itself.</li>
             <li><b>Key tags</b> (Nut, Tile, iBeacon): no. AirTags do not work at all, sadly.</li>
           </ul>
         </div>
@@ -168,7 +168,7 @@
             <li>an <b>ESP32 board</b> – a plain ESP32 ("ESP32 DevKit", "ESP-WROOM-32"), ESP32-C3 or ESP32-S3, about 5 €</li>
             <li>a <b>USB cable that carries data</b> (some charging cables only carry power)</li>
             <li>a <b>computer with Chrome or Edge</b> (Firefox and Safari cannot flash devices; phones and tablets do not work)</li>
-            <li>Accurona <b>2.0</b> or newer and your Wi-Fi password</li>
+            <li>Axonometra <b>2.0</b> or newer and your Wi-Fi password</li>
           </ul>
         </div>
 
@@ -184,11 +184,11 @@
         </div></div>
 
         <div class="step"><div class="num">3</div><div>
-          <b>Add it in Home Assistant.</b> After a moment Home Assistant reports a new device: <b>Settings → Devices &amp; services</b> → under "Discovered" <b>Accurona Key</b> → <b>Add</b> → <b>Submit</b>. (No message? "Add integration" → ESPHome → enter the ESP32's IP address.)
+          <b>Add it in Home Assistant.</b> After a moment Home Assistant reports a new device: <b>Settings → Devices &amp; services</b> → under "Discovered" <b>Axonometra Key</b> → <b>Add</b> → <b>Submit</b>. (No message? "Add integration" → ESPHome → enter the ESP32's IP address.)
         </div></div>
 
         <div class="step"><div class="num">4</div><div>
-          <b>Open it in Accurona.</b> Editor → <b>⚙ Settings → 📡 Locating</b> → <b>2 · Devices</b>. Under <b>🔑 Key helper</b> it now says "Key helper found: Accurona Key …".
+          <b>Open it in Axonometra.</b> Editor → <b>⚙ Settings → 📡 Locating</b> → <b>2 · Devices</b>. Under <b>🔑 Key helper</b> it now says "Key helper found: Axonometra Key …".
           <ul>
             <li>Pick <b>⌚ For an Apple Watch</b> or <b>📱 For an iPhone</b> (the helper restarts briefly).</li>
             <li>Enter a <b>name</b> (e.g. "Torsten's watch") and pick the <b>person</b>.</li>
@@ -198,22 +198,22 @@
         <div class="step"><div class="num">5</div><div>
           <b>Pair.</b>
           <ul>
-            <li><b>Apple Watch:</b> on the watch <b>Settings → Bluetooth</b>, wait a moment – <b>Accurona Key</b> shows under <b>"Health devices"</b>. Tap it.</li>
-            <li><b>iPhone:</b> <b>Settings → Bluetooth</b> – tap <b>Accurona Key</b> under "Other devices" (it shows as a keyboard; a code shown need not be typed).</li>
+            <li><b>Apple Watch:</b> on the watch <b>Settings → Bluetooth</b>, wait a moment – <b>Axonometra Key</b> shows under <b>"Health devices"</b>. Tap it.</li>
+            <li><b>iPhone:</b> <b>Settings → Bluetooth</b> – tap <b>Axonometra Key</b> under "Other devices" (it shows as a keyboard; a code shown need not be typed).</li>
           </ul>
           <p class="sub">The device often says "Not connected" afterwards – that is right: the helper drops the connection as soon as it has the key.</p>
         </div></div>
 
         <div class="step"><div class="num">6</div><div>
-          <b>Take it over.</b> Accurona shows "Key (IRK) read from the device that just paired". Tap <b>Add as "…"</b> – the device is now in the list with its name and person. If Accurona knows the key already, it says "Belongs to: …".
+          <b>Take it over.</b> Axonometra shows "Key (IRK) read from the device that just paired". Tap <b>Add as "…"</b> – the device is now in the list with its name and person. If Axonometra knows the key already, it says "Belongs to: …".
         </div></div>
 
         <div class="step"><div class="num">7</div><div>
-          <b>Tidy up.</b> On the watch or iPhone tap <b>Accurona Key</b> → ⓘ → <b>"Forget This Device"</b>.
+          <b>Tidy up.</b> On the watch or iPhone tap <b>Axonometra Key</b> → ⓘ → <b>"Forget This Device"</b>.
         </div></div>
 
         <div class="step"><div class="num">8</div><div>
-          <b>Next device?</b> First tap <b>🔄 Next device</b> in Accurona (the helper gets a new Bluetooth identity, so the device before does not connect in between), then go on from step 4.
+          <b>Next device?</b> First tap <b>🔄 Next device</b> in Axonometra (the helper gets a new Bluetooth identity, so the device before does not connect in between), then go on from step 4.
         </div></div>
 
         <h2>Install</h2>
@@ -233,23 +233,23 @@
             <li>Some boards need the <b>BOOT</b> button: hold it while you click "Install".</li>
           </ul>
         </details>
-        <details><summary>Home Assistant does not find "Accurona Key"</summary>
+        <details><summary>Home Assistant does not find "Axonometra Key"</summary>
           <ul>
             <li>Is the ESP32 on the same network as Home Assistant (not the guest Wi-Fi)?</li>
             <li>By hand: Settings → Devices &amp; services → Add integration → <b>ESPHome</b> → the ESP32's IP address (your router shows it).</li>
           </ul>
         </details>
-        <details><summary>The watch does not show "Accurona Key"</summary>
+        <details><summary>The watch does not show "Axonometra Key"</summary>
           <ul>
-            <li><b>⌚ For an Apple Watch</b> must be picked in Accurona (profile "heart rate sensor"). Wait 20 seconds after switching.</li>
+            <li><b>⌚ For an Apple Watch</b> must be picked in Axonometra (profile "heart rate sensor"). Wait 20 seconds after switching.</li>
             <li>On the watch wait a little in Bluetooth and scroll down to "Health devices".</li>
-            <li>If another device paired before: tap <b>🔄 Next device</b> in Accurona.</li>
+            <li>If another device paired before: tap <b>🔄 Next device</b> in Axonometra.</li>
           </ul>
         </details>
         <details><summary>"Not connected" and the key does not change</summary>
           <ul>
-            <li>Usually a device paired before (the iPhone, say) keeps connecting by itself. Forget "Accurona Key" there (ⓘ → <b>Forget This Device</b>), tap <b>🔄 Next device</b> in Accurona and pair again.</li>
-            <li>If it says "Belongs to: …", the key is in Accurona already – the device that paired was a known one.</li>
+            <li>Usually a device paired before (the iPhone, say) keeps connecting by itself. Forget "Axonometra Key" there (ⓘ → <b>Forget This Device</b>), tap <b>🔄 Next device</b> in Axonometra and pair again.</li>
+            <li>If it says "Belongs to: …", the key is in Axonometra already – the device that paired was a known one.</li>
           </ul>
         </details>
         <details><summary>And afterwards?</summary>
@@ -263,7 +263,7 @@
         <a href="https://github.com/DerekSeaman/irk-capture">irk-capture</a>
         <span data-lang="en">by Derek Seaman (MIT licence), based on KyleTeal/irk-capture and ESPresense – thank you! Part of</span>
         <span data-lang="de">von Derek Seaman auf (MIT-Lizenz), das auf KyleTeal/irk-capture und ESPresense beruht – danke! Teil von</span>
-        <a href="https://github.com/Mastershort/neonplan3d">Accurona</a> ·
+        <a href="https://github.com/Mastershort/neonplan3d">Axonometra</a> ·
         <a href="https://mastershort.de/neonplan3d/anleitung/3d-ansicht/#511-ortung-neu"><span data-lang="de">Anleitung</span><span data-lang="en">Manual</span></a>
       </footer>
     </main>

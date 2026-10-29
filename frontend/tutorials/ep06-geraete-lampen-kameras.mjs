@@ -21,7 +21,7 @@ import { helpers } from "./ep02-common.mjs";
 const out = process.argv[2] ?? "tutorial-ep06";
 const PART = process.argv[3] === "b" ? "b" : "a";
 const FAST = !!process.env.EP06_FAST;
-const VERSION = `<br><span style="font-size:20px;opacity:.7">aufgenommen mit Accurona ${appVersion()}</span>`;
+const VERSION = `<br><span style="font-size:20px;opacity:.7">aufgenommen mit Axonometra ${appVersion()}</span>`;
 
 const R = await startRecorder({ outDir: out, width: 1920, height: 1080, lang: "de" });
 const N = narration(R, process.argv.slice(4));
@@ -109,7 +109,7 @@ const quiet = async (target, wait = 400) => {
  * last button is cut off at the window's edge. For the video the panel gets 360 px (a style in the recording only).
  */
 const widenSide = () =>
-  R.editor(`if (!e.renderRoot.getElementById("tut-wide")) { const s = document.createElement("style"); s.id = "tut-wide"; s.textContent = ".accurona-editor { grid-template-columns: 1fr 360px !important; }"; e.renderRoot.appendChild(s); }`);
+  R.editor(`if (!e.renderRoot.getElementById("tut-wide")) { const s = document.createElement("style"); s.id = "tut-wide"; s.textContent = ".axonometra-editor { grid-template-columns: 1fr 360px !important; }"; e.renderRoot.appendChild(s); }`);
 const editorOpen = async (record = false) => {
   if (record) await R.clickOn({ text: "Editor", exact: true }, 0.5);
   else await quiet({ text: "Editor", exact: true }, 300);
@@ -276,7 +276,7 @@ const service = (domain, name, data) => R.page.evaluate((d, s, data) => window.f
 const cam = (floorId, x, z, c) =>
   R.page.evaluate(
     (floorId, x, z, c) => {
-      const v = document.querySelector("accurona-panel").shadowRoot.querySelector("accurona-view3d");
+      const v = document.querySelector("axonometra-panel").shadowRoot.querySelector("axonometra-view3d");
       const viewer = Object.values(v).find((o) => o && o.floors && o.floorMap);
       const fv = viewer.floorMap.get(floorId);
       const t = fv.group.position.clone().set(x, c.y ?? 0, z);
@@ -304,7 +304,7 @@ const glide = async (floorId, x, z, a, b, seconds) => {
 const point3d = (floorId, x, y, z) =>
   R.page.evaluate(
     (floorId, x, y, z) => {
-      const v = document.querySelector("accurona-panel").shadowRoot.querySelector("accurona-view3d");
+      const v = document.querySelector("axonometra-panel").shadowRoot.querySelector("axonometra-view3d");
       const viewer = Object.values(v).find((o) => o && o.floors && o.floorMap);
       const fv = viewer.floorMap.get(floorId);
       const p = fv.group.position.clone().set(x, y, z);
@@ -349,7 +349,7 @@ if (PART === "a") {
     const b = { theta: -0.2, phi: 0.7, radius: 10, y: 0.3 };
     await cam("eg", 4.0, 2.3, a);
     await R.sleep(1500);
-    await R.title("Geräte, Lampen und Kameras", `Accurona · Folge 6 · Teil 1${VERSION}`);
+    await R.title("Geräte, Lampen und Kameras", `Axonometra · Folge 6 · Teil 1${VERSION}`);
     const l1 = "Lampen, die in 3D genau so leuchten wie bei dir, Sensoren mit ihren Werten und Kameras mit ihrem Blickfeld.";
     const l2 = "Wie deine Geräte aus Home Assistant in den Plan kommen, zeige ich dir in dieser Folge.";
     const total = N.length(l1) + N.length(l2);
@@ -584,7 +584,7 @@ if (PART === "a") {
   await sayOver("Bei Schaltern und Lampen gibt es „Vor dem Schalten nachfragen“. Ich nehme die Kaffeemaschine in der Küche.");
   await tapDevice("switch.kaffeemaschine", 0.7);
   await R.hold(0.4);
-  await sayOver("Mit Haken fragt Accurona erst nach – beim Antippen in 3D, im Schnellmenü und im Raumfenster. Das schützt etwa den Server-Schalter vor einem versehentlichen Tipp.");
+  await sayOver("Mit Haken fragt Axonometra erst nach – beim Antippen in 3D, im Schnellmenü und im Raumfenster. Das schützt etwa den Server-Schalter vor einem versehentlichen Tipp.");
   await R.clickOn({ text: "Vor dem Schalten nachfragen" }, 0.6);
   await R.hold(0.8);
   await sayOver("Ein Doppeltipp auf den Raum, der alle Lichter schaltet, lässt so ein Gerät aus. Und Wischen bewegt es auch nicht.");
@@ -699,11 +699,11 @@ if (PART === "a") {
     const end = await line(l1);
     await glide("eg", 5.5, 3.5, a, b, end - R.time);
   }
-  await R.title("Teil 2: Lampen und Kameras", `Accurona – läuft auch auf alten Wandtablets${VERSION}`);
+  await R.title("Teil 2: Lampen und Kameras", `Axonometra – läuft auch auf alten Wandtablets${VERSION}`);
   {
     let end = await line("In Teil 2 geht es um Lampen und Kameras.");
     await live(end);
-    end = await line("Links zur Online-Demo und zur Anleitung stehen in der Beschreibung. Und Accurona läuft auch auf alten Wandtablets. Bis gleich in Teil 2!");
+    end = await line("Links zur Online-Demo und zur Anleitung stehen in der Beschreibung. Und Axonometra läuft auch auf alten Wandtablets. Bis gleich in Teil 2!");
     await live(end + 0.6);
   }
 }
@@ -714,8 +714,8 @@ if (PART === "b") {
   const pane = (floorId, x, z, c) =>
     R.page.evaluate(
       (floorId, x, z, c) => {
-        const e = document.querySelector("accurona-panel").shadowRoot.querySelector("accurona-editor");
-        const v = e.renderRoot.querySelector("accurona-view3d");
+        const e = document.querySelector("axonometra-panel").shadowRoot.querySelector("axonometra-editor");
+        const v = e.renderRoot.querySelector("axonometra-view3d");
         const viewer = Object.values(v).find((o) => o && o.floors && o.floorMap);
         const fv = viewer.floorMap.get(floorId);
         const t = fv.group.position.clone().set(x, c.y ?? 0, z);
@@ -732,8 +732,8 @@ if (PART === "b") {
     );
   const paneCentre = () =>
     R.page.evaluate(() => {
-      const e = document.querySelector("accurona-panel").shadowRoot.querySelector("accurona-editor");
-      const r = e.renderRoot.querySelector("accurona-view3d").getBoundingClientRect();
+      const e = document.querySelector("axonometra-panel").shadowRoot.querySelector("axonometra-editor");
+      const r = e.renderRoot.querySelector("axonometra-view3d").getBoundingClientRect();
       return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
     });
 
@@ -748,7 +748,7 @@ if (PART === "b") {
     const b = { theta: -0.35, phi: 0.68, radius: 10.5, y: 0.3 };
     await cam("eg", 5.5, 2.3, a);
     await R.sleep(1500);
-    await R.title("Geräte, Lampen und Kameras", `Accurona · Folge 6 · Teil 2${VERSION}`);
+    await R.title("Geräte, Lampen und Kameras", `Axonometra · Folge 6 · Teil 2${VERSION}`);
     const l1 = "Lampen, die in Farbe und Helligkeit genau wie bei dir leuchten, und Kameras mit ihrem Blickfeld im Raum.";
     const l2 = "Das ist Teil 2 von Folge 6: Lampen und Kameras.";
     const total = N.length(l1) + N.length(l2);
@@ -1087,11 +1087,11 @@ if (PART === "b") {
     const end = await line("Kurz zusammengefasst: Leuchten sind Möbel mit einem Licht, mit Form, Höhe und Leuchtstärke. Kameras zeigen mit ihrem Kegel, was sie sehen.");
     await glide("eg", 5.5, 3.5, a, b, end - R.time);
   }
-  await R.title("Nächste Folge: Dächer, Teil 1", `Accurona – läuft auch auf alten Wandtablets${VERSION}`);
+  await R.title("Nächste Folge: Dächer, Teil 1", `Axonometra – läuft auch auf alten Wandtablets${VERSION}`);
   {
     let end = await line("In der nächsten Folge geht es um Dächer: Satteldach, Walmdach und Co.");
     await live(end);
-    end = await line("Links zur Online-Demo und zur Anleitung stehen in der Beschreibung. Und Accurona läuft auch auf alten Wandtablets. Bis zum nächsten Mal!");
+    end = await line("Links zur Online-Demo und zur Anleitung stehen in der Beschreibung. Und Axonometra läuft auch auf alten Wandtablets. Bis zum nächsten Mal!");
     await live(end + 0.6);
   }
 }

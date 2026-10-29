@@ -1,4 +1,4 @@
-// Accurona: example plans, a starting set of buildings and rooms for demos and for later work to build on. Each one is
+// Axonometra: example plans, a starting set of buildings and rooms for demos and for later work to build on. Each one is
 // an original layout of a common type (nothing traced from a published plan), written as rooms on a metre grid with
 // their doors, windows and stairs, and turned into a plan by the importer's common end (import/builder.ts), the same
 // way an imported plan is. Not furnished: the structure only.
@@ -9,6 +9,10 @@
 import type { Building, BuildingSettings, OpeningStyle, RoofSettings, Vec2 } from "../model.ts";
 import { buildPlan, type RawFloor, type RawOpening, type Warning } from "../import/builder.ts";
 import { pointOnRoomEdge } from "../geometry/walls.ts";
+import { PLATE_FISHING_6_5 } from "../hull/plate.ts";
+import { SHAFT } from "../hull/open.ts";
+import { vesselBuilding } from "../vessel/plan.ts";
+import type { VesselSpec } from "../vessel/spec.ts";
 
 export interface ExampleRoom {
   name: string;
@@ -492,6 +496,26 @@ export const EXAMPLE_PLANS: Record<string, ExamplePlan> = {
   "shed-workshop": SHED_WORKSHOP,
 };
 
+/** Plans drawn in a vessel (vessel/): the boat's recipe, its decks made from it. */
+export const EXAMPLE_VESSELS: Record<string, { title: string; note: string; spec: VesselSpec }> = {
+  "fishing-boat-6.5m": {
+    title: "Plate alloy fishing boat",
+    note: "A 6.5 m open plate aluminium boat: a self-draining sole, and a motor well behind the transom's cut-out for twin outboards",
+    spec: {
+      hull: { plate: PLATE_FISHING_6_5 },
+      open: { plating: 0.005, sole: 0.15, transom: { height: SHAFT.xl, width: 1.4, well: 0.75 } },
+      outboards: 2,
+      components: [
+        // twin 150 hp outboards on their mounts, the leg down past the bottom of the boat
+        { name: "Outboard 1", mass: 230, size: [0.8, 1.6, 0.6], mount: "outboard 1", offset: [-0.45, 0.1, 0] },
+        { name: "Outboard 2", mass: 230, size: [0.8, 1.6, 0.6], mount: "outboard 2", offset: [-0.45, 0.1, 0] },
+        { name: "Fuel tank, 200 L", mass: 160, size: [1.2, 0.3, 0.8], at: [2.0, -0.05, 0] },
+        { name: "Battery", mass: 30, size: [0.35, 0.25, 0.2], at: [0.4, 0.38, 0.5] },
+      ],
+    },
+  },
+};
+
 const ROTATION: Record<ExampleStairs["rises"], number> = { "-z": 0, "+x": 90, "+z": 180, "-x": 270 };
 
 function rawFloor(f: ExampleFloor): RawFloor {
@@ -508,9 +532,11 @@ function rawFloor(f: ExampleFloor): RawFloor {
 
 /** An example as a plan, with what the importer had to say about it (an example should give no warnings). */
 export function examplePlan(name: string): { building: Building; warnings: Warning[] } {
+  const vessel = EXAMPLE_VESSELS[name];
+  if (vessel) return { building: vesselBuilding(vessel.spec), warnings: [] };
   const plan = EXAMPLE_PLANS[name];
   if (!plan) throw new Error(`no example plan "${name}"`);
-  const { building, warnings } = buildPlan({ source: "Accurona", floors: plan.floors.map(rawFloor) }, { lang: "en", square: false });
+  const { building, warnings } = buildPlan({ source: "Axonometra", floors: plan.floors.map(rawFloor) }, { lang: "en", square: false });
   // the importer sorts the floors by elevation; ours are listed that way already
   building.floors.forEach((floor, i) => {
     const spec = plan.floors[i];

@@ -1,11 +1,11 @@
-# Accurona: notes for Claude
+# Axonometra: notes for Claude
 
-- Accurona is an intentionally maintained fork of NeonPlan 3D (`Mastershort/neonplan3d`,
+- Axonometra is an intentionally maintained fork of NeonPlan 3D (`Mastershort/neonplan3d`,
   MIT). Upstream is the `upstream` remote, fetch only. Nothing is ever pushed or proposed
   back as a merge.
 - **The rename from upstream's identity is a transform, not hand edits.** `fork/identity.py`
   renames upstream's tree and is re-run after every upstream merge. Never hand-edit a
-  NeonPlan name into an Accurona one, and never hand-revert one: change the script.
+  NeonPlan name into an Axonometra one, and never hand-revert one: change the script.
   `python3 fork/identity.py --check` must report `identity: clean`.
 - Kept as upstream wrote them, on purpose: the file-format markers (`"neonplan3d"` plan
   export, `neonplan3d-backup`, `neonplan-import`), the pack fingerprint prefix
@@ -22,10 +22,15 @@
   host leaves them off unless `homeAssistant: true` is passed. Check the standalone build with
   `node ../fork/build-standalone.mjs && node ../fork/smoke-standalone.mjs && node ../fork/smoke-hulls.mjs` from
   `frontend/`.
-- Domain `accurona`, minimum Home Assistant 2025.1. Frontend in `frontend/` (Lit 3 +
+- Domain `axonometra`, minimum Home Assistant 2025.1. Frontend in `frontend/` (Lit 3 +
   TypeScript, no decorators; three.js in a separate lazily loaded bundle). Bundles are
-  committed to `custom_components/accurona/frontend/` and CI fails when they are stale, so
+  committed to `custom_components/axonometra/frontend/` and CI fails when they are stale, so
   run `npm run build` before committing.
 - Checks: `npm test`, `npm run typecheck`, `npm run build` (size budgets), `ruff check`,
-  `ruff format --check`, `mypy custom_components/accurona`, `pytest -q`.
+  `ruff format --check`, `mypy custom_components/axonometra`, `pytest -q`.
+- The Python tools live in the project's own `.venv/` (gitignored), never in the system Python:
+  `python3 -m venv .venv && .venv/bin/pip install -r requirements_test.txt ruff mypy`, then
+  `.venv/bin/ruff`, `.venv/bin/mypy`, `.venv/bin/pytest`; `RUFF=.venv/bin/ruff` for
+  `fork/merge-upstream.sh`. Home Assistant's test package pins its own versions of shared
+  libraries (it downgraded cryptography system-wide once).
 - Never commit real floor plans, boat data, IPs or device names.

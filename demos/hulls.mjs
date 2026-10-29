@@ -16,11 +16,11 @@ const HULLS = {
   "catamaran-12m": 18,
   "swath-25m": 12,
   "container-ship-300m": 16,
-  "plate-alloy-fishing-6.5m": 10,
+  "plate-alloy-fishing-6.5m": 24,
 };
 
 const names = process.argv.slice(2).length ? process.argv.slice(2) : Object.keys(HULLS);
-await withBrowser("accurona-hulls.js", async (page, base) => {
+await withBrowser("axonometra-hulls.js", async (page, base) => {
   for (const name of names) {
     if (!(name in HULLS)) throw new Error(`no such hull in the recording list: ${name}`);
     await page.goto(`${base}/hulls.html?bare&hull=${encodeURIComponent(name)}`, { waitUntil: "networkidle0" });

@@ -24,8 +24,8 @@ body:
   - type: input
     id: version
     attributes:
-      label: Accurona version / Version
-      description: HACS → Accurona, or Settings → Devices & services → Accurona.
+      label: Axonometra version / Version
+      description: HACS → Axonometra, or Settings → Devices & services → Axonometra.
       placeholder: "1.2.0"
     validations:
       required: true

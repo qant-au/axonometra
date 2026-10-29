@@ -20,7 +20,7 @@ import { helpers, tap } from "./ep02-common.mjs";
 const out = process.argv[2] ?? "tutorial-ep04";
 const PART = process.argv[3] === "b" ? "b" : "a";
 const FAST = !!process.env.EP04_FAST;
-const VERSION = `<br><span style="font-size:20px;opacity:.7">aufgenommen mit Accurona ${appVersion()}</span>`;
+const VERSION = `<br><span style="font-size:20px;opacity:.7">aufgenommen mit Axonometra ${appVersion()}</span>`;
 
 // ---------------------------------------------------------------- states (the invented house of episode 3)
 const rectRoom = (id, name, area_id, x0, z0, x1, z1, floor_material = "wood") => ({ id, name, area_id, points: [[x0, z0], [x1, z0], [x1, z1], [x0, z1]], floor_material });
@@ -124,7 +124,7 @@ const freeOnly = () =>
     const p = window.fp3dPanel;
     const hass = p.hass;
     const orig = hass.callWS;
-    hass.callWS = async (m) => (m.type === "accurona/packs/list" ? { packs: [] } : orig(m));
+    hass.callWS = async (m) => (m.type === "axonometra/packs/list" ? { packs: [] } : orig(m));
     await p.data.reloadPacks();
   });
 /**
@@ -374,8 +374,8 @@ const search = async (text) => {
 const setPane = (floorId, x, z, cam, main = false) =>
   R.page.evaluate(
     (floorId, x, z, cam, main) => {
-      const panel = document.querySelector("accurona-panel").shadowRoot;
-      const v = main ? panel.querySelector("accurona-view3d") : panel.querySelector("accurona-editor").renderRoot.querySelector("accurona-view3d");
+      const panel = document.querySelector("axonometra-panel").shadowRoot;
+      const v = main ? panel.querySelector("axonometra-view3d") : panel.querySelector("axonometra-editor").renderRoot.querySelector("axonometra-view3d");
       const viewer = Object.values(v).find((o) => o && o.floors && o.floorMap);
       const fv = viewer.floorMap.get(floorId);
       const t = fv.group.position.clone().set(x, 0, z);
@@ -405,8 +405,8 @@ const glidePane = async (floorId, x, z, a, b, seconds, main = false) => {
 const panePoint = (floorId, x, y, z) =>
   R.page.evaluate(
     (floorId, x, y, z) => {
-      const e = document.querySelector("accurona-panel").shadowRoot.querySelector("accurona-editor");
-      const v = e.renderRoot.querySelector("accurona-view3d");
+      const e = document.querySelector("axonometra-panel").shadowRoot.querySelector("axonometra-editor");
+      const v = e.renderRoot.querySelector("axonometra-view3d");
       const viewer = Object.values(v).find((o) => o && o.floors && o.floorMap);
       const fv = viewer.floorMap.get(floorId);
       const p = fv.group.position.clone().set(x, y, z);
@@ -480,7 +480,7 @@ if (PART === "a") {
     const C = { theta: 1.9, phi: 0.85, radius: 14 };
     await setPane("eg", 4.75, 3.75, A, true);
     await R.sleep(900);
-    await R.title("Möbel: platzieren, drehen, anpassen", `Accurona · Folge 4 · Teil 1${VERSION}`);
+    await R.title("Möbel: platzieren, drehen, anpassen", `Axonometra · Folge 4 · Teil 1${VERSION}`);
     await sayOver("Ein Erdgeschoss, fertig eingerichtet: Sofa, Küche, Bett und Bad – und die Lampen leuchten mit Home Assistant.");
     await glidePane("eg", 4.75, 3.75, A, B, 5.5, true);
     await R.untitle();
@@ -909,9 +909,9 @@ if (PART === "a") {
 
   // ---------------------------------------------------------------- outro
   await chapter("Wie geht es weiter");
-  await R.title("Teil 2: Elektrische Möbel, Stellplatz und Saugroboter", `Accurona – läuft auch auf alten Wandtablets${VERSION}`);
+  await R.title("Teil 2: Elektrische Möbel, Stellplatz und Saugroboter", `Axonometra – läuft auch auf alten Wandtablets${VERSION}`);
   await say("Das war Teil eins: setzen, verschieben, drehen, spiegeln, Größe, Höhe, fixieren und ganze Räume einrichten. In Teil zwei verknüpfen wir Möbel mit Home Assistant.");
-  await say("Links zur Online-Demo und zur Anleitung stehen in der Beschreibung. Accurona läuft übrigens auch auf alten Wandtablets. Bis gleich in Teil zwei!");
+  await say("Links zur Online-Demo und zur Anleitung stehen in der Beschreibung. Axonometra läuft übrigens auch auf alten Wandtablets. Bis gleich in Teil zwei!");
   await R.hold(0.6);
 } else {
   // ================================================================ PART 2: Elektrische Möbel, Stellplatz und Saugroboter
@@ -948,7 +948,7 @@ if (PART === "a") {
     const C = { theta: 2.0, phi: 0.8, radius: 13 };
     await setPane("eg", 5.5, 3.5, A, true);
     await R.sleep(900);
-    await R.title("Elektrische Möbel, Stellplatz und Saugroboter", `Accurona · Folge 4 · Teil 2${VERSION}`);
+    await R.title("Elektrische Möbel, Stellplatz und Saugroboter", `Axonometra · Folge 4 · Teil 2${VERSION}`);
     await sayOver("Der Fernseher leuchtet, das Bett zeigt, wer drin liegt, und der Saugroboter fährt durch die Küche.");
     await glidePane("eg", 5.5, 3.5, A, B, 5.5, true);
     await R.untitle();
@@ -984,7 +984,7 @@ if (PART === "a") {
     await setPane("eg", tv.x, tv.z, { theta: 0.6, phi: 0.8, radius: 7 });
   }
   await sideTop(0.3);
-  await sayOver("Im Feld „Fernseher“ steht „Automatisch“: Accurona sucht den passenden Media-Player im Bereich selbst – hier den Fernseher.");
+  await sayOver("Im Feld „Fernseher“ steht „Automatisch“: Axonometra sucht den passenden Media-Player im Bereich selbst – hier den Fernseher.");
   await scrollSide({ label: "Fernseher (Media-Player" }, 380, 0.6);
   await pickerMove("Fernseher (Media-Player", 0.5);
   await R.hold(0.6);
@@ -1103,7 +1103,7 @@ if (PART === "a") {
   await R.hold(0.5);
   await sayOver("Die Bahn ist simuliert, denn Home Assistant kennt die genaue Position meistens nicht. Viele Roboter melden aber den Raum, den sie gerade saugen.");
   await R.hold(0.3);
-  await sayOver("Diesen Sensor findet Accurona am Gerät des Roboters von selbst: „Aktueller Raum“. Hier meldet er „Kueche“ – ohne Umlaut.");
+  await sayOver("Diesen Sensor findet Axonometra am Gerät des Roboters von selbst: „Aktueller Raum“. Hier meldet er „Kueche“ – ohne Umlaut.");
   await pickerMove("Aktueller Raum", 0.5);
   await R.hold(0.6);
   await sayOver("Groß- und Kleinschreibung und Umlaute spielen keine Rolle: „Kueche“ passt zur Küche. Also fährt er jetzt dort.");
@@ -1133,10 +1133,10 @@ if (PART === "a") {
 
   // ---------------------------------------------------------------- outro
   await chapter("Wie geht es weiter");
-  await R.title("Nächste Folge: Erweiterungen und Möbel-Packs", `Accurona – läuft auch auf alten Wandtablets${VERSION}`);
+  await R.title("Nächste Folge: Erweiterungen und Möbel-Packs", `Axonometra – läuft auch auf alten Wandtablets${VERSION}`);
   await say("Das waren elektrische Möbel, Zustand und Hälften, der Stellplatz und der Saugroboter – alles mit den kostenlosen Möbeln.");
   await say("In Folge fünf zeige ich dir die Erweiterungen: Shop verbinden und Möbel-Packs installieren – mit mehr Möbeln, und auch mit den Fahrzeugen.");
-  await say("Links zur Online-Demo und zur Anleitung stehen in der Beschreibung. Und Accurona läuft auch auf alten Wandtablets. Bis zum nächsten Mal!");
+  await say("Links zur Online-Demo und zur Anleitung stehen in der Beschreibung. Und Axonometra läuft auch auf alten Wandtablets. Bis zum nächsten Mal!");
   await R.hold(0.6);
 }
 

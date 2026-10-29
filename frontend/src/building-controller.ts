@@ -11,7 +11,7 @@ export type SaveState = "idle" | "saving" | "saved" | "error";
 
 const SAVE_DELAY = 700;
 /** Edits that could not be saved are kept here, so a reload does not lose them. */
-const DRAFT_KEY = "accurona.unsaved";
+const DRAFT_KEY = "axonometra.unsaved";
 
 /** Version of this frontend, set by the build (see build.mjs). */
 declare const __FP3D_VERSION__: string;

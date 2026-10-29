@@ -217,4 +217,4 @@ export class EntityPicker extends LitElement {
   ];
 }
 
-if (!customElements.get("accurona-entity-picker")) customElements.define("accurona-entity-picker", EntityPicker);
+if (!customElements.get("axonometra-entity-picker")) customElements.define("axonometra-entity-picker", EntityPicker);

@@ -18,7 +18,7 @@ import { appVersion, narration, startRecorder } from "./recorder.mjs";
 
 const out = process.argv[2] ?? "tutorial-ep03";
 const PART = process.argv[3] === "b" ? "b" : "a";
-const VERSION = `<br><span style="font-size:20px;opacity:.7">aufgenommen mit Accurona ${appVersion()}</span>`;
+const VERSION = `<br><span style="font-size:20px;opacity:.7">aufgenommen mit Axonometra ${appVersion()}</span>`;
 const STAIR_PACK = "pack:mastershort.stairs";
 
 // ---------------------------------------------------------------- states (invented demo house, ep01 style)
@@ -161,7 +161,7 @@ const noDialog = () => R.page.evaluate(() => document.getElementById("tut-dialog
 /** The two inputs of „Etage verschieben" (X and Y; the app names the second one Z). */
 const shiftField = (axis) => R.clickOn(`input[aria-label="${axis}"]`, 0.5);
 /** Centre of the editor's 3D pane, for drags that turn its camera. */
-const paneBox = () => R.locate(".accurona-editor-3d");
+const paneBox = () => R.locate(".axonometra-editor-3d");
 /** Up to the floor form: select tool, then "Zurück zu …" until nothing is selected. */
 const toFloor = async () => {
   await R.clickOn({ text: "Auswählen", exact: true }, 0.45);
@@ -175,8 +175,8 @@ const toFloor = async () => {
 const panePoint = (floorId, x, y, z) =>
   R.page.evaluate(
     (floorId, x, y, z) => {
-      const e = document.querySelector("accurona-panel").shadowRoot.querySelector("accurona-editor");
-      const v = e.renderRoot.querySelector("accurona-view3d");
+      const e = document.querySelector("axonometra-panel").shadowRoot.querySelector("axonometra-editor");
+      const v = e.renderRoot.querySelector("axonometra-view3d");
       const viewer = Object.values(v).find((o) => o && o.floors && o.floorMap);
       const fv = viewer.floorMap.get(floorId);
       const p = fv.group.position.clone().set(x, y, z);
@@ -194,8 +194,8 @@ const panePoint = (floorId, x, y, z) =>
 const setPane = (floorId, x, z, cam, main = false) =>
   R.page.evaluate(
     (floorId, x, z, cam, main) => {
-      const panel = document.querySelector("accurona-panel").shadowRoot;
-      const v = main ? panel.querySelector("accurona-view3d") : panel.querySelector("accurona-editor").renderRoot.querySelector("accurona-view3d");
+      const panel = document.querySelector("axonometra-panel").shadowRoot;
+      const v = main ? panel.querySelector("axonometra-view3d") : panel.querySelector("axonometra-editor").renderRoot.querySelector("axonometra-view3d");
       const viewer = Object.values(v).find((o) => o && o.floors && o.floorMap);
       const fv = viewer.floorMap.get(floorId);
       const t = fv.group.position.clone().set(x, 0, z);
@@ -214,8 +214,8 @@ const setPane = (floorId, x, z, cam, main = false) =>
 /** Glide the editor's 3D pane camera from its current view to another (theta, phi, radius). */
 const panePaneView = () =>
   R.page.evaluate(() => {
-    const e = document.querySelector("accurona-panel").shadowRoot.querySelector("accurona-editor");
-    const v = e.renderRoot.querySelector("accurona-view3d");
+    const e = document.querySelector("axonometra-panel").shadowRoot.querySelector("axonometra-editor");
+    const v = e.renderRoot.querySelector("axonometra-view3d");
     const viewer = Object.values(v).find((o) => o && o.floors && o.floorMap);
     const { theta, phi, radius } = viewer.controls.view;
     return { theta, phi, radius };
@@ -285,7 +285,7 @@ const teaser = async (title, line1, line2) => {
   const C = { theta: 2.6, phi: 0.75, radius: 29 };
   await R.view(A);
   await R.sleep(900);
-  await R.title(title, `Accurona · Folge 3 · ${PART === "a" ? "Teil 1" : "Teil 2"}${VERSION}`);
+  await R.title(title, `Axonometra · Folge 3 · ${PART === "a" ? "Teil 1" : "Teil 2"}${VERSION}`);
   await sayOver(line1);
   await R.glide(A, B, 5);
   await R.untitle();
@@ -517,9 +517,9 @@ if (PART === "a") {
 
   // ---------------------------------------------------------------- outro
   await chapter("Wie geht es weiter");
-  await R.title("Teil 2: Treppen und Bodenöffnungen", `Accurona – läuft auch auf alten Wandtablets${VERSION}`);
+  await R.title("Teil 2: Treppen und Bodenöffnungen", `Axonometra – läuft auch auf alten Wandtablets${VERSION}`);
   await say("Das waren die Etagen: anlegen, Höhe, Raumhöhe, Keller, verschieben, drehen und die Startansicht. Im zweiten Teil verbinden wir sie mit Treppen.");
-  await say("Links zur Online-Demo und zur Anleitung stehen in der Beschreibung. Accurona läuft übrigens auch auf alten Wandtablets. Bis gleich in Teil zwei!");
+  await say("Links zur Online-Demo und zur Anleitung stehen in der Beschreibung. Axonometra läuft übrigens auch auf alten Wandtablets. Bis gleich in Teil zwei!");
   await R.hold(0.6);
 } else {
   // ================================================================ PART 2: Treppen und Bodenöffnungen
@@ -551,7 +551,7 @@ if (PART === "a") {
   await R.hold(0.6);
   await sayOver("Unter „Arbeiten & Sonstiges“ steht die „Treppe“. Ein Klick – und sie steht im Flur.");
   await R.clickOn({ text: "Treppe", exact: true }, 0.6);
-  await sayOver("Ihre Höhe ist schon richtig: 2,75 Meter, genau bis zum Obergeschoss. Das rechnet Accurona beim Einsetzen aus.");
+  await sayOver("Ihre Höhe ist schon richtig: 2,75 Meter, genau bis zum Obergeschoss. Das rechnet Axonometra beim Einsetzen aus.");
   await R.moveTo({ label: "Höhe (m)" }, 0.5);
   await R.hold(1);
   await sayOver("Die Richtung zeigt der Pfeil im Plan: Die Treppe steigt von der markierten Vorderkante nach hinten an.");
@@ -743,9 +743,9 @@ if (PART === "a") {
 
   // ---------------------------------------------------------------- outro
   await chapter("Wie geht es weiter");
-  await R.title("Nächste Folge: Möbel", `Accurona – läuft auch auf alten Wandtablets${VERSION}`);
+  await R.title("Nächste Folge: Möbel", `Axonometra – läuft auch auf alten Wandtablets${VERSION}`);
   await say("Das waren Treppen und Bodenöffnungen. In der nächsten Folge richten wir das Haus mit Möbeln ein – alles mit den kostenlosen Möbeln.");
-  await say("Links zur Online-Demo und zur Anleitung stehen in der Beschreibung. Und Accurona läuft auch auf alten Wandtablets. Bis zum nächsten Mal!");
+  await say("Links zur Online-Demo und zur Anleitung stehen in der Beschreibung. Und Axonometra läuft auch auf alten Wandtablets. Bis zum nächsten Mal!");
   await R.hold(0.6);
 }
 

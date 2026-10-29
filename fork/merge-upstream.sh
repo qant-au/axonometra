@@ -1,21 +1,21 @@
 #!/usr/bin/env bash
-# Merge an upstream NeonPlan 3D release into Accurona. The procedure is in fork/MERGING.md.
+# Merge an upstream NeonPlan 3D release into Axonometra. The procedure is in fork/MERGING.md.
 #
 #   fork/merge-upstream.sh v1.24.0
 #
-# 1. On the snapshot branch (upstream-accurona), record the upstream tag as a parent and
+# 1. On the snapshot branch (upstream-axonometra), record the upstream tag as a parent and
 #    replace the tree with upstream's, put our own files (fork/OURS) back from main, and give it
-#    Accurona's identity: fork/identity.py, ruff format, a frontend rebuild.
+#    Axonometra's identity: fork/identity.py, ruff format, a frontend rebuild.
 # 2. Merge the snapshot into main. Its merge base is the previous snapshot, so the merge
 #    carries only what upstream changed, already renamed; it conflicts only where we have
 #    changed the same lines.
 #
-# Env: RUFF (default: ruff), SNAP_BRANCH (default: upstream-accurona), MAIN_BRANCH (main).
+# Env: RUFF (default: ruff), SNAP_BRANCH (default: upstream-axonometra), MAIN_BRANCH (main).
 set -euo pipefail
 
 ref="${1:?usage: fork/merge-upstream.sh <upstream tag, e.g. v1.24.0>}"
 cd "$(git rev-parse --show-toplevel)"
-snap="${SNAP_BRANCH:-upstream-accurona}"
+snap="${SNAP_BRANCH:-upstream-axonometra}"
 main="${MAIN_BRANCH:-main}"
 ruff="${RUFF:-ruff}"
 
@@ -32,7 +32,7 @@ while IFS= read -r line; do
 done < fork/OURS
 
 echo "== Upstream $prev -> $ref"
-echo "Upstream changed these files that Accurona replaces with its own (review by hand):"
+echo "Upstream changed these files that Axonometra replaces with its own (review by hand):"
 git diff --stat "$prev" "$ref" -- README.md CLAUDE.md LICENSE .github/ISSUE_TEMPLATE/config.yml || true
 
 git switch -q "$snap"
@@ -43,9 +43,13 @@ python3 fork/identity.py
 "$ruff" format -q custom_components tests
 (cd frontend && npm ci --no-audit --no-fund >/dev/null && npm run build)
 echo "$ref" > fork/UPSTREAM
-git add -A
+# staged with main's ignore rules: upstream's .gitignore knows nothing of our local build output (dist/)
+excludes="$(mktemp)"
+git show "$main:.gitignore" > "$excludes"
+git -c core.excludesFile="$excludes" add -A
+rm -f "$excludes"
 python3 fork/identity.py --check
-git commit -q -m "Upstream $ref, with Accurona's identity"
+git commit -q -m "Upstream $ref, with Axonometra's identity"
 
 git switch -q "$main"
 if git merge --no-ff -m "Merge upstream $ref" "$snap"; then

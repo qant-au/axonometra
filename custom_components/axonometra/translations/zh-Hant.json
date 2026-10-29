@@ -1,0 +1,13 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Axonometra",
+        "description": "在側邊欄新增一個頁面，用於繪製你的家並以 3D 檢視。"
+      }
+    },
+    "abort": {
+      "single_instance_allowed": "Axonometra 已經設定好了。"
+    }
+  }
+}

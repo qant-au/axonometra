@@ -3,7 +3,8 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Accurona</title>
+    <link rel="icon" href="data:," />
+    <title>Axonometra</title>
     <style>
       html,
       body {
@@ -23,16 +24,16 @@
       // ?plan=<name> keeps a separate plan; ?fresh starts an empty one in memory (nothing kept); ?ha shows the parts that
       // need a Home Assistant behind the host (off by default: there is none here); ?example=<name> opens one of the
       // example plans in memory (frontend/src/plans/examples.ts).
-      import { browserStore, memoryStore, mountAccurona } from "./accurona-host.js";
+      import { browserStore, memoryStore, mountAxonometra } from "./axonometra-host.js";
 
       const params = new URLSearchParams(location.search);
       const example = params.get("example");
       const store = example
-        ? memoryStore({ building: (await import("./accurona-plans.js")).examplePlan(example).building })
+        ? memoryStore({ building: (await import("./axonometra-plans.js")).examplePlan(example).building })
         : params.has("fresh")
           ? memoryStore()
           : browserStore(params.get("plan") ?? "default");
-      window.accurona = await mountAccurona(document.querySelector("#plan"), { store, language: params.get("lang") ?? undefined, homeAssistant: params.has("ha") });
+      window.axonometra = await mountAxonometra(document.querySelector("#plan"), { store, language: params.get("lang") ?? undefined, homeAssistant: params.has("ha") });
     </script>
   </body>
 </html>

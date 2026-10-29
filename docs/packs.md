@@ -1,10 +1,10 @@
 # Möbel-Packs
 
-Möbel-Packs bringen zusätzliche Möbel in Accurona. Sie werden wie die eingebauten Möbel aus
+Möbel-Packs bringen zusätzliche Möbel in Axonometra. Sie werden wie die eingebauten Möbel aus
 Quadern und Zylindern gebaut und laufen deshalb genauso flüssig auf schwachen Tablets.
 
 Nur Packs, die mit dem Herausgeber-Schlüssel unterschrieben sind, lassen sich importieren. Der
-öffentliche Schlüssel steht in `custom_components/accurona/packs.py` (`PACK_PUBLIC_KEYS`); der
+öffentliche Schlüssel steht in `custom_components/axonometra/packs.py` (`PACK_PUBLIC_KEYS`); der
 geheime Schlüssel liegt nur beim Herausgeber und gehört nie ins Repo.
 
 ## Ablauf
@@ -51,7 +51,7 @@ dessen öffentlicher Schlüssel zusätzlich in `PACK_PUBLIC_KEYS` eingetragen un
 
 - `size`: Standardgröße in Metern (Breite, Tiefe, Höhe). Im Plan lässt sich jedes Möbel danach frei
   skalieren; alle Teile wachsen mit – außer denen mit `fix`.
-- `fix` an einem Teil (ab Accurona 1.23, Mindestversion setzen): welche Maße das Teil beim Skalieren
+- `fix` an einem Teil (ab Axonometra 1.23, Mindestversion setzen): welche Maße das Teil beim Skalieren
   **behält** – `"w"`, `"d"`, `"h"` oder mehrere (`"wdh"`). Beine, Armlehnen, Platten und Griffe
   behalten so ihre Größe und ihren Abstand zur Kante des Möbels, die Teile dazwischen (Sitzfläche,
   Korpus) strecken sich. Je Achse gibt es damit eine feste Zone an jedem Ende und eine Mitte, die
@@ -87,7 +87,7 @@ dessen öffentlicher Schlüssel zusätzlich in `PACK_PUBLIC_KEYS` eingetragen un
 - `screen`: ein Teil mit `"screen": true` ist ein Bildschirm (Fernseher, Monitor). Das Möbel lässt sich
   dann mit einem Media Player verknüpfen; die Vorderseite (+z) zeigt die Farbe der laufenden App und
   ihr Bild, wie die eingebauten Fernseher.
-- **Bibliothek** (optional, ab Accurona 1.23 – ältere Versionen lehnen Packs mit diesen Feldern ab,
+- **Bibliothek** (optional, ab Axonometra 1.23 – ältere Versionen lehnen Packs mit diesen Feldern ab,
   also die Mindestversion setzen): `group` sagt, was das Möbel ist (`sofa`, `seating`, `table`,
   `storage`, `bed`, `kitchen`, `appliance`, `bath`, `lamp`, `media`, `office`, `tech`, `heating`,
   `energy`, `household`, `deco`, `plant`, `outdoor`, `kids`, `sport`, `pets`, `vehicle`, `stairs`,
@@ -95,10 +95,10 @@ dessen öffentlicher Schlüssel zusätzlich in `PACK_PUBLIC_KEYS` eingetragen un
   `bedroom`, `kids`, `bath`, `office`, `hall`, `utility`, `garage`, `garden`, `hobby`; leer = überall),
   `tags` weitere Suchwörter. `family` fasst Varianten eines Möbels (ein Tisch in drei Längen) zu
   einer Karte zusammen, `variant` (Text je Sprache wie `name`) beschriftet den Chip der Variante.
-  Ohne diese Felder ordnet Accurona das Möbel nach seinen Wörtern und dem Pack ein; Varianten
+  Ohne diese Felder ordnet Axonometra das Möbel nach seinen Wörtern und dem Pack ein; Varianten
   erkennt es an der Größe am Ende der ID (`table_160`) und an den Zahlen im Namen.
 
-## Feature-Packs (Accurona Pro)
+## Feature-Packs (Axonometra Pro)
 
 Ein Pack darf statt Möbeln (oder zusätzlich) `features` tragen, zum Beispiel
 `"features": ["weather"]` mit `"items": []`. Ist so ein Pack installiert, ist die Pro-Funktion frei:
@@ -142,7 +142,7 @@ Pack erneut importiert wird.
 ## Lizenzschlüssel, Gerätebindung und Updates
 
 Jeder Kunde bekommt mit dem ersten Pack-Kauf **einen Schlüssel** (`NP-XXXX-XXXX-XXXX-XXXX`), der in
-der Bestell-Mail, auf der Danke-Seite und im Kundenkonto steht. In Accurona wird er einmal unter
+der Bestell-Mail, auf der Danke-Seite und im Kundenkonto steht. In Axonometra wird er einmal unter
 *Erweiterungen › Shop-Verbindung* eingetragen. Danach:
 
 - listet die Integration die gekauften Packs (Knopf „Installieren“ beziehungsweise „Aktualisieren“),
@@ -164,8 +164,8 @@ Serverseite (`tools/shop/ms-np-license.php`, neben `ms-np-sign.php`):
 
 1. WooCommerce-Hooks legen den Schlüssel beim ersten Pack-Kauf an (Nutzer-Meta `_ms_np_license`,
    bei Gastbestellungen Bestell-Meta) und zeigen ihn in Mail, Bestellung und Konto.
-2. `POST /wp-json/accurona/v1/catalog` `{key, instance}` bindet die Installation und liefert
-   `{licensee, packs: [{id, name, release, url}]}`; `POST /wp-json/accurona/v1/pack`
+2. `POST /wp-json/axonometra/v1/catalog` `{key, instance}` bindet die Installation und liefert
+   `{licensee, packs: [{id, name, release, url}]}`; `POST /wp-json/axonometra/v1/pack`
    `{key, instance, pack}` liefert die signierte Datei. Fehler sind `{code, message}` mit HTTP 4xx.
 3. `release` und `instance` stehen in den Vorlagen `<pack>.canonical.json` (neu erzeugen mit
    `python tools/fp3dpack.py canonical`); der Shop ersetzt das letzte `"instance":null`.

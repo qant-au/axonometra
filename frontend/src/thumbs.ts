@@ -2,7 +2,7 @@
 // (IndexedDB, per item and pack release): the second opening of the library shows them at once. Everything
 // here fails soft – without storage the pictures are just drawn again.
 
-const DB = "accurona-thumbs";
+const DB = "axonometra-thumbs";
 const STORE = "thumbs";
 const memory = new Map<string, string>();
 let dbPromise: Promise<IDBDatabase | null> | null = null;

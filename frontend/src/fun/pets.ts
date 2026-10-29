@@ -12,7 +12,7 @@ import type { FloorMap, Obstacle } from "../viewer/walk.ts";
 /** The three.js classes the pets need, lent by the 3D bundle (it has no ready-made spheres or boxes: shapes are made here). */
 export type FunLib = Pick<typeof THREE, "Group" | "Mesh" | "MeshBasicMaterial" | "CanvasTexture" | "Color" | "PlaneGeometry" | "BufferGeometry" | "Float32BufferAttribute"> & { DoubleSide: typeof THREE.DoubleSide };
 
-/** The parts of Accurona's viewer the pets live in (reached at run time). */
+/** The parts of Axonometra's viewer the pets live in (reached at run time). */
 export interface PetViewer {
   floorMap: Map<string, { group: THREE.Group; floor: Floor }>;
   invalidate(): void;

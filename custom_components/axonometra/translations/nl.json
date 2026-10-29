@@ -1,0 +1,13 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Axonometra",
+        "description": "Voegt een pagina in de zijbalk toe waar je je woning tekent en in 3D ziet."
+      }
+    },
+    "abort": {
+      "single_instance_allowed": "Axonometra is al ingesteld."
+    }
+  }
+}
