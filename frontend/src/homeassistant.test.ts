@@ -1,4 +1,4 @@
-// Accurona: the planner's Home Assistant-only parts show with Home Assistant behind the host, and only then.
+// Axonometra: the planner's Home Assistant-only parts show with Home Assistant behind the host, and only then.
 
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";

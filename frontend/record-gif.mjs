@@ -69,18 +69,18 @@ const turn = async (dx, steps, y = 470) => {
 // runs code with `panel` and `view` (the 3D view) at hand
 const inPage = (code) =>
   page.evaluate(async (code) => {
-    const panel = document.querySelector("accurona-panel");
-    const view = panel.shadowRoot.querySelector("accurona-view3d");
+    const panel = document.querySelector("axonometra-panel");
+    const view = panel.shadowRoot.querySelector("axonometra-view3d");
     return new Function("panel", "view", `return (async () => { ${code} })()`)(panel, view);
   }, code);
 
 // the live director with the doorbell switched on, on this "device" (the demo's mock Home Assistant)
 await inPage(`
-  const { building } = await panel.hass.callWS({ type: "accurona/building/get" });
+  const { building } = await panel.hass.callWS({ type: "axonometra/building/get" });
   building.settings.director = { doorbell: true, hold: 60 };
-  await panel.hass.callWS({ type: "accurona/building/save", building });
-  localStorage.setItem("accurona.director", "1");
-  localStorage.setItem("accurona.voice", "1");
+  await panel.hass.callWS({ type: "axonometra/building/save", building });
+  localStorage.setItem("axonometra.director", "1");
+  localStorage.setItem("axonometra.voice", "1");
   panel._director = true;
   panel._voiceHere = true;
 `);

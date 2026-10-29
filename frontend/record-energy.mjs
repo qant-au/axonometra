@@ -67,12 +67,12 @@ const clickText = (text) =>
   }, text);
 const inEditor = (code) =>
   page.evaluate((code) => {
-    const e = document.querySelector("accurona-panel").shadowRoot.querySelector("accurona-editor");
+    const e = document.querySelector("axonometra-panel").shadowRoot.querySelector("axonometra-editor");
     new Function("e", code)(e);
   }, code);
 const view = (cam) =>
   page.evaluate((cam) => {
-    const v = document.querySelector("accurona-panel").shadowRoot.querySelector("accurona-view3d");
+    const v = document.querySelector("axonometra-panel").shadowRoot.querySelector("axonometra-view3d");
     const viewer = Object.values(v).find((x) => x && x.floors && x.floorMap);
     Object.assign(viewer.controls.view, cam);
     viewer.invalidate();
@@ -89,7 +89,7 @@ const glide = async (from, to, steps, wait = 60) => {
 };
 const tapHolo = () =>
   page.evaluate(() => {
-    const v = document.querySelector("accurona-panel").shadowRoot.querySelector("accurona-view3d");
+    const v = document.querySelector("axonometra-panel").shadowRoot.querySelector("axonometra-view3d");
     v.renderRoot.querySelector('.fp3d-holo[data-holo="0"]')?.click();
   });
 

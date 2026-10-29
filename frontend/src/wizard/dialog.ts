@@ -1,4 +1,4 @@
-// Accurona: the first-run wizard as a dialog over the planner. It draws the steps of flow.ts and nothing else: what a
+// Axonometra: the first-run wizard as a dialog over the planner. It draws the steps of flow.ts and nothing else: what a
 // step needs, when it is ready and what finishing writes all live there. Texts in English and German inline (the
 // other languages come when the wizard is finished).
 
@@ -461,4 +461,4 @@ export class FirstRunWizard extends LitElement {
   `;
 }
 
-if (!customElements.get("accurona-first-run")) customElements.define("accurona-first-run", FirstRunWizard);
+if (!customElements.get("axonometra-first-run")) customElements.define("axonometra-first-run", FirstRunWizard);

@@ -1,4 +1,4 @@
-"""Accurona: the author's online services are off, and then nothing reaches his servers."""
+"""Axonometra: the author's online services are off, and then nothing reaches his servers."""
 
 from __future__ import annotations
 
@@ -7,8 +7,8 @@ from unittest.mock import patch
 from homeassistant.core import HomeAssistant
 import pytest
 
-from custom_components.accurona import diagnostics_report, upstream
-from custom_components.accurona import license as lic
+from custom_components.axonometra import diagnostics_report, upstream
+from custom_components.axonometra import license as lic
 
 
 def test_off_by_default() -> None:

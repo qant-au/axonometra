@@ -22,18 +22,18 @@ const PLANS = {
 };
 
 const names = process.argv.slice(2).length ? process.argv.slice(2) : Object.keys(PLANS);
-await withBrowser("accurona-plans.js", async (page, base) => {
+await withBrowser("axonometra-plans.js", async (page, base) => {
   for (const name of names) {
     if (!(name in PLANS)) throw new Error(`no such plan in the recording list: ${name}`);
     await page.goto(`${base}/index.html?example=${encodeURIComponent(name)}&lang=en`, { waitUntil: "networkidle0" });
-    await page.waitForFunction(() => window.accurona?.element?.shadowRoot?.querySelector("accurona-view3d")?.viewer, { timeout: 30000 });
+    await page.waitForFunction(() => window.axonometra?.element?.shadowRoot?.querySelector("axonometra-view3d")?.viewer, { timeout: 30000 });
     const { elevation, zoom } = PLANS[name];
     // the view alone, roof off, floors settled where the house view puts them
     await page.evaluate(async () => {
       const style = (root, css) => root.appendChild(Object.assign(document.createElement("style"), { textContent: css }));
-      const panel = window.accurona.element.shadowRoot;
+      const panel = window.axonometra.element.shadowRoot;
       style(panel, ".fp3d-header, .fp3d-nav, .fp3d-overlay { display: none !important; }");
-      const view = panel.querySelector("accurona-view3d");
+      const view = panel.querySelector("axonometra-view3d");
       style(view.shadowRoot, ".fp3d-thumbs, .fp3d-find-btn, .fp3d-walk-btn, .fp3d-eye, .fp3d-labels { display: none !important; }");
       view.hideRoof = true;
       await new Promise((ok) => setTimeout(ok, 500));
@@ -44,7 +44,7 @@ await withBrowser("accurona-plans.js", async (page, base) => {
       p.evaluate(
         (angle, elevation, zoom) =>
           new Promise((ok) => {
-            const viewer = window.accurona.element.shadowRoot.querySelector("accurona-view3d").viewer;
+            const viewer = window.axonometra.element.shadowRoot.querySelector("axonometra-view3d").viewer;
             const view = viewer.controls.view;
             // the fitted view, kept from the first frame: the house view's side (front left), distance and target
             window.__fit ??= { theta: view.theta, radius: view.radius };

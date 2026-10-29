@@ -644,4 +644,4 @@ function kelvinCss(k: number): string {
   return `rgb(${mix(255, 200)},${mix(170, 225)},${mix(80, 255)})`;
 }
 
-if (!customElements.get("accurona-quick-menu")) customElements.define("accurona-quick-menu", Fp3dQuickMenu);
+if (!customElements.get("axonometra-quick-menu")) customElements.define("axonometra-quick-menu", Fp3dQuickMenu);

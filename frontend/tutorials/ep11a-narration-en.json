@@ -1,7 +1,7 @@
 {
-  "Accurona als Karte auf deinem Dashboard – und an der Wand, auf einem alten Tablet, den ganzen Tag.": "Accurona as a card on your dashboard – and on the wall, on an old tablet, all day long.",
+  "Axonometra als Karte auf deinem Dashboard – und an der Wand, auf einem alten Tablet, den ganzen Tag.": "Axonometra as a card on your dashboard – and on the wall, on an old tablet, all day long.",
   "In dieser Folge richtest du die Karte ein. Teil eins zeigt jede Option im Karten-Editor.": "In this episode you set up the card. Part one shows every option in the card editor.",
-  "Die Karte legst du in Home Assistant an: Dashboard bearbeiten, „Karte hinzufügen“ und nach „Accurona“ suchen.": "You add the card in Home Assistant: edit the dashboard, “Add card”, and search for “Accurona”.",
+  "Die Karte legst du in Home Assistant an: Dashboard bearbeiten, „Karte hinzufügen“ und nach „Axonometra“ suchen.": "You add the card in Home Assistant: edit the dashboard, “Add card”, and search for “Axonometra”.",
   "Sie kommt mit der Integration und wird automatisch geladen. Eine Ressource musst du nicht eintragen.": "It comes with the integration and loads by itself. You don't need to add a resource.",
   "Dann öffnet sich dieser Editor. Links stehen alle Optionen, rechts siehst du die Karte – jede Änderung sofort.": "Then this editor opens. All options are on the left, the card is on the right – every change shows at once.",
   "Was auf dem Standard steht, lässt der Editor im YAML weg. So bleibt die Konfiguration kurz.": "Whatever stays at its default, the editor leaves out of the YAML. That keeps the configuration short.",

@@ -1,4 +1,4 @@
-// Furniture of other programs to Accurona's built-in types, by its name or category (German, English, French,
+// Furniture of other programs to Axonometra's built-in types, by its name or category (German, English, French,
 // Spanish, Italian, Dutch words). Anything not recognised becomes a plain cabinet keeping its own name.
 
 import type { FurnitureType } from "../model.ts";
@@ -70,7 +70,7 @@ export function isDecor(name: string): boolean {
   return DECOR.test(name.replace(/[_-]+/g, " "));
 }
 
-/** Accurona's type for a piece of furniture of another program; null when nothing fits. */
+/** Axonometra's type for a piece of furniture of another program; null when nothing fits. */
 export function furnitureType(name: string, h = 0.8, y = 0): FurnitureType | null {
   const text = name.replace(/[_-]+/g, " ");
   for (const [re, t] of RULES) if (re.test(text)) return typeof t === "function" ? t(h, y) : t;

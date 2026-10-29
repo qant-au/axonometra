@@ -1,4 +1,4 @@
-// Accurona: a smoke check of the hull viewer (run fork/build-standalone.mjs first).
+// Axonometra: a smoke check of the hull viewer (run fork/build-standalone.mjs first).
 //
 //   cd frontend && node ../fork/smoke-hulls.mjs
 //
@@ -18,7 +18,7 @@ const dir = join(root, "dist/standalone");
 const puppeteer = createRequire(join(root, "frontend/package.json"))("puppeteer-core");
 const TYPES = { ".html": "text/html", ".js": "text/javascript", ".json": "application/json", ".woff2": "font/woff2", ".png": "image/png" };
 
-if (!existsSync(join(dir, "accurona-hulls.js"))) {
+if (!existsSync(join(dir, "axonometra-hulls.js"))) {
   console.error("No standalone build: run node ../fork/build-standalone.mjs first.");
   process.exit(2);
 }

@@ -600,7 +600,7 @@ export class FloorplanViewer {
   private readonly ground: Mesh;
   private floors: FloorView[] = [];
   private building: Building | null = null;
-  /** Accurona: the hull of a plan drawn in a vessel, on the water (vessel.ts). */
+  /** Axonometra: the hull of a plan drawn in a vessel, on the water (vessel.ts). */
   private readonly vessel = new VesselLayer(() => this.invalidate());
   private floorId: string | null = null;
   private roomId: string | null = null;

@@ -28,7 +28,7 @@
   "Die Lupe darunter öffnet „Wo ist …?“. Tippe einen Gerätenamen oder einen Raum …": "The magnifier below it opens “Where is …?” – „Wo ist …?“. Type a device name or a room …",
   "… ein Tipp auf den Treffer fliegt die Kamera hin, und das Gerät blinkt.": "… a tap on the result flies the camera there, and the device blinks.",
   "Ist der Treffer ein Raum, öffnet sich gleich der Raum.": "If the result is a room, the room opens right away.",
-  "Accurona warnt kostenlos und ohne Einrichtung. Hier meldet der Rauchmelder in der Küche Rauch: Der Raum pulsiert rot, und oben erscheint ein Banner.": "Accurona warns you for free and without any setup. Here the kitchen smoke detector reports smoke: the room pulses red, and a banner appears at the top.",
+  "Axonometra warnt kostenlos und ohne Einrichtung. Hier meldet der Rauchmelder in der Küche Rauch: Der Raum pulsiert rot, und oben erscheint ein Banner.": "Axonometra warns you for free and without any setup. Here the kitchen smoke detector reports smoke: the room pulses red, and a banner appears at the top.",
   "Ein Tipp auf die Warnung springt in den Raum.": "A tap on the warning jumps into the room.",
   "Warnungen gibt es für Rauch, Gas, Kohlenmonoxid und Wasser, für eine ausgelöste Alarmanlage und für offene Fenster bei Regen – wie das Küchenfenster gerade.": "There are warnings for smoke, gas, carbon monoxide and water, for a triggered alarm system, and for open windows in the rain – like the kitchen window right now.",
   "Die Regenwarnung nimmt die Wetter-Entität aus den Einstellungen des Plans. Dort lässt sie sich unter „Warnung: Fenster offen bei Regen“ auch einzeln abschalten.": "The rain warning uses the weather entity from the plan's settings. There you can also turn it off on its own, under „Warnung: Fenster offen bei Regen“.",
@@ -48,5 +48,5 @@
   "Zurück in 3D: Ein Tipp aufs Wohnzimmer – und die Kamera fliegt genau in diese Ansicht.": "Back in 3D: a tap on the living room – and the camera flies to exactly this view.",
   "Kurz zusammengefasst: antippen schaltet, wischen dimmt, lange drücken öffnet das Schnellmenü. Dazu Raumfenster, Stern, Suche und Warnungen.": "In short: tapping switches, swiping dims, a long press opens the quick menu. Plus the room panel, the star, the search and the warnings.",
   "In der nächsten Folge bringen wir die 3D-Ansicht als Karte ins Dashboard und aufs Wandtablet.": "In the next episode we bring the 3D view into the dashboard as a card, and onto the wall tablet.",
-  "Links zur Online-Demo und zur Anleitung stehen in der Beschreibung. Und Accurona läuft auch auf alten Wandtablets. Bis zum nächsten Mal!": "Links to the online demo and the manual are in the description. And Accurona also runs on old wall tablets. See you next time!"
+  "Links zur Online-Demo und zur Anleitung stehen in der Beschreibung. Und Axonometra läuft auch auf alten Wandtablets. Bis zum nächsten Mal!": "Links to the online demo and the manual are in the description. And Axonometra also runs on old wall tablets. See you next time!"
 }

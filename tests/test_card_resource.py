@@ -5,7 +5,7 @@ from __future__ import annotations
 from types import SimpleNamespace
 from typing import Any
 
-from custom_components.accurona.card_resource import (
+from custom_components.axonometra.card_resource import (
     LOADER_URL,
     async_ensure_card_resource,
     async_remove_card_resource,
@@ -40,7 +40,7 @@ class FakeResources:
         self.items = [i for i in self.items if i["id"] != item_id]
 
 
-URL = "/accurona_static/accurona.js?v=1.12.4-abc"
+URL = "/axonometra_static/axonometra.js?v=1.12.4-abc"
 
 
 async def test_added_updated_and_removed() -> None:
@@ -51,8 +51,8 @@ async def test_added_updated_and_removed() -> None:
     await async_ensure_card_resource(hass, URL)
     assert [i["url"] for i in res.items] == [other["url"], URL]
     # an update and an old hand-installed copy: both lead to the current bundle, nothing is added twice
-    res.items[1]["url"] = "/accurona_static/accurona.js?v=1.12.3-old"
-    res.items.append({"id": "old", "type": "module", "url": "/local/accurona.js"})
+    res.items[1]["url"] = "/axonometra_static/axonometra.js?v=1.12.3-old"
+    res.items.append({"id": "old", "type": "module", "url": "/local/axonometra.js"})
     await async_ensure_card_resource(hass, URL)
     assert [i["url"] for i in res.items] == [other["url"], URL, URL]
     await async_remove_card_resource(hass)
@@ -85,9 +85,9 @@ def test_loader_file(tmp_path) -> None:
     assert f'const url = "{URL}";' in text
     assert "customElements.get(tag)" in text
     # a loader that an older version left in www is removed, with its folder
-    old = tmp_path / "accurona" / "accurona-loader.js"
+    old = tmp_path / "axonometra" / "axonometra-loader.js"
     old.parent.mkdir()
     old.write_text(text, encoding="utf-8")
     remove_loader(tmp_path)
-    assert not (tmp_path / "accurona").exists()
+    assert not (tmp_path / "axonometra").exists()
     remove_loader(tmp_path)  # nothing there: no error

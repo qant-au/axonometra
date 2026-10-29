@@ -1,0 +1,33 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Axonometra",
+        "description": "Fügt eine Seite in der Seitenleiste hinzu, auf der du deine Wohnung zeichnest und in 3D siehst."
+      }
+    },
+    "abort": {
+      "single_instance_allowed": "Axonometra ist bereits eingerichtet."
+    }
+  },
+  "services": {
+    "ask": {
+      "name": "Das Haus fragen",
+      "description": "Gibt einen Satz an die offenen Axonometra-Ansichten: „Zeig das Wohnzimmer“ zeigt es, Fragen beantworten die eingespielten Module („Was ist offen?“). Die erste Ansicht, die den Satz versteht, antwortet.",
+      "fields": {
+        "text": {
+          "name": "Satz",
+          "description": "Was gezeigt oder gefragt wird, so wie du es sagen würdest."
+        },
+        "screen": {
+          "name": "Bildschirm",
+          "description": "Nur die Ansicht mit diesem Bildschirmnamen reagiert (in den Einstellungen der Ansicht oder der Karten-Option screen). Leer: jede offene Ansicht."
+        },
+        "speak": {
+          "name": "Sprechen",
+          "description": "Die Ansicht spricht ihre Antwort mit der Sprachausgabe von Assist (aus: sie zeigt sie nur)."
+        }
+      }
+    }
+  }
+}

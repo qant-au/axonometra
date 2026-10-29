@@ -12,7 +12,7 @@ import { isSimple, readSimple, repairPlan } from "./simple.ts";
 import { isValetudo, readValetudo } from "./valetudo.ts";
 import { isZip, readZip } from "./zip.ts";
 
-export type Kind = "sh3d" | "roomplan" | "floorplanner" | "valetudo" | "dxf" | "mesh" | "simple" | "accurona";
+export type Kind = "sh3d" | "roomplan" | "floorplanner" | "valetudo" | "dxf" | "mesh" | "simple" | "axonometra";
 
 export interface ReadOptions {
   lang?: string;
@@ -25,9 +25,9 @@ export interface ReadOptions {
 
 export interface ReadResult {
   kind: Kind;
-  /** Raw floors for the builder; null for a complete Accurona plan. */
+  /** Raw floors for the builder; null for a complete Axonometra plan. */
   raw: RawPlan | null;
-  /** A complete Accurona plan (checked and repaired). */
+  /** A complete Axonometra plan (checked and repaired). */
   building: Building | null;
   warnings: Warning[];
   layers?: DxfLayer[];
@@ -60,11 +60,11 @@ export async function readFile(name: string, bytes: Uint8Array, options: ReadOpt
   const d = data as { format?: string; building?: Building; version?: number; floors?: unknown; settings?: unknown };
   if (d?.format === EXPORT_FORMAT && d.building) {
     const r = repairPlan(d.building);
-    return { kind: "accurona", raw: null, building: r.building, warnings: r.warnings };
+    return { kind: "axonometra", raw: null, building: r.building, warnings: r.warnings };
   }
   if (d?.version === 1 && Array.isArray(d.floors) && d.settings) {
     const r = repairPlan(d as unknown as Building);
-    return { kind: "accurona", raw: null, building: r.building, warnings: r.warnings };
+    return { kind: "axonometra", raw: null, building: r.building, warnings: r.warnings };
   }
   if (isRoomPlan(data)) return { kind: "roomplan", raw: readRoomPlan(data, lang), building: null, warnings: [] };
   if (isValetudo(data)) return { kind: "valetudo", raw: readValetudo(data, lang), building: null, warnings: [] };

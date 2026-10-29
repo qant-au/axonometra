@@ -1,4 +1,4 @@
-// Module loader: code the shop delivers as a signed pack (not part of this repository) runs inside Accurona through
+// Module loader: code the shop delivers as a signed pack (not part of this repository) runs inside Axonometra through
 // a small, versioned interface. A module is an ES module whose default export is a `NeonModule`; the backend
 // checked its signature and binding like a furniture pack's, so what runs here is what we signed.
 
@@ -8,7 +8,7 @@ import type { HomeAssistant } from "./types.ts";
 
 export type { PipePlanner, WallSpec } from "./pipe-planner.ts";
 
-/** The loader interface this Accurona speaks; a module written for a newer one is left alone. */
+/** The loader interface this Axonometra speaks; a module written for a newer one is left alone. */
 export const MODULE_API = 1;
 
 /** A spoken question's answer: what to say, and what to show in the house. */
@@ -353,11 +353,11 @@ export type ModuleField =
   | { kind: "entity"; label: string; value: string | null; auto?: string | null; filter(id: string): boolean; set(v: string | null): void }
   | { kind: "select"; label: string; value: string; options: { id: string; label: string }[]; set(v: string): void }
   | { kind: "check"; label: string; value: boolean; set(v: boolean): void }
-  // Accurona: a number (null when the field is left empty: the module's default applies)
+  // Axonometra: a number (null when the field is left empty: the module's default applies)
   | { kind: "number"; label: string; value: number | null; min?: number; max?: number; step?: number; placeholder?: string; set(v: number | null): void }
   | { kind: "button"; label: string; primary?: boolean; title?: string; onTap(): void };
 
-/** Accurona: a number field's typed text as its value: empty (or not a number) is null, else held within its bounds. */
+/** Axonometra: a number field's typed text as its value: empty (or not a number) is null, else held within its bounds. */
 export function numberField(text: string, min?: number, max?: number): number | null {
   if (text.trim() === "") return null;
   const v = Number(text);
@@ -450,7 +450,7 @@ export function moduleWaits(pack: { module?: { approved?: boolean }; pending?: u
 }
 
 async function fetchCode(hass: HomeAssistant, packId: string): Promise<{ code: string; release: number; api: number }> {
-  return hass.callWS({ type: "accurona/modules/code", pack_id: packId });
+  return hass.callWS({ type: "axonometra/modules/code", pack_id: packId });
 }
 
 async function load(hass: HomeAssistant, pack: ModulePack): Promise<Loaded | null> {
@@ -489,7 +489,7 @@ export async function syncModules(hass: HomeAssistant, packs: readonly ModulePac
       if (!job) {
         job = load(hass, p)
           .catch((err) => {
-            console.warn(`Accurona: module ${p.id} did not load`, err);
+            console.warn(`Axonometra: module ${p.id} did not load`, err);
             return null;
           })
           .finally(() => loading.delete(p.id));
@@ -526,7 +526,7 @@ export async function moduleVoice(sentence: string, host: ModuleHost): Promise<V
       const answer = await m.module.voice(sentence, host);
       if (answer) return answer;
     } catch (err) {
-      console.warn(`Accurona: module ${m.id} failed on "${sentence}"`, err);
+      console.warn(`Axonometra: module ${m.id} failed on "${sentence}"`, err);
     }
   }
   return null;
@@ -564,7 +564,7 @@ export function moduleSettings(packId: string, host: ModuleHost): ModuleField[] 
   try {
     return m.module.settings(host) ?? [];
   } catch (err) {
-    console.warn(`Accurona: module ${m.id} failed`, err);
+    console.warn(`Axonometra: module ${m.id} failed`, err);
     return [];
   }
 }
@@ -590,7 +590,7 @@ function collect<T>(pick: (m: NeonModule) => T[] | undefined | null): T[] {
     try {
       out.push(...(pick(m.module) ?? []));
     } catch (err) {
-      console.warn(`Accurona: module ${m.id} failed`, err);
+      console.warn(`Axonometra: module ${m.id} failed`, err);
     }
   }
   return out;

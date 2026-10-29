@@ -1,5 +1,5 @@
 // Sweet Home 3D (.sh3d): a ZIP whose Home.xml describes levels, walls, rooms, doors and windows and furniture in
-// centimetres (x to the right, y down the plan – the same way round as Accurona's x/z). Files saved before
+// centimetres (x to the right, y down the plan – the same way round as Axonometra's x/z). Files saved before
 // Sweet Home 3D 5.3 (2016) have no Home.xml: they need opening and saving again in a current version.
 
 import type { Vec2 } from "../model.ts";

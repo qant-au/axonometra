@@ -1,4 +1,4 @@
-// Accurona: a vessel's decks as a plan. Each deck is a floor at its height above the waterline, its rooms the deck's
+// Axonometra: a vessel's decks as a plan. Each deck is a floor at its height above the waterline, its rooms the deck's
 // outline inside the plating; the hull itself is not walls (its rooms have none) but the vessel bundle's meshes
 // (meshes.ts), drawn round them in the 3D view.
 

@@ -20,7 +20,7 @@ const HULLS = {
 };
 
 const names = process.argv.slice(2).length ? process.argv.slice(2) : Object.keys(HULLS);
-await withBrowser("accurona-hulls.js", async (page, base) => {
+await withBrowser("axonometra-hulls.js", async (page, base) => {
   for (const name of names) {
     if (!(name in HULLS)) throw new Error(`no such hull in the recording list: ${name}`);
     await page.goto(`${base}/hulls.html?bare&hull=${encodeURIComponent(name)}`, { waitUntil: "networkidle0" });

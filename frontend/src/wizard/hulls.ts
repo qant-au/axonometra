@@ -1,4 +1,4 @@
-// Accurona: the hulls the first-run wizard offers, and how one is fitted to the boat's measures. The library is the
+// Axonometra: the hulls the first-run wizard offers, and how one is fitted to the boat's measures. The library is the
 // example vessels for now (one plate alloy boat); each further hull that can carry a vessel plan joins it here. A
 // choice is a recipe, scaled to the length, beam and draft the owner gave: the shape stays, the size is hers.
 

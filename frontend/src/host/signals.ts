@@ -1,4 +1,4 @@
-// Accurona: the simplest signal source, a map of states the host sets. Signal K and simulators come later
+// Axonometra: the simplest signal source, a map of states the host sets. Signal K and simulators come later
 // as their own sources behind the same interface (types.ts).
 
 import type { HassEntity } from "../types.ts";

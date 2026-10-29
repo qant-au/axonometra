@@ -38,7 +38,7 @@ export const STOP_MS = 3 * 60_000;
 const DEAD = new Set(["unavailable", "unknown", ""]);
 
 /** The device's local switch (a panel on a wall tablet; the card has its option `director`). */
-const LOCAL_KEY = "accurona.director";
+const LOCAL_KEY = "axonometra.director";
 
 export function directorOnHere(): boolean {
   try {

@@ -1,4 +1,4 @@
-// Accurona: a vessel plan's hull in the 3D view. The plates come from the vessel bundle (loaded only for a plan drawn
+// Axonometra: a vessel plan's hull in the 3D view. The plates come from the vessel bundle (loaded only for a plan drawn
 // in a vessel, load-vessel.ts) as plain meshes in plan coordinates; here they become three.js meshes, with their edges
 // lit like the plan's walls, and a sheet of water round the boat where her load puts it: as she trims and heels with
 // what she carries, the water lies across her accordingly.

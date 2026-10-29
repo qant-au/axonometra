@@ -11,7 +11,7 @@ private/
 *.pem
 *.key
 
-# Accurona: the standalone build (fork/build-standalone.mjs)
+# Axonometra: the standalone build (fork/build-standalone.mjs)
 dist/
 
 # local test harnesses (screenshots, probes) – never in the repository

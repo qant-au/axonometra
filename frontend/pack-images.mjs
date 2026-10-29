@@ -38,7 +38,7 @@ const browser = await puppeteer.launch({
   args: ["--use-angle=swiftshader", "--enable-unsafe-swiftshader", "--ignore-gpu-blocklist"],
 });
 
-const fonts = "/custom_components/accurona/frontend/fonts";
+const fonts = "/custom_components/axonometra/frontend/fonts";
 const PAGE = `<!doctype html><html><head><meta charset="utf-8"><style>
 @font-face { font-family: "Figtree"; src: url(${fonts}/figtree.woff2) format("woff2"); font-weight: 300 900; }
 @font-face { font-family: "Bricolage Grotesque"; src: url(${fonts}/bricolage-grotesque.woff2) format("woff2"); font-weight: 200 800; }
@@ -92,7 +92,7 @@ for (const source of sources) {
         for (let y = 0; y <= H; y += 40) g.strokeRect(0, y, W, 0);
         g.fillStyle = "#37e0ff";
         g.font = "600 22px Figtree";
-        g.fillText("ACCURONA 3D · MÖBEL-PACK", 70, 86);
+        g.fillText("AXONOMETRA 3D · MÖBEL-PACK", 70, 86);
         g.fillStyle = "#f2f5ff";
         g.font = "800 64px 'Bricolage Grotesque'";
         g.fillText(pack.name, 68, 150);
@@ -131,7 +131,7 @@ for (const source of sources) {
       for (let p = 0; p < pages; p++) overviews.push(await sheet(items.slice(p * PER_PAGE, (p + 1) * PER_PAGE), p + 1));
       return { items, overviews };
     },
-    `${base}/custom_components/accurona/frontend/accurona-3d.js`,
+    `${base}/custom_components/axonometra/frontend/axonometra-3d.js`,
     pack,
   );
   const save = (file, url) => writeFileSync(file, Buffer.from(url.split(",")[1], "base64"));

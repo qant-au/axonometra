@@ -1,4 +1,4 @@
-// Accurona: a few hulls picked from the Ship-D dataset itself (Bagazinski and Ahmed 2023, Harvard Dataverse
+// Axonometra: a few hulls picked from the Ship-D dataset itself (Bagazinski and Ahmed 2023, Harvard Dataverse
 // doi:10.7910/DVN/MMGAUS, CC0 1.0), Constrained_Randomized_Set_1: no bulbous bow or stern, small-craft proportions
 // (length up to 3.6 beams, depth at least 0.12 of the length, waterline 30 to 60 % of the depth), feasible under the
 // 49 constraints, and conventional in shape: a full deck (at least 72 % of length × beam), a waterline at least 85 % of

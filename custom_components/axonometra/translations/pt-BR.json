@@ -1,0 +1,13 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Axonometra",
+        "description": "Adiciona uma página na barra lateral para desenhar a casa e vê-la em 3D."
+      }
+    },
+    "abort": {
+      "single_instance_allowed": "O Axonometra já está configurado."
+    }
+  }
+}

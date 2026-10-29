@@ -1,4 +1,4 @@
-// Accurona: example plans, a starting set of buildings and rooms for demos and for later work to build on. Each one is
+// Axonometra: example plans, a starting set of buildings and rooms for demos and for later work to build on. Each one is
 // an original layout of a common type (nothing traced from a published plan), written as rooms on a metre grid with
 // their doors, windows and stairs, and turned into a plan by the importer's common end (import/builder.ts), the same
 // way an imported plan is. Not furnished: the structure only.
@@ -536,7 +536,7 @@ export function examplePlan(name: string): { building: Building; warnings: Warni
   if (vessel) return { building: vesselBuilding(vessel.spec), warnings: [] };
   const plan = EXAMPLE_PLANS[name];
   if (!plan) throw new Error(`no example plan "${name}"`);
-  const { building, warnings } = buildPlan({ source: "Accurona", floors: plan.floors.map(rawFloor) }, { lang: "en", square: false });
+  const { building, warnings } = buildPlan({ source: "Axonometra", floors: plan.floors.map(rawFloor) }, { lang: "en", square: false });
   // the importer sorts the floors by elevation; ours are listed that way already
   building.floors.forEach((floor, i) => {
     const spec = plan.floors[i];

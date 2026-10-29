@@ -22,7 +22,7 @@ import { helpers, tap } from "./ep02-common.mjs";
 const out = process.argv[2] ?? "tutorial-ep07";
 const PART = process.argv[3] === "b" ? "b" : "a";
 const FAST = !!process.env.EP07_FAST;
-const VERSION = `<br><span style="font-size:20px;opacity:.7">aufgenommen mit Accurona ${appVersion()}</span>`;
+const VERSION = `<br><span style="font-size:20px;opacity:.7">aufgenommen mit Axonometra ${appVersion()}</span>`;
 
 // ---------------------------------------------------------------- the invented house
 const rect = (id, name, area_id, x0, z0, x1, z1, floor_material = "wood") => ({ id, name, area_id, points: [[x0, z0], [x1, z0], [x1, z1], [x0, z1]], floor_material });
@@ -429,7 +429,7 @@ const sideTop = async (seconds = 0.4) => {
 };
 /** A point in the 3D half (for pointing at the roof): plan x, height y, plan z. */
 const panePoint = (x, y, z) =>
-  R.editor(`const v = e.renderRoot.querySelector("accurona-view3d"); const viewer = Object.values(v).find((o) => o && o.floors && o.floorMap);
+  R.editor(`const v = e.renderRoot.querySelector("axonometra-view3d"); const viewer = Object.values(v).find((o) => o && o.floors && o.floorMap);
     const fv = viewer.floorMap.get("eg"); const p = fv.group.position.clone().set(${x}, ${y}, ${z}); fv.group.localToWorld(p);
     p.project(viewer.camera); const c = (v.renderRoot ?? v.shadowRoot).querySelector("canvas").getBoundingClientRect();
     return { x: c.left + ((p.x + 1) / 2) * c.width, y: c.top + ((1 - p.y) / 2) * c.height };`);
@@ -454,8 +454,8 @@ if (PART === "a") {
     const shape = (s) => patch3d(`b.settings.roof.sections[0].shape = ${T(s)};`);
     await R.view(A);
     await R.sleep(1500);
-    await R.title("Dächer: Satteldach, Walmdach & Co.", `Accurona · Folge 7 · Teil 1${VERSION}`);
-    await sayOver("Satteldach, Walmdach, Krüppelwalm oder Mansarddach – in Accurona bekommt jedes Haus sein eigenes Dach.");
+    await R.title("Dächer: Satteldach, Walmdach & Co.", `Axonometra · Folge 7 · Teil 1${VERSION}`);
+    await sayOver("Satteldach, Walmdach, Krüppelwalm oder Mansarddach – in Axonometra bekommt jedes Haus sein eigenes Dach.");
     await glideMain(A, { theta: 0.5, phi: 0.94, radius: 29.5 }, 1.6);
     await shape("hip");
     await glideMain({ theta: 0.5, phi: 0.94, radius: 29.5 }, { theta: 0.65, phi: 0.93, radius: 28.5 }, 1.6);
@@ -523,7 +523,7 @@ if (PART === "a") {
   await R.frame(0.3, 300);
   await setCam(cam(0.75, 0.92, 36, T_HOUSE));
   await R.clickOn({ text: "Alles zeigen", exact: true }, 0.6);
-  await sayOver("Accurona schlägt die Dachflächen gleich aus deinen Räumen vor: je Etage die Teile, über denen keine höhere Etage liegt – jede mit Satteldach.");
+  await sayOver("Axonometra schlägt die Dachflächen gleich aus deinen Räumen vor: je Etage die Teile, über denen keine höhere Etage liegt – jede mit Satteldach.");
   await glide3d(cam(0.75, 0.92, 36, T_HOUSE), cam(0.35, 0.95, 34, T_HOUSE), 5);
   await sayOver("Hier sind es vier: das Haupthaus und der Seitenflügel über dem Obergeschoss, dazu Garage und Anbau über dem Erdgeschoss.");
   await moveToText("1 · Sattel · 10", 0.5);
@@ -584,7 +584,7 @@ if (PART === "a") {
     await dragPlan(cx, cz, cx + (GARAGE.x0 - s.x0), cz + (GARAGE.z0 - s.z0), 1.2);
     console.log("moved:", JSON.stringify(await selected()));
   }
-  await sayOver("An den Ecken änderst du die Größe – bis die Fläche die Garage bis zur Außenkante der Wände abdeckt. Den Dachüberstand legt Accurona selbst dazu.");
+  await sayOver("An den Ecken änderst du die Größe – bis die Fläche die Garage bis zur Außenkante der Wände abdeckt. Den Dachüberstand legt Axonometra selbst dazu.");
   await dragCorner(1, 1, GARAGE.x1, GARAGE.z1, 1.3);
   console.log("resized:", JSON.stringify(await selected()));
   await R.hold(0.6);
@@ -642,13 +642,13 @@ if (PART === "a") {
 
   // ---------------------------------------------------------------- outro
   await chapter("Wie geht es weiter");
-  await R.title("Teil 2: Traufe, Neigung, Pultdach und Garage", `Accurona – läuft auch auf alten Wandtablets${VERSION}`);
+  await R.title("Teil 2: Traufe, Neigung, Pultdach und Garage", `Axonometra – läuft auch auf alten Wandtablets${VERSION}`);
   await sayOver("Das war Teil eins: das einfache Dach, Dachflächen aus den Räumen, selbst zeichnen, verschieben, alle acht Formen und die Firstrichtung.");
   await R.clickOn({ text: "‹ Dachflächen" }, 0.5);
   await glide3d(cam(th - 0.2, 0.98, 31, T_MAIN), cam(0.6, 0.93, 36, T_HOUSE), 3);
   await catchUp();
   await say("In Teil zwei stellen wir Traufe und Neigung ein, bauen das Pultdach am Anbau und das Flachdach der Garage – und schauen, wie sich Dachflächen überschneiden.");
-  await say("Links zur Online-Demo und zur Anleitung stehen in der Beschreibung. Accurona läuft übrigens auch auf alten Wandtablets. Bis gleich in Teil zwei!");
+  await say("Links zur Online-Demo und zur Anleitung stehen in der Beschreibung. Axonometra läuft übrigens auch auf alten Wandtablets. Bis gleich in Teil zwei!");
   await R.hold(0.6);
 } else {
   // ================================================================ PART 2: Traufe, Neigung, Pultdach und Garage
@@ -665,7 +665,7 @@ if (PART === "a") {
     const C = { theta: 0.1, phi: 0.95, radius: 29 };
     await R.view(A);
     await R.sleep(1500);
-    await R.title("Traufe, Neigung, Pultdach und Garage", `Accurona · Folge 7 · Teil 2${VERSION}`);
+    await R.title("Traufe, Neigung, Pultdach und Garage", `Axonometra · Folge 7 · Teil 2${VERSION}`);
     await sayOver("Ein Anbau mit Pultdach, eine Garage mit Flachdach und ein Haus in L-Form – alles aus einzelnen Dachflächen.");
     await glideMain(A, B, 5.5);
     await R.untitle();
@@ -740,7 +740,7 @@ if (PART === "a") {
   await sayOver("„Wandoberkante“ ist die Höhe, auf der die Wände unter dem Dach enden – beim Anbau 2,5 Meter, wie seine Räume.");
   await R.moveTo({ label: "Wandoberkante" }, 0.5);
   await R.hold(0.8);
-  await sayOver("Von dort zieht Accurona die Wände bis unters Dach hoch. So ist der Raum unter dem Pultdach rundherum geschlossen.");
+  await sayOver("Von dort zieht Axonometra die Wände bis unters Dach hoch. So ist der Raum unter dem Pultdach rundherum geschlossen.");
   await glide3d(cam(0.25, 1.2, 15, T_HWR), cam(1.15, 1.15, 16, T_HWR), 4);
   await sayOver("Eine neue Dachfläche übernimmt die Wandoberkante von den Räumen darunter. Liegt sie tiefer als die Decke, entstehen Dachschrägen – das zeige ich in der nächsten Folge.");
   await moveToText("Liegt sie unter der Deckenhöhe", 0.6);
@@ -838,7 +838,7 @@ if (PART === "a") {
   await chapter("Neu erzeugen und zurück zu einem Dach");
   await R.clickOn({ text: "‹ Dachflächen" }, 0.5);
   await setCam(cam(0.6, 0.93, 36, T_HOUSE));
-  await sayOver("Unter der Liste stehen zwei Knöpfe. „Neu aus den Räumen erzeugen“ ersetzt alle Dachflächen durch einen frischen Vorschlag. Vorher fragt Accurona nach.");
+  await sayOver("Unter der Liste stehen zwei Knöpfe. „Neu aus den Räumen erzeugen“ ersetzt alle Dachflächen durch einen frischen Vorschlag. Vorher fragt Axonometra nach.");
   await R.page.evaluate(() => {
     window.__tutConfirm = window.confirm;
     window.confirm = () => false;
@@ -886,10 +886,10 @@ if (PART === "a") {
 
   // ---------------------------------------------------------------- outro
   await chapter("Wie geht es weiter");
-  await R.title("Nächste Folge: Gauben, Dachfenster, Dachschrägen und Carport", `Accurona – läuft auch auf alten Wandtablets${VERSION}`);
+  await R.title("Nächste Folge: Gauben, Dachfenster, Dachschrägen und Carport", `Axonometra – läuft auch auf alten Wandtablets${VERSION}`);
   await say("Das war Teil zwei: Traufe und Neigung je Seite, Pultdach und Seiten tauschen, Wandoberkante, Etage, Überschneidungen, Flachdach und Attika, Fixieren und Neu erzeugen.");
   await say("In der nächsten Folge geht es weiter mit dem Dach: Gauben, Dachfenster, Dachschrägen mit Kniestock und ein Carport.");
-  await say("Links zur Online-Demo und zur Anleitung stehen in der Beschreibung. Und Accurona läuft auch auf alten Wandtablets. Bis zum nächsten Mal!");
+  await say("Links zur Online-Demo und zur Anleitung stehen in der Beschreibung. Und Axonometra läuft auch auf alten Wandtablets. Bis zum nächsten Mal!");
   await R.hold(0.6);
 }
 

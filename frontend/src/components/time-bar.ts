@@ -140,14 +140,14 @@ export class Fp3dTimeBar extends LitElement {
 
   connectedCallback(): void {
     super.connectedCallback();
-    window.addEventListener("accurona-replay-blocked", this.onBlocked);
+    window.addEventListener("axonometra-replay-blocked", this.onBlocked);
     window.addEventListener("keydown", this.onKey);
     window.addEventListener("keydown", this.onEscape, true);
   }
 
   disconnectedCallback(): void {
     super.disconnectedCallback();
-    window.removeEventListener("accurona-replay-blocked", this.onBlocked);
+    window.removeEventListener("axonometra-replay-blocked", this.onBlocked);
     window.removeEventListener("keydown", this.onKey);
     window.removeEventListener("keydown", this.onEscape, true);
     this.unlisten?.();
@@ -704,7 +704,7 @@ export class Fp3dTimeBar extends LitElement {
     .toast,
     .label {
       position: absolute;
-      bottom: calc(var(--accurona-tt-h, 64px) + 4px);
+      bottom: calc(var(--axonometra-tt-h, 64px) + 4px);
       z-index: 3;
       padding: 7px 12px;
       border-radius: 10px;
@@ -734,7 +734,7 @@ export class Fp3dTimeBar extends LitElement {
       left: 8px;
       right: 8px;
       bottom: 8px;
-      height: calc(var(--accurona-tt-h, 64px) - 16px);
+      height: calc(var(--axonometra-tt-h, 64px) - 16px);
       box-sizing: border-box;
       display: flex;
       align-items: center;
@@ -953,7 +953,7 @@ export class Fp3dTimeBar extends LitElement {
       position: absolute;
       top: 78px;
       right: 8px;
-      bottom: calc(var(--accurona-tt-h, 64px) + 4px);
+      bottom: calc(var(--axonometra-tt-h, 64px) + 4px);
       width: min(380px, calc(100% - 16px));
       box-sizing: border-box;
       display: grid;
@@ -1167,4 +1167,4 @@ export class Fp3dTimeBar extends LitElement {
   `;
 }
 
-if (!customElements.get("accurona-time-bar")) customElements.define("accurona-time-bar", Fp3dTimeBar);
+if (!customElements.get("axonometra-time-bar")) customElements.define("axonometra-time-bar", Fp3dTimeBar);

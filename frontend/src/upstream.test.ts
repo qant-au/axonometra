@@ -1,4 +1,4 @@
-// Accurona: with the author's online services off, no add-on is advertised; one unlocked by a pack still shows.
+// Axonometra: with the author's online services off, no add-on is advertised; one unlocked by a pack still shows.
 
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";

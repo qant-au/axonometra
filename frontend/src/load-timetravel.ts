@@ -10,7 +10,7 @@ declare const __FP3D_TIMETRAVEL_HASH__: string;
 let loading: Promise<typeof TimeTravelBundle> | undefined;
 
 export function loadTimeTravel(): Promise<typeof TimeTravelBundle> {
-  const url = new URL(`./accurona-timetravel.js?v=${__FP3D_TIMETRAVEL_HASH__}`, new URL(import.meta.url)).href;
+  const url = new URL(`./axonometra-timetravel.js?v=${__FP3D_TIMETRAVEL_HASH__}`, new URL(import.meta.url)).href;
   // a failed download (a short network hiccup) may be tried again
   loading ??= (import(/* @vite-ignore */ url) as Promise<typeof TimeTravelBundle>).catch((err) => {
     loading = undefined;
@@ -47,7 +47,7 @@ export class TimeTravel {
       },
       (err: unknown) => {
         this.starting = false;
-        console.error("Accurona: time travel failed to load", err);
+        console.error("Axonometra: time travel failed to load", err);
         this.host.requestUpdate();
       },
     );

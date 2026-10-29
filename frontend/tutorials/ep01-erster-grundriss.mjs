@@ -24,7 +24,7 @@ const holdUntil = async (t) => {
 };
 const PLAN = join(import.meta.dirname, "assets", "bauplan-eg.png");
 // record from a snapshot (TUTORIAL_ROOT, see SERIES.md); the version line goes on the title and outro cards
-const VERSION = `<br><span style="font-size:20px;opacity:.7">aufgenommen mit Accurona ${appVersion()}</span>`;
+const VERSION = `<br><span style="font-size:20px;opacity:.7">aufgenommen mit Axonometra ${appVersion()}</span>`;
 
 const rect = async (x0, z0, x1, z1, seconds = 1) => {
   await R.clickOn({ text: "Rechteck", exact: true }, 0.45);
@@ -88,7 +88,7 @@ const B = { theta: 2.2, phi: 0.8, radius: 23 };
 const C = { theta: 3.0, phi: 0.65, radius: 25 };
 await R.view(A);
 await R.sleep(800);
-await R.title("Dein erster Grundriss", `Accurona · Folge 1${VERSION}`);
+await R.title("Dein erster Grundriss", `Axonometra · Folge 1${VERSION}`);
 await sayOver("Das ist dein Zuhause in 3D – live aus Home Assistant: Lichter, Fenster, Temperaturen, alles in Echtzeit.");
 await R.glide(A, B, 5);
 await R.untitle();
@@ -191,7 +191,7 @@ await R.moveTo({ text: "Freie Form", exact: true }, 0.6);
 await chapter("Räume mit Home Assistant verbinden");
 await sayOver("Jetzt der wichtigste Schritt: Jeder Raum bekommt seinen Bereich aus Home Assistant.");
 await tapPlan(3, 1.6, 0.6);
-await sayOver("Darüber weiß Accurona, welche Lichter, Sensoren und Rollläden in welchem Raum sind. Noch steht hier „Kein Bereich“,");
+await sayOver("Darüber weiß Axonometra, welche Lichter, Sensoren und Rollläden in welchem Raum sind. Noch steht hier „Kein Bereich“,");
 await R.moveTo({ label: "Bereich" }, 0.6);
 await R.hold(1.6);
 {
@@ -256,14 +256,14 @@ await R.clickOn({ text: "Anschlag wechseln" }, 0.6);
 await sayOver("Noch eine Tür ins Bad, und eine in die Außenwand vom Flur.");
 await opening(3, 6);
 await opening(1.5, 7.5);
-await sayOver("In der Außenwand macht Accurona daraus automatisch eine Haustür.");
+await sayOver("In der Außenwand macht Axonometra daraus automatisch eine Haustür.");
 await R.moveTo({ label: "Stil" }, 0.6);
 await sayOver("Jetzt die Fenster: wieder „Tür & Fenster“, auf die Außenwand, und rechts auf „Fenster“.");
 await opening(3, 0);
 await R.clickOn({ text: "Fenster", exact: true }, 0.6);
 await sayOver("Und eins für die Küche.");
 await opening(7.75, 0);
-await sayOver("Kontakte und Rollläden sucht sich Accurona selbst aus dem Bereich des Raums – noch ein Grund für die Verknüpfung.");
+await sayOver("Kontakte und Rollläden sucht sich Axonometra selbst aus dem Bereich des Raums – noch ein Grund für die Verknüpfung.");
 await R.clickOn({ text: "Fenster", exact: true }, 0.6);
 await pointPlan(7.75, 0, 0.6);
 
@@ -317,9 +317,9 @@ await sayOver("ganz ohne ein einziges Gerät zu platzieren.");
 
 // ---------------------------------------------------------------- 10. Outro
 await chapter("Wie geht es weiter");
-await R.title("Nächste Folge: Bauplan als Vorlage", `Accurona – läuft auch auf alten Wandtablets${VERSION}`);
+await R.title("Nächste Folge: Bauplan als Vorlage", `Axonometra – läuft auch auf alten Wandtablets${VERSION}`);
 await say("Das war dein erster Grundriss. In Folge zwei geht es ausführlich um den Bauplan als Vorlage, danach um Geräte, Lampen und Möbel.");
-await say("Links zur Online-Demo und zur Anleitung findest du in der Beschreibung. Und Accurona läuft auch auf alten Wandtablets. Bis zum nächsten Mal!");
+await say("Links zur Online-Demo und zur Anleitung findest du in der Beschreibung. Und Axonometra läuft auch auf alten Wandtablets. Bis zum nächsten Mal!");
 await R.hold(0.6);
 
 N.report();

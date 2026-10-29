@@ -86,7 +86,7 @@ der Hinweis „Nichts gefunden …“ einer leeren Suche, ein Tipp in 3D, der de
 ## Elektrische Möbel (4.12)
 - [x] b 0:21 · Welche: Fernseher, Medienwand/Wohnwand mit TV, Schreibtisch mit Monitor, Waschmaschine, Trockner, Spülmaschine, Heizkörper, Saugroboter (Blitz-Symbol)
 - [x] b 0:33 / 0:42 · Fernseher: „Fernseher (Media-Player oder Steckdose)“; älterer TV an smarter Steckdose nimmt deren Schalter
-- [x] b 0:33 · „automatisch“: Accurona sucht die passende Entität im Bereich selbst
+- [x] b 0:33 · „automatisch“: Axonometra sucht die passende Entität im Bereich selbst
 - [x] b 0:47 / 1:13 · „Leistungssensor (W)“: Möbel zeigt seine Watt
 - [x] b 0:33 (TV), 1:13 (Waschmaschine), 1:36 (Heizkörper), 3:47 · Leuchten (Glow): Fernseher leuchtet, solange er läuft; Waschmaschine/Trockner/Spülmaschine solange sie arbeiten; Heizkörper glüht beim Heizen
 - [x] b 1:22 · „Gerät (Schalter, Steckdose …)“ – auch ein Status-Sensor (3D-Drucker: running/printing)
@@ -121,4 +121,4 @@ der Hinweis „Nichts gefunden …“ einer leeren Suche, ein Tipp in 3D, der de
 ## Rahmen
 - [x] a 0:00–0:13, 7:04 / b 0:00–0:11, 3:56 · Teaser, „In diesem Video …“, Outro mit Rückblick, nächste Folge, Links, alte Wandtablets
 - [x] a 1:23 / b 4:04 · Am Anfang und am Ende: Es gibt Erweiterungen mit mehr Möbeln, Folge 5 zeigt sie
-- [x] a 0:00 / 7:04, b 0:00 / 3:56 · Versionszeile „aufgenommen mit Accurona 1.12.6“
+- [x] a 0:00 / 7:04, b 0:00 / 3:56 · Versionszeile „aufgenommen mit Axonometra 1.12.6“

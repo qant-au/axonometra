@@ -1,4 +1,4 @@
-// Data model shared by editor, 3D view and backend (see custom_components/accurona/schema.py).
+// Data model shared by editor, 3D view and backend (see custom_components/axonometra/schema.py).
 // Units are metres; x grows to the right, z grows downwards (as in the 2D editor).
 
 import { packItem } from "./packs.ts";

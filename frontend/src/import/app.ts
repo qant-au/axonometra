@@ -1,4 +1,4 @@
-// The import page (neonplan3d.mastershort.de/import/): a file from another program in, a Accurona plan out. Everything
+// The import page (neonplan3d.mastershort.de/import/): a file from another program in, a Axonometra plan out. Everything
 // runs in the browser – the file never leaves the computer.
 
 import type { Building, Floor, Vec2 } from "../model.ts";
@@ -12,9 +12,9 @@ import { upstreamServices } from "../upstream.ts";
 const DE = {
   title: "Plan importieren",
   beta: "Beta – noch im Test. Klappt etwas nicht, schick uns die Datei gern mit einer kurzen Beschreibung auf GitHub (Issues) oder Discord.",
-  lead: "Bring deinen Grundriss aus einem anderen Programm in Accurona – Räume, Wände, Türen, Fenster und Möbel. Die Datei bleibt auf deinem Computer: alles läuft hier im Browser.",
+  lead: "Bring deinen Grundriss aus einem anderen Programm in Axonometra – Räume, Wände, Türen, Fenster und Möbel. Die Datei bleibt auf deinem Computer: alles läuft hier im Browser.",
   drop: "Datei hierher ziehen oder klicken",
-  formats: "Sweet Home 3D (.sh3d) · iPhone-/iPad-Scan mit RoomPlan (.json) · CAD (.dxf) · 3D-Modell aus Blender, SketchUp & Co. (.glb, .gltf, .obj, .stl) · Floorplanner (.json) · Valetudo-Saugroboterkarte (.json) · Accurona-Importformat oder ein Accurona-Plan von einer KI (.json)",
+  formats: "Sweet Home 3D (.sh3d) · iPhone-/iPad-Scan mit RoomPlan (.json) · CAD (.dxf) · 3D-Modell aus Blender, SketchUp & Co. (.glb, .gltf, .obj, .stl) · Floorplanner (.json) · Valetudo-Saugroboterkarte (.json) · Axonometra-Importformat oder ein Axonometra-Plan von einer KI (.json)",
   how: "So exportierst du aus …",
   how_items: [
     ["Sweet Home 3D", "Die gespeicherte .sh3d-Datei direkt hierher ziehen. Dateien aus Versionen vor 5.3 (2016) einmal in einer aktuellen Version öffnen und speichern."],
@@ -55,8 +55,8 @@ const DE = {
   role_ignore: "ignorieren",
   preview: "Vorschau",
   room_names: "Räume umbenennen",
-  download: "Accurona-Datei herunterladen",
-  next: "In Accurona: Editor → Sicherung → Importieren … und diese Datei wählen. Danach Räume mit Home-Assistant-Bereichen verknüpfen und Geräte setzen.",
+  download: "Axonometra-Datei herunterladen",
+  next: "In Axonometra: Editor → Sicherung → Importieren … und diese Datei wählen. Danach Räume mit Home-Assistant-Bereichen verknüpfen und Geräte setzen.",
   warnings: "Hinweise",
   w_no_rooms: "Keine Räume gefunden.",
   w_no_rooms_found: "{floor}: aus den Wänden ergaben sich keine geschlossenen Räume – Layer oder Einheit prüfen.",
@@ -75,7 +75,7 @@ const DE = {
   e_dxf_broken: "Die DXF-Datei enthält keine Zeichnung (ENTITIES fehlt).",
   e_gltf_external: "Die glTF-Datei verweist auf externe Dateien. Bitte als .glb (alles in einer Datei) exportieren.",
   e_zip_broken: "Die Datei ist beschädigt.",
-  e_not_plan: "Das ist kein vollständiger Accurona-Plan.",
+  e_not_plan: "Das ist kein vollständiger Axonometra-Plan.",
   privacy: "Datenschutz: Die Datei wird nur in deinem Browser gelesen und nirgendwohin hochgeladen. Wir zählen nur anonym, wie oft die Seite genutzt wird und welche Formate – ohne Cookies, ohne IP-Adresse, ohne Inhalte.",
   ai: "Plan mit KI erstellen: Vorlage",
   format_doc: "Importformat",
@@ -84,9 +84,9 @@ const DE = {
 const EN: typeof DE = {
   title: "Import a plan",
   beta: "Beta – still being tested. If something goes wrong, please send us the file with a short note on GitHub (issues) or Discord.",
-  lead: "Bring your floor plan from another program into Accurona – rooms, walls, doors, windows and furniture. The file stays on your computer: everything runs here in the browser.",
+  lead: "Bring your floor plan from another program into Axonometra – rooms, walls, doors, windows and furniture. The file stays on your computer: everything runs here in the browser.",
   drop: "Drop a file here or click",
-  formats: "Sweet Home 3D (.sh3d) · iPhone/iPad scan with RoomPlan (.json) · CAD (.dxf) · 3D model from Blender, SketchUp & co. (.glb, .gltf, .obj, .stl) · Floorplanner (.json) · Valetudo robot vacuum map (.json) · Accurona import format or a Accurona plan written by an AI (.json)",
+  formats: "Sweet Home 3D (.sh3d) · iPhone/iPad scan with RoomPlan (.json) · CAD (.dxf) · 3D model from Blender, SketchUp & co. (.glb, .gltf, .obj, .stl) · Floorplanner (.json) · Valetudo robot vacuum map (.json) · Axonometra import format or a Axonometra plan written by an AI (.json)",
   how: "How to export from …",
   how_items: [
     ["Sweet Home 3D", "Drop the saved .sh3d file here. Files from versions before 5.3 (2016): open and save them once in a current version."],
@@ -127,8 +127,8 @@ const EN: typeof DE = {
   role_ignore: "ignore",
   preview: "Preview",
   room_names: "Rename rooms",
-  download: "Download the Accurona file",
-  next: "In Accurona: Editor → Backup → Import … and choose this file. Then link the rooms to Home Assistant areas and place your devices.",
+  download: "Download the Axonometra file",
+  next: "In Axonometra: Editor → Backup → Import … and choose this file. Then link the rooms to Home Assistant areas and place your devices.",
   warnings: "Notes",
   w_no_rooms: "No rooms found.",
   w_no_rooms_found: "{floor}: the walls enclose no closed rooms – check the layers or the unit.",
@@ -147,7 +147,7 @@ const EN: typeof DE = {
   e_dxf_broken: "The DXF file holds no drawing (ENTITIES missing).",
   e_gltf_external: "The glTF file points to external files. Please export as .glb (all in one file).",
   e_zip_broken: "The file is damaged.",
-  e_not_plan: "This is no complete Accurona plan.",
+  e_not_plan: "This is no complete Axonometra plan.",
   privacy: "Privacy: the file is only read in your browser and uploaded nowhere. We only count anonymously how often the page is used and which formats – no cookies, no IP address, no contents.",
   ai: "Create a plan with AI: template",
   format_doc: "Import format",
@@ -344,13 +344,13 @@ function render(): void {
   const t = T();
   const root = document.getElementById("app")!;
   document.documentElement.lang = lang;
-  document.title = `Accurona – ${t.title}`;
+  document.title = `Axonometra – ${t.title}`;
   const b = state.building;
   const s = b ? stats(b) : null;
   const warns = [...(state.read?.warnings ?? []), ...(state.result?.warnings ?? [])];
   root.innerHTML = `
     <header>
-      <a class="brand" href="../">Accurona</a>
+      <a class="brand" href="../">Axonometra</a>
       <h1>${esc(t.title)} <span class="beta">Beta</span></h1>
       <button class="lang" data-lang="${lang === "de" ? "en" : "de"}">${lang === "de" ? "English" : "Deutsch"}</button>
     </header>
@@ -367,7 +367,7 @@ function render(): void {
     ${
       b && s
         ? `<section class="card summary">
-            <span>${esc(t.source)}: <b>${esc(state.read?.raw?.source ?? "Accurona")}</b></span>
+            <span>${esc(t.source)}: <b>${esc(state.read?.raw?.source ?? "Axonometra")}</b></span>
             <span><b>${s.floors}</b> ${esc(t.floors)}</span><span><b>${s.rooms}</b> ${esc(t.rooms)}</span><span><b>${s.doors}</b> ${esc(t.doors)}</span>
             <span><b>${s.windows}</b> ${esc(t.windows)}</span><span><b>${s.furniture}</b> ${esc(t.furniture)}</span>${s.walls ? `<span><b>${s.walls}</b> ${esc(t.walls)}</span>` : ""}
           </section>
@@ -401,7 +401,7 @@ function download(): void {
   const url = URL.createObjectURL(new Blob([JSON.stringify(file, null, 2)], { type: "application/json" }));
   const a = document.createElement("a");
   a.href = url;
-  a.download = `accurona-import-${base}.json`;
+  a.download = `axonometra-import-${base}.json`;
   a.click();
   setTimeout(() => URL.revokeObjectURL(url), 2000);
 }

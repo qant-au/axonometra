@@ -1,25 +1,25 @@
-Accurona
+Axonometra
 Copyright (c) 2026 Adam Burgess
 
-Accurona is based on NeonPlan 3D by Mastershort
+Axonometra is based on NeonPlan 3D by Mastershort
 (https://github.com/Mastershort/neonplan3d), Copyright (c) 2026 Mastershort,
 released under the MIT License. The full licence text, with both copyright
 lines, is in LICENSE.
 
-Accurona is an intentionally maintained fork. It is not affiliated with or
+Axonometra is an intentionally maintained fork. It is not affiliated with or
 endorsed by Mastershort, and "NeonPlan" is not part of its name. Upstream
-releases are merged into it on a schedule; nothing from Accurona is proposed
+releases are merged into it on a schedule; nothing from Axonometra is proposed
 back upstream as a merge.
 
 Upstream's release history up to the fork point (NeonPlan 3D 1.23.1) is kept
 as written in CHANGELOG.md and docs/release-*.md.
 
 Furniture packs (.fp3dpack) published by Mastershort remain his work under
-the terms he sells or gives them under. Accurona reads them so that packs made
+the terms he sells or gives them under. Axonometra reads them so that packs made
 for NeonPlan 3D keep working; it does not redistribute them.
 
 Bundled fonts carry their own licences, next to each font file in
-custom_components/accurona/frontend/fonts/.
+custom_components/axonometra/frontend/fonts/.
 
 The Ship-D hull parameterisation in frontend/src/hull/shipd.ts is a
 TypeScript port of HullParameterization.py by Noah J. Bagazinski, from

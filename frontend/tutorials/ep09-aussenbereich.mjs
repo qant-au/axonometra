@@ -21,7 +21,7 @@ import { helpers, tap } from "./ep02-common.mjs";
 const out = process.argv[2] ?? "tutorial-ep09";
 const PART = process.argv[3] === "b" ? "b" : "a";
 const FAST = !!process.env.EP09_FAST;
-const VERSION = `<br><span style="font-size:20px;opacity:.7">aufgenommen mit Accurona ${appVersion()}</span>`;
+const VERSION = `<br><span style="font-size:20px;opacity:.7">aufgenommen mit Axonometra ${appVersion()}</span>`;
 
 // ---------------------------------------------------------------- the invented house and garden
 const rect = (id, name, area_id, x0, z0, x1, z1, floor_material = "wood") => ({ id, name, area_id, points: [[x0, z0], [x1, z0], [x1, z1], [x0, z1]], floor_material });
@@ -390,7 +390,7 @@ const tapArea = async (x, z, seconds = 0.5) => {
 };
 /** The plan view fitting a plan rectangle (x0, z0, x1, z1). */
 const viewFor = ([x0, z0, x1, z1]) =>
-  R.editor(`const r = e.renderRoot.querySelector("svg").getBoundingClientRect(); const v = e.renderRoot.querySelector("accurona-view3d")?.getBoundingClientRect();
+  R.editor(`const r = e.renderRoot.querySelector("svg").getBoundingClientRect(); const v = e.renderRoot.querySelector("axonometra-view3d")?.getBoundingClientRect();
     const w = (v && v.width > 0 && v.left > r.left ? v.left : r.right) - r.left, h = r.height; const s = Math.min((w - 40) / ${x1 - x0}, (h - 70) / ${z1 - z0});
     return { scale: s, ox: w / 2 - ${(x0 + x1) / 2} * s, oy: (h - 30) / 2 - ${(z0 + z1) / 2} * s };`);
 const setPlan = async (rectangle) => {
@@ -426,7 +426,7 @@ const glideLine = async (to, line, part = 1) => glide3d(to, Math.max(1, N.length
 /** The main 3D view (3D tab): theta, phi, radius and, if given, the target; returns the view. */
 const setMain = (c) =>
   R.page.evaluate((c) => {
-    const v = document.querySelector("accurona-panel").shadowRoot.querySelector("accurona-view3d");
+    const v = document.querySelector("axonometra-panel").shadowRoot.querySelector("axonometra-view3d");
     const viewer = Object.values(v).find((x) => x && x.floors && x.floorMap);
     const { target, ...rest } = c;
     Object.assign(viewer.controls.view, rest);
@@ -524,7 +524,7 @@ if (PART === "a") {
     const C = cam(0.45, 0.85, 32, 6.5, 6);
     await setMain(A);
     await R.frame(0.2, 1200);
-    await R.title("Außenbereich und Garten", `Accurona · Folge 9 · Teil 1${VERSION}`);
+    await R.title("Außenbereich und Garten", `Axonometra · Folge 9 · Teil 1${VERSION}`);
     const l1 = "Rasen, Terrasse, Pool, eine Einfahrt am Hang, Hecken, Zaun und Pergola – und abends leuchten die Wege.";
     await sayOver(l1);
     await glideMain(A, B, N.length(l1));
@@ -740,10 +740,10 @@ if (PART === "a") {
 
   // ---------------------------------------------------------------- outro
   await chapter("Wie geht es weiter");
-  await R.title("Teil 2: Hecken, Zaun, Pergola, Licht und Pflanzen", `Accurona – läuft auch auf alten Wandtablets${VERSION}`);
+  await R.title("Teil 2: Hecken, Zaun, Pergola, Licht und Pflanzen", `Axonometra – läuft auch auf alten Wandtablets${VERSION}`);
   await say("Das war Teil eins: das Werkzeug „Außen“, alle Flächen, ein Grundstück aus mehreren Rasenflächen ohne Umrisslinien, Löcher, Höhenversatz und Gefälle.");
   await say("In Teil zwei kommen Hecken, Zaun und Pergola, Außenleuchten, Pflanzen und ein Stellplatz in der Einfahrt.");
-  await say("Links zur Online-Demo und zur Anleitung stehen in der Beschreibung. Accurona läuft übrigens auch auf alten Wandtablets. Bis gleich in Teil zwei!");
+  await say("Links zur Online-Demo und zur Anleitung stehen in der Beschreibung. Axonometra läuft übrigens auch auf alten Wandtablets. Bis gleich in Teil zwei!");
   await R.hold(0.6);
 } else {
   // ================================================================ PART 2: Hecken, Zaun, Pergola, Licht und Pflanzen
@@ -757,7 +757,7 @@ if (PART === "a") {
     const C = cam(-2.5, 0.88, 26, 6.5, 0);
     await setMain(A);
     await R.frame(0.2, 1200);
-    await R.title("Außenbereich und Garten", `Accurona · Folge 9 · Teil 2${VERSION}`);
+    await R.title("Außenbereich und Garten", `Axonometra · Folge 9 · Teil 2${VERSION}`);
     const l1 = "Eine Thujahecke, ein Zaun am Haus, eine Pergola auf der Terrasse – und abends Licht an Weg, Pool und Haustür.";
     await sayOver(l1);
     await glideMain(A, B, N.length(l1));
@@ -974,10 +974,10 @@ if (PART === "a") {
 
   // ---------------------------------------------------------------- outro
   await chapter("Wie geht es weiter");
-  await R.title("Nächste Folge: Die 3D-Ansicht bedienen", `Accurona – läuft auch auf alten Wandtablets${VERSION}`);
+  await R.title("Nächste Folge: Die 3D-Ansicht bedienen", `Axonometra – läuft auch auf alten Wandtablets${VERSION}`);
   await say("Das war Teil zwei: Hecken mit eigener Höhe, ein offener Zaun am Haus, die Pergola mit Verstrebung und Gefälle, Außenleuchten, Pflanzen und der Stellplatz.");
   await say("In der nächsten Folge geht es um die 3D-Ansicht: alle Schalter, Geräte bedienen, Raumfenster und Suche.");
-  await say("Links zur Online-Demo und zur Anleitung stehen in der Beschreibung. Und Accurona läuft auch auf alten Wandtablets. Bis zum nächsten Mal!");
+  await say("Links zur Online-Demo und zur Anleitung stehen in der Beschreibung. Und Axonometra läuft auch auf alten Wandtablets. Bis zum nächsten Mal!");
   await R.hold(0.6);
 }
 

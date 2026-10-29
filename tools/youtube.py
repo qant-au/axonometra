@@ -11,7 +11,7 @@ Usage:
   python tools/youtube.py list                      your videos: file name, id, visibility, title
   python tools/youtube.py apply <Upload dir>... [--dry-run] [--synthetic yes|no]
   python tools/youtube.py apply-all <root> [--dry-run] [--synthetic yes|no] [--no-captions] [--replace]
-                                                    every Upload folder below <root> ("Accurona neue Packs")
+                                                    every Upload folder below <root> ("Axonometra neue Packs")
 
 OAuth client: C:/Users/Becke/.floorplan3d/youtube_client.json (Desktop app); the refresh token is kept in
 youtube_token.json beside it. Neither is ever printed.
@@ -41,7 +41,7 @@ CLIENT = HOME / "youtube_client.json"
 TOKEN = HOME / "youtube_token.json"
 SCOPE = "https://www.googleapis.com/auth/youtube.force-ssl"
 API = "https://www.googleapis.com/youtube/v3"
-PLAYLIST = "Accurona – Tutorials"  # noqa: RUF001
+PLAYLIST = "Axonometra – Tutorials"  # noqa: RUF001
 CATEGORY = "28"  # Science & Technology
 
 
@@ -67,7 +67,7 @@ def login() -> None:
             self.send_response(200)
             self.send_header("Content-Type", "text/html; charset=utf-8")
             self.end_headers()
-            self.wfile.write("Accurona Upload: angemeldet. Du kannst dieses Fenster schließen.".encode())
+            self.wfile.write("Axonometra Upload: angemeldet. Du kannst dieses Fenster schließen.".encode())
 
         def log_message(self, *_args) -> None:
             pass
@@ -242,7 +242,7 @@ def ensure_playlist(dry: bool) -> str | None:
             "snippet": {
                 "title": PLAYLIST,
                 "defaultLanguage": "de",
-                "description": "Schritt für Schritt: dein Zuhause in 3D mit Accurona und Home Assistant.",
+                "description": "Schritt für Schritt: dein Zuhause in 3D mit Axonometra und Home Assistant.",
             },
             "status": {"privacyStatus": "private"},
         },

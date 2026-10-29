@@ -1,4 +1,4 @@
-// Accurona: what a vessel plan weighs and how she floats with it. Her plating (from her recipe), her components (on
+// Axonometra: what a vessel plan weighs and how she floats with it. Her plating (from her recipe), her components (on
 // their mounts or at their points) and every item on her decks (its own mass, else its type's default), summed into a
 // load; the hull floats with it, and the answer says how she sits and whether she drains herself. Only while the plan
 // calculates masses (mass.ts): with it off she sits at her design waterline, level, and nothing is weighed.

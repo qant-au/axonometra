@@ -16,7 +16,7 @@ import subprocess
 import sys
 
 OWNER = "Mastershort"
-REPOS = ["accurona", "cyd-studio", "zigbee-health"]
+REPOS = ["axonometra", "cyd-studio", "zigbee-health"]
 
 
 def report(repo: str) -> int:

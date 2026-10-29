@@ -1,4 +1,4 @@
-// Accurona: a vessel's hull as meshes for the planner's 3D view, in plan coordinates (x along the plan, y up from the
+// Axonometra: a vessel's hull as meshes for the planner's 3D view, in plan coordinates (x along the plan, y up from the
 // waterline, z down the plan), which are the hull's own: the hull's x runs from the stern forward, its z to starboard.
 
 import { bodyMesh } from "../hull/mesh.ts";

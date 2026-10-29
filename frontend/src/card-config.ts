@@ -92,7 +92,7 @@ export interface CardConfig {
   director?: boolean;
   /** Voice control: a microphone button – "Show the living room" shows it, other sentences go to Assist (default off). */
   voice?: boolean;
-  /** This card's screen name for Assist and the service `accurona.ask`: a sentence that names a screen is only for it. */
+  /** This card's screen name for Assist and the service `axonometra.ask`: a sentence that names a screen is only for it. */
   screen?: string;
   /** Scene and script chips of the selected room (default true). */
   scenes?: boolean;

@@ -74,7 +74,7 @@ test("located people: a worn device places the person, a phone left elsewhere st
   const now = Date.parse("2026-10-23T12:00:00Z");
   const iso = (agoS: number) => new Date(now - agoS * 1000).toISOString();
   const loc = (room: string, person: string | null, name: string, worn: boolean, agoS: number, sinceS = 60, probability = 0.8): HassEntity =>
-    st(`sensor.${name.toLowerCase().replace(/\s+/g, "_")}_raum`, "x", { accurona_locate: true, room_id: room, person, device_name: name, wearable: worn, last_seen: iso(agoS), since: iso(sinceS), probability });
+    st(`sensor.${name.toLowerCase().replace(/\s+/g, "_")}_raum`, "x", { axonometra_locate: true, room_id: room, person, device_name: name, wearable: worn, last_seen: iso(agoS), since: iso(sinceS), probability });
   for (const s of [
     loc("r2", "person.mia", "Mia iPhone", false, 5, 1200, 0.99), // fresher and sure, but lying in the kitchen for 20 minutes
     loc("r1", "person.mia", "Mia Watch", true, 20), // worn, walked into the living room a minute ago: Mia is there
@@ -107,7 +107,7 @@ test("located people: watch and phone heard together disagree about the room –
   const now = Date.parse("2026-10-23T12:00:00Z");
   const iso = (agoS: number) => new Date(now - agoS * 1000).toISOString();
   const put = (name: string, room: string, worn: boolean, probability: number) =>
-    (hass.states[`sensor.${name}_raum`] = st(`sensor.${name}_raum`, "x", { accurona_locate: true, room_id: room, person: "person.tom", device_name: name, wearable: worn, last_seen: iso(5), since: iso(600), probability }));
+    (hass.states[`sensor.${name}_raum`] = st(`sensor.${name}_raum`, "x", { axonometra_locate: true, room_id: room, person: "person.tom", device_name: name, wearable: worn, last_seen: iso(5), since: iso(600), probability }));
   // sitting in the kitchen, the living-room plug behind the seat fools the watch
   put("watch", "r1", true, 0.6);
   put("iphone", "r2", false, 0.85);
@@ -124,7 +124,7 @@ test("located people: a watch lying still while the phone walks on was taken off
   const now = Date.parse("2026-10-23T12:00:00Z");
   const iso = (agoS: number) => new Date(now - agoS * 1000).toISOString();
   const put = (name: string, room: string, worn: boolean, probability: number, sinceS: number) =>
-    (hass.states[`sensor.${name}_raum`] = st(`sensor.${name}_raum`, "x", { accurona_locate: true, room_id: room, person: "person.mia", device_name: name, wearable: worn, last_seen: iso(5), since: iso(sinceS), probability }));
+    (hass.states[`sensor.${name}_raum`] = st(`sensor.${name}_raum`, "x", { axonometra_locate: true, room_id: room, person: "person.mia", device_name: name, wearable: worn, last_seen: iso(5), since: iso(sinceS), probability }));
   // the watch has lain in the living room for an hour, the phone came into the kitchen a minute ago
   put("watch", "r1", true, 0.95, 3600);
   put("iphone", "r2", false, 0.6, 60);
@@ -146,7 +146,7 @@ test("a person stands at the furniture an occupied presence zone names (an FP2's
   hass.states["binary_sensor.wz_sofa"] = st("binary_sensor.wz_sofa", "on", { device_class: "occupancy", friendly_name: "Wohnzimmer Präsenz Sofa" });
   hass.states["binary_sensor.wz_raum"] = st("binary_sensor.wz_raum", "on", { device_class: "occupancy", friendly_name: "Wohnzimmer Präsenz Raum" });
   hass.states["sensor.tom_watch_raum"] = st("sensor.tom_watch_raum", "x", {
-    accurona_locate: true,
+    axonometra_locate: true,
     room_id: "r1",
     person: "person.tom",
     device_name: "Tom Watch",
@@ -200,7 +200,7 @@ test("a located person whose Home Assistant person has no tracker (state unknown
   const now = Date.parse("2026-10-23T12:00:00Z");
   hass.states["person.tom"] = st("person.tom", "unknown", { friendly_name: "Tom" });
   hass.states["sensor.pixel_raum"] = st("sensor.pixel_raum", "x", {
-    accurona_locate: true,
+    axonometra_locate: true,
     room_id: "r1",
     person: "person.tom",
     device_name: "Pixel",

@@ -1,5 +1,5 @@
 {
- "Satteldach, Walmdach, Krüppelwalm oder Mansarddach – in Accurona bekommt jedes Haus sein eigenes Dach.": "Gable, hip, half-hip or mansard – in Accurona every house gets a roof of its own.",
+ "Satteldach, Walmdach, Krüppelwalm oder Mansarddach – in Axonometra bekommt jedes Haus sein eigenes Dach.": "Gable, hip, half-hip or mansard – in Axonometra every house gets a roof of its own.",
  "In diesem Video zeige ich dir, wie du ein Dach aus Dachflächen baust – und jede Dachform in 3D.": "In this video I'll show you how to build a roof from roof sections – and every roof shape in 3D.",
  "Für diese Folge habe ich ein Haus vorbereitet: zwei Etagen in L-Form, dazu ein Anbau mit Hauswirtschaftsraum und eine Garage.": "For this episode I've prepared a house: two floors in an L shape, plus a lean-to with a utility room and a garage.",
  "Ein Dach hat es noch nicht. Das ändern wir jetzt.": "It doesn't have a roof yet. Let's change that.",
@@ -10,7 +10,7 @@
  "Beim L-Haus siehst du das Problem: Das Satteldach deckt das ganze Rechteck ab – auch die Ecke, in der gar kein Haus steht. Anbau und Garage bekommen gar nichts.": "With an L-shaped house you can see the problem: the gable roof covers the whole rectangle – even the corner where there is no house at all. The lean-to and the garage get nothing.",
  "Für ein einfaches, rechteckiges Haus reicht das völlig. Für alles andere gibt es Dachflächen.": "For a simple rectangular house that's perfectly fine. For everything else there are roof sections.",
  "Zurück im Editor nehme ich oben das Werkzeug „Dach“ und dann „Dachflächen aus den Räumen erzeugen“.": "Back in the editor I take the “Roof” tool at the top – „Dach“ – and then “Create roof sections from the rooms” – „Dachflächen aus den Räumen erzeugen“.",
- "Accurona schlägt die Dachflächen gleich aus deinen Räumen vor: je Etage die Teile, über denen keine höhere Etage liegt – jede mit Satteldach.": "Accurona proposes the roof sections right away from your rooms: per floor, the parts with no higher floor above them – each one with a gable roof.",
+ "Axonometra schlägt die Dachflächen gleich aus deinen Räumen vor: je Etage die Teile, über denen keine höhere Etage liegt – jede mit Satteldach.": "Axonometra proposes the roof sections right away from your rooms: per floor, the parts with no higher floor above them – each one with a gable roof.",
  "Hier sind es vier: das Haupthaus und der Seitenflügel über dem Obergeschoss, dazu Garage und Anbau über dem Erdgeschoss.": "Here there are four: the main house and the side wing over the upper floor, plus the garage and the lean-to over the ground floor.",
  "Das Werkzeug „Dach“ öffnet daneben die 3D-Ansicht mit dem ganzen Haus. Jede Änderung siehst du dort sofort.": "The Roof tool opens the 3D view of the whole house beside the plan. You see every change there straight away.",
  "Dasselbe passiert, wenn du in den Einstellungen bei „Dach“ „Dachflächen (frei)“ wählst.": "The same happens if you choose “Roof sections (custom)” – „Dachflächen (frei)“ – under “Roof” in the settings.",
@@ -24,7 +24,7 @@
  "Dann ziehe ich im Plan ein Rechteck auf – ungefähr reicht erst einmal.": "Then I drag a rectangle in the plan – roughly is fine for now.",
  "Die neue Fläche bekommt ein Satteldach. Ihre Höhe holt sie sich von den Wänden darunter – hier von der Garage, egal welche Etage der Plan gerade zeigt.": "The new section gets a gable roof. It takes its height from the walls below – here from the garage, whatever floor the plan is showing.",
  "Ziehen verschiebt die Fläche. Ich schiebe sie bündig an die Ecke.": "Dragging moves the section. I push it flush against the corner.",
- "An den Ecken änderst du die Größe – bis die Fläche die Garage bis zur Außenkante der Wände abdeckt. Den Dachüberstand legt Accurona selbst dazu.": "At the corners you change the size – until the section covers the garage up to the outer face of its walls. Accurona adds the roof overhang itself.",
+ "An den Ecken änderst du die Größe – bis die Fläche die Garage bis zur Außenkante der Wände abdeckt. Den Dachüberstand legt Axonometra selbst dazu.": "At the corners you change the size – until the section covers the garage up to the outer face of its walls. Axonometra adds the roof overhang itself.",
  "„Duplizieren“ legt eine Kopie daneben – etwa für eine Doppelgarage. Ich brauche sie nicht und nehme sie mit „Rückgängig“ wieder weg.": "“Duplicate” – „Duplizieren“ – puts a copy next to it, for a double garage for example. I don't need it, so I take it away again with “Undo” – „Rückgängig“.",
  "Jetzt die Formen. Ich tippe das Haupthaus an. Ganz oben im Formular steht „Form“ – acht Stück gibt es.": "Now the shapes. I tap the main house. At the very top of the form is “Shape” – „Form“ – and there are eight of them.",
  "„Sattel“ ist das klassische Satteldach: zwei Dachflächen, an den Enden je ein Giebel.": "„Sattel“, the gable roof, is the classic: two roof faces, with a gable at each end.",
@@ -41,5 +41,5 @@
  "Bei unserem Haus läuft der First quer. Also wieder zurück.": "On our house the ridge runs across. So back again.",
  "Das war Teil eins: das einfache Dach, Dachflächen aus den Räumen, selbst zeichnen, verschieben, alle acht Formen und die Firstrichtung.": "That was part one: the simple roof, roof sections from the rooms, drawing your own, moving, all eight shapes and the ridge direction.",
  "In Teil zwei stellen wir Traufe und Neigung ein, bauen das Pultdach am Anbau und das Flachdach der Garage – und schauen, wie sich Dachflächen überschneiden.": "In part two we set eaves and pitch, build the pent roof on the lean-to and the flat roof of the garage – and see how roof sections overlap.",
- "Links zur Online-Demo und zur Anleitung stehen in der Beschreibung. Accurona läuft übrigens auch auf alten Wandtablets. Bis gleich in Teil zwei!": "Links to the online demo and the manual are in the description. And by the way, Accurona also runs on old wall tablets. See you in part two!"
+ "Links zur Online-Demo und zur Anleitung stehen in der Beschreibung. Axonometra läuft übrigens auch auf alten Wandtablets. Bis gleich in Teil zwei!": "Links to the online demo and the manual are in the description. And by the way, Axonometra also runs on old wall tablets. See you in part two!"
 }

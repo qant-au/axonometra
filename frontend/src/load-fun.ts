@@ -8,7 +8,7 @@ declare const __FP3D_FUN_HASH__: string;
 let loading: Promise<typeof FunBundle> | undefined;
 
 export function loadFun(): Promise<typeof FunBundle> {
-  const url = new URL(`./accurona-fun.js?v=${__FP3D_FUN_HASH__}`, new URL(import.meta.url)).href;
+  const url = new URL(`./axonometra-fun.js?v=${__FP3D_FUN_HASH__}`, new URL(import.meta.url)).href;
   loading ??= (import(/* @vite-ignore */ url) as Promise<typeof FunBundle>).catch((err) => {
     loading = undefined;
     throw err;

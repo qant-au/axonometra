@@ -13,19 +13,19 @@ const TYPES = { ".html": "text/html", ".js": "text/javascript", ".css": "text/cs
 
 /**
  * Copy preview/ and the built app bundles into `dir` (for TUTORIAL_ROOT) and return the app version from the
- * manifest, for the "aufgenommen mit Accurona …" line.
+ * manifest, for the "aufgenommen mit Axonometra …" line.
  */
 export function snapshot(dir) {
   const repo = resolve(import.meta.dirname, "..", "..");
-  for (const part of ["preview", "custom_components/accurona/frontend"]) {
+  for (const part of ["preview", "custom_components/axonometra/frontend"]) {
     cpSync(join(repo, part), join(dir, part), { recursive: true, filter: (src) => !/[\\/]screenshots([\\/]|$)/.test(src) });
   }
-  cpSync(join(repo, "custom_components/accurona/manifest.json"), join(dir, "custom_components/accurona/manifest.json"));
+  cpSync(join(repo, "custom_components/axonometra/manifest.json"), join(dir, "custom_components/axonometra/manifest.json"));
   return appVersion(dir);
 }
 /** The app version of the files the recorder serves (TUTORIAL_ROOT or the repo). */
 export function appVersion(root = process.env.TUTORIAL_ROOT || resolve(import.meta.dirname, "..", "..")) {
-  const file = join(root, "custom_components/accurona/manifest.json");
+  const file = join(root, "custom_components/axonometra/manifest.json");
   return existsSync(file) ? JSON.parse(readFileSync(file, "utf-8")).version : "?";
 }
 
@@ -33,7 +33,7 @@ export function appVersion(root = process.env.TUTORIAL_ROOT || resolve(import.me
 export const FPS = 25;
 
 export async function startRecorder({ outDir, width = 1920, height = 1080, lang = "de" }) {
-  // TUTORIAL_ROOT: a snapshot folder with preview/ and custom_components/accurona/frontend/ (same layout as the
+  // TUTORIAL_ROOT: a snapshot folder with preview/ and custom_components/axonometra/frontend/ (same layout as the
   // repo), so a rebuild of the app during a recording cannot break it
   const root = resolve(process.env.TUTORIAL_ROOT || resolve(import.meta.dirname, "..", ".."));
   mkdirSync(outDir, { recursive: true });
@@ -220,7 +220,7 @@ export async function startRecorder({ outDir, width = 1920, height = 1080, lang 
     async planPoint(x, z) {
       return page.evaluate(
         (x, z) => {
-          const e = document.querySelector("accurona-panel").shadowRoot.querySelector("accurona-editor");
+          const e = document.querySelector("axonometra-panel").shadowRoot.querySelector("axonometra-editor");
           const svg = e.renderRoot.querySelector("svg");
           const r = svg.getBoundingClientRect();
           const [sx, sy] = e.toScreen([x, z]);
@@ -233,14 +233,14 @@ export async function startRecorder({ outDir, width = 1920, height = 1080, lang 
     /** Run code with the editor (e) – for a clean starting state, never for the steps shown. */
     editor(code) {
       return page.evaluate((code) => {
-        const e = document.querySelector("accurona-panel").shadowRoot.querySelector("accurona-editor");
+        const e = document.querySelector("axonometra-panel").shadowRoot.querySelector("axonometra-editor");
         return new Function("e", code)(e);
       }, code);
     },
     /** Set the 3D camera (theta, phi, radius) – for camera glides in teasers. */
     view(cam) {
       return page.evaluate((cam) => {
-        const v = document.querySelector("accurona-panel").shadowRoot.querySelector("accurona-view3d");
+        const v = document.querySelector("axonometra-panel").shadowRoot.querySelector("axonometra-view3d");
         const viewer = Object.values(v).find((x) => x && x.floors && x.floorMap);
         Object.assign(viewer.controls.view, cam);
         viewer.invalidate();

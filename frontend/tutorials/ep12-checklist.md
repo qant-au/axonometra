@@ -109,12 +109,12 @@ Fertige Videos: **Teil 1** (`ep12a`, 6:49), **Teil 2** (`ep12b`, 5:27). Zeit vor
 - [x] 2:36 b · der Lizenzschlüssel ist nicht in der Datei
 - [x] 2:39 b · „Komplett-Backup wiederherstellen …“ mit Rückfrage; dieselbe oder eine andere Installation
 - [x] 2:48 b · jedes Pack wird erneut geprüft; für eine andere Installation signierte Packs werden übersprungen
-- [x] 2:56 b · Das Backup von Home Assistant sichert Accurona ebenfalls vollständig
+- [x] 2:56 b · Das Backup von Home Assistant sichert Axonometra ebenfalls vollständig
 
 ## Umzug auf ein neues Home Assistant (10, 7.1)
 - [x] 3:03 b · Weg 1: Home-Assistant-Backup auf der neuen Hardware einspielen → alles da
 - [x] 3:13 b · Weg 2 Schritt 1: altes System „Alles sichern“
-- [x] 3:18 b · Schritt 2: neues System Accurona über HACS installieren, Integration hinzufügen, Bereiche anlegen
+- [x] 3:18 b · Schritt 2: neues System Axonometra über HACS installieren, Integration hinzufügen, Bereiche anlegen
 - [x] 3:27 b · Schritt 3: Editor → „Sicherung“ → „Komplett-Backup wiederherstellen …“
 - [x] 3:38 b · Schritt 4: „Erweiterungen“ → Schlüssel eintragen → „Aktivieren“ → Packs „Installieren“
 - [x] 3:53 b · Installationsbindung: Packs sind für genau eine Installation signiert („Installations-Kennung“, anonymer Fingerabdruck)
@@ -127,6 +127,6 @@ Fertige Videos: **Teil 1** (`ep12a`, 6:49), **Teil 2** (`ep12b`, 5:27). Zeit vor
 - [x] 4:37 b · Kamerabilder, Verlauf, Zustände bleiben in Home Assistant, nur im Browser angezeigt
 
 ## Abschluss der Serie
-- [x] 5:07 b · Dank an die Zuschauer, Playlist „Accurona – Tutorials“
+- [x] 5:07 b · Dank an die Zuschauer, Playlist „Axonometra – Tutorials“
 - [x] 5:13 b · Online-Demo, Anleitung, GitHub für Fehler, Discord-Community
 - [x] 5:21 b · läuft auch auf alten Wandtablets

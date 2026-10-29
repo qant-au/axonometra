@@ -1,0 +1,15 @@
+{
+  "domain": "axonometra",
+  "name": "Axonometra",
+  "after_dependencies": ["bluetooth", "recorder"],
+  "codeowners": ["@qant-au"],
+  "config_flow": true,
+  "dependencies": ["frontend", "http", "panel_custom", "websocket_api"],
+  "documentation": "https://github.com/qant-au/axonometra",
+  "integration_type": "service",
+  "iot_class": "calculated",
+  "issue_tracker": "https://github.com/qant-au/axonometra/issues",
+  "requirements": [],
+  "single_config_entry": true,
+  "version": "2.0.4"
+}

@@ -1,4 +1,4 @@
-// Small stand-ins for the two newer browser functions Accurona uses that Safari only has since 15.4
+// Small stand-ins for the two newer browser functions Axonometra uses that Safari only has since 15.4
 // (older iPads on iOS 15.0–15.3). They only step in when the browser lacks them. The lazily loaded
 // 3D and editor bundles come after the main bundle, so they find them as well.
 
@@ -14,6 +14,6 @@ if (!Array.prototype.at) {
 }
 
 if (typeof globalThis.structuredClone !== "function") {
-  // Accurona only clones plain JSON data (plans, settings), so a JSON round trip is enough
+  // Axonometra only clones plain JSON data (plans, settings), so a JSON round trip is enough
   (globalThis as { structuredClone: unknown }).structuredClone = <T>(value: T): T => (value === undefined ? value : JSON.parse(JSON.stringify(value)));
 }

@@ -1,4 +1,4 @@
-// Accurona: mass calculation, which a plan can do without. Off unless the plan's settings turn it on (`mass`, an extra
+// Axonometra: mass calculation, which a plan can do without. Off unless the plan's settings turn it on (`mass`, an extra
 // field both hosts pass through): with it off a vessel sits at her design waterline and nothing asks for a mass. With
 // it on, every item on her decks counts: its own mass when one is entered, else its type's default below. Types only
 // and small, so the editor can show the fields without taking the hull code in.

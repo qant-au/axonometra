@@ -1,0 +1,13 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Axonometra",
+        "description": "Hozzáad egy oldalt az oldalsávhoz, ahol megrajzolod az otthonodat és 3D-ben látod."
+      }
+    },
+    "abort": {
+      "single_instance_allowed": "A Axonometra már be van állítva."
+    }
+  }
+}

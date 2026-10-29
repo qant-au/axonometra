@@ -64,7 +64,7 @@ const B = { theta: 0.5, phi: 0.9, radius: 20 };
 await setState("binary_sensor.kueche_fenster", "off");
 await R.view(A);
 await R.sleep(1200);
-await R.title("Bauplan als Vorlage – Teil 3", `Accurona · Folge 2 · Fenster, Sensoren und Rollläden${VERSION}`);
+await R.title("Bauplan als Vorlage – Teil 3", `Axonometra · Folge 2 · Fenster, Sensoren und Rollläden${VERSION}`);
 await sayOver("Fenster, die live aufgehen und kippen, Rollläden, die mitfahren – heute kommen die Fenster dazu.");
 await R.glide(A, { theta: 0.1, phi: 0.87, radius: 19.5 }, 2.5);
 await setState("binary_sensor.kueche_fenster", "on");
@@ -130,7 +130,7 @@ await H.sideTop();
 await R.clickOn({ text: "Fenster", exact: true }, 0.5);
 await look(V.kueche, 1.2);
 await R.pickOption("Stil", "Mit Sprossen", 0.5);
-await sayOver("Kontakt und Rollladen findet Accurona im Bereich Küche von selbst. Das Fenster ist in der Demo offen – es steht in 3D auf und leuchtet warm.");
+await sayOver("Kontakt und Rollladen findet Axonometra im Bereich Küche von selbst. Das Fenster ist in der Demo offen – es steht in 3D auf und leuchtet warm.");
 await scrollSide(() => H.pickerBox("Rollladen"), 380, 0.5);
 await pickerMove("Rollladen", 0.5);
 await R.hold(0.5);
@@ -247,9 +247,9 @@ await R.glide(M, E, 4);
 
 // ---------------------------------------------------------------- 6. Outro
 await chapter("Wie geht es weiter");
-await R.title("Nächste Folge: Etagen, Treppen und Keller", `Accurona – läuft auch auf alten Wandtablets${VERSION}`);
+await R.title("Nächste Folge: Etagen, Treppen und Keller", `Axonometra – läuft auch auf alten Wandtablets${VERSION}`);
 await say("Das war Folge 2: Bauplan unterlegen, nachzeichnen, Wände, Türen und Fenster. In Folge 3 geht es um Etagen, Treppen und den Keller.");
-await say("Links zur Online-Demo und zur Anleitung findest du in der Beschreibung. Und Accurona läuft auch auf alten Wandtablets. Bis zum nächsten Mal!");
+await say("Links zur Online-Demo und zur Anleitung findest du in der Beschreibung. Und Axonometra läuft auch auf alten Wandtablets. Bis zum nächsten Mal!");
 await R.hold(0.6);
 
 N.report();

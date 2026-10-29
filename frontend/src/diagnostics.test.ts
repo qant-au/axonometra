@@ -3,7 +3,7 @@ import { test } from "node:test";
 import { browserOf, deviceClass, gpuTier, osOf, ourFrame, scrubMessage } from "./diagnostics.ts";
 import { setUpstreamServices } from "./upstream.ts";
 
-// Accurona: upstream's tests exercise the report code, so it stays maintained; in use it is off (upstream.ts)
+// Axonometra: upstream's tests exercise the report code, so it stays maintained; in use it is off (upstream.ts)
 setUpstreamServices(true);
 
 test("error messages lose URLs, addresses, entity ids, tokens and long ids", () => {
@@ -24,11 +24,11 @@ test("error messages lose URLs, addresses, entity ids, tokens and long ids", () 
 });
 
 test("only errors of our own bundles have a place, without the URL before it", () => {
-  const stack = "TypeError: boom\n    at a (http://10.0.0.2:8123/accurona_static/accurona-3d.js?v=1.17.0-abc:1:23456)\n    at b (x.js:1:1)";
-  assert.equal(ourFrame(stack), "accurona-3d.js:1:23456");
-  assert.equal(ourFrame("Error\n    at f (https://ha/accurona_static/accurona.js:2:99)"), "accurona.js:2:99");
+  const stack = "TypeError: boom\n    at a (http://10.0.0.2:8123/axonometra_static/axonometra-3d.js?v=1.17.0-abc:1:23456)\n    at b (x.js:1:1)";
+  assert.equal(ourFrame(stack), "axonometra-3d.js:1:23456");
+  assert.equal(ourFrame("Error\n    at f (https://ha/axonometra_static/axonometra.js:2:99)"), "axonometra.js:2:99");
   assert.equal(ourFrame("Error\n    at f (https://ha/frontend_latest/app.js:2:99)"), null);
-  assert.equal(ourFrame(undefined, "https://ha/accurona_static/accurona-editor.js?v=1", 1, 5), "accurona-editor.js:1:5");
+  assert.equal(ourFrame(undefined, "https://ha/axonometra_static/axonometra-editor.js?v=1", 1, 5), "axonometra-editor.js:1:5");
   assert.equal(ourFrame(undefined, "https://ha/other.js", 1, 5), null);
 });
 

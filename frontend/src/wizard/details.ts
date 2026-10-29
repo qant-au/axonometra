@@ -1,4 +1,4 @@
-// Accurona: what the first-run wizard knows about a boat before there is a plan of her. A source reads it (a boat's
+// Axonometra: what the first-run wizard knows about a boat before there is a plan of her. A source reads it (a boat's
 // own data server, later; for now the wizard's example readings, or nothing and the owner types it in), the owner
 // checks it, and the wizard turns it into a plan. Measures in SI units, as a boat's data server gives them: metres,
 // cubic metres, kilograms.

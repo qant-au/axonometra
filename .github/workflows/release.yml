@@ -1,9 +1,9 @@
 name: Release
 
 # On a published GitHub release: check that the tag matches the manifest version, pack the integration
-# as accurona.zip and attach it for manual installs. HACS no longer uses it: since GitHub's release
+# as axonometra.zip and attach it for manual installs. HACS no longer uses it: since GitHub's release
 # download redirects carry a header over aiohttp's 8 KB limit (hacs/integration#5643, October 2026),
-# hacs.json has no zip_release, so HACS fetches the files of custom_components/accurona one by one.
+# hacs.json has no zip_release, so HACS fetches the files of custom_components/axonometra one by one.
 # Switch zip_release back on once HACS can download release assets again.
 on:
   release:
@@ -20,19 +20,19 @@ jobs:
       - name: Tag matches the manifest version
         run: |
           tag="${GITHUB_REF_NAME#v}"
-          version=$(python3 -c "import json; print(json.load(open('custom_components/accurona/manifest.json'))['version'])")
+          version=$(python3 -c "import json; print(json.load(open('custom_components/axonometra/manifest.json'))['version'])")
           if [ "$tag" != "$version" ]; then
             echo "Tag $GITHUB_REF_NAME does not match manifest version $version" >&2
             exit 1
           fi
       - name: Pack the integration
         run: |
-          cd custom_components/accurona
+          cd custom_components/axonometra
           find . -name '__pycache__' -prune -o -type f -print | sed 's|^\./||' | sort > /tmp/files
-          zip -q -X ../../accurona.zip -@ < /tmp/files
+          zip -q -X ../../axonometra.zip -@ < /tmp/files
           cd ../..
-          unzip -l accurona.zip | tail -1
+          unzip -l axonometra.zip | tail -1
       - name: Attach to the release
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release upload "$GITHUB_REF_NAME" accurona.zip --clobber
+        run: gh release upload "$GITHUB_REF_NAME" axonometra.zip --clobber

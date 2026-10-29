@@ -7,7 +7,7 @@
 //   b) Sicherung, Umzug und Datenschutz: undo / redo, restore points, „Exportieren“ / „Als Vorlage teilen“ /
 //      „Importieren …“ (and what happens to areas and devices on another Home Assistant), „Komplett-Backup“, moving to
 //      a new Home Assistant step by step with the licence key and the installation binding (never a real key: the
-//      demo's shop mode and an invented key), what Accurona stores and sends (manual chapter 11), help links, and
+//      demo's shop mode and an invented key), what Axonometra stores and sends (manual chapter 11), help links, and
 //      the end of the series.
 // The full demo house (invented data, mock Home Assistant). Setup steps before a scene are invisible. The preview
 // has no full-backup commands: this script answers them in the page (export: the plan and the packs; import: the
@@ -25,7 +25,7 @@ import { appVersion, FPS, narration, startRecorder } from "./recorder.mjs";
 const out = resolve(process.argv[2] ?? "tutorial-ep12");
 const PART = process.argv[3] === "b" ? "b" : "a";
 const FAST = !!process.env.EP12_FAST;
-const VERSION = `<br><span style="font-size:20px;opacity:.7">aufgenommen mit Accurona ${appVersion()}</span>`;
+const VERSION = `<br><span style="font-size:20px;opacity:.7">aufgenommen mit Axonometra ${appVersion()}</span>`;
 const DL = join(out, "downloads");
 mkdirSync(DL, { recursive: true });
 
@@ -87,9 +87,9 @@ const quiet = async (target, wait = 400) => {
 const EYE = 'button[aria-label="Bedienelemente ausblenden – nur die 3D-Ansicht bleibt"]';
 const STAR = 'button[aria-label="Zentral: alle Lichter, Rollläden und Favoriten"]';
 /** The main 3D view's viewer object. */
-const VIEWER = `const v = document.querySelector("accurona-panel").shadowRoot.querySelector("accurona-view3d"); const viewer = Object.values(v).find((o) => o && o.floors && o.floorMap);`;
+const VIEWER = `const v = document.querySelector("axonometra-panel").shadowRoot.querySelector("axonometra-view3d"); const viewer = Object.values(v).find((o) => o && o.floors && o.floorMap);`;
 /** The editor's 3D pane. */
-const PANE = `const e = document.querySelector("accurona-panel").shadowRoot.querySelector("accurona-editor"); const v = e.renderRoot.querySelector("accurona-view3d"); const viewer = Object.values(v).find((o) => o && o.floors && o.floorMap);`;
+const PANE = `const e = document.querySelector("axonometra-panel").shadowRoot.querySelector("axonometra-editor"); const v = e.renderRoot.querySelector("axonometra-view3d"); const viewer = Object.values(v).find((o) => o && o.floors && o.floorMap);`;
 /** Set a camera (main view or the editor's pane) around a plan point of a floor (or keep the target: floorId null). */
 const camOf = (which, floorId, x, z, c) =>
   R.page.evaluate(
@@ -223,10 +223,10 @@ const pickerBox = (label) =>
         if (el.shadowRoot) yield* walk(el.shadowRoot);
       }
     };
-    const all = [...walk(document)].filter((el) => el.tagName === "LABEL" && el.querySelector("accurona-entity-picker") && el.getBoundingClientRect().width > 0);
+    const all = [...walk(document)].filter((el) => el.tagName === "LABEL" && el.querySelector("axonometra-entity-picker") && el.getBoundingClientRect().width > 0);
     const hit = all.filter((el) => el.textContent.replace(/\s+/g, " ").trim().startsWith(label)).pop();
     if (!hit) return null;
-    const r = hit.querySelector("accurona-entity-picker").getBoundingClientRect();
+    const r = hit.querySelector("axonometra-entity-picker").getBoundingClientRect();
     return { x: r.left + Math.min(120, r.width / 2), y: r.top + r.height / 2 };
   }, label);
 /** Pick an entity: click the picker, type a search, click the hit (`option`: start of the entry's text). */
@@ -362,7 +362,7 @@ const toEditor = async (split = true) => {
 /** Open a side-panel section (a <summary>) if it is closed. */
 const openSection = async (name, seconds = 0.5, retry = false) => {
   const open = await R.page.evaluate((name) => {
-    const e = document.querySelector("accurona-panel").shadowRoot.querySelector("accurona-editor");
+    const e = document.querySelector("axonometra-panel").shadowRoot.querySelector("axonometra-editor");
     const sm = [...e.renderRoot.querySelectorAll("summary")].find((x) => x.textContent.replace(/\s+/g, " ").trim().startsWith(name));
     return sm ? sm.parentElement.open : null;
   }, name);
@@ -382,7 +382,7 @@ const openSection = async (name, seconds = 0.5, retry = false) => {
 /** Close a side-panel section quietly. */
 const closeSection = (name) =>
   R.page.evaluate((name) => {
-    const e = document.querySelector("accurona-panel").shadowRoot.querySelector("accurona-editor");
+    const e = document.querySelector("axonometra-panel").shadowRoot.querySelector("axonometra-editor");
     const sm = [...e.renderRoot.querySelectorAll("summary")].find((x) => x.textContent.replace(/\s+/g, " ").trim().startsWith(name));
     if (sm) sm.parentElement.open = false;
   }, name);
@@ -390,7 +390,7 @@ const closeSection = (name) =>
 const toSection = async (name, top = 150, seconds = 0.7) => {
   await R.move(1780, 640, 0.3);
   const y = await R.page.evaluate((name) => {
-    const e = document.querySelector("accurona-panel").shadowRoot.querySelector("accurona-editor");
+    const e = document.querySelector("axonometra-panel").shadowRoot.querySelector("axonometra-editor");
     const sm = [...e.renderRoot.querySelectorAll("summary")].find((x) => x.textContent.replace(/\s+/g, " ").trim().startsWith(name));
     return sm ? sm.getBoundingClientRect().top : null;
   }, name);
@@ -420,8 +420,8 @@ if (PART === "a") {
     const b = { theta: d.theta + 0.35, phi: d.phi - 0.04, radius: d.radius * 0.92 };
     await camOf("main", null, 0, 0, a);
     await R.sleep(1200);
-    await R.title("Einstellungen, Sicherung und Umzug", `Accurona · Folge 12 · Teil 1${VERSION}`);
-    const l1 = "Wandstärke, Nordrichtung, Wetter, Favoriten und eigene Knöpfe: Mit den Einstellungen passt du Accurona an dein Zuhause an.";
+    await R.title("Einstellungen, Sicherung und Umzug", `Axonometra · Folge 12 · Teil 1${VERSION}`);
+    const l1 = "Wandstärke, Nordrichtung, Wetter, Favoriten und eigene Knöpfe: Mit den Einstellungen passt du Axonometra an dein Zuhause an.";
     const l2 = "In dieser Folge gehe ich jede Einstellung mit dir durch.";
     const total = N.length(l1) + N.length(l2);
     const t0 = R.time;
@@ -446,7 +446,7 @@ if (PART === "a") {
   await sayOver("Folge 12 ist die letzte Folge der Reihe und hat zwei Teile. In Teil 1 geht es um alle Einstellungen im Editor.");
   await R.move(1300, 420, 1.4);
   await R.move(900, 640, 1.4);
-  await sayOver("Teil 2 zeigt Sicherung, Umzug auf ein neues Home Assistant und welche Daten Accurona speichert. Ich nehme wieder das Demo-Haus aus der Online-Demo.");
+  await sayOver("Teil 2 zeigt Sicherung, Umzug auf ein neues Home Assistant und welche Daten Axonometra speichert. Ich nehme wieder das Demo-Haus aus der Online-Demo.");
   await R.move(1200, 500, 1.6);
 
   // ---------------------------------------------------------------- 3. Where
@@ -506,7 +506,7 @@ if (PART === "a") {
   await sayOver("Darunter die „Nordrichtung“: Wie viele Grad im Uhrzeigersinn von oben im Plan liegt Norden?");
   await R.moveTo({ label: "Nordrichtung" }, 0.5);
   await R.hold(0.4);
-  await sayOver("Die braucht Accurona für die Sonne: Aus dem Sonnenstand in Home Assistant fällt Licht durch die Fenster, die zur Sonne zeigen.");
+  await sayOver("Die braucht Axonometra für die Sonne: Aus dem Sonnenstand in Home Assistant fällt Licht durch die Fenster, die zur Sonne zeigen.");
   await R.move(620, 520, 1.0);
   await R.hold(0.6);
   await sayOver("Zeigt bei dir oben im Plan nach Westen, trägst du 90 ein – eine Karten-App hilft beim Ausrichten.");
@@ -603,7 +603,7 @@ if (PART === "a") {
     // the buttons of the newest favourite row
     const favBtn = (txt) =>
       R.page.evaluate((txt) => {
-        const e = document.querySelector("accurona-panel").shadowRoot.querySelector("accurona-editor");
+        const e = document.querySelector("axonometra-panel").shadowRoot.querySelector("axonometra-editor");
         const sm = [...e.renderRoot.querySelectorAll("summary")].find((x) => x.textContent.trim().startsWith("Favoriten"));
         const rows = [...sm.parentElement.querySelectorAll(":scope > .fp3d-dev-row")];
         const el = [...rows[rows.length - 1].querySelectorAll("button")].find((b) => b.textContent.trim() === txt);
@@ -630,7 +630,7 @@ if (PART === "a") {
   {
     // the new button's form is the last one
     const lbl = await R.page.evaluate(() => {
-      const e = document.querySelector("accurona-panel").shadowRoot.querySelector("accurona-editor");
+      const e = document.querySelector("axonometra-panel").shadowRoot.querySelector("axonometra-editor");
       const forms = [...e.renderRoot.querySelectorAll(".fp3d-own-button")].filter((f) => f.querySelector("select"));
       const f = forms[forms.length - 1];
       const r = f.querySelector('input[type="text"]').getBoundingClientRect();
@@ -670,7 +670,7 @@ if (PART === "a") {
   await R.key("Tab");
   {
     const icons = await R.page.evaluate(() => {
-      const e = document.querySelector("accurona-panel").shadowRoot.querySelector("accurona-editor");
+      const e = document.querySelector("axonometra-panel").shadowRoot.querySelector("axonometra-editor");
       const forms = [...e.renderRoot.querySelectorAll(".fp3d-own-button")].filter((f) => f.querySelector("select"));
       const f = forms[forms.length - 1];
       const r = f.querySelector(".fp3d-icon-row input").getBoundingClientRect();
@@ -686,7 +686,7 @@ if (PART === "a") {
   {
     const btn = async (txt) => {
       const b = await R.page.evaluate((txt) => {
-        const e = document.querySelector("accurona-panel").shadowRoot.querySelector("accurona-editor");
+        const e = document.querySelector("axonometra-panel").shadowRoot.querySelector("axonometra-editor");
         const forms = [...e.renderRoot.querySelectorAll(".fp3d-own-button")].filter((f) => f.querySelector("select"));
         const f = forms[forms.length - 1];
         const el = [...f.querySelectorAll("button")].find((x) => x.textContent.trim() === txt);
@@ -765,7 +765,7 @@ if (PART === "a") {
   await sayOver("Und die Sensoren für Netz, Solar und Akku trägst du im Werkzeug „Energie“ ein – dazu gibt es eine eigene Folge.");
   await R.moveTo({ text: "Energie", exact: true, nth: 0 }, 0.7);
   await R.hold(0.8);
-  await sayOver("Die Sprache stellst du nicht hier ein: Accurona folgt deinem Profil in Home Assistant.");
+  await sayOver("Die Sprache stellst du nicht hier ein: Axonometra folgt deinem Profil in Home Assistant.");
   await R.move(1100, 560, 1.0);
   await R.hold(0.6);
 
@@ -784,11 +784,11 @@ if (PART === "a") {
     const end = await line("Kurz zusammengefasst: Wände, Raster, Nordrichtung, Dach, Wetter, Startansicht, Favoriten und eigene Knöpfe – alles unten in der Seitenleiste des Editors.");
     await glide("main", null, 0, 0, a, b, end - R.time);
   }
-  await R.title("Teil 2: Sicherung, Umzug und Datenschutz", `Accurona – läuft auch auf alten Wandtablets${VERSION}`);
+  await R.title("Teil 2: Sicherung, Umzug und Datenschutz", `Axonometra – läuft auch auf alten Wandtablets${VERSION}`);
   {
     let end = await line("In Teil 2 sicherst du deinen Plan und ziehst damit auf ein neues Home Assistant um.");
     await live(end);
-    end = await line("Links zur Online-Demo und zur Anleitung stehen in der Beschreibung. Und Accurona läuft auch auf alten Wandtablets. Bis gleich in Teil 2!");
+    end = await line("Links zur Online-Demo und zur Anleitung stehen in der Beschreibung. Und Axonometra läuft auch auf alten Wandtablets. Bis gleich in Teil 2!");
     await live(end + 0.6);
   }
 }
@@ -798,7 +798,7 @@ if (PART === "b") {
   /** The editor's notice line (restored, imported) as a screen point, or null. */
   const noticeBox = () =>
     R.page.evaluate(() => {
-      const e = document.querySelector("accurona-panel").shadowRoot.querySelector("accurona-editor");
+      const e = document.querySelector("axonometra-panel").shadowRoot.querySelector("axonometra-editor");
       const n = e.renderRoot.querySelector(".fp3d-notice");
       if (!n) return null;
       const r = n.getBoundingClientRect();
@@ -814,19 +814,19 @@ if (PART === "b") {
       const p = window.fp3dPanel;
       const h = p.hass;
       const orig = h.callWS;
-      await orig({ type: "accurona/license/remove" });
+      await orig({ type: "axonometra/license/remove" });
       h.callWS = async (m) => {
-        if (m.type === "accurona/backup/export") {
-          const { building } = await orig({ type: "accurona/building/get" });
+        if (m.type === "axonometra/backup/export") {
+          const { building } = await orig({ type: "axonometra/building/get" });
           return { format: "neonplan3d-backup", version: 1, building, packs: [{ id: "mastershort.living" }, { id: "mastershort.kitchen" }, { id: "demo.pack" }] };
         }
-        if (m.type === "accurona/backup/import") {
-          await orig({ type: "accurona/history/snapshot" });
-          await orig({ type: "accurona/building/save", building: m.building });
+        if (m.type === "axonometra/backup/import") {
+          await orig({ type: "axonometra/history/snapshot" });
+          await orig({ type: "axonometra/building/save", building: m.building });
           return { building: m.building, packs: 2, skipped: [{ id: "mastershort.living" }] };
         }
         const r = await orig(m);
-        if (m.type.startsWith("accurona/license/") && r) return { ...r, offers: (r.offers ?? []).map((o) => ({ ...o, price: null })) };
+        if (m.type.startsWith("axonometra/license/") && r) return { ...r, offers: (r.offers ?? []).map((o) => ({ ...o, price: null })) };
         return r;
       };
     });
@@ -851,7 +851,7 @@ if (PART === "b") {
     const b = { theta: d.theta - 0.4, phi: d.phi - 0.03, radius: d.radius * 0.9 };
     await camOf("main", null, 0, 0, a);
     await R.sleep(1200);
-    await R.title("Einstellungen, Sicherung und Umzug", `Accurona · Folge 12 · Teil 2${VERSION}`);
+    await R.title("Einstellungen, Sicherung und Umzug", `Axonometra · Folge 12 · Teil 2${VERSION}`);
     const l1 = "Ein Klick zu viel, ein neues Home Assistant oder neue Hardware – dein Plan geht nicht verloren.";
     const l2 = "In Teil 2 zeige ich dir Sicherung, Import und Umzug.";
     const total = N.length(l1) + N.length(l2);
@@ -929,7 +929,7 @@ if (PART === "b") {
   await pointAt("Datei", 0.5, { tags: "H4" });
   await R.clickOn({ text: "Exportieren", exact: true }, 0.5);
   await R.sleep(500);
-  await downloadChip(basename(await downloaded("accurona-sicherung")));
+  await downloadChip(basename(await downloaded("axonometra-sicherung")));
   await R.hold(1.0);
   await sayOver("Bilder sind nicht drin, das steht auch darunter. Für die Bilder gibt es gleich das Komplett-Backup.");
   await noChip();
@@ -938,7 +938,7 @@ if (PART === "b") {
   await sayOver("„Als Vorlage teilen“ lässt alles weg, was zu deinem Home Assistant gehört: Bereiche, Geräte, Sensoren und Bilder.");
   await R.clickOn({ text: "Als Vorlage teilen", exact: true }, 0.5);
   await R.sleep(500);
-  const template = await downloaded("accurona-vorlage");
+  const template = await downloaded("axonometra-vorlage");
   await downloadChip(basename(template));
   await R.hold(0.8);
   await sayOver("Das ist die Datei für einen Freund, fürs Forum oder für einen Fehlerbericht – ohne deine Geräte.");
@@ -954,13 +954,13 @@ if (PART === "b") {
     // the confirm is shown as a box first; the app's own confirm is answered "yes" by the dialog handler
     await ringHere();
   }
-  await sayOver("Vorher fragt Accurona nach: Der ganze Grundriss wird ersetzt, der jetzige Stand bleibt als Wiederherstellungspunkt.");
+  await sayOver("Vorher fragt Axonometra nach: Der ganze Grundriss wird ersetzt, der jetzige Stand bleibt als Wiederherstellungspunkt.");
   await dialogOk("Den ganzen Grundriss durch die Datei ersetzen? Der jetzige Stand bleibt als Wiederherstellungspunkt erhalten.", 1.6);
   {
     const [chooser] = await Promise.all([
       R.page.waitForFileChooser(),
       R.page.evaluate(() => {
-        const e = document.querySelector("accurona-panel").shadowRoot.querySelector("accurona-editor");
+        const e = document.querySelector("axonometra-panel").shadowRoot.querySelector("axonometra-editor");
         const label = [...e.renderRoot.querySelectorAll("label.fp3d-upload")].find((l) => l.textContent.trim().startsWith("Importieren"));
         label.querySelector("input").click();
       }),
@@ -971,7 +971,7 @@ if (PART === "b") {
   await sayOver("So sieht eine Vorlage aus: Räume, Wände, Türen und Möbel sind da – aber keine Geräte und keine Verknüpfungen.");
   {
     const c = await R.page.evaluate(() => {
-      const e = document.querySelector("accurona-panel").shadowRoot.querySelector("accurona-editor");
+      const e = document.querySelector("axonometra-panel").shadowRoot.querySelector("axonometra-editor");
       const r = e.renderRoot.querySelector("svg").getBoundingClientRect();
       return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
     });
@@ -1002,7 +1002,7 @@ if (PART === "b") {
   {
     // the newest point is the one taken right before the import; its time as the row shows it
     const time = await R.page.evaluate(() => {
-      const e = document.querySelector("accurona-panel").shadowRoot.querySelector("accurona-editor");
+      const e = document.querySelector("axonometra-panel").shadowRoot.querySelector("axonometra-editor");
       const row = [...e.renderRoot.querySelectorAll(".fp3d-dev-row")].find((r) => r.textContent.includes("Wiederherstellen"));
       return row ? row.querySelector("span").textContent.split("·")[0].trim() : "";
     });
@@ -1020,38 +1020,38 @@ if (PART === "b") {
   await openSection("Sicherung", 0.3);
   await pointAt("Komplett-Backup", 0.5, { tags: "H4" });
   await R.clickOn({ text: "Alles sichern (Plan, Bilder, Packs)", exact: true }, 0.5);
-  const full = await downloaded("accurona-komplett");
+  const full = await downloaded("axonometra-komplett");
   await downloadChip(basename(full));
   await R.hold(0.8);
   await sayOver("Der Lizenzschlüssel ist bewusst nicht in der Datei.");
   await pointAt("Eine Datei mit dem Plan", 0.5, { exact: false, tags: "P" });
   await noChip();
   await R.hold(0.4);
-  await sayOver("„Komplett-Backup wiederherstellen …“ spielt sie zurück, in dieselbe oder eine andere Installation. Auch hier fragt Accurona vorher nach.");
+  await sayOver("„Komplett-Backup wiederherstellen …“ spielt sie zurück, in dieselbe oder eine andere Installation. Auch hier fragt Axonometra vorher nach.");
   await R.moveTo({ text: "Komplett-Backup wiederherstellen …", exact: true }, 0.5);
   await R.hold(0.6);
   await sayOver("Jedes Pack wird dabei neu geprüft. Packs, die für eine andere Installation signiert sind, werden übersprungen – die holst du dort über den Shop neu.");
   await R.hold(0.8);
-  await sayOver("Übrigens: Das normale Backup von Home Assistant sichert Accurona ebenfalls vollständig mit.");
+  await sayOver("Übrigens: Das normale Backup von Home Assistant sichert Axonometra ebenfalls vollständig mit.");
   await R.hold(0.6);
 
   // ---------------------------------------------------------------- 8. Moving
   await chapter("Umzug auf ein neues Home Assistant");
   const STEPS = [
     "Altes System: „Alles sichern“",
-    "Neues System: Accurona über HACS installieren, Integration hinzufügen, Bereiche anlegen",
+    "Neues System: Axonometra über HACS installieren, Integration hinzufügen, Bereiche anlegen",
     "Editor › Sicherung › „Komplett-Backup wiederherstellen …“",
     "Erweiterungen: Schlüssel eintragen, „Aktivieren“, Packs „Installieren“",
   ];
-  await sayOver("Jetzt der Umzug, zum Beispiel auf einen neuen Mini-PC. Am einfachsten spielst du das Backup von Home Assistant auf der neuen Hardware ein – dann ist Accurona mit allem da.");
-  await card("Weg 1: das Backup von Home Assistant", ["Auf der neuen Hardware einspielen – Accurona ist mit Plan, Bildern, Packs und Shop-Verbindung da"], 0);
+  await sayOver("Jetzt der Umzug, zum Beispiel auf einen neuen Mini-PC. Am einfachsten spielst du das Backup von Home Assistant auf der neuen Hardware ein – dann ist Axonometra mit allem da.");
+  await card("Weg 1: das Backup von Home Assistant", ["Auf der neuen Hardware einspielen – Axonometra ist mit Plan, Bildern, Packs und Shop-Verbindung da"], 0);
   await R.move(1100, 560, 1.2);
   await R.hold(0.6);
   await sayOver("Fängst du neu an, geht es in vier Schritten. Erstens: auf dem alten System „Alles sichern“.");
   await card("Weg 2: neu anfangen", STEPS, 0);
   await R.moveTo({ text: "Alles sichern (Plan, Bilder, Packs)", exact: true }, 0.6);
   await R.hold(0.6);
-  await sayOver("Zweitens: Auf dem neuen System installierst du Accurona über HACS, fügst die Integration hinzu und legst deine Bereiche an.");
+  await sayOver("Zweitens: Auf dem neuen System installierst du Axonometra über HACS, fügst die Integration hinzu und legst deine Bereiche an.");
   await card("Weg 2: neu anfangen", STEPS, 1);
   await R.hold(0.8);
   await sayOver("Drittens: Im Editor unter „Sicherung“ das Komplett-Backup wiederherstellen.");
@@ -1107,8 +1107,8 @@ if (PART === "b") {
     await camOf("main", null, 0, 0, a);
     await R.sleep(600);
     const PRIV = ["Plan, Bilder und Packs: in Home Assistant unter .storage", "Internet nur mit Lizenzschlüssel: einmal am Tag, Schlüssel + anonyme Kennung", "Kamerabilder, Verläufe, Zustände: bleiben in Home Assistant"];
-    const l1 = "Und was speichert Accurona wo? Plan, Bilder und Packs liegen in Home Assistant, im Ordner „.storage“. Nichts davon verlässt deine Installation.";
-    const l2 = "Ins Internet geht Accurona nur, wenn du einen Lizenzschlüssel einträgst: dann einmal am Tag zum Shop, mit dem Schlüssel und der anonymen Kennung.";
+    const l1 = "Und was speichert Axonometra wo? Plan, Bilder und Packs liegen in Home Assistant, im Ordner „.storage“. Nichts davon verlässt deine Installation.";
+    const l2 = "Ins Internet geht Axonometra nur, wenn du einen Lizenzschlüssel einträgst: dann einmal am Tag zum Shop, mit dem Schlüssel und der anonymen Kennung.";
     const l3 = "Kamerabilder, Verläufe und Zustände bleiben in Home Assistant und werden nur in deinem Browser angezeigt.";
     const total = N.length(l1) + N.length(l2) + N.length(l3);
     const t0 = R.time;
@@ -1143,7 +1143,7 @@ if (PART === "b") {
   await R.moveTo({ text: "Problem melden" }, 0.5);
   await R.hold(0.4);
   await R.moveTo({ text: "Idee vorschlagen" }, 0.5);
-  await sayOver("Und „Community auf Discord“ bringt dich zu den anderen Accurona-Nutzern – dort helfen wir uns gegenseitig.");
+  await sayOver("Und „Community auf Discord“ bringt dich zu den anderen Axonometra-Nutzern – dort helfen wir uns gegenseitig.");
   await R.moveTo({ text: "Community auf Discord" }, 0.5);
   await R.hold(1.0);
 
@@ -1159,10 +1159,10 @@ if (PART === "b") {
     const b = { theta: d.theta + 0.2, phi: d.phi - 0.03, radius: d.radius * 1.0 };
     await camOf("main", null, 0, 0, a);
     await R.sleep(700);
-    const l1 = "Das war die letzte Folge der Reihe. Vom ersten Raum bis zum Umzug kennst du jetzt jeden Knopf in Accurona.";
-    const l2 = "Danke, dass du dabei warst! Alle Folgen findest du in der Playlist „Accurona – Tutorials“.";
+    const l1 = "Das war die letzte Folge der Reihe. Vom ersten Raum bis zum Umzug kennst du jetzt jeden Knopf in Axonometra.";
+    const l2 = "Danke, dass du dabei warst! Alle Folgen findest du in der Playlist „Axonometra – Tutorials“.";
     const l3 = "Links zur Online-Demo, zur Anleitung, zu GitHub für Fehlermeldungen und zu unserer Discord-Community stehen in der Beschreibung.";
-    const l4 = "Und denk dran: Accurona läuft auch auf alten Wandtablets. Bis bald!";
+    const l4 = "Und denk dran: Axonometra läuft auch auf alten Wandtablets. Bis bald!";
     const total = N.length(l1) + N.length(l2) + N.length(l3) + N.length(l4) + 0.6;
     const t0 = R.time;
     const step = async (end) => {
@@ -1175,11 +1175,11 @@ if (PART === "b") {
       }
     };
     await step(await line(l1));
-    await R.title("Danke fürs Zuschauen!", `Playlist „Accurona – Tutorials“`);
+    await R.title("Danke fürs Zuschauen!", `Playlist „Axonometra – Tutorials“`);
     await step(await line(l2));
     await R.title("Demo · Anleitung · GitHub · Discord", `Links in der Beschreibung`);
     await step(await line(l3));
-    await R.title("Accurona", `läuft auch auf alten Wandtablets${VERSION}`);
+    await R.title("Axonometra", `läuft auch auf alten Wandtablets${VERSION}`);
     await step((await line(l4)) + 0.6);
   }
 }

@@ -1,4 +1,4 @@
-// Accurona: the equipment the first-run wizard proposes for a boat: her engines, tanks and batteries as the generic
+// Axonometra: the equipment the first-run wizard proposes for a boat: her engines, tanks and batteries as the generic
 // components a vessel plan carries (a mass and a box, vessel/spec.ts), placed where such things usually go. The owner
 // confirms each one; the editor moves them later. A boat the source knows nothing about gets the chosen hull's own.
 

@@ -24,7 +24,7 @@ const out = process.argv[2] ?? "tutorial-ep11";
 const PART = process.argv[3] === "b" ? "b" : "a";
 const FAST = !!process.env.EP11_FAST;
 // controls_side and keep_view (shown in part 2) come with 1.12.7
-const VERSION = `<br><span style="font-size:20px;opacity:.7">aufgenommen mit Accurona 1.12.7</span>`;
+const VERSION = `<br><span style="font-size:20px;opacity:.7">aufgenommen mit Axonometra 1.12.7</span>`;
 
 // ---------------------------------------------------------------- recorder
 const R = await startRecorder({ outDir: out, width: 1536, height: 864, lang: "de" });
@@ -65,7 +65,7 @@ const live = async (end, each = null) => {
 };
 const liveFor = (seconds, each) => live(R.time + seconds, each);
 /** The card's 3D view and its viewer, as code for page.evaluate. */
-const VIEWER = `const card = window.fp3dCard; const v = card.shadowRoot.querySelector("accurona-view3d"); const viewer = v && Object.values(v).find((o) => o && o.floors && o.floorMap);`;
+const VIEWER = `const card = window.fp3dCard; const v = card.shadowRoot.querySelector("axonometra-view3d"); const viewer = v && Object.values(v).find((o) => o && o.floors && o.floorMap);`;
 const inCard = (code, ...args) => R.page.evaluate((VIEWER, code, args) => new Function("args", `${VIEWER} ${code}`)(args), VIEWER, code, args);
 /** The camera of the card (theta, phi, radius, target). */
 const camNow = () => inCard(`const w = viewer.controls.view; return { theta: w.theta, phi: w.phi, radius: w.radius, target: { x: w.target.x, y: w.target.y, z: w.target.z } };`);
@@ -106,9 +106,9 @@ const setCfg = (cfg) =>
   R.page.evaluate((cfg) => {
     window.fp3dCard._roomId = null;
     window.fp3dCard.setConfig(cfg);
-    document.querySelector("accurona-card-editor").setConfig(cfg);
+    document.querySelector("axonometra-card-editor").setConfig(cfg);
   }, cfg);
-const getCfg = () => R.page.evaluate(() => ({ ...document.querySelector("accurona-card-editor")._config }));
+const getCfg = () => R.page.evaluate(() => ({ ...document.querySelector("axonometra-card-editor")._config }));
 /** A state of the mock Home Assistant (invented entities only), for the card and the editor. */
 const setState = (id, state, attributes) =>
   R.page.evaluate(
@@ -118,7 +118,7 @@ const setState = (id, state, attributes) =>
       const old = hass.states[id];
       const states = { ...hass.states, [id]: { entity_id: id, ...(old ?? {}), state, attributes: { ...(old?.attributes ?? {}), ...(attributes ?? {}) } } };
       card.hass = { ...hass, states };
-      document.querySelector("accurona-card-editor").hass = card.hass;
+      document.querySelector("axonometra-card-editor").hass = card.hass;
     },
     id,
     state,
@@ -331,7 +331,7 @@ const showList = async (label, option, seconds) => {
 /** Click a toggle (checkbox label) of the editor by its text. */
 const toggle = async (text, seconds = 0.5) => {
   const b = await R.page.evaluate((text) => {
-    const ed = document.querySelector("accurona-card-editor").shadowRoot;
+    const ed = document.querySelector("axonometra-card-editor").shadowRoot;
     const l = [...ed.querySelectorAll("label.toggle, label.chip")].find((l) => l.textContent.replace(/\s+/g, " ").trim().startsWith(text));
     if (!l) return null;
     const r = l.querySelector("input").getBoundingClientRect();
@@ -373,7 +373,7 @@ const statsCallout = (on = true) =>
   R.page.evaluate((on) => {
     let d = document.getElementById("tut-stats");
     if (!on) return d?.remove();
-    const v = window.fp3dCard.shadowRoot.querySelector("accurona-view3d");
+    const v = window.fp3dCard.shadowRoot.querySelector("axonometra-view3d");
     const s = (v.renderRoot ?? v.shadowRoot).querySelector(".fp3d-stats");
     if (!d) {
       d = document.createElement("div");
@@ -388,7 +388,7 @@ const park = () => R.page.mouse.move(250, 40);
 
 // ---------------------------------------------------------------- the page
 /** The preview's card mode at 125 %: the editor left (scrolls with the page), the card right (stays). */
-const start = async (cfg = { type: "custom:accurona-card" }) => {
+const start = async (cfg = { type: "custom:axonometra-card" }) => {
   await R.open("card");
   await R.page.evaluate((cfg) => {
     const card = window.fp3dCard;
@@ -462,7 +462,7 @@ const toYaml = (cfg) => {
 const yamlShow = (lines) =>
   R.page.evaluate(
     (lines, style) => {
-      const ed = document.querySelector("accurona-card-editor");
+      const ed = document.querySelector("axonometra-card-editor");
       const box = ed.parentElement;
       box.style.display = "none";
       if (!document.getElementById("tut-yaml-style")) {
@@ -539,7 +539,7 @@ const KUECHE = ["eg", 8, 2.3];
 const BAD = ["eg", 5.6, 6.3];
 const KIND = ["og", 2.2, 2.1];
 /** The usual config of the card from the middle of part 1 on. */
-const BASE = { type: "custom:accurona-card", floor: "eg", height: 760 };
+const BASE = { type: "custom:axonometra-card", floor: "eg", height: 760 };
 
 // ================================================================ PART 1: the card and every option of its editor
 if (PART === "a") {
@@ -547,12 +547,12 @@ if (PART === "a") {
   await chapter("Teaser");
   await start();
   await R.hideCursor();
-  await tablet({ type: "custom:accurona-card", controls: true, fullscreen_button: true });
+  await tablet({ type: "custom:axonometra-card", controls: true, fullscreen_button: true });
   {
     await setCam({ theta: -0.9, phi: 0.95, radius: 34 });
     await R.frame(0.2, 900);
-    await R.title("Dashboard-Karte und Wandtablet", `Accurona · Folge 11 · Teil 1${VERSION}`);
-    const l1 = "Accurona als Karte auf deinem Dashboard – und an der Wand, auf einem alten Tablet, den ganzen Tag.";
+    await R.title("Dashboard-Karte und Wandtablet", `Axonometra · Folge 11 · Teil 1${VERSION}`);
+    const l1 = "Axonometra als Karte auf deinem Dashboard – und an der Wand, auf einem alten Tablet, den ganzen Tag.";
     await sayOver(l1);
     await orbit(0.7, 0.92, N.length(l1));
     await R.untitle();
@@ -566,7 +566,7 @@ if (PART === "a") {
   await start();
   await R.hideCursor(false);
   await R.move(700, 420, 0.01);
-  await sayOver("Die Karte legst du in Home Assistant an: Dashboard bearbeiten, „Karte hinzufügen“ und nach „Accurona“ suchen.");
+  await sayOver("Die Karte legst du in Home Assistant an: Dashboard bearbeiten, „Karte hinzufügen“ und nach „Axonometra“ suchen.");
   await R.move(1000, 260, 0.8);
   await liveFor(1.5);
   await sayOver("Sie kommt mit der Integration und wird automatisch geladen. Eine Ressource musst du nicht eintragen.");
@@ -606,13 +606,13 @@ if (PART === "a") {
   await sayOver("Mit der „Akzentfarbe“ bekommen Linien, Knöpfe und Pins deine Farbe. „Zurück zu Cyan“ setzt sie zurück.");
   {
     const b = await R.page.evaluate(() => {
-      const r = document.querySelector("accurona-card-editor").shadowRoot.querySelector('input[type="color"]').getBoundingClientRect();
+      const r = document.querySelector("axonometra-card-editor").shadowRoot.querySelector('input[type="color"]').getBoundingClientRect();
       return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
     });
     await R.move(b.x, b.y, 0.5);
     await ring(b.x, b.y);
     await R.page.evaluate(() => {
-      const i = document.querySelector("accurona-card-editor").shadowRoot.querySelector('input[type="color"]');
+      const i = document.querySelector("axonometra-card-editor").shadowRoot.querySelector('input[type="color"]');
       i.value = "#ff8a00";
       i.dispatchEvent(new Event("input", { bubbles: true, composed: true }));
     });
@@ -806,7 +806,7 @@ if (PART === "a") {
   await R.hideCursor();
   await tablet({ ...BASE, floor: undefined, controls: true, fullscreen_button: true });
   await setCam({ theta: -0.6, phi: 0.95, radius: 32 });
-  await R.title("Teil 2: YAML, Kiosk und alte Wandtablets", `Accurona – läuft auch auf alten Wandtablets${VERSION}`);
+  await R.title("Teil 2: YAML, Kiosk und alte Wandtablets", `Axonometra – läuft auch auf alten Wandtablets${VERSION}`);
   await sayOver("Das war Teil eins: die Karte anlegen und jede Option im Editor, von der Etage bis zu den Funktionen.");
   await orbit(0.5, 0.95, N.length("Das war Teil eins: die Karte anlegen und jede Option im Editor, von der Etage bis zu den Funktionen."));
   await sayOver("In Teil zwei geht es ums Wandtablet: Kiosk, Nachtdimmung, Bildschirmschoner, YAML und die Einstellungen für alte Tablets.");
@@ -824,7 +824,7 @@ if (PART === "b") {
   await tablet({ ...BASE, floor: undefined, controls_hidden: true, idle_return: 1, idle_orbit: true });
   {
     await setCam({ theta: -0.9, phi: 0.95, radius: 34 });
-    await R.title("Dashboard-Karte und Wandtablet", `Accurona · Folge 11 · Teil 2${VERSION}`);
+    await R.title("Dashboard-Karte und Wandtablet", `Axonometra · Folge 11 · Teil 2${VERSION}`);
     const l1 = "Ein altes Tablet an der Wand: Die Karte kehrt von selbst zurück, dreht sich langsam und dimmt nachts.";
     await sayOver(l1);
     await orbit(0.6, 0.95, N.length(l1) * 0.55);
@@ -996,7 +996,7 @@ if (PART === "b") {
   await setState("sensor.balkon_leistung", "0");
   await R.sleep(1500);
   await R.move(300, 300, 0.01);
-  await sayOver("Accurona läuft auch auf alten, schwachen Wandtablets. Das Wichtigste dabei: kein Rechnen im Leerlauf.");
+  await sayOver("Axonometra läuft auch auf alten, schwachen Wandtablets. Das Wichtigste dabei: kein Rechnen im Leerlauf.");
   await scrollEd("Leistungsanzeige (Bilder pro Sekunde)", 380, 0.6);
   await toggle("Leistungsanzeige (Bilder pro Sekunde)");
   await liveFor(1.5);
@@ -1061,7 +1061,7 @@ if (PART === "b") {
   await chapter("Wie geht es weiter");
   await tablet({ ...BASE, floor: undefined, controls: true, fullscreen_button: true });
   await setCam({ theta: -0.6, phi: 0.95, radius: 32 });
-  await R.title("Nächste Folge: Einstellungen, Sicherung und Umzug", `Accurona – läuft auch auf alten Wandtablets${VERSION}`);
+  await R.title("Nächste Folge: Einstellungen, Sicherung und Umzug", `Axonometra – läuft auch auf alten Wandtablets${VERSION}`);
   {
     const l1 = "Das war Folge elf: die Dashboard-Karte mit allen Optionen, der Kiosk-Bereich, YAML und das Wandtablet.";
     await sayOver(l1);

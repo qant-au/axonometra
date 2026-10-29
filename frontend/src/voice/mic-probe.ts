@@ -1,6 +1,6 @@
-// Microphone probe ("?fp3d_mic=1" in the address): does talking to Accurona work on this device? It checks step by step
+// Microphone probe ("?fp3d_mic=1" in the address): does talking to Axonometra work on this device? It checks step by step
 // what a wall tablet needs – a secure page, the microphone, a level, Home Assistant's Assist with speech to text –
-// records one sentence, lets Assist write it down and shows which room Accurona would open for it. Nothing is
+// records one sentence, lets Assist write it down and shows which room Axonometra would open for it. Nothing is
 // switched: the pipeline ends after speech to text.
 
 import { LitElement, css, html, nothing } from "lit";
@@ -15,7 +15,7 @@ type Step = { ok: boolean | null; text: string };
 const TEXT = {
   de: {
     title: "Mikrofon-Probe",
-    intro: "Prüft, ob du auf diesem Gerät mit Accurona sprechen kannst. Es wird nichts geschaltet.",
+    intro: "Prüft, ob du auf diesem Gerät mit Axonometra sprechen kannst. Es wird nichts geschaltet.",
     secure_ok: "Sichere Verbindung (https)",
     secure_no: "Keine sichere Verbindung: Über http:// gibt der Browser das Mikrofon nicht frei. Öffne Home Assistant über https (Nabu Casa, eigenes Zertifikat, Reverse Proxy).",
     api_ok: "Der Browser kann ein Mikrofon ansprechen",
@@ -33,7 +33,7 @@ const TEXT = {
     heard: "Erkannt",
     nothing: "Nichts erkannt",
     took: "Dauer",
-    would: "Accurona würde zeigen",
+    would: "Axonometra würde zeigen",
     would_none: "Kein Raum, keine Etage im Satz gefunden",
     house: "das ganze Haus",
     close: "Schließen",
@@ -41,7 +41,7 @@ const TEXT = {
   },
   en: {
     title: "Microphone probe",
-    intro: "Checks whether you can talk to Accurona on this device. Nothing is switched.",
+    intro: "Checks whether you can talk to Axonometra on this device. Nothing is switched.",
     secure_ok: "Secure connection (https)",
     secure_no: "No secure connection: over http:// the browser does not give out the microphone. Open Home Assistant over https (Nabu Casa, own certificate, reverse proxy).",
     api_ok: "The browser can use a microphone",
@@ -59,7 +59,7 @@ const TEXT = {
     heard: "Heard",
     nothing: "Nothing heard",
     took: "Took",
-    would: "Accurona would show",
+    would: "Axonometra would show",
     would_none: "No room or floor found in the sentence",
     house: "the whole house",
     close: "Close",
@@ -303,4 +303,4 @@ export class MicProbe extends LitElement {
   `;
 }
 
-if (!customElements.get("accurona-mic-probe")) customElements.define("accurona-mic-probe", MicProbe);
+if (!customElements.get("axonometra-mic-probe")) customElements.define("axonometra-mic-probe", MicProbe);

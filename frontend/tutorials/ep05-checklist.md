@@ -14,13 +14,13 @@ Zeit = Stelle im fertigen Video (ep05.mp4, 6:57, eine Folge, kein Teil 2 nötig)
 - [x] 0:53 Installierte Packs als eigene Abschnitte darunter („Demo-Pack“)
 - [x] 0:59 Kasten „Mehr Möbel und Pro-Funktionen“ unten in der Bibliothek mit „Erweiterungen öffnen“
 - [x] 0:21 Gesperrte Pro-Schalter unten in 3D: „🔒 Spur“, „🔒 Kameras“, „🔒 Wetter“
-- [x] 0:28 / 0:32 Pro-Hinweis „Accurona Pro“ beim Tippen: „Zum Shop“, „Mehr erfahren“, „Erweiterungen“, „Schließen“
+- [x] 0:28 / 0:32 Pro-Hinweis „Axonometra Pro“ beim Tippen: „Zum Shop“, „Mehr erfahren“, „Erweiterungen“, „Schließen“
 
 ## Seite „✦ Erweiterungen“ (7)
 - [x] 0:13 / 1:09 Reiter „✦ Erweiterungen“ oben, nur für Administratoren (gesagt, Demo ist Admin)
 - [x] 1:12 Kopfzeile: „Shop öffnen“, „Problem melden“, „Idee vorschlagen“, „Community auf Discord“, „Anleitung“
 - [x] 1:20 Aufbau: Shop-Verbindung, Pro-Erweiterungen, Möbel-Packs
-- [x] 1:25 Ohne Schlüssel fragt Accurona den Shop nie (11)
+- [x] 1:25 Ohne Schlüssel fragt Axonometra den Shop nie (11)
 
 ## Pro-Erweiterungen (7.2)
 - [x] 1:31 Kacheln: Kamera-Cockpit, Wetter draußen, Bildschirme live, Energie Pro, Klang & Kino, Auto Pro
@@ -52,7 +52,7 @@ Zeit = Stelle im fertigen Video (ep05.mp4, 6:57, eine Folge, kein Teil 2 nötig)
 - [x] 5:52 Mehrere Installationen: höchstens drei gleichzeitig, beim Umzug neue verbinden, älteste fällt heraus
 - [x] 6:01 Bis zu fünf neue Verbindungen pro Jahr; „Limit erreicht“ → bei uns melden (12)
 - [x] 6:08 „Der Shop ist gerade ausgelastet“ → eine Minute warten, noch mal „Aktivieren“ (12)
-- [x] 6:13 „braucht eine neuere Accurona-Version“ → erst über HACS aktualisieren (12)
+- [x] 6:13 „braucht eine neuere Axonometra-Version“ → erst über HACS aktualisieren (12)
 - [x] 6:22 Komplett-Backup enthält die Packs, nicht den Schlüssel (10)
 
 ## Möbel-Packs (7.3)

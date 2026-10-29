@@ -13,9 +13,9 @@ import pytest
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 from pytest_homeassistant_custom_component.test_util.aiohttp import AiohttpClientMockResponse
 
-from custom_components.accurona import license as lic
-from custom_components.accurona import packs
-from custom_components.accurona.const import DOMAIN
+from custom_components.axonometra import license as lic
+from custom_components.axonometra import packs
+from custom_components.axonometra.const import DOMAIN
 
 PAYLOAD = {
     "format": "fp3dpack",
@@ -93,11 +93,11 @@ async def test_activate_install_and_update(hass: HomeAssistant, hass_ws_client, 
         f"{lic.SHOP_API}/pack", text=_sign(private, keys, {**PAYLOAD, "instance": fp, "licensee": "Anna"})
     )
 
-    await client.send_json_auto_id({"type": "accurona/license/get"})
+    await client.send_json_auto_id({"type": "axonometra/license/get"})
     before = (await client.receive_json())["result"]
     assert before["instance"] == fp and not before["active"] and before["packs"] == []
 
-    await client.send_json_auto_id({"type": "accurona/license/activate", "key": "np-abcd-efgh-2345-6789"})
+    await client.send_json_auto_id({"type": "axonometra/license/activate", "key": "np-abcd-efgh-2345-6789"})
     result = await client.receive_json()
     assert result["success"], result
     status = result["result"]
@@ -112,7 +112,7 @@ async def test_activate_install_and_update(hass: HomeAssistant, hass_ws_client, 
     assert {k: v for k, v in sent.items() if k != "version"} == {"key": "NP-ABCD-EFGH-2345-6789", "instance": fp}
     assert isinstance(sent["version"], str) and sent["version"]
 
-    await client.send_json_auto_id({"type": "accurona/packs/install", "pack_id": "shop.living"})
+    await client.send_json_auto_id({"type": "axonometra/packs/install", "pack_id": "shop.living"})
     result = await client.receive_json()
     assert result["success"], result
     assert result["result"]["licensee"] == "Anna" and result["result"]["release"] == 1
@@ -144,7 +144,7 @@ async def test_activate_install_and_update(hass: HomeAssistant, hass_ws_client, 
     hass.data[DOMAIN].license["checked_at"] = 0
     await lic.async_refresh_quietly(hass, hass.data[DOMAIN])
     assert hass.data[DOMAIN].packs[0]["release"] == 2
-    await client.send_json_auto_id({"type": "accurona/license/get"})
+    await client.send_json_auto_id({"type": "axonometra/license/get"})
     status = (await client.receive_json())["result"]
     assert status["packs"][0]["installed"] == 2 and status["error"] is None
     assert [o["id"] for o in status["offers"]] == ["kino", "fun_pets"] and status["offers"][0]["new"]
@@ -157,7 +157,7 @@ async def test_activate_install_and_update(hass: HomeAssistant, hass_ws_client, 
     assert status["newsletter"] == {"url": "https://shop/newsletter"}
 
     # the request carries our own User-Agent (the host blocks aiohttp's default one)
-    assert aioclient_mock.mock_calls[-1][3]["User-Agent"].startswith("Accurona/")
+    assert aioclient_mock.mock_calls[-1][3]["User-Agent"].startswith("Axonometra/")
 
     # the host throttles with a bare 429: the request is repeated after a pause and then goes through
     monkeypatch.setattr(lic, "RETRY_WAITS", (0.0, 0.0))
@@ -169,7 +169,7 @@ async def test_activate_install_and_update(hass: HomeAssistant, hass_ws_client, 
         return AiohttpClientMockResponse(method, url, status=status, text=text)
 
     aioclient_mock.post(f"{lic.SHOP_API}/catalog", side_effect=throttled)
-    await client.send_json_auto_id({"type": "accurona/license/refresh"})
+    await client.send_json_auto_id({"type": "axonometra/license/refresh"})
     result = await client.receive_json()
     assert result["success"] and result["result"]["licensee"] == "Anna"
     assert aioclient_mock.call_count == 2
@@ -178,12 +178,12 @@ async def test_activate_install_and_update(hass: HomeAssistant, hass_ws_client, 
     aioclient_mock.clear_requests()
     refusal = {"code": "ms_np_activation_limit", "message": "no"}
     aioclient_mock.post(f"{lic.SHOP_API}/catalog", status=403, json=refusal)
-    await client.send_json_auto_id({"type": "accurona/license/activate", "key": "NP-ABCD-EFGH-2345-6789"})
+    await client.send_json_auto_id({"type": "axonometra/license/activate", "key": "NP-ABCD-EFGH-2345-6789"})
     result = await client.receive_json()
     assert not result["success"] and result["error"]["code"] == "activation_limit"
 
     # forgetting the key keeps the packs and drops offers and code
-    await client.send_json_auto_id({"type": "accurona/license/remove"})
+    await client.send_json_auto_id({"type": "axonometra/license/remove"})
     status = (await client.receive_json())["result"]
     assert not status["active"] and len(hass.data[DOMAIN].packs) == 1
     assert status["offers"] == [] and status["loyalty"] is None and status["supporter"] is None
@@ -209,7 +209,7 @@ async def test_a_pack_that_newly_belongs_to_the_customer_is_announced_once(
     )
     living = {"id": "shop.living", "name": "Wohnzimmer", "release": 1, "url": "https://shop/x"}
     aioclient_mock.post(f"{lic.SHOP_API}/catalog", json={"licensee": "Anna", "packs": [living]})
-    await client.send_json_auto_id({"type": "accurona/license/activate", "key": "NP-ABCD-EFGH-2345-6789"})
+    await client.send_json_auto_id({"type": "axonometra/license/activate", "key": "NP-ABCD-EFGH-2345-6789"})
     assert (await client.receive_json())["success"]
     # the first catalog of a key: no notice (the customer is on the extensions page)
     assert notices == []
@@ -220,7 +220,7 @@ async def test_a_pack_that_newly_belongs_to_the_customer_is_announced_once(
     aioclient_mock.post(f"{lic.SHOP_API}/catalog", json={"licensee": "Anna", "packs": [living, gift]})
     await lic.async_refresh(hass, hass.data[DOMAIN])
     await lic.async_refresh(hass, hass.data[DOMAIN])
-    assert [n[0] for n in notices] == ["accurona_pack_mastershort.fun_halloween"]
+    assert [n[0] for n in notices] == ["axonometra_pack_mastershort.fun_halloween"]
 
     # installed: the notice goes
     fp = await lic.async_instance_fingerprint(hass)
@@ -231,7 +231,7 @@ async def test_a_pack_that_newly_belongs_to_the_customer_is_announced_once(
         ),
     )
     await lic.async_install(hass, hass.data[DOMAIN], gift["id"])
-    assert "accurona_pack_mastershort.fun_halloween" in dismissed
+    assert "axonometra_pack_mastershort.fun_halloween" in dismissed
 
     # four taster packs at once: one notice for all of them, gone once one is installed
     samples = [
@@ -242,7 +242,7 @@ async def test_a_pack_that_newly_belongs_to_the_customer_is_announced_once(
     aioclient_mock.clear_requests()
     aioclient_mock.post(f"{lic.SHOP_API}/catalog", json={"licensee": "Anna", "packs": [living, gift, *samples]})
     await lic.async_refresh(hass, hass.data[DOMAIN], install_updates=False)
-    assert notices == [("accurona_packs_new", "Accurona: 4 new packs are ready")]
+    assert notices == [("axonometra_packs_new", "Axonometra: 4 new packs are ready")]
 
 
 async def test_a_pack_bound_elsewhere_is_refused_on_import(hass: HomeAssistant, hass_ws_client, monkeypatch) -> None:
@@ -252,7 +252,7 @@ async def test_a_pack_bound_elsewhere_is_refused_on_import(hass: HomeAssistant, 
     client = await hass_ws_client(hass)
     await client.send_json_auto_id(
         {
-            "type": "accurona/packs/import",
+            "type": "axonometra/packs/import",
             "pack": _sign(private, keys, {**PAYLOAD, "instance": packs.fingerprint("x")}),
         }
     )

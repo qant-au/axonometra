@@ -1,4 +1,4 @@
-// What a spoken sentence asks Accurona to show: a device ("Zeig die Waschmaschine", "wo ist die Stehlampe"), a
+// What a spoken sentence asks Axonometra to show: a device ("Zeig die Waschmaschine", "wo ist die Stehlampe"), a
 // camera to look through ("Zeig die Kamera Haustür", "die Kamera im Garten"), all cameras ("Zeig die Kameras"), or a
 // place (a room, a floor, the house). Matched on the names in the plan and in Home Assistant – a piece of furniture
 // answers to its own name, its kind ("Waschmaschine") and a few everyday words for it ("TV", "Glotze"), with or
@@ -25,7 +25,7 @@ export type Target = Place | { kind: "device"; id: string; entity: string | null
 
 /** Words that ask to see something, and "where is …" (the place words of commands.ts and a few more). */
 const SHOW = /\b(zeig|zeige|zeigt|geh|gehe|wechsel|wechsle|oeffne|offne|spring|springe|navigier|wo|where|show|go|open|switch|jump|find|toon|waar|ga|montre|affiche|ou|va|mostra|dove|vai|apri|muestra|donde|ve|abre|mostre|visa|vis|hvor|nayta|missa|pokaz|gdzie|ukaz|kde|pokazi|arata|unde|mutasd|hol)\b/;
-/** "camera" in the languages Accurona speaks (plural forms end the same way or are listed). */
+/** "camera" in the languages Axonometra speaks (plural forms end the same way or are listed). */
 const CAMERA = /\b(kamera|kameras|camera|cameras|cam|cams|camera's|telecamera|telecamere|camara|camaras|kamerat|kameraer|kamery|kamere|camerele|kamerak)\b/;
 const CAMERAS = /\b(kameras|cameras|cams|camera's|telecamere|camaras|kamerat|kameraer|kamery|kamere|camerele|kamerak|alle kamera|all camera)\b/;
 

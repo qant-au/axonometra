@@ -19,7 +19,7 @@ const out = process.argv[2] ?? "tutorial-ep05";
 const R = await startRecorder({ outDir: out, width: 1920, height: 1080, lang: "de" });
 const N = narration(R, process.argv.slice(3));
 const { say, sayOver, chapter, catchUp } = N;
-const VERSION = `<br><span style="font-size:20px;opacity:.7">aufgenommen mit Accurona ${appVersion()}</span>`;
+const VERSION = `<br><span style="font-size:20px;opacity:.7">aufgenommen mit Axonometra ${appVersion()}</span>`;
 
 // every scene starts from the stored defaults; confirm() of the app (remove a pack, disconnect) is accepted
 await R.page.evaluateOnNewDocument(() => {
@@ -84,7 +84,7 @@ const scene = async (query = "", cursor = true) => {
 /** Set the 3D camera, with an optional target point [x, y, z]. */
 const cam = (c) =>
   R.page.evaluate((c) => {
-    const v = document.querySelector("accurona-panel").shadowRoot.querySelector("accurona-view3d");
+    const v = document.querySelector("axonometra-panel").shadowRoot.querySelector("axonometra-view3d");
     const viewer = Object.values(v).find((x) => x && x.floors && x.floorMap);
     const { target, ...rest } = c;
     if (target) viewer.controls.view.target.set(target[0], target[1], target[2]);
@@ -204,7 +204,7 @@ const poufPoint = async () => {
 /** The Extensions element (to clear a stale import message of the preview's install call). */
 const clearPackMsg = () =>
   R.page.evaluate(() => {
-    const x = document.querySelector("accurona-panel").shadowRoot.querySelector("accurona-extensions");
+    const x = document.querySelector("axonometra-panel").shadowRoot.querySelector("axonometra-extensions");
     if (x) x._packMsg = null;
   });
 
@@ -218,18 +218,18 @@ const shopScene = async () => {
     const p = window.fp3dPanel;
     const h = p.hass;
     const orig = h.callWS;
-    await orig({ type: "accurona/license/remove" });
-    await orig({ type: "accurona/packs/remove", pack_id: "demo.pro" });
+    await orig({ type: "axonometra/license/remove" });
+    await orig({ type: "axonometra/packs/remove", pack_id: "demo.pro" });
     let weather = null;
     h.callWS = async (m) => {
-      if (m.type === "accurona/packs/install" && m.pack_id === "mastershort.pro_weather") {
+      if (m.type === "axonometra/packs/install" && m.pack_id === "mastershort.pro_weather") {
         const payload = { format: "fp3dpack", version: 1, id: "demo.pro_weather", name: "Wetter draußen", publisher: "Demo", licensee: "Demo Kunde", features: ["weather"], items: [] };
-        await orig({ type: "accurona/packs/import", pack: JSON.stringify({ payload, signature: "demo" }) });
+        await orig({ type: "axonometra/packs/import", pack: JSON.stringify({ payload, signature: "demo" }) });
         weather = 1;
         return { id: payload.id, name: payload.name, publisher: "Demo", licensee: "Demo Kunde", release: 1, items: 0 };
       }
       const r = await orig(m);
-      if (m.type.startsWith("accurona/license/") && r) {
+      if (m.type.startsWith("axonometra/license/") && r) {
         return {
           ...r,
           offers: (r.offers ?? []).filter((o) => o.id !== "pro_weather").map((o) => ({ ...o, price: null })),
@@ -257,9 +257,9 @@ await quiet('button[aria-label="Bedienelemente ausblenden – nur die 3D-Ansicht
   const c = { theta: -0.35, phi: 0.9, radius: 31, target: [6.8, 2.8, 4.6] };
   await cam(a);
   await R.sleep(1500);
-  await R.title("Erweiterungen: Shop verbinden und Möbel-Packs", `Accurona · Folge 5${VERSION}`);
+  await R.title("Erweiterungen: Shop verbinden und Möbel-Packs", `Axonometra · Folge 5${VERSION}`);
   await live(R.time + 0.6, a, mix(a, b, 0.05));
-  let end = await line("Accurona ist kostenlos – alles aus den bisherigen Folgen gehört dazu, ohne Abo und ohne Konto.");
+  let end = await line("Axonometra ist kostenlos – alles aus den bisherigen Folgen gehört dazu, ohne Abo und ohne Konto.");
   await live(end, mix(a, b, 0.05), b);
   await R.untitle();
   end = await line("Dazu gibt es Erweiterungen: Möbel-Packs mit mehr Möbeln und Pro-Funktionen, zum Beispiel den Regen am Haus.");
@@ -344,7 +344,7 @@ await R.hold(0.6);
 await pointAt("Pro-Erweiterungen", 0.5, { tags: "H3" });
 await R.hold(0.6);
 await pointAt("Möbel-Packs", 0.5, { tags: "H3" });
-await sayOver("Ohne Lizenzschlüssel fragt Accurona den Shop übrigens nie – es geht nichts ins Internet.");
+await sayOver("Ohne Lizenzschlüssel fragt Axonometra den Shop übrigens nie – es geht nichts ins Internet.");
 await R.moveTo("input.fp3d-shop-key", 0.6);
 await sayOver("Sechs Pro-Erweiterungen gibt es im Moment: Kamera-Cockpit, Wetter draußen, Bildschirme live, Energie Pro, Klang und Kino und Auto Pro.");
 await scrollPage("Pro-Erweiterungen", 160, 0.8);
@@ -423,7 +423,7 @@ await R.hold(1.4);
 await rowButton("Wohnzimmer", "Aktualisieren", 0.5);
 await R.hold(0.6);
 await clearPackMsg();
-await sayOver("Meist musst du das gar nicht selbst tun: Einmal am Tag schaut Accurona nach und installiert neue Käufe und Updates von allein.");
+await sayOver("Meist musst du das gar nicht selbst tun: Einmal am Tag schaut Axonometra nach und installiert neue Käufe und Updates von allein.");
 await pointAt("installiert · v2", 0.5, { tags: "SPAN", nth: 0 });
 await sayOver("„Jetzt prüfen“ fragt sofort nach. Daneben steht, wann zuletzt geprüft wurde.");
 await R.clickOn({ text: "Jetzt prüfen", exact: true }, 0.5);
@@ -580,7 +580,7 @@ await sayOver("Bis zu fünf neue Verbindungen sind pro Jahr möglich. Meldet die
 await pointAt("Installations-Kennung", 0.5, { tags: "SPAN" });
 await sayOver("Ist der Shop gerade ausgelastet, wartest du eine Minute und drückst noch mal „Aktivieren“.");
 await R.moveTo({ text: "Aktivieren", exact: true }, 0.5);
-await sayOver("Braucht eine Erweiterung eine neuere Accurona-Version, sagt die Seite das auch: dann zuerst Accurona über HACS aktualisieren.");
+await sayOver("Braucht eine Erweiterung eine neuere Axonometra-Version, sagt die Seite das auch: dann zuerst Axonometra über HACS aktualisieren.");
 await R.move(1160, 560, 1);
 await sayOver("Und beim Komplett-Backup sind deine Packs mit drin, der Schlüssel nicht. Mehr dazu in der Folge über Sicherung und Umzug.");
 await R.move(1300, 700, 1);
@@ -604,11 +604,11 @@ await R.hideCursor();
   end = await line("Was du einmal installiert hast, bleibt – auch ohne Shop und ohne Internet.");
   await live(end, mix(a, b, k), b);
 }
-await R.title("Nächste Folge: Geräte, Lampen und Kameras", `Accurona – läuft auch auf alten Wandtablets${VERSION}`);
+await R.title("Nächste Folge: Geräte, Lampen und Kameras", `Axonometra – läuft auch auf alten Wandtablets${VERSION}`);
 {
   let end = await line("In der nächsten Folge geht es um Geräte, Lampen und Kameras.");
   await live(end);
-  end = await line("Links zur Online-Demo und zur Anleitung stehen in der Beschreibung. Und Accurona läuft auch auf alten Wandtablets. Bis zum nächsten Mal!");
+  end = await line("Links zur Online-Demo und zur Anleitung stehen in der Beschreibung. Und Axonometra läuft auch auf alten Wandtablets. Bis zum nächsten Mal!");
   await live(end + 0.6);
 }
 

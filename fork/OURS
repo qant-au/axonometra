@@ -1,4 +1,4 @@
-# Files that are Accurona's own. On an upstream merge they are copied from main into the
+# Files that are Axonometra's own. On an upstream merge they are copied from main into the
 # snapshot, so upstream's versions never land and never conflict, and the snapshot is made
 # with main's current tooling.
 # fork/merge-upstream.sh reads this list; one path per line.

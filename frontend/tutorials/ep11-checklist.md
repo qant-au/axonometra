@@ -11,7 +11,7 @@ Zu viel für 8 Minuten in einem Stück → zwei Teile: **a** = Teil 1 „Die Kar
 `controls_side` und `keep_view` kommen mit 1.12.7 → Versionszeile 1.12.7.
 
 ## Karte anlegen (Kapitel 8, nur gesagt)
-- [x] a 0:12 · Dashboard bearbeiten, „Karte hinzufügen“, nach „Accurona“ suchen (gesagt über dem Karten-Editor)
+- [x] a 0:12 · Dashboard bearbeiten, „Karte hinzufügen“, nach „Axonometra“ suchen (gesagt über dem Karten-Editor)
 - [x] a 0:19 · Karte wird mit der Integration automatisch geladen, keine Ressource nötig
 - [x] a 0:24 · Visueller Editor: links Optionen, rechts Live-Vorschau; kein YAML nötig
 - [x] a 0:32 · Optionen auf dem Standard fehlen im YAML

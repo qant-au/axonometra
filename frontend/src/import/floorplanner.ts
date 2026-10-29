@@ -1,6 +1,6 @@
 // Floorplanner (floorplanner.com, its JSON/FML export): floors with designs; walls from a to b with thickness,
 // height and the openings in them (t = where along the wall), areas as named polygons, items with size and
-// rotation. Lengths are centimetres, y runs down the plan like Accurona's z.
+// rotation. Lengths are centimetres, y runs down the plan like Axonometra's z.
 
 import type { Vec2 } from "../model.ts";
 import type { RawFloor, RawOpening, RawPlan } from "./builder.ts";

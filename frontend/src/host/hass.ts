@@ -1,4 +1,4 @@
-// Accurona: the engine without Home Assistant. createHass() answers the engine's calls from a host's store and
+// Axonometra: the engine without Home Assistant. createHass() answers the engine's calls from a host's store and
 // signal source, in the shape the engine already speaks (upstream's HomeAssistant interface in types.ts), so the
 // engine runs unchanged. Calls that only Home Assistant can answer (Assist, the recorder, the energy dashboard)
 // are refused with Home Assistant's own error shape; the engine treats those features as absent.
@@ -34,23 +34,23 @@ export async function createHass(options: HostOptions): Promise<HassHandle> {
 
   async function callWS(msg: Record<string, unknown>): Promise<unknown> {
     switch (msg.type) {
-      case "accurona/building/get":
+      case "axonometra/building/get":
         return { building: structuredClone(building), revision };
-      case "accurona/building/save":
+      case "axonometra/building/save":
         building = structuredClone(msg.building as Building);
         revision += 1;
         await store.save(building, revision);
         for (const cb of planListeners) cb({ revision });
         return { revision };
-      case "accurona/image/get": {
+      case "axonometra/image/get": {
         const data = await store.loadImage(String(msg.image_id));
         if (data === null) throw { code: "not_found", message: "Image not found" };
         return { data };
       }
-      case "accurona/image/set":
+      case "axonometra/image/set":
         await store.saveImage(String(msg.image_id), String(msg.data));
         return null;
-      case "accurona/history/list":
+      case "axonometra/history/list":
         return {
           snapshots: snapshots.map(({ building: b, ...rest }) => ({
             ...rest,
@@ -58,21 +58,21 @@ export async function createHass(options: HostOptions): Promise<HassHandle> {
             rooms: b.floors.reduce((n, f) => n + f.rooms.length, 0),
           })),
         };
-      case "accurona/history/snapshot":
+      case "axonometra/history/snapshot":
         snapshots.push({ id: `s${snapshots.length + 1}`, revision, saved_at: Date.now() / 1000, building: structuredClone(building) });
         return null;
-      case "accurona/history/restore": {
+      case "axonometra/history/restore": {
         const snap = snapshots.find((s) => s.id === msg.snapshot_id);
         if (!snap) throw { code: "not_found", message: "Restore point not found" };
-        return callWS({ type: "accurona/building/save", building: snap.building });
+        return callWS({ type: "axonometra/building/save", building: snap.building });
       }
       // furniture packs: none installed in this host yet (importing them is a later step)
-      case "accurona/packs/list":
+      case "axonometra/packs/list":
         return { packs: [] };
       // the upstream author's shop is not connected (upstream.ts); the engine reads this as "no key"
-      case "accurona/license/get":
+      case "axonometra/license/get":
         return { instance: "", active: false, key_hint: null, licensee: null, checked_at: null, error: null, shop_url: "", packs: [] };
-      case "accurona/diagnostics/client":
+      case "axonometra/diagnostics/client":
         return { enabled: false };
       default:
         throw unsupported(msg.type);
@@ -81,7 +81,7 @@ export async function createHass(options: HostOptions): Promise<HassHandle> {
 
   const connection: HomeAssistant["connection"] = {
     async subscribeMessage<T>(callback: (msg: T) => void, msg: Record<string, unknown>) {
-      if (msg.type === "accurona/building/subscribe") {
+      if (msg.type === "axonometra/building/subscribe") {
         const cb = callback as unknown as (m: { revision: number }) => void;
         planListeners.add(cb);
         return async () => void planListeners.delete(cb);
@@ -95,7 +95,7 @@ export async function createHass(options: HostOptions): Promise<HassHandle> {
   function make(states: Record<string, HassEntity>): HomeAssistant & HostMark {
     return {
       // the Home Assistant-only parts of the planner stay hidden unless the embedder says it is there (homeassistant.ts)
-      accurona: { homeAssistant: options.homeAssistant ?? false },
+      axonometra: { homeAssistant: options.homeAssistant ?? false },
       language: options.language ?? (typeof navigator === "undefined" ? "en" : navigator.language),
       user: { is_admin: options.admin ?? true, name: "" },
       areas: {},

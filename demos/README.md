@@ -1,6 +1,6 @@
 # Demos
 
-The animated GIFs in [`docs/demos`](../docs/demos) are recorded from Accurona itself. Nothing is drawn for the
+The animated GIFs in [`docs/demos`](../docs/demos) are recorded from Axonometra itself. Nothing is drawn for the
 recording: each GIF is the planner's 3D view or the hull viewer showing one of the built-in examples, turned a full
 circle. They are previews of work in progress.
 
@@ -21,7 +21,7 @@ planner.
 | `plan-real-estate-office` | A shopfront real estate office for eight staff: reception, interview rooms, open office, kitchen and washrooms |
 | `plan-shed-workshop` | A 10 x 10 m steel shed: an oversized double garage, a workshop and a store |
 
-The lab and the office are rooms fitted out inside a larger building, which is the point of them: Accurona plans a room
+The lab and the office are rooms fitted out inside a larger building, which is the point of them: Axonometra plans a room
 or a suite of rooms as readily as a whole building. The standalone page opens any of them with
 `index.html?example=<name>`.
 

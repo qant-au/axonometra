@@ -1,4 +1,4 @@
-// Accurona: the open boat a vessel's recipe makes, and the mounts on it.
+// Axonometra: the open boat a vessel's recipe makes, and the mounts on it.
 
 import { openHull, outboardMounts, type Mount, type OpenHull } from "../hull/open.ts";
 import { plateHull } from "../hull/plate.ts";

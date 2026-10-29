@@ -1,4 +1,4 @@
-// Accurona: the first-run wizard's process, apart from how it is drawn. A state, the steps that apply to it, whether
+// Axonometra: the first-run wizard's process, apart from how it is drawn. A state, the steps that apply to it, whether
 // each is ready to leave, and what finishing writes: an ordinary plan the editor then refines. A building starts
 // empty in the editor; a boat is read (or typed in), given a hull from the library fitted to her measures and the
 // equipment the owner confirmed, and lands on the water in the 3D view.

@@ -1,4 +1,4 @@
-// Accurona: a vessel plan. A plan (Building) may carry a `vessel`: the recipe of the boat it is drawn in, kept with the
+// Axonometra: a vessel plan. A plan (Building) may carry a `vessel`: the recipe of the boat it is drawn in, kept with the
 // plan (both hosts pass fields they do not know through). The geometry is made from the recipe wherever it is needed,
 // never stored. This file is types only, so the 3D bundle can ask a plan whether it is a vessel without taking the
 // hull code in; that comes with the vessel bundle (entry.ts, loaded by load-vessel.ts).

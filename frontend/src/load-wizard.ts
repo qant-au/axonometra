@@ -1,4 +1,4 @@
-// Accurona: the first-run wizard's bundle loads only when it opens (wizard/entry.ts), over a planner with an empty
+// Axonometra: the first-run wizard's bundle loads only when it opens (wizard/entry.ts), over a planner with an empty
 // plan. Its button's label is here, so the main bundle needs nothing else of it.
 
 import type * as WizardBundle from "./wizard/entry.ts";
@@ -9,7 +9,7 @@ declare const __FP3D_WIZARD_HASH__: string;
 let loading: Promise<typeof WizardBundle> | undefined;
 
 export function loadWizard(): Promise<typeof WizardBundle> {
-  const url = new URL(`./accurona-wizard.js?v=${__FP3D_WIZARD_HASH__}`, new URL(import.meta.url)).href;
+  const url = new URL(`./axonometra-wizard.js?v=${__FP3D_WIZARD_HASH__}`, new URL(import.meta.url)).href;
   loading ??= (import(/* @vite-ignore */ url) as Promise<typeof WizardBundle>).catch((err) => {
     loading = undefined;
     throw err;

@@ -8,7 +8,7 @@ export type ViewerModule = typeof Viewer;
 declare const __FP3D_VIEWER_HASH__: string;
 
 const base = new URL(import.meta.url);
-const url = new URL(`./accurona-3d.js?v=${__FP3D_VIEWER_HASH__}`, base).href;
+const url = new URL(`./axonometra-3d.js?v=${__FP3D_VIEWER_HASH__}`, base).href;
 
 let loading: Promise<ViewerModule> | undefined;
 

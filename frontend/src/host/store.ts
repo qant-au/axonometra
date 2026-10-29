@@ -1,4 +1,4 @@
-// Accurona: plan stores for hosts without a server. memoryStore() keeps everything for the session (tests, demos);
+// Axonometra: plan stores for hosts without a server. memoryStore() keeps everything for the session (tests, demos);
 // browserStore() keeps it in the browser's IndexedDB, one database per plan name.
 
 import type { Building } from "../model.ts";
@@ -33,12 +33,12 @@ function request<T>(req: IDBRequest<T>): Promise<T> {
   });
 }
 
-/** A plan kept in this browser (IndexedDB database `accurona:<name>`). */
+/** A plan kept in this browser (IndexedDB database `axonometra:<name>`). */
 export function browserStore(name = "default"): PlanStore {
   let db: Promise<IDBDatabase> | undefined;
   const open = () =>
     (db ??= new Promise((resolve, reject) => {
-      const req = indexedDB.open(`accurona:${name}`, 1);
+      const req = indexedDB.open(`axonometra:${name}`, 1);
       req.onupgradeneeded = () => {
         req.result.createObjectStore(PLAN);
         req.result.createObjectStore(IMAGES);

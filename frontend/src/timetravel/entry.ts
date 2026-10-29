@@ -40,8 +40,8 @@ export type SessionState = "loading" | "ready" | "error";
 /** Viewer settings of the time travel, kept in this browser only. */
 function pref(key: string, value?: string): string | null {
   try {
-    if (value !== undefined) localStorage.setItem(`accurona-tt-${key}`, value);
-    return localStorage.getItem(`accurona-tt-${key}`);
+    if (value !== undefined) localStorage.setItem(`axonometra-tt-${key}`, value);
+    return localStorage.getItem(`axonometra-tt-${key}`);
   } catch {
     return null;
   }
@@ -203,7 +203,7 @@ export class Session implements TimeTravelSession {
     for (let i = 0; i < parts; i++) {
       const entityIds = req.entities.slice(i * BATCH, (i + 1) * BATCH);
       const statIds = req.stats.slice(i * STAT_BATCH, (i + 1) * STAT_BATCH);
-      const msg: Record<string, unknown> = { type: "accurona/timetravel/history", start_time: from / 1000, end_time: to / 1000, entity_ids: entityIds, statistic_ids: statIds };
+      const msg: Record<string, unknown> = { type: "axonometra/timetravel/history", start_time: from / 1000, end_time: to / 1000, entity_ids: entityIds, statistic_ids: statIds };
       // the cars' own trackers: the integration answers them as home or away only
       const cars = req.cars.filter((id) => entityIds.includes(id));
       if (cars.length) msg.car_trackers = cars;
@@ -341,7 +341,7 @@ export class Session implements TimeTravelSession {
         try {
           older = await this.fetchWindow(to - DAY, to);
         } catch (err) {
-          console.warn("Accurona: time travel could not load an older day", err);
+          console.warn("Axonometra: time travel could not load an older day", err);
           break;
         }
         if (!older || this.disposed || !this.timeline) return;
