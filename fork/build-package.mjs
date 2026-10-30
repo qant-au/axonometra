@@ -2,7 +2,8 @@
 //
 //   cd frontend && npm run build && node ../fork/build-package.mjs
 //
-// dist/npm/ is a self-contained folder. index.js is the embedding API (frontend/src/host/embed.ts:
+// dist/npm/ is a self-contained folder, published as it is (package.json, README.md and CHANGELOG.md come from
+// fork/package/; LICENSE and NOTICE from the repository root). index.js is the embedding API (frontend/src/host/embed.ts:
 // mountAxonometra, the plan stores, the signal sources); it loads the engine's main bundle, axonometra.js, from
 // beside itself, and that loads its other chunks the same way. three.js is only in axonometra-3d.js, which is
 // loaded when a 3D view first opens. plans.js holds the example plans (frontend/src/plans/examples.ts).
@@ -72,6 +73,10 @@ const bundle = (entry, file) =>
     legalComments: "none",
     logLevel: "warning",
   });
+// the manifest, its documents, and the licence and notice the MIT terms require to travel with the code
+cpSync(join(root, "fork/package/package.json"), join(out, "package.json"));
+for (const f of ["README.md", "CHANGELOG.md"]) cpSync(join(root, "fork/package", f), join(out, f));
+for (const f of ["LICENSE", "NOTICE"]) cpSync(join(root, f), join(out, f));
 await bundle("frontend/src/host/embed.ts", "index.js");
 await bundle("frontend/src/plans/examples.ts", "plans.js");
 

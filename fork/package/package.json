@@ -1,0 +1,55 @@
+{
+  "name": "@axonometra/editor",
+  "version": "0.8.0",
+  "description": "An open-source 3D planning engine for buildings and boats: floor plans, decks and hulls at true scale, embeddable in any page.",
+  "keywords": [
+    "floor-plan",
+    "planner",
+    "3d",
+    "three",
+    "web-component",
+    "boat",
+    "vessel",
+    "hull",
+    "signalk"
+  ],
+  "license": "MIT",
+  "author": "Adam Burgess",
+  "homepage": "https://github.com/qant-au/axonometra#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/qant-au/axonometra.git"
+  },
+  "bugs": {
+    "url": "https://github.com/qant-au/axonometra/issues"
+  },
+  "type": "module",
+  "main": "./index.js",
+  "types": "./types/host/embed.d.ts",
+  "exports": {
+    ".": {
+      "types": "./types/host/embed.d.ts",
+      "default": "./index.js"
+    },
+    "./plans": {
+      "types": "./types/plans/examples.d.ts",
+      "default": "./plans.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "*.js",
+    "fonts",
+    "images",
+    "lang",
+    "types",
+    "LICENSE",
+    "NOTICE",
+    "README.md",
+    "CHANGELOG.md"
+  ],
+  "sideEffects": false,
+  "publishConfig": {
+    "access": "public"
+  }
+}
