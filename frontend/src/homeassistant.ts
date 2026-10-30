@@ -1,7 +1,8 @@
 // Axonometra: Home Assistant is an optional host. The planner's Home Assistant-only parts (Assist, the room device
 // panel, time travel and the history trail, the camera wall and weather overlays, the star menu of services, scenes,
 // the household card, the energy dashboard checklist and balance, Home Assistant floors and areas, the device lists,
-// and the voice, director and favourites settings) show only when the host says Home Assistant is there.
+// the voice, director and favourites settings, and the version label, which is the integration's and means nothing
+// to an embedding page) show only when the host says Home Assistant is there.
 //
 // The switch is read from the host's object, not set in a module: the standalone build bundles its host separately
 // from the engine. The standalone host marks its object (off unless `homeAssistant: true` is passed to

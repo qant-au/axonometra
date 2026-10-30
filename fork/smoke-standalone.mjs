@@ -81,7 +81,7 @@ try {
   await page.screenshot({ path: join(shots, "standalone-smoke.png") });
 
   // Home Assistant's parts: hidden with no Home Assistant behind the host, shown when the page turns them on (?ha).
-  // The 3D view draws its chips only for a plan with a room, so one is saved first; the time-travel chip stands in
+  // The version label is the integration's, so it goes with them. The 3D view draws its chips only for a plan with a room, so one is saved first; the time-travel chip stands in
   // for the rest (the hooks themselves are pinned by frontend/src/homeassistant.test.ts)
   const ttChip = async (address) => {
     await page.goto(address, { waitUntil: "networkidle0" });
@@ -100,12 +100,19 @@ try {
       if (first.getAttribute("aria-pressed") !== "true") first.click();
     });
     await page.waitForFunction(() => window.axonometra.element.shadowRoot.querySelector(".fp3d-overlay"), { timeout: 15000 });
-    return page.evaluate(() => !!window.axonometra.element.shadowRoot.querySelector(".axonometra-tt-chip"));
+    return page.evaluate(() => ({
+      tt: !!window.axonometra.element.shadowRoot.querySelector(".axonometra-tt-chip"),
+      version: !!window.axonometra.element.shadowRoot.querySelector(".fp3d-version"),
+    }));
   };
   // a plan kept in the browser (not ?fresh), so it is there after the reload
   const kept = url.replace("?fresh", "?plan=smoke-ha");
-  if (await ttChip(kept)) failures.push("the time-travel chip shows with no Home Assistant");
-  if (!(await ttChip(`${kept}&ha`))) failures.push("with ?ha the time-travel chip does not show");
+  const off = await ttChip(kept);
+  if (off.tt) failures.push("the time-travel chip shows with no Home Assistant");
+  if (off.version) failures.push("the integration's version label shows with no Home Assistant");
+  const on = await ttChip(`${kept}&ha`);
+  if (!on.tt) failures.push("with ?ha the time-travel chip does not show");
+  if (!on.version) failures.push("with ?ha the version label does not show");
 
   // an example plan opens in memory (?example=), all its rooms in the 3D view (frontend/src/plans/examples.ts)
   await page.goto(url.replace("?fresh", "?example=peptide-lab"), { waitUntil: "networkidle0" });

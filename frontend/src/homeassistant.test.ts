@@ -22,7 +22,7 @@ test("the hooks stay in place across upstream merges", () => {
   // hooks in upstream's components, not units of their own: this keeps each one there
   const read = (f: string) => readFileSync(new URL(f, import.meta.url), "utf8");
   const panel = read("./panel.ts");
-  for (const hook of ["this._micProbe && this.hass && haFeatures(this.hass)", "const ha = haFeatures(this.hass);", "${this._roomId && ha\n", "${this.tt.session && ha ?", ".voice=${this._voiceHere && ha}", ".central=${ha}"]) {
+  for (const hook of ["this._micProbe && this.hass && haFeatures(this.hass)", "const ha = haFeatures(this.hass);", "${this._roomId && ha\n", "${this.tt.session && ha ?", ".voice=${this._voiceHere && ha}", ".central=${ha}", "${haFeatures(this.hass) ? html`<span class=\"fp3d-version\""]) {
     assert.ok(panel.includes(hook), `panel.ts: ${hook}`);
   }
   const editor = read("./components/editor.ts");
