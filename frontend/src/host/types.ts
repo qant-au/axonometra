@@ -31,7 +31,7 @@ export interface HostOptions {
   store: PlanStore;
   /** Absent: a plan with no live data (pure planning). */
   signals?: SignalSource;
-  /** BCP 47 language; the engine has de and en and falls back to en. Default: the browser's. */
+  /** BCP 47 language: English and German are built in, 16 more load from lang/ when chosen; others fall back to English. Default: the browser's. */
   language?: string;
   /** Whether the viewer may open the editor. Default true. */
   admin?: boolean;

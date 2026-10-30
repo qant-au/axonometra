@@ -29,7 +29,11 @@ planner.destroy();
 ```
 
 `mountAxonometra(target, options)` loads the engine, mounts an `<axonometra-panel>` element in `target` and
-resolves to `{ element, destroy() }`.
+resolves to `{ element, destroy() }`. It rejects if the engine cannot be loaded or the store's `load()` fails.
+
+The planner fills `target` and keeps to it: its menus, dialogs and the first-run wizard stay inside it, so
+several planners can share a page. Give `target` a height (600 px or more reads well; below about 500 px the
+side lists crowd). A target with no height of its own gets the full height of the window.
 
 | Option | Meaning |
 |---|---|
@@ -40,6 +44,7 @@ resolves to `{ element, destroy() }`.
 | `location` | `{ latitude, longitude, timeZone? }` for the sun and the time of day. |
 | `bundleUrl` | URL of the engine's main bundle, `axonometra.js`. Default: beside the package's `index.js`. |
 | `narrow` | Phone layout. Default: decided from the target's width. |
+| `homeAssistant` | Shows the parts that need a Home Assistant behind the host (Assist, time travel, devices). Default `false`; leave it off unless your host bridges to one. |
 
 ### With a bundler
 
@@ -84,6 +89,12 @@ const signals = staticSignals({ "sensor.fuel": { state: "62", attributes: { unit
 await mountAxonometra(target, { store: memoryStore(), signals });
 signals.set("sensor.fuel", "61");
 ```
+
+## A host of your own
+
+`mountAxonometra` is built on `createHass(options)`, which answers the engine's calls from a store and a signal
+source in the shape the engine speaks. Most pages never need it; it is exported for hosts that mount the
+`<axonometra-panel>` element themselves.
 
 ## Example plans
 
