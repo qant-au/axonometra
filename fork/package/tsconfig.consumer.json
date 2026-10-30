@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "lib": ["ES2023", "DOM", "DOM.Iterable"],
+    "types": [],
+    "strict": true,
+    "noEmit": true,
+    "skipLibCheck": false,
+    "paths": {
+      "@axonometra/editor": ["../../dist/npm/types/host/embed.d.ts"],
+      "@axonometra/editor/plans": ["../../dist/npm/types/plans/examples.d.ts"]
+    }
+  },
+  "files": ["consumer.ts"]
+}

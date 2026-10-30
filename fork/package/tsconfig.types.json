@@ -1,0 +1,18 @@
+{
+  "extends": "../../frontend/tsconfig.json",
+  "compilerOptions": {
+    "noEmit": false,
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "rootDir": "../../frontend/src",
+    "outDir": "../../dist/npm/types",
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "types": []
+  },
+  "include": [],
+  "files": [
+    "../../frontend/src/host/embed.ts",
+    "../../frontend/src/plans/examples.ts"
+  ]
+}

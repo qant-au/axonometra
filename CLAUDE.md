@@ -26,6 +26,10 @@
   TypeScript, no decorators; three.js in a separate lazily loaded bundle). Bundles are
   committed to `custom_components/axonometra/frontend/` and CI fails when they are stale, so
   run `npm run build` before committing.
+- **The npm package** (`@axonometra/editor`) is built by `node ../fork/build-package.mjs` from `frontend/`, after
+  `npm run build`: `dist/npm/` gets the host entry (`index.js`), the engine chunks a host without Home Assistant can
+  load, `plans.js`, and `types/`, checked by compiling `fork/package/consumer.ts` against them. A new engine chunk
+  fails that build until it is listed as shipped or Home Assistant-only.
 - Checks: `npm test`, `npm run typecheck`, `npm run build` (size budgets), `ruff check`,
   `ruff format --check`, `mypy custom_components/axonometra`, `pytest -q`.
 - The Python tools live in the project's own `.venv/` (gitignored), never in the system Python:
