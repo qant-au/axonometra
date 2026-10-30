@@ -257,10 +257,15 @@ export class Floorplan3dPanel extends LitElement {
   /** Axonometra: the first-run wizard writes the plan, then the planner goes where it says. */
   private openFirstRun(): void {
     void loadWizard().then((m) =>
-      m.openFirstRun(this.hass?.language ?? "en", (r) => {
-        this.data.edit(r.building);
-        this.setMode(r.open);
-      }),
+      m.openFirstRun(
+        this.hass?.language ?? "en",
+        (r) => {
+          this.data.edit(r.building);
+          this.setMode(r.open);
+        },
+        undefined,
+        this.renderRoot,
+      ),
     );
   }
 

@@ -132,7 +132,7 @@ try {
   const wizard = async (kind, source) => {
     await page.goto(url, { waitUntil: "networkidle0" });
     try {
-      await page.waitForFunction(() => document.querySelector("axonometra-first-run")?.shadowRoot?.querySelector("[data-kind]"), { timeout: 15000 });
+      await page.waitForFunction(() => window.axonometra?.element?.shadowRoot?.querySelector("axonometra-first-run")?.shadowRoot?.querySelector("[data-kind]"), { timeout: 15000 });
     } catch {
       failures.push("an empty plan does not open the first-run wizard");
       return null;
@@ -140,7 +140,7 @@ try {
     return page.evaluate(
       async (kind, source) => {
         const settle = () => new Promise((ok) => setTimeout(ok, 150));
-        const root = () => document.querySelector("axonometra-first-run")?.shadowRoot;
+        const root = () => window.axonometra?.element?.shadowRoot?.querySelector("axonometra-first-run")?.shadowRoot;
         const seen = [];
         const click = async (sel) => {
           const b = root().querySelector(sel);

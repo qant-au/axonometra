@@ -362,8 +362,8 @@ export class FirstRunWizard extends LitElement {
       color: #e6f7ff;
     }
     .box {
-      width: min(640px, calc(100vw - 32px));
-      max-height: calc(100vh - 32px);
+      width: min(640px, calc(100% - 32px));
+      max-height: calc(100% - 32px);
       overflow: auto;
       box-sizing: border-box;
       background: #0b1120;

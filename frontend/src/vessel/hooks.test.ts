@@ -15,7 +15,7 @@ test("the 3D view draws a vessel plan's hull, and the build makes its bundle", (
 
 test("an empty planner opens the first-run wizard, and the build makes its bundle", () => {
   const panel = read("../panel.ts");
-  for (const hook of ['import { firstRunLabel, loadWizard } from "./load-wizard.ts";', "if (b && !b.floors.length && this.isAdmin && !this.firstRunShown) {", "m.openFirstRun(this.hass?.language ?? \"en\", (r) => {", "data-first-run @click=${() => this.openFirstRun()}"]) assert.ok(panel.includes(hook), `panel.ts: ${hook}`);
+  for (const hook of ['import { firstRunLabel, loadWizard } from "./load-wizard.ts";', "if (b && !b.floors.length && this.isAdmin && !this.firstRunShown) {", "m.openFirstRun(", "this.renderRoot,","data-first-run @click=${() => this.openFirstRun()}"]) assert.ok(panel.includes(hook), `panel.ts: ${hook}`);
   const build = read("../../build.mjs");
   for (const hook of ['entryPoints: ["src/wizard/entry.ts"]', "__FP3D_WIZARD_HASH__: JSON.stringify(wizardHash)", "hashOf(wizardConfig.outfile)", '"axonometra-wizard.js": ']) assert.ok(build.includes(hook), `build.mjs: ${hook}`);
 });

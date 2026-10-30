@@ -67,8 +67,8 @@ var ge=globalThis,_e=ge.ShadowRoot&&(ge.ShadyCSS===void 0||ge.ShadyCSS.nativeSha
       color: #e6f7ff;
     }
     .box {
-      width: min(640px, calc(100vw - 32px));
-      max-height: calc(100vh - 32px);
+      width: min(640px, calc(100% - 32px));
+      max-height: calc(100% - 32px);
       overflow: auto;
       box-sizing: border-box;
       background: #0b1120;
@@ -163,4 +163,4 @@ var ge=globalThis,_e=ge.ShadowRoot&&(ge.ShadyCSS===void 0||ge.ShadyCSS.nativeSha
     .err {
       color: #ff9b9b;
     }
-  `};customElements.get("axonometra-first-run")||customElements.define("axonometra-first-run",nt);function Yr(n,e,t){document.querySelector("axonometra-first-run")?.remove();let o=document.createElement("axonometra-first-run");return o.language=n,o.onFinish=e,o.onClose=t??null,document.body.append(o),o}export{Yr as openFirstRun};
+  `};customElements.get("axonometra-first-run")||customElements.define("axonometra-first-run",nt);function Yr(n,e,t,o=document.body){o.querySelector("axonometra-first-run")?.remove();let r=document.createElement("axonometra-first-run");return r.language=n,r.onFinish=e,r.onClose=t??null,o.append(r),r}export{Yr as openFirstRun};

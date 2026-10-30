@@ -125,6 +125,15 @@ writeFileSync(
     '<style>html,body{margin:0;height:100%}#plan{min-height:100%}</style></head><body><div id="plan"></div>' +
     '<script type="module" src="./app.js"></script></body></html>',
 );
+writeFileSync(
+  join(consumer, "two.html"),
+  '<!doctype html><html lang="en"><head><meta charset="utf-8"><link rel="icon" href="data:,"><title>two</title>' +
+    '<style>body{margin:0}.p{height:400px;margin:20px 0}</style></head><body><div class="p" id="a"></div><div class="p" id="b"></div>' +
+    '<script type="module">import { memoryStore, mountAxonometra } from "./node_modules/@axonometra/editor/index.js";' +
+    'import { examplePlan } from "./node_modules/@axonometra/editor/plans.js";' +
+    'window.planners = [await mountAxonometra(document.getElementById("a"), { store: memoryStore({ building: examplePlan("family-home-two-storey").building }), language: "en" }),' +
+    ' await mountAxonometra(document.getElementById("b"), { store: memoryStore(), language: "en" })];</script></body></html>',
+);
 const TYPES = { ".html": "text/html", ".js": "text/javascript", ".json": "application/json", ".woff2": "font/woff2", ".jpg": "image/jpeg", ".png": "image/png" };
 const server = createServer((r, res) => {
   const path = normalize(decodeURIComponent(new URL(r.url, "http://x").pathname)).replace(/^(\.\.[/\\])+/, "");
@@ -163,6 +172,33 @@ try {
   if (!fetched.some((u) => u.endsWith("/node_modules/@axonometra/editor/axonometra.js"))) failures.push("bundled consumer: axonometra.js was not loaded from bundleUrl");
   const ha = fetched.filter((u) => HOME_ASSISTANT_ONLY.some((c) => u.includes(c)));
   if (ha.length) failures.push(`bundled consumer asked for Home Assistant-only chunks: ${ha.join(", ")}`);
+
+  // 6. two planners on one page each keep to their own target: neither the panels nor the empty one's first-run
+  // wizard (position: fixed inside the planner) spill over the other or the page
+  const two = await browser.newPage();
+  await two.setViewport({ width: 1280, height: 900 });
+  two.on("pageerror", (err) => failures.push(`two planners: page error: ${err.message}`));
+  await two.goto(`http://127.0.0.1:${server.address().port}/two.html`, { waitUntil: "networkidle0" });
+  try {
+    await two.waitForFunction(
+      () => window.planners?.length === 2 && window.planners[1].element.shadowRoot?.querySelector("axonometra-first-run")?.shadowRoot?.querySelector("[data-kind]"),
+      { timeout: 20000 },
+    );
+    await new Promise((done) => setTimeout(done, 1000));
+    const boxes = await two.evaluate(() => {
+      const r = (el) => { const b = el.getBoundingClientRect(); return { top: Math.round(b.top), bottom: Math.round(b.bottom), height: Math.round(b.height) }; };
+      const [a, b] = window.planners;
+      const wizard = b.element.shadowRoot.querySelector("axonometra-first-run");
+      return { targetA: r(a.element.parentElement), panelA: r(a.element), targetB: r(b.element.parentElement), panelB: r(b.element), wizard: r(wizard), inDocument: !!document.querySelector("axonometra-first-run") };
+    });
+    if (boxes.panelA.height !== boxes.targetA.height || boxes.panelB.height !== boxes.targetB.height) failures.push(`two planners: a panel is not the height of its target ${JSON.stringify(boxes)}`);
+    if (boxes.wizard.top < boxes.targetB.top || boxes.wizard.bottom > boxes.targetB.bottom) failures.push(`two planners: the wizard spills out of its planner ${JSON.stringify(boxes)}`);
+    if (boxes.inDocument) failures.push("two planners: a first-run wizard was put on the page itself");
+    if (!failures.some((f) => f.startsWith("two planners"))) ok("two planners on one page each keep to their target, the first-run wizard inside its own");
+  } catch {
+    failures.push("two planners: both did not mount, or the empty one opened no wizard");
+  }
+  await two.screenshot({ path: join(shots, "two-planners.png") });
 } finally {
   await browser.close();
   server.close();

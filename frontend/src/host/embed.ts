@@ -36,7 +36,14 @@ export async function mountAxonometra(target: HTMLElement, options: MountOptions
   element.narrow = options.narrow ?? target.clientWidth < 700;
   element.hass = handle.hass;
   const stop = handle.onChange((hass) => (element.hass = hass));
+  // An embedded planner fills its target and keeps to it: the panel's own height is the viewport's (right for the
+  // Home Assistant panel), and its overlays and the first-run wizard are position: fixed. Layout and paint
+  // containment make the planner their containing block, so a second planner, or the rest of the page, is never
+  // covered. A target with no height of its own keeps the viewport height, as before.
+  element.style.height = "100%";
+  element.style.contain = "layout paint";
   target.append(element);
+  if (element.clientHeight < 1) element.style.removeProperty("height");
   return {
     element,
     destroy() {
