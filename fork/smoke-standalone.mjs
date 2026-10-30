@@ -4,7 +4,9 @@
 //
 // Serves dist/standalone, opens the demo page in a headless Chrome, and checks that the planner mounts with no
 // Home Assistant: the panel renders, the editor opens, a plan saved through the host comes back. Any error the
-// page throws fails the check. Writes dist/standalone-smoke.png. CHROME_PATH overrides the browser.
+// page throws, and any response of 400 or more, fails the check. Writes dist/standalone-smoke.png. CHROME_PATH overrides
+// the browser. SMOKE_DIR, SMOKE_PAGE and SMOKE_SHOTS point it at another served folder, page and screenshot folder
+// (fork/pack-test.mjs runs it against the npm package installed from its tarball).
 
 import { createServer } from "node:http";
 import { existsSync, readFileSync } from "node:fs";
@@ -13,11 +15,13 @@ import { dirname, extname, join, normalize } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
-const dir = join(root, "dist/standalone");
+const dir = process.env.SMOKE_DIR ?? join(root, "dist/standalone");
+const pagePath = process.env.SMOKE_PAGE ?? "index.html";
+const shots = process.env.SMOKE_SHOTS ?? join(root, "dist");
 const puppeteer = createRequire(join(root, "frontend/package.json"))("puppeteer-core");
 const TYPES = { ".html": "text/html", ".js": "text/javascript", ".json": "application/json", ".woff2": "font/woff2", ".jpg": "image/jpeg", ".png": "image/png" };
 
-if (!existsSync(join(dir, "axonometra-host.js"))) {
+if (!existsSync(join(dir, pagePath))) {
   console.error("No standalone build: run node ../fork/build-standalone.mjs first.");
   process.exit(2);
 }
@@ -28,7 +32,7 @@ const server = createServer((req, res) => {
   res.writeHead(200, { "content-type": TYPES[extname(file)] ?? "application/octet-stream" }).end(readFileSync(file));
 });
 await new Promise((ok) => server.listen(0, "127.0.0.1", ok));
-const url = `http://127.0.0.1:${server.address().port}/index.html?fresh&lang=en`;
+const url = `http://127.0.0.1:${server.address().port}/${pagePath}?fresh&lang=en`;
 
 const executablePath = [
   process.env.CHROME_PATH,
@@ -44,6 +48,9 @@ try {
   await page.setViewport({ width: 1280, height: 800 });
   page.on("pageerror", (err) => failures.push(`page error: ${err.message}`));
   page.on("requestfailed", (req) => failures.push(`request failed: ${req.url()}`));
+  page.on("response", (res) => {
+    if (res.status() >= 400) failures.push(`HTTP ${res.status()}: ${res.url()}`);
+  });
   await page.goto(url, { waitUntil: "networkidle0" });
   await page.waitForFunction(() => window.axonometra?.element?.shadowRoot?.querySelector("h1"), { timeout: 15000 });
 
@@ -71,7 +78,7 @@ try {
   if (revision !== 1) failures.push(`saved plan came back at revision ${revision}`);
 
   await new Promise((ok) => setTimeout(ok, 1500));
-  await page.screenshot({ path: join(root, "dist/standalone-smoke.png") });
+  await page.screenshot({ path: join(shots, "standalone-smoke.png") });
 
   // Home Assistant's parts: hidden with no Home Assistant behind the host, shown when the page turns them on (?ha).
   // The 3D view draws its chips only for a plan with a room, so one is saved first; the time-travel chip stands in
@@ -184,7 +191,7 @@ try {
       failures.push("the wizard's boat does not land in 3D with her cockpit and motor well");
     }
     await new Promise((ok) => setTimeout(ok, 1500));
-    await page.screenshot({ path: join(root, "dist/standalone-smoke-wizard-boat.png") });
+    await page.screenshot({ path: join(shots, "standalone-smoke-wizard-boat.png") });
   }
   const typed = await wizard("vessel", "manual");
   if (typed && typed.vessel?.hull?.plate?.length !== 7.2) failures.push(`a boat typed in at 7.2 m came out as ${JSON.stringify(typed?.vessel?.hull)}`);
@@ -252,7 +259,7 @@ try {
       const saved = await page.evaluate(async () => (await window.axonometra.element.hass.callWS({ type: "axonometra/building/get" })).building.floors[0].furniture[0].component);
       if (saved?.mass !== 42) failures.push(`${label}: the mass typed in was saved as ${JSON.stringify(saved)}`);
     }
-    await page.screenshot({ path: join(root, `dist/standalone-smoke-mass-${mass ? "on" : "off"}.png`) });
+    await page.screenshot({ path: join(shots, `standalone-smoke-mass-${mass ? "on" : "off"}.png`) });
   }
 } finally {
   await browser.close();
@@ -263,4 +270,4 @@ if (failures.length) {
   console.error(failures.map((f) => `FAIL ${f}`).join("\n"));
   process.exit(1);
 }
-console.log("ok   standalone planner mounts, opens the editor, keeps a saved plan, hides Home Assistant's parts unless asked, opens an example plan and an example vessel, walks the first-run wizard for a boat and a building, and takes masses with the switch off and on (dist/standalone-smoke*.png)");
+console.log(`ok   standalone planner mounts, opens the editor, keeps a saved plan, hides Home Assistant's parts unless asked, opens an example plan and an example vessel, walks the first-run wizard for a boat and a building, and takes masses with the switch off and on (${shots}/standalone-smoke*.png)`);
