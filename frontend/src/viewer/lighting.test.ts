@@ -3,7 +3,7 @@ import { test } from "node:test";
 import type { Floor, Opening, Room } from "../model.ts";
 import { newFloor } from "../model.ts";
 import { buildFloorGeometry } from "./build.ts";
-import { buildLightSurface, lightColors, type LightSource, shadowed, zoneOf } from "./lighting.ts";
+import { buildLightSurface, lightColors, type LightSource, shadowed, spillLength, windowCast, zoneOf } from "./lighting.ts";
 
 function rect(id: string, x0: number, z0: number, x1: number, z1: number): Room {
   return { id, name: id, area_id: null, points: [[x0, z0], [x1, z0], [x1, z1], [x0, z1]], floor_material: "wood" };
@@ -216,4 +216,150 @@ test("the floor's light cells cover an L-shaped room off the grid exactly – no
     area += Math.abs((bx - ax) * (cz - az) - (cx - ax) * (bz - az)) / 2;
   }
   assert.ok(Math.abs(area - (4 * 1.7 + 2.1 * 1.3)) < 1e-6, `${area}`);
+});
+
+test("a sloping wall: its lit face ends below the slope and it blocks light only below it (#821)", () => {
+  // edge 0 from (0,0) to (4,0): 1.45 m high at the start, 0.05 m at the end (beside a stair)
+  const room = { ...rect("r", 0, 0, 4, 3), wall_slopes: [[1.45, 0.05] as [number, number], null, null, null] };
+  const floor: Floor = { ...newFloor("f", "Floor", 0), rooms: [room], height: 2.5 };
+  const s = surfaceOf(floor);
+  // the wall's lit face towards the room (normal +z, near z = 0): no vertex above the slope there
+  for (let v = 0; v < s.room.length; v++) {
+    if (s.normal[v * 3 + 2] < 0.9 || Math.abs(s.pos[v * 3 + 2]) > 0.2) continue;
+    const x = Math.min(4, Math.max(0, s.pos[v * 3]));
+    const top = 1.45 + (0.05 - 1.45) * (x / 4);
+    assert.ok(s.pos[v * 3 + 1] <= top + 1e-3, `vertex at x ${s.pos[v * 3].toFixed(2)} y ${s.pos[v * 3 + 1].toFixed(3)} above the slope ${top.toFixed(3)}`);
+  }
+  // as a blocker: a line crossing the wall at 1 m height is stopped near the high end, passes near the low end
+  const wall = s.blockers.find((b) => Math.abs(b.a[1]) < 0.2 && Math.abs(b.b[1]) < 0.2)!;
+  assert.ok(wall.h1 !== undefined);
+  const lamp0 = { x: 0.5, y: 1, z: 1 };
+  assert.equal(shadowed(lamp0, [wall], 0.5, 1, -1), true);
+  const lamp1 = { x: 3.5, y: 1, z: 1 };
+  assert.equal(shadowed(lamp1, [wall], 3.5, 1, -1), false);
+});
+
+test("a window's light at night ends at the edge of the balcony it looks onto, not on the drive below (#822)", () => {
+  // a balcony 1.5 m deep at the floor's level, the driveway 2.8 m below past its edge
+  const balcony = (_s: number, d: number) => (d < 1.5 ? 0.02 : -2.8);
+  const len = spillLength(balcony, 0.02, 3.2);
+  assert.ok(len > 1.3 && len <= 1.5, `${len}`);
+  // level ground: the full reach
+  assert.equal(spillLength(() => -0.2, -0.2, 3.2), 3.2);
+});
+
+test("a lamp lights the ground through a window as a cone from the lamp: shifted away from it, below the sill's shadow (#954)", () => {
+  // a window 1.2 m wide in a wall along x (the room lies at z > 0, outside is z < 0), sill 0.9, top 2.1
+  const win = { start: [0, 0] as [number, number], axis: [1, 0] as [number, number], out: [0, -1] as [number, number], width: 1.2, sill: 0.9, top: 2.1 };
+  // a ceiling lamp 2 m inside, 1 m to the left of the window's start, on lawn 0.2 m below the floor
+  const c = windowCast({ x: -1, y: 2.4, z: 2 }, win, -0.2, 6);
+  assert.ok(c);
+  assert.equal(c.D, 2);
+  assert.equal(c.ls, -1);
+  // the sill's ray lands 2 * 1.1 / 1.5 m out; the top's ray would land 15 m out, capped
+  assert.ok(Math.abs(c.d0 - 1.4667) < 0.01, `${c.d0}`);
+  assert.equal(c.d1, 6);
+  // right at the wall the patch spans the window; further out it moves to the right, away from the lamp
+  assert.deepEqual(c.edge(0).map((v) => Math.round(v * 100) / 100), [0, 1.2]);
+  const far = c.edge(2);
+  assert.ok(Math.abs(far[0] - 1) < 0.01 && Math.abs(far[1] - 3.4) < 0.01, `${far}`);
+  // a lamp below the sill, or one outside, throws nothing onto the ground
+  assert.equal(windowCast({ x: 0.6, y: 0.5, z: 2 }, win, -0.2, 6), null);
+  assert.equal(windowCast({ x: 0.6, y: 2.4, z: -2 }, win, -0.2, 6), null);
+  // a floor lamp far inside: its rays through the sill land beyond the reach
+  assert.equal(windowCast({ x: 0.6, y: 1.2, z: 5 }, win, -0.2, 6), null);
+});
+
+test("a lamp that only changes colour is lit the same as on a fresh surface (colour effects reuse the light, #885)", () => {
+  const floor = { ...newFloor("f", "F", 0), rooms: [rect("k", 0, 0, 6, 3)] };
+  const s = surfaceOf(floor);
+  lightColors(s, [lamp(1.5, 1.5, [1, 0, 0]), lamp(4.5, 1.5, [0, 0, 1])]);
+  const again = lightColors(s, [lamp(1.5, 1.5, [0, 1, 0]), lamp(4.5, 1.5, [1, 1, 0])]);
+  const fresh = lightColors(surfaceOf(floor), [lamp(1.5, 1.5, [0, 1, 0]), lamp(4.5, 1.5, [1, 1, 0])]);
+  assert.deepEqual([...again], [...fresh]);
+  // a lamp switched off is gone from the light
+  const one = lightColors(s, [lamp(1.5, 1.5, [0, 1, 0])]);
+  assert.deepEqual([...one], [...lightColors(surfaceOf(floor), [lamp(1.5, 1.5, [0, 1, 0])])]);
+});
+
+/** Area and x range of the lit outdoor floor (facing up, outside zone). */
+function outdoorFloor(s: ReturnType<typeof surfaceOf>, outside: number) {
+  let area = 0;
+  let minX = Infinity;
+  let maxX = -Infinity;
+  const ys: number[] = [];
+  for (let v = 0; v < s.room.length; v += 3) {
+    if (s.room[v] !== outside || s.normal[v * 3 + 1] !== 1) continue;
+    const [ax, az, bx, bz, cx, cz] = [s.pos[v * 3], s.pos[v * 3 + 2], s.pos[v * 3 + 3], s.pos[v * 3 + 5], s.pos[v * 3 + 6], s.pos[v * 3 + 8]];
+    area += Math.abs((bx - ax) * (cz - az) - (cx - ax) * (bz - az)) / 2;
+    for (const k of [0, 1, 2]) {
+      minX = Math.min(minX, s.pos[(v + k) * 3]);
+      maxX = Math.max(maxX, s.pos[(v + k) * 3]);
+      ys.push(s.pos[(v + k) * 3 + 1]);
+    }
+  }
+  return { area, minX, maxX, ys };
+}
+
+test("outdoor light cells end at a terrace's edge off the grid – no overhang, no dark strip (#957)", () => {
+  const floor: Floor = {
+    ...newFloor("f", "F", 0),
+    rooms: [],
+    outdoor: [{ id: "t", type: "terrace", points: [[9.858, 7], [15.058, 7], [15.058, 12], [9.858, 12]] }],
+  };
+  const s = surfaceOf(floor);
+  const f = outdoorFloor(s, 0);
+  assert.ok(Math.abs(f.area - 5.2 * 5) < 1e-6, `area ${f.area}`);
+  assert.ok(f.minX > 9.858 - 1e-6 && f.maxX < 15.058 + 1e-6, `x ${f.minX} … ${f.maxX}`);
+});
+
+test("a slab over its beams: the light lies on the slab, whatever is listed after it (#957)", () => {
+  const floor: Floor = {
+    ...newFloor("f", "F", 0),
+    rooms: [],
+    outdoor: [
+      { id: "slab", type: "terrace", points: [[0.1, 0.1], [4.1, 0.1], [4.1, 3.1], [0.1, 3.1]] },
+      { id: "beam", type: "path", points: [[0.1, 1.4], [4.1, 1.4], [4.1, 1.8], [0.1, 1.8]] },
+    ],
+  };
+  const s = surfaceOf(floor);
+  const f = outdoorFloor(s, 0);
+  // one surface, no spot lit twice: the area is the slab's, every vertex at the slab's top
+  assert.ok(Math.abs(f.area - 12) < 1e-6, `area ${f.area}`);
+  const top = outdoorFloor(surfaceOf({ ...floor, outdoor: floor.outdoor!.slice(0, 1) }), 0).ys[0];
+  assert.ok(f.ys.every((y) => Math.abs(y - top) < 1e-6), `heights ${Math.min(...f.ys)} … ${Math.max(...f.ys)}, slab ${top}`);
+});
+
+test("a path cut into a lawn and a lawn beside a terrace share their cells without gaps or overlaps (#957)", () => {
+  const floor: Floor = {
+    ...newFloor("f", "F", 0),
+    rooms: [],
+    outdoor: [
+      { id: "lawn", type: "lawn", points: [[0, 0], [6.13, 0], [6.13, 4.07], [0, 4.07]] },
+      { id: "path", type: "path", cut: true, points: [[2.04, 0], [2.91, 0], [2.91, 4.07], [2.04, 4.07]] },
+      { id: "terr", type: "terrace", points: [[6.13, 0], [8.4, 0], [7.9, 4.07], [6.13, 4.07]] },
+    ],
+  };
+  const s = surfaceOf(floor);
+  const f = outdoorFloor(s, 0);
+  const want = 6.13 * 4.07 + ((2.27 + 1.77) / 2) * 4.07;
+  assert.ok(Math.abs(f.area - want) < 1e-5, `area ${f.area}, want ${want}`);
+});
+
+test("a lamp behind a wall of its room sends no light through the door into the next room (#954)", () => {
+  // an L: the lamp stands in its foot, the door leads out of the top of its arm – the corner hides it
+  const l: Room = { id: "l", name: "l", area_id: null, points: [[0, 0], [6, 0], [6, 2], [2, 2], [2, 5], [0, 5]], floor_material: "wood" };
+  const floor: Floor = { ...newFloor("f", "F", 0), rooms: [l, rect("b", 0, 5, 2, 7)] };
+  floor.openings = [{ id: "d", room_id: "l", edge: 4, offset: 0.55, width: 0.9, type: "door", sill: 0, height: 2.05, hinge: "left", leaves: 1, swing: "in", cover: null, contact: null, contact2: null, tilt: null }];
+  const s = surfaceOf(floor);
+  const litIn = (room: number, c: Float32Array) => {
+    let m = 0;
+    for (let v = 0; v < s.room.length; v++) if (s.room[v] === room) m = Math.max(m, c[v * 3]);
+    return m;
+  };
+  const hidden = lightColors(s, [lamp(5.5, 1, [1, 1, 1], 0, { kind: "omni", y: 1.2 })], 0.7, [1]);
+  assert.equal(litIn(1, hidden), 0);
+  // a lamp in the arm, in sight of the door, still lights the room behind it
+  const seen = lightColors(s, [lamp(1, 3.5, [1, 1, 1], 0, { kind: "omni", y: 1.2 })], 0.7, [1]);
+  assert.ok(litIn(1, seen) > 0.05, `${litIn(1, seen)}`);
 });

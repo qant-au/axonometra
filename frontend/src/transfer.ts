@@ -1,7 +1,7 @@
 // Export and import of the building as a JSON file. Without entities, a plan can be shared with others:
 // areas, lights, sensors and every other link to this Home Assistant are removed.
 
-import { normalizeBuilding, type Building } from "./model.ts";
+import { normalizeBuilding, type Building, type Floor } from "./model.ts";
 
 export const EXPORT_FORMAT = "neonplan3d";
 
@@ -12,9 +12,32 @@ export interface ExportFile {
   building: Building;
 }
 
+/** Home Assistant's entity domains: a string "<domain>.<object>" in a plan is a link to this home. */
+const DOMAINS = new Set(
+  "alarm_control_panel assist_satellite automation binary_sensor button calendar camera climate conversation counter cover date datetime device_tracker event fan group humidifier image input_boolean input_button input_datetime input_number input_select input_text lawn_mower light lock media_player notify number person remote scene script select sensor siren stt sun switch text time timer todo tts update vacuum valve wake_word water_heater weather zone".split(" "),
+);
+const ENTITY = /^([a-z_]+)\.[a-z0-9_]+$/;
+const isEntity = (v: unknown): v is string => typeof v === "string" && DOMAINS.has(ENTITY.exec(v)?.[1] ?? "");
+
+/**
+ * Every link to this home, wherever it stands (a lock on a door, the gas meter, the rain sensor, a fan on a lamp,
+ * a module's setting): entity ids become null or leave their lists and maps, areas and devices are cleared.
+ */
+function scrub(v: unknown): unknown {
+  if (Array.isArray(v)) return v.filter((x) => !isEntity(x)).map(scrub);
+  if (!v || typeof v !== "object") return isEntity(v) ? null : v;
+  const o = v as Record<string, unknown>;
+  for (const key of Object.keys(o)) {
+    if (isEntity(key)) delete o[key];
+    else if (/(^|_)(area|area_id|areas|device|device_id|devices)$/.test(key) && o[key] !== null && typeof o[key] !== "boolean" && typeof o[key] !== "number") o[key] = Array.isArray(o[key]) ? [] : null;
+    else o[key] = scrub(o[key]);
+  }
+  return o;
+}
+
 /** A copy of the building without any link to entities or areas (background images stay out anyway). */
 export function withoutEntities(b: Building): Building {
-  const out = structuredClone(b);
+  const out = scrub(structuredClone(b)) as Building;
   out.energy = { ...out.energy, grid: null, solar: null, battery: null, battery_soc: null, tariff: null };
   out.presence = [];
   for (const f of out.floors) {
@@ -65,4 +88,33 @@ export function download(name: string, text: string): void {
   a.download = name;
   a.click();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+/**
+ * A copy of a floor to put on top of the house (#443: three storeys drawn alike): rooms, walls, windows, doors and
+ * furniture with new ids, but without links to this home – the lights and sensors up there are other ones.
+ */
+export function copyFloor(b: Building, floorId: string, id: (prefix: string) => string, name: string, elevation: number): Floor | null {
+  const src = b.floors.find((f) => f.id === floorId);
+  if (!src) return null;
+  const floor = withoutEntities({ ...b, floors: [src] }).floors[0];
+  // every id inside the floor gets a new one, and every reference to it follows (an opening on a room's wall)
+  const ids = new Map<string, string>();
+  const collect = (v: unknown): void => {
+    if (Array.isArray(v)) v.forEach(collect);
+    else if (v && typeof v === "object") {
+      const o = v as Record<string, unknown>;
+      if (typeof o.id === "string" && (o as unknown) !== floor && !ids.has(o.id)) ids.set(o.id, id(o.id.replace(/_[^_]*$/, "") || "item"));
+      Object.values(o).forEach(collect);
+    }
+  };
+  collect(floor);
+  const swap = (v: unknown): unknown => {
+    if (typeof v === "string") return ids.get(v) ?? v;
+    if (Array.isArray(v)) return v.map(swap);
+    if (v && typeof v === "object") return Object.fromEntries(Object.entries(v).map(([k, x]) => [k, swap(x)]));
+    return v;
+  };
+  const out = swap(floor) as Floor;
+  return { ...out, id: id("floor"), name, elevation, ha_floor: null, start_view: null };
 }

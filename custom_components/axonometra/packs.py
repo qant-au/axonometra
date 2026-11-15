@@ -80,6 +80,22 @@ PART_SCHEMA = vol.Schema(
         # free sizes (1.23): the measures that stay when the item is resized ("w", "d", "h" or several): legs,
         # arms and plates keep their size and their distance from the edge, the parts between them stretch
         vol.Optional("fix"): vol.All(str, vol.Match(r"^[wdh]{1,3}$")),
+        # an Advent candle's flame (2.3): drawn only from the n-th Sunday of Advent until 6 January
+        vol.Optional("advent"): vol.All(vol.Coerce(int), vol.Range(min=1, max=4)),
+        # fan blades (3.2.1, #1084): turn while the item's fan runs, about the upright ("y") or the front axis ("z")
+        vol.Optional("spin"): vol.In(["y", "z"]),
+        # a live part (3.4): moves or lights with the entity of one of the item's slots - a door opens ("open",
+        # turning about an edge by `amount` degrees), a drawer slides out ("slide", a share of the depth), a drum
+        # turns ("spin"), a tank fills ("level"), a status light shows ok / off / a fault ("blink"), a part glows
+        vol.Optional("bind"): vol.Schema(
+            {
+                vol.Required("slot"): vol.All(str, vol.Match(r"^[a-z0-9_]{1,24}$")),
+                vol.Required("kind"): vol.In(["open", "slide", "spin", "level", "blink", "glow"]),
+                vol.Optional("hinge"): vol.In(["left", "right", "top", "bottom"]),
+                vol.Optional("axis"): vol.In(["x", "y", "z"]),
+                vol.Optional("amount"): vol.All(vol.Coerce(float), vol.Range(min=0, max=180)),
+            }
+        ),
     }
 )
 
@@ -142,6 +158,23 @@ ITEM_SCHEMA = vol.Schema(
         vol.Optional("tags"): vol.All([vol.All(str, vol.Length(min=1, max=30))], vol.Length(max=12)),
         vol.Optional("family"): _ID,
         vol.Optional("variant"): vol.All({vol.All(str, vol.Length(min=2, max=5)): _TEXT}, vol.Length(min=1, max=10)),
+        # slots of the live parts (3.4): the editor links an entity to each (names by language, fitting domains)
+        vol.Optional("slots"): vol.All(
+            [
+                vol.Schema(
+                    {
+                        vol.Required("id"): vol.All(str, vol.Match(r"^[a-z0-9_]{1,24}$")),
+                        vol.Required("name"): vol.All(
+                            {vol.All(str, vol.Length(min=2, max=5)): _TEXT}, vol.Length(min=1, max=24)
+                        ),
+                        vol.Optional("domains"): vol.All(
+                            [vol.All(str, vol.Match(r"^[a-z_]{2,30}$"))], vol.Length(max=8)
+                        ),
+                    }
+                )
+            ],
+            vol.Length(max=8),
+        ),
     }
 )
 
@@ -157,9 +190,12 @@ KNOWN_FEATURES = [
     "time_travel",
     "pool",
     "household",
+    # digital picture frames (a pack with furniture and the "frames" feature)
+    "frames",
     # fun packs: free extras one picks up in the shop (pets, later seasonal ones)
     "fun_pets",
     "fun_halloween",
+    "fun_winter",
 ]
 
 # A module: code the shop delivers (not part of the public repository), run by Axonometra's module loader.
@@ -239,7 +275,13 @@ def _unknown_value(err: vol.Invalid) -> bool:
     """Whether a value outside a known list failed: voluptuous says so in its message; Probatio, which checks
     schemas since Home Assistant 2026.9, gives it the code "not_in_list" (pointed out by hohoanganh)."""
     found = getattr(err, "errors", None) or [err]
-    return any(getattr(e, "code", None) == "not_in_list" or "value must be one of" in str(e) for e in found)
+    # a field this version does not know yet (a part property of a newer pack release) counts the same
+    return any(
+        getattr(e, "code", None) in ("not_in_list", "extra_key", "extra_keys_not_allowed")
+        or "value must be one of" in str(e)
+        or "extra keys not allowed" in str(e)
+        for e in found
+    )
 
 
 def validate_payload(payload: Any) -> dict[str, Any]:

@@ -16,7 +16,8 @@
     <axonometra-panel></axonometra-panel>
     <script type="module">
       // Mock of the Home Assistant frontend object with invented demo data.
-      import { DEMO_AREAS, DEMO_BUILDING, DEMO_FLOORS, DEMO_PACK, DEMO_ENTITIES, DEMO_STATES, DEMO_PICTURES } from "./demo-data.js";
+      import { DEMO_AREAS, DEMO_BUILDING, DEMO_FLOORS, DEMO_PACK, DEMO_ENTITIES, DEMO_STATES, DEMO_PICTURES, DEMO_PLANS } from "./demo-data.js";
+      import { DEMO_SHOP_PACKS } from "./demo-packs.js";
       import { demoHistory } from "./demo-history.js";
 
       const params = new URLSearchParams(location.search);
@@ -24,19 +25,28 @@
       try {
         localStorage.setItem("axonometra.flows", params.has("flows") ? "1" : "0");
       } catch {}
-      // the shop connection of the demo: connected when ?shop is given, with one pack to install and one update
+      // the demo always opens in Neon, whatever style a visitor picked last time (?style=<id> opens another one)
+      const DEMO_STYLES = ["neon", "blueprint", "day", "focus", "synth", "cozy", "evening", "winter", "model", "pastel", "warm"];
+      try {
+        const wanted = params.get("style");
+        localStorage.setItem("axonometra.theme", DEMO_STYLES.includes(wanted) ? wanted : "neon");
+        localStorage.removeItem("axonometra.zoom_style");
+      } catch {}
+      // the shop connection of the demo: connected when ?shop is given, with one pack to install and one update;
+      // ?supporter alone: a connected Supporter-Pass holder with nothing waiting (the Axonometra Print dot shows on the tab)
+      const supporterOnly = params.has("supporter") && !params.has("shop");
       let license = {
         instance: "3f9c2a7b1e4d8c05",
-        active: params.has("shop"),
-        key_hint: params.has("shop") ? "…7K2M" : null,
-        licensee: params.has("shop") ? "Demo Kunde" : null,
-        checked_at: params.has("shop") ? Date.now() / 1000 - 3600 : null,
+        active: params.has("shop") || supporterOnly,
+        key_hint: params.has("shop") || supporterOnly ? "…7K2M" : null,
+        licensee: params.has("shop") || supporterOnly ? "Demo Kunde" : null,
+        checked_at: params.has("shop") || supporterOnly ? Date.now() / 1000 - 3600 : null,
         error: null,
         shop_url: "https://mastershort.de/neonplan3d/",
         packs: [
           { id: "mastershort.living", name: "Wohnzimmer", release: 2, url: "https://mastershort.de/neonplan3d/", installed: 1 },
           { id: "mastershort.kitchen", name: "Küche", release: 1, url: "https://mastershort.de/neonplan3d/", installed: 1 },
-          { id: "mastershort.vehicles", name: "Fahrzeuge", release: 1, url: "https://mastershort.de/neonplan3d/", installed: null },
+          ...(supporterOnly ? [] : [{ id: "mastershort.vehicles", name: "Fahrzeuge", release: 1, url: "https://mastershort.de/neonplan3d/", installed: null }]),
         ],
         // invented offers of the demo shop and a loyalty code
         offers: params.has("shop")
@@ -47,39 +57,85 @@
             ]
           : [],
         loyalty: params.has("shop") ? { code: "NP-TREUE-DEMO42", percent: 10 } : null,
-        supporter: params.has("shop") ? { code: "NPS-DEMO-7KQ4", until: "2027-12-31" } : null,
+        supporter: params.has("shop") || supporterOnly ? { code: "NPS-DEMO-7KQ4", until: "2027-12-31" } : null,
         newsletter: params.has("shop") ? { url: "https://mastershort.de/neonplan3d/newsletter/" } : null,
         updates: params.has("shop") ? [{ id: "mastershort.kitchen", name: "Küche", release: 2, added: 10, at: Date.now() / 1000 - 600 }] : [],
       };
       let building = params.has("empty") ? { version: 1, floors: [], settings: { wall_exterior: 0.24, wall_interior: 0.12, grid: 0.05 } } : DEMO_BUILDING;
+      // add-ons not out yet (Pool Pro) only on a local preview or with ?pool: the public demo shows neither the pool's
+      // technical room (pump, sand filter, valves, heat pump) nor its pipes (#1063)
+      // ?public shows a local preview exactly like the online demo (for pictures of the manual)
+      const unreleasedDemo = !params.has("public") && (params.has("pool") || ["localhost", "127.0.0.1"].includes(location.hostname));
+      if (!unreleasedDemo) {
+        building = structuredClone(building);
+        for (const floor of building.floors) {
+          floor.furniture = floor.furniture.filter((f) => !/^pool_/.test(f.type));
+          for (const area of floor.outdoor ?? []) delete area.pool;
+        }
+      }
+      // the demo's start view is framed for a wide screen: a phone held upright needs it from further away
+      const portrait = innerWidth / innerHeight;
+      if (building.settings.start_view && portrait < 0.85) {
+        building = structuredClone(building);
+        building.settings.start_view.radius *= Math.min(1.9, 0.85 / portrait);
+      }
       let revision = 1;
+      // ?plans: further floor plans (the garden house, a holiday flat); the main plan is `building` above
+      const EN_PLAN = { Gartenhaus: "Garden house", Ferienwohnung: "Holiday flat" };
+      const english = params.get("lang") === "en";
+      const plans = params.has("plans") ? structuredClone(DEMO_PLANS).map((pl) => ({ ...pl, name: english ? (EN_PLAN[pl.name] ?? pl.name) : pl.name, revision: 1, created: Date.now() / 1000 })) : [];
+      const planTrash = [];
+      let mainEntry = { id: "main", name: params.has("plans") ? (english ? "House" : "Haus") : null, icon: null, site: null, created: null };
+      let locatePlan = "main";
+      const sizeOf = (b) => ({ floors: b.floors.length, rooms: b.floors.reduce((n, f) => n + f.rooms.length, 0), furniture: b.floors.reduce((n, f) => n + f.furniture.length, 0) });
+      const planList = () => ({
+        plans: [{ ...mainEntry, revision, ...sizeOf(building) }, ...plans.map(({ building: b, ...e }) => ({ ...e, ...sizeOf(b) }))],
+        trash: planTrash.map(({ building: b, ...e }) => ({ ...e, ...sizeOf(b) })),
+        locate_plan: locatePlan,
+      });
+      const planOf = (id) => plans.find((pl) => pl.id === id);
+      const notifyPlans = () => {
+        for (const [cb, m] of listeners) if (m?.type === "axonometra/plans/subscribe") cb(planList());
+      };
+      const notifyBuilding = (plan, rev) => {
+        for (const [cb, m] of listeners) if (m?.type !== "axonometra/plans/subscribe" && ((m?.plan ?? "main") === plan || m?.plan === "*")) cb({ revision: rev, plan });
+      };
       // off like on a fresh installation; the screenshots switch it on through the editor
       const diag = { enabled: false };
       const images = { ...DEMO_PICTURES };
-      const listeners = new Set();
+      // subscriptions and what they asked for (a plan's changes reach only its own)
+      const listeners = new Map();
       // invented restore points
       const history = [{ id: "s0", revision: 0, saved_at: Date.now() / 1000 - 3600, building: structuredClone(building) }];
 
       // furniture packs: the invented demo pack, plus local pack sources from private/ (not in git)
       let importedPacks = null;
+      const moduleCode = {};
       async function previewPacks() {
         if (importedPacks === null) {
           importedPacks = [DEMO_PACK];
           // the demo has Axonometra Pro unless ?nopro asks for the locked look
-          // add-ons not out yet (Pool Pro) only on a local preview or with ?pool, not on the public demo
-          const unreleasedDemo = params.has("pool") || ["localhost", "127.0.0.1"].includes(location.hostname);
-          if (!params.has("nopro")) importedPacks.push({ format: "fp3dpack", version: 1, id: "demo.pro", name: "Axonometra Pro (Demo)", publisher: "Mastershort", licensee: null, features: ["camera_cockpit", "weather", "screens", "energy_pro", "sound", "auto_pro", "time_travel", "household", "fun_pets", "fun_halloween", ...(unreleasedDemo ? ["pool"] : [])], items: [] });
+          if (!params.has("nopro")) importedPacks.push({ format: "fp3dpack", version: 1, id: "demo.pro", name: "Axonometra Pro (Demo)", publisher: "Mastershort", licensee: null, features: ["camera_cockpit", "weather", "screens", "energy_pro", "sound", "auto_pro", "time_travel", "household", "fun_pets", "fun_halloween", "fun_winter", ...(unreleasedDemo ? ["pool"] : [])], items: [] });
           try {
             const res = await fetch("../private/packs/starter.json");
             if (res.ok) importedPacks.push({ licensee: null, ...(await res.json()) });
             const index = await fetch("../private/packs/src/index.json");
             for (const name of index.ok ? await index.json() : []) {
               const pack = await fetch(`../private/packs/src/${name}`);
-              if (pack.ok) importedPacks.push({ licensee: null, ...(await pack.json()) });
+              if (!pack.ok) continue;
+              const data = await pack.json();
+              // a pack that carries a module (a local build with its code): the code is served apart, the module counts as approved
+              if (data.module?.code) {
+                moduleCode[data.id] = { code: data.module.code, release: data.release ?? 1, api: data.module.api ?? 1 };
+                data.module = { api: data.module.api ?? 1, kind: data.module.kind ?? "stage", approved: true };
+              }
+              importedPacks.push({ licensee: null, ...data });
             }
           } catch {
             // no local packs
           }
+          // the online demo has no private/ packs: five models of the garden and vehicle packs stand in for them
+          for (const pack of DEMO_SHOP_PACKS) if (!importedPacks.some((p) => p.id === pack.id)) importedPacks.push(pack);
         }
         // ?nopro also drops local feature packs, so the locked look can be seen
         return params.has("nopro") ? importedPacks.filter((p) => !p.features?.length) : importedPacks;
@@ -96,8 +152,8 @@
         config: { latitude: 52.52, longitude: 13.405 },
         states: structuredClone(DEMO_STATES),
         connection: {
-          async subscribeMessage(cb) {
-            listeners.add(cb);
+          async subscribeMessage(cb, msg) {
+            listeners.set(cb, msg);
             return async () => listeners.delete(cb);
           },
         },
@@ -152,7 +208,29 @@
         },
         async callWS(msg) {
           switch (msg.type) {
+            // a local module's code (see previewPacks)
+            case "axonometra/modules/code":
+              if (moduleCode[msg.pack_id]) return moduleCode[msg.pack_id];
+              throw new Error("no such module in the demo");
+            // the card templates' overview of the open screens (invented devices)
+            case "axonometra/screens/list": {
+              const t = Date.now() / 1000;
+              return {
+                screens: [
+                  { id: "s1", kind: "card", template: "kitchen_tablet", screen: null, device: "Fire HD 10 · Fully Kiosk", version: "2.3.0", user: "Tablet", since: t - 9 * 3600, reloadable: true },
+                  { id: "s2", kind: "card", template: "hall", screen: null, device: "Fire 7 · Fully Kiosk", version: "2.2.0", user: "Tablet", since: t - 30 * 3600, reloadable: true },
+                  { id: "s3", kind: "panel", template: null, screen: null, device: "Windows · Chrome", version: "2.3.0", user: "Demo", since: t - 600, reloadable: true },
+                ],
+              };
+            }
+            case "axonometra/screens/reload":
+              return { sent: true };
             case "axonometra/building/get": {
+              if (msg.plan && msg.plan !== "main") {
+                const pl = planOf(msg.plan);
+                if (!pl) throw { code: "not_found", message: "Floor plan not found" };
+                return { building: structuredClone(pl.building), revision: pl.revision, plan: pl.id };
+              }
               // the online demo has no private packs: their items would stand as grey boxes, so leave them out
               const packs = await previewPacks();
               const known = new Set(packs.flatMap((p) => p.items.map((it) => `pack:${p.id}:${it.id}`)));
@@ -163,10 +241,57 @@
             case "axonometra/building/save":
               // ?savefail simulates a backend that still runs an older version
               if (params.has("savefail")) throw { code: "invalid_format", message: "extra keys not allowed @ data['building']['floors'][0]['furniture'][0]['entity']" };
+              if (msg.plan && msg.plan !== "main") {
+                const pl = planOf(msg.plan);
+                pl.building = structuredClone(msg.building);
+                pl.revision += 1;
+                notifyBuilding(pl.id, pl.revision);
+                return { revision: pl.revision };
+              }
               building = structuredClone(msg.building);
               revision += 1;
-              for (const cb of listeners) cb({ revision });
+              notifyBuilding("main", revision);
               return { revision };
+            case "axonometra/plans/list":
+              return planList();
+            case "axonometra/plans/create": {
+              const id = `p${Math.random().toString(36).slice(2, 10)}`;
+              const from = msg.copy_of ? (msg.copy_of === "main" ? building : planOf(msg.copy_of).building) : msg.building;
+              plans.push({ id, name: msg.name, icon: msg.icon ?? null, site: null, created: Date.now() / 1000, revision: 1, building: structuredClone(from ?? { version: 1, floors: [], settings: { wall_exterior: 0.24, wall_interior: 0.12, grid: 0.05 } }) });
+              notifyPlans();
+              return { plan: id };
+            }
+            case "axonometra/plans/update": {
+              const entry = msg.plan === "main" ? mainEntry : planOf(msg.plan);
+              for (const k of ["name", "icon", "site"]) if (k in msg) entry[k] = msg[k];
+              notifyPlans();
+              return null;
+            }
+            case "axonometra/plans/order": {
+              const rank = new Map(msg.plans.map((id, i) => [id, i]));
+              plans.sort((a, b) => (rank.get(a.id) ?? 99) - (rank.get(b.id) ?? 99));
+              notifyPlans();
+              return null;
+            }
+            case "axonometra/plans/delete": {
+              const i = plans.findIndex((pl) => pl.id === msg.plan);
+              planTrash.push({ ...plans[i], deleted_at: Date.now() / 1000 });
+              plans.splice(i, 1);
+              notifyPlans();
+              return null;
+            }
+            case "axonometra/plans/restore": {
+              const i = planTrash.findIndex((pl) => pl.id === msg.plan);
+              const { deleted_at, ...pl } = planTrash[i];
+              plans.push(pl);
+              planTrash.splice(i, 1);
+              notifyPlans();
+              return null;
+            }
+            case "axonometra/plans/locate":
+              locatePlan = msg.plan;
+              notifyPlans();
+              return null;
             // the opt-in reports (only shown with the lab switch): a made-up status and preview
             case "axonometra/diagnostics/client":
               return { enabled: diag.enabled };
@@ -198,7 +323,7 @@
               const snap = history.find((h) => h.id === msg.snapshot_id);
               building = structuredClone(snap.building);
               revision += 1;
-              for (const cb of listeners) cb({ revision });
+              notifyBuilding("main", revision);
               return { revision };
             }
             case "axonometra/image/get":
@@ -219,6 +344,12 @@
             case "axonometra/packs/remove":
               importedPacks = importedPacks.filter((p) => p.id !== msg.pack_id);
               return null;
+            case "axonometra/previews/get": {
+              // the shop's furniture previews: a local copy next to the preview if there is one, else none
+              const res = await fetch("./np-previews/index.json").catch(() => null);
+              if (!res?.ok) return { base: null, packs: [], items: [], bundle: null };
+              return { ...(await res.json()), base: new URL("./np-previews/", location.href).href };
+            }
             case "axonometra/license/get":
               return license;
             case "axonometra/license/activate":
@@ -314,6 +445,57 @@
         close.onclick = () => bar.remove();
         bar.append(close);
         document.body.append(bar);
+        // the styles, big and right at the top: visitors should see that Axonometra is not only neon
+        const names = de
+          ? { neon: "Neon", blueprint: "Blueprint", day: "Tag", focus: "Nacht / Fokus", synth: "Synthwave", cozy: "Wohnlich", evening: "Wohnlich Abend", winter: "Winterabend", model: "Architekturmodell", pastel: "Pastell", warm: "Holz & Papier" }
+          : { neon: "Neon", blueprint: "Blueprint", day: "Day", focus: "Night / Focus", synth: "Synthwave", cozy: "Homely", evening: "Homely evening", winter: "Winter evening", model: "Architect's model", pastel: "Pastel", warm: "Wood & paper" };
+        // at the right edge, clear of the house: a narrow column (on phones folded to one button until tapped)
+        const looks = document.createElement("div");
+        looks.style.cssText =
+          (narrow ? "top:300px;" : "top:190px;") +
+          "position:fixed;right:12px;z-index:10;display:grid;gap:6px;width:" + (narrow ? "auto" : "176px") + ";max-height:calc(100vh - " + (narrow ? "380px" : "290px") + ");padding:10px;border-radius:16px;background:rgba(7,11,20,.88);border:1px solid rgba(0,229,255,.45);color:#fff;font:14px/1.3 Figtree,Roboto,sans-serif;box-shadow:0 0 18px rgba(0,229,255,.25)";
+        const head = document.createElement("button");
+        head.style.cssText = "display:grid;gap:2px;text-align:left;background:none;border:0;color:#fff;cursor:pointer;padding:0 2px;font:inherit";
+        head.setAttribute("aria-expanded", "true");
+        const title = de ? "🎨 Designs" : "🎨 Designs";
+        const sub = de ? "Schau dir die verschiedenen Stile an" : "Have a look at the different styles";
+        const row = document.createElement("div");
+        row.style.cssText = "display:grid;gap:6px;overflow-y:auto;min-height:0";
+        const fold = (open) => {
+          row.style.display = open ? "grid" : "none";
+          head.setAttribute("aria-expanded", String(open));
+          head.innerHTML = `<b style="font-size:16px">${title} ${open ? "▾" : "▸"}</b>${open && !narrow ? `<span style="font-size:12px;opacity:.8">${sub}</span>` : ""}`;
+        };
+        head.onclick = () => fold(row.style.display === "none");
+        const panel = document.querySelector("axonometra-panel");
+        const chips = DEMO_STYLES.map((id) => {
+          const b = document.createElement("button");
+          b.textContent = names[id];
+          b.dataset.style = id;
+          b.onclick = () => pick(id);
+          return b;
+        });
+        const paint = (id) => {
+          for (const b of chips) {
+            const on = b.dataset.style === id;
+            b.style.cssText = `width:100%;text-align:left;padding:${narrow ? "7px 12px" : "8px 12px"};border-radius:999px;font:600 ${narrow ? "13px" : "14px"} Figtree,Roboto,sans-serif;cursor:pointer;white-space:nowrap;${on ? "background:#00e5ff;color:#06101c;border:1px solid #00e5ff;box-shadow:0 0 14px rgba(0,229,255,.55)" : "background:rgba(255,255,255,.06);color:#e6f6ff;border:1px solid rgba(0,229,255,.4)"}`;
+          }
+        };
+        const pick = (id) => {
+          if (panel) {
+            panel._theme = id;
+            panel.requestUpdate?.();
+          }
+          try {
+            localStorage.setItem("axonometra.theme", id);
+          } catch {}
+          paint(id);
+        };
+        paint(panel?._theme && DEMO_STYLES.includes(panel._theme) ? panel._theme : "neon");
+        row.append(...chips);
+        fold(!narrow);
+        looks.append(head, row);
+        document.body.append(looks);
         // phones: many visitors open the demo there and wonder about all the buttons – say once what it is
         // made for and offer the clean view (only the house) or the way to a PC
         let seen = false;
@@ -384,7 +566,15 @@
           ...(params.has("kiosk") ? { idle_return: 1, idle_orbit: true } : {}),
           ...(params.has("tt") ? { time_travel: true } : {}),
           ...(params.has("fill") ? { fill: true } : {}),
+          // ?rooms=kind,arbeit: a card for some rooms only (the kids' tablet); ?plan=pgarten with ?plans
+          ...(params.get("rooms") ? { rooms: params.get("rooms").split(","), floor: undefined, floor_thumbs: undefined } : {}),
+          ...(params.get("plan") ? { plan: params.get("plan"), floor: undefined } : {}),
         };
+        // ?tpl: the card only names a card template made in the editor (the room bar and the upper floor come from it)
+        if (params.has("tpl")) {
+          building.card_templates = [{ id: "kitchen_tablet", name: params.get("lang") === "en" ? "Kitchen tablet" : "Küchen-Tablet", config: { floor: "og", controls: ["walls"], quality: "low" } }];
+          config = { type: "custom:axonometra-card", template: "kitchen_tablet" };
+        }
         card.setConfig(config);
         editor.setConfig(config);
         editor.addEventListener("config-changed", (e) => {

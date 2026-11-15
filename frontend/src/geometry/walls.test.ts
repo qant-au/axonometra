@@ -92,6 +92,21 @@ test("collinear pieces of the same room are merged into one wall", () => {
   assert.equal(top.sources.length, 2);
 });
 
+test("an outer wall stored in many pieces keeps the room on its inner side (found by T-Eberle)", () => {
+  // three or more pieces along one side, both ways round: merging must not leave the wall turned round, or a
+  // window's blind on it is drawn inside the room
+  const pts: Vec2[] = [[0, 0], [4, 0], [4, 0.8], [4, 1.5], [4, 2.2], [4, 3], [0, 3], [0, 2], [0, 1]];
+  for (const points of [pts, [...pts].reverse()]) {
+    const { walls } = generateWalls([{ ...rect("a", 0, 0, 4, 3), points }], opts);
+    assert.equal(walls.length, 4);
+    for (const w of walls) {
+      assert.equal(w.roomLeft, "a");
+      assert.equal(w.roomRight, null);
+      near(w.right, EXT);
+    }
+  }
+});
+
 test("L-shaped room gets a mitred reflex corner", () => {
   const room: Room = { ...rect("a", 0, 0, 1, 1), points: [[0, 0], [6, 0], [6, 3], [3, 3], [3, 6], [0, 6]] };
   const { walls } = generateWalls([room], opts);
@@ -311,4 +326,16 @@ test("a free wall drawn as an outer wall knows its room side, whichever way it w
   // standing in the room, or out in the open: no outer side
   assert.equal(freeWallRoomLeft(wall([2, 0.5], [2, 2.5]), rooms), null);
   assert.equal(freeWallRoomLeft(wall([10, 0], [12, 0]), rooms), null);
+});
+
+test("a door on an inner wall piece left by an extra corner on a straight line reaches into the next piece", () => {
+  // the hall's edge along x = 4 has an extra corner at z = 1, a hair off the line, that the other room does not have:
+  // the wall breaks into two pieces there
+  const a = rect("a", 0, 0, 4, 3);
+  const hall: Room = { id: "hall", name: "hall", area_id: null, points: [[4, 0], [8, 0], [8, 3], [4, 3], [4.0005, 1]], floor_material: "wood" };
+  const { walls } = generateWalls([a, hall], opts);
+  // edge 4 runs from (4, 1) to (4, 0), 1 m long; before its start the same wall carries on for 2 m
+  const [before, after] = edgeReach(walls, hall, 4);
+  near(before, 2, 1e-3);
+  near(after, 0);
 });

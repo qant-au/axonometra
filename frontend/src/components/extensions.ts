@@ -21,11 +21,13 @@ import {
   type ModuleReview,
 } from "../api.ts";
 import { DISCORD_URL, isBeta, supporterUrl } from "../beta.ts";
-import { FEATURES, FUN, knownFeature, manualUrl, registerUrl, released, shopUrl, unlockedFeatures, type Feature } from "../features.ts";
-import { DOG_BREEDS, PET_FURS_OF, type Building, type Pet } from "../model.ts";
+import { copyText, PRINT_URL } from "../print.ts";
+import { FEATURES, FUN, knownFeature, manualUrl, registerUrl, released, shopUrl, unlockedFeatures, type Feature, packLacksModule } from "../features.ts";
+import type { Building } from "../model.ts";
 import { translate, type I18nKey } from "../i18n.ts";
 import { packName, type FurniturePack } from "../packs.ts";
 import { moduleWaits } from "../modules.ts";
+import { boughtAnything, fitHints, fitText, offerFor } from "../fit-hints.ts";
 import { controls, tokens } from "../styles.ts";
 import type { HomeAssistant } from "../types.ts";
 
@@ -41,6 +43,7 @@ export class Extensions extends LitElement {
     _licenseKey: { state: true },
     _licenseBusy: { state: true },
     _licenseMsg: { state: true },
+    _printMsg: { state: true },
     _open: { state: true },
     _nlState: { state: true },
   };
@@ -59,6 +62,8 @@ export class Extensions extends LitElement {
   /** What runs right now: "activate", "refresh", "remove" or a pack id being installed. */
   private declare _licenseBusy: string | null;
   private declare _licenseMsg: { ok: boolean; text: string } | null;
+  /** The short notice under the Axonometra Print button (code copied or not). */
+  private declare _printMsg: { ok: boolean; text: string } | null;
   /** The newsletter box: shown, opened (the sign-up page is open, waiting for the confirmation) or hidden for good. */
   private declare _nlState: "show" | "opened" | "hidden";
   /** Long lists opened by the viewer (the shop's packs, the installed packs); closed, a bar sums them up. */
@@ -76,6 +81,7 @@ export class Extensions extends LitElement {
     this._licenseKey = "";
     this._licenseBusy = null;
     this._licenseMsg = null;
+    this._printMsg = null;
     let open: string[] = [];
     try {
       open = JSON.parse(localStorage.getItem("axonometra.ext.open") ?? "[]") as string[];
@@ -162,6 +168,12 @@ export class Extensions extends LitElement {
 
   protected render() {
     const unlocked = unlockedFeatures(this.packs ?? []);
+    // the add-ons that fit this home (its entities and plan, read here only) come first, each with a sign of why
+    const fits = fitHints(this.hass?.states, this.building);
+    const fitting = (f: Feature) => !unlocked.has(f) && !isBeta(f) && fits.has(f);
+    const shown = FEATURES.filter((f) => released(f));
+    const order = [...shown.filter(fitting), ...shown.filter((f) => !fitting(f))];
+    const lic = this._license?.active ? this._license : null;
     return html`<div class="fp3d-ext">
       <header class="fp3d-ext-head">
         <h2>${this.t("ext_title")}</h2>
@@ -174,13 +186,14 @@ export class Extensions extends LitElement {
           <a class="fp3d-btn" href=${manualUrl(this.hass?.language, "extensions")} target="_blank" rel="noopener">📖 ${this.t("manual")}</a>
         </div>
       </header>
-      ${this.renderUpdates()} ${this.renderSupporter()} ${this.renderNewsletter()} ${this.renderOffers()} ${this.renderShop()}
+      ${this.renderUpdates()} ${this.renderAccount()} ${this.renderSupporter()} ${this.renderNewsletter()} ${this.renderOffers()} ${this.renderShop()}
       <section class="fp3d-ext-card">
         <h3>${this.t("ext_pro")}</h3>
         <div class="fp3d-ext-pro">
-          ${FEATURES.filter((f) => released(f)).map(
+          ${order.map(
             (f) => html`<div class="fp3d-ext-feature ${unlocked.has(f) ? "fp3d-ext-on" : ""} ${isBeta(f) ? "fp3d-ext-beta" : ""}">
               <b>${unlocked.has(f) ? "✓" : "🔒"} ${this.t(`pro_name_${f}` as I18nKey)}</b>
+              ${fitting(f) ? html`<span class="fp3d-ext-fit">${fitText(this.hass?.language, "fit")} · ${fits.get(f)}</span>` : nothing}
               ${isBeta(f) ? html`<span class="fp3d-beta-tag">🧪 ${this.t(unlocked.has(f) ? "beta_yours" : "beta_supporters")}</span>` : nothing}
               <span class="fp3d-sub">${this.t(`pro_feature_${f}` as I18nKey)}</span>
               ${isBeta(f) ? html`<span class="fp3d-sub">${this.t(unlocked.has(f) ? "beta_yours_hint" : "beta_supporters_hint")}</span>` : nothing}
@@ -190,7 +203,7 @@ export class Extensions extends LitElement {
                       ${isBeta(f) ? html`<a class="fp3d-ext-link" href=${DISCORD_URL} target="_blank" rel="noopener">💬 ${this.t("beta_feedback")}</a>` : nothing}`
                   : isBeta(f)
                     ? this.renderBetaLocked(f)
-                    : html`<a class="fp3d-ext-link" href=${shopUrl(this.hass?.language)} target="_blank" rel="noopener">${this.t("ext_get")}</a>`}
+                    : this.renderGet(f, lic)}
                 <a class="fp3d-ext-link" href=${manualUrl(this.hass?.language, f)} target="_blank" rel="noopener">${this.t("manual_more")}</a>
               </span>
             </div>`,
@@ -199,6 +212,31 @@ export class Extensions extends LitElement {
       </section>
       ${this.renderFun(unlocked)} ${this.renderPacks()} ${this.renderModules()}
     </div>`;
+  }
+
+  /**
+   * No key here yet: what a free customer account brings (the fun packs, the free modules, the taster packs with the
+   * newsletter) and the way to one – about two in three installations have none. Gone once a key is entered.
+   */
+  private renderAccount() {
+    if (!this.isAdmin || !this._license || this._license.active) return nothing;
+    const lang = this.hass?.language;
+    const text = fitText(lang, "account_text").replace("{winter}", this.t("fun_name_winter")).replace("{pets}", this.t("fun_name_pets"));
+    return html`<section class="fp3d-ext-card fp3d-offers">
+      <h3>🎁 ${fitText(lang, "account_title")}</h3>
+      <p class="fp3d-sub">${text}</p>
+      <div class="fp3d-actions">
+        <a class="fp3d-btn fp3d-primary" style="text-decoration:none" href=${registerUrl(lang)} target="_blank" rel="noopener">${fitText(lang, "account_button")}</a>
+      </div>
+      <p class="fp3d-sub">${fitText(lang, "account_have")}</p>
+    </section>`;
+  }
+
+  /** The way to a locked add-on: its own page in the shop with its price when the catalog offers it, else the shop. */
+  private renderGet(f: Feature, lic: LicenseStatus | null) {
+    const offer = offerFor(lic?.offers, f);
+    const href = offer ? offerLink(offer.url, lic?.loyalty ?? null) : shopUrl(this.hass?.language);
+    return html`<a class="fp3d-ext-link" href=${href} target="_blank" rel="noopener">${this.t("ext_get")}${offer?.price ? ` · ${offer.price}` : ""}</a>`;
   }
 
   /**
@@ -214,121 +252,19 @@ export class Extensions extends LitElement {
   }
 
   /** A changed plan goes to the panel, which saves it. */
-  private editBuilding(fn: (b: Building) => void): void {
-    if (!this.building) return;
-    const next = structuredClone(this.building);
-    fn(next);
-    this.dispatchEvent(new CustomEvent("building-edit", { detail: next, bubbles: true, composed: true }));
-  }
-
   /**
    * Fun packs: free extras for every customer account – with a connected key they wait among the packs to install;
    * without one a free account brings them. Switched on and off here, the pets with their names, kinds and fur.
    */
+  /** The fun packs are set in the editor's ⚙ Settings → Fun packs now: a pointer and a button that opens them. */
   private renderFun(unlocked: Set<string>) {
-    // unlocked by an installed pack (this page's own list), or shown to test with the lab switch
     const shown = FUN.filter((f) => unlocked.has(f) || released(f));
     if (!shown.length) return nothing;
-    const pets = this.building?.settings.pets ?? null;
-    const list = pets?.list ?? [];
-    const on = pets?.on !== false;
-    // the floors to live on, lowest first (a pet without a floor lives on the lowest)
-    const floors = (this.building?.floors ?? []).filter((f) => f.rooms.length).sort((a, b) => a.elevation - b.elevation);
-    const set = (fn: (p: { on: boolean; list: Pet[] }) => void) =>
-      this.editBuilding((b) => {
-        const p = { on: b.settings.pets?.on !== false, list: [...(b.settings.pets?.list ?? [])] };
-        fn(p);
-        b.settings.pets = p;
-      });
-    const change = (id: string, patch: Partial<Pet>) => set((p) => (p.list = p.list.map((x) => (x.id === id ? { ...x, ...patch } : x))));
     return html`<section class="fp3d-ext-card">
       <h3>🎈 ${this.t("fun_title")}</h3>
-      <p class="fp3d-sub">${this.t("fun_intro")}</p>
-      ${shown.map((f) =>
-        f === "fun_halloween"
-          ? this.renderHalloween(unlocked.has(f))
-          : unlocked.has(f)
-          ? html`<div class="fp3d-ext-feature fp3d-ext-on">
-              <b>✓ ${this.t("fun_name_pets")}</b>
-              <span class="fp3d-sub">${this.t("fun_feature_pets")}</span>
-              ${this.isAdmin && this.building
-                ? html`<label class="fp3d-check"><input type="checkbox" .checked=${on} @change=${(e: Event) => set((p) => (p.on = (e.target as HTMLInputElement).checked))} /> ${this.t("pets_show")}</label>
-                    ${list.map(
-                      (pet) => html`<div class="fp3d-pet-row">
-                        <select
-                          aria-label=${this.t("pet_kind")}
-                          @change=${(e: Event) => {
-                            // another kind: a fur it comes in, a dog a breed
-                            const kind = (e.target as HTMLSelectElement).value as Pet["kind"];
-                            const furs = PET_FURS_OF[kind];
-                            change(pet.id, { kind, fur: furs.includes(pet.fur) ? pet.fur : furs[0], breed: kind === "dog" ? (pet.breed ?? "labrador") : null });
-                          }}
-                        >
-                          ${(["cat", "dog", "rabbit"] as const).map((k) => html`<option value=${k} ?selected=${pet.kind === k}>${this.t(`pet_kind_${k}`)}</option>`)}
-                        </select>
-                        ${pet.kind === "dog"
-                          ? html`<select aria-label=${this.t("pet_breed")} @change=${(e: Event) => change(pet.id, { breed: (e.target as HTMLSelectElement).value })}>
-                              ${DOG_BREEDS.map((r) => html`<option value=${r} ?selected=${(pet.breed ?? "labrador") === r}>${this.t(`pet_breed_${r}`)}</option>`)}
-                            </select>`
-                          : nothing}
-                        <input type="text" maxlength="30" .value=${pet.name} placeholder=${this.t("pet_name")} aria-label=${this.t("pet_name")} @change=${(e: Event) => change(pet.id, { name: (e.target as HTMLInputElement).value.trim() })} />
-                        <select aria-label=${this.t("pet_fur")} @change=${(e: Event) => change(pet.id, { fur: (e.target as HTMLSelectElement).value })}>
-                          ${PET_FURS_OF[pet.kind].map((c) => html`<option value=${c} ?selected=${pet.fur === c}>${this.t(`pet_fur_${c}` as I18nKey)}</option>`)}
-                        </select>
-                        ${floors.length > 1
-                          ? html`<select title=${this.t("pet_floor")} aria-label=${this.t("pet_floor")} @change=${(e: Event) => change(pet.id, { floor_id: (e.target as HTMLSelectElement).value || null })}>
-                              ${floors.map((fl, i) => html`<option value=${i === 0 ? "" : fl.id} ?selected=${(pet.floor_id ?? floors[0].id) === fl.id}>🏠 ${fl.name}</option>`)}
-                            </select>`
-                          : nothing}
-                        <button class="fp3d-btn" title=${this.t("delete")} @click=${() => set((p) => (p.list = p.list.filter((x) => x.id !== pet.id)))}>✕</button>
-                      </div>`,
-                    )}
-                    ${list.length < 8
-                      ? html`<button class="fp3d-btn" @click=${() =>
-                          set((p) => p.list.push({ id: `pet_${Date.now().toString(36)}`, kind: "cat", name: "", fur: PET_FURS_OF.cat[p.list.length % PET_FURS_OF.cat.length] }))}>+ ${this.t("pet_add")}</button>`
-                      : nothing}`
-                : nothing}
-            </div>`
-          : this.renderFunLocked("🐾", this.t("fun_name_pets"), this.t("fun_feature_pets")),
-      )}
+      <p class="fp3d-sub">${this.t("fun_moved")}</p>
+      ${this.isAdmin ? html`<button class="fp3d-btn fp3d-primary" @click=${() => this.dispatchEvent(new CustomEvent("open-fun-settings", { bubbles: true, composed: true }))}>🎈 ${this.t("fun_open_settings")}</button>` : nothing}
     </section>`;
-  }
-
-  /**
-   * A fun pack not installed yet: connected, it is already in the customer account and waits among the packs above;
-   * not connected, a free customer account brings it (key by e-mail after the address is confirmed).
-   */
-  private renderFunLocked(icon: string, name: string, feature: string) {
-    const connected = !!this._license?.active;
-    return html`<div class="fp3d-ext-feature">
-      <b>${icon} ${name}</b>
-      <span class="fp3d-sub">${feature}</span>
-      ${connected
-        ? html`<span class="fp3d-sub"><b>${this.t("fun_in_account")}</b></span>`
-        : html`<span class="fp3d-sub">${this.t("fun_register_steps")}</span>
-            <span class="fp3d-ext-links"><a class="fp3d-ext-link" href=${registerUrl(this.hass?.language)} target="_blank" rel="noopener">${this.t("fun_register")}</a></span>`}
-    </div>`;
-  }
-
-  /** Fun pack "Halloween": decorations in the furniture library, and the ghost to switch on and off. */
-  private renderHalloween(unlocked: boolean) {
-    const ghost = this.building?.settings.halloween?.ghost !== false;
-    if (!unlocked) return this.renderFunLocked("🎃", this.t("fun_name_halloween"), this.t("fun_feature_halloween"));
-    return html`<div class="fp3d-ext-feature fp3d-ext-on">
-      <b>✓ 🎃 ${this.t("fun_name_halloween")}</b>
-      <span class="fp3d-sub">${this.t("fun_feature_halloween")}</span>
-      ${this.isAdmin && this.building
-        ? html`<label class="fp3d-check"
-            ><input
-              type="checkbox"
-              .checked=${ghost}
-              @change=${(e: Event) => this.editBuilding((b) => (b.settings.halloween = { ...(b.settings.halloween ?? {}), ghost: (e.target as HTMLInputElement).checked }))}
-            />
-            ${this.t("halloween_ghost")}</label
-          >`
-        : nothing}
-      <span class="fp3d-sub">${this.t("halloween_deco_hint")}</span>
-    </div>`;
   }
 
   protected updated(changed: PropertyValues): void {
@@ -423,13 +359,35 @@ export class Extensions extends LitElement {
         <a class="fp3d-btn fp3d-primary" href=${DISCORD_URL} target="_blank" rel="noopener">💬 ${this.t("supporter_open")}</a>
       </div>
       <p class="fp3d-sub">${this.t("supporter_how", { code: sup.code })}</p>
+      <div class="fp3d-print">
+        <b>${this.t("print_title")}</b>
+        <span class="fp3d-sub">${this.t("print_text")}</span>
+        <span class="fp3d-print-row">
+          <a
+            class="fp3d-btn fp3d-primary"
+            href=${PRINT_URL}
+            target="_blank"
+            rel="noopener"
+            @click=${() => {
+              // the code goes to the clipboard (started while this page still has the focus), never into the link
+              void copyText(sup.code).then((ok) => (this._printMsg = { ok, text: this.t(ok ? "print_copied" : "print_copy_failed") }));
+            }}
+          >
+            ${this.t("print_open")}
+          </a>
+          ${this._printMsg ? html`<span class="fp3d-sub ${this._printMsg.ok ? "fp3d-notice" : "fp3d-pack-error"}">${this._printMsg.text}</span>` : nothing}
+        </span>
+      </div>
     </section>`;
   }
 
   private renderOffers() {
     const lic = this._license;
     if (!lic?.active) return nothing;
-    const offers = [...(lic.offers ?? [])].sort((a, b) => Number(b.new) - Number(a.new));
+    // a key that has bought nothing yet: the bundles and the pass first, with one quiet line on why
+    const fresh = !boughtAnything(lic.packs);
+    const whole = (o: { kind: string; supporter_pass?: boolean }) => o.kind === "bundle" || !!o.supporter_pass;
+    const offers = [...(lic.offers ?? [])].sort((a, b) => (fresh ? Number(whole(b)) - Number(whole(a)) : 0) || Number(b.new) - Number(a.new));
     const loyalty = lic.loyalty ?? null;
     if (!offers.length && !loyalty) return nothing;
     // opening the page counts as seen: the dot on the tab goes away
@@ -437,6 +395,7 @@ export class Extensions extends LitElement {
     this.dispatchEvent(new CustomEvent("offers-seen", { bubbles: true, composed: true }));
     return html`<section class="fp3d-ext-card fp3d-offers">
       <h3>${this.t("offers_title")}</h3>
+      ${fresh && offers.some(whole) ? html`<p class="fp3d-sub">${fitText(this.hass?.language, "bundles")}</p>` : nothing}
       ${loyalty
         ? html`<div class="fp3d-loyalty">
             <span>🎁 ${this.t("offers_loyalty", { percent: loyalty.percent })}</span>
@@ -465,6 +424,7 @@ export class Extensions extends LitElement {
               ${o.new ? html`<span class="fp3d-offer-new">${this.t("offers_new")}</span>` : nothing}
               <span class="fp3d-offer-kind">${this.t(`offers_kind_${o.kind}` as I18nKey)}${o.price && o.kind !== "fun" ? ` · ${o.price}` : ""}</span>
               ${o.teaser ? html`<span class="fp3d-sub">${o.teaser}</span>` : nothing}
+              ${o.supporter_pass ? html`<span class="fp3d-sub">${this.t("print_pass_line")}</span>` : nothing}
             </div>
           </a>`,
         )}
@@ -535,12 +495,16 @@ export class Extensions extends LitElement {
               : lic.packs.length
               ? lic.packs.map((p) => {
                   const state = p.installed === null ? "install" : p.installed < p.release ? "update" : "installed";
+                  // a fetched module update waits for the approval (#805): the way there, not "update" again
+                  const local = p.waits ? (this.packs ?? []).find((x) => x.id === p.id && moduleWaits(x)) : undefined;
                   return html`<div class="fp3d-pack">
                     <div>
                       <b>${packName(p, this.hass?.language ?? "de")}</b>
-                      <span class="fp3d-sub">${state === "installed" ? this.t("license_installed", { release: p.release }) : state === "update" ? this.t("license_update_available", { release: p.release }) : this.t("license_not_installed")}</span>
+                      <span class="fp3d-sub ${local ? "fp3d-module-waits" : ""}">${local ? this.t("module_update_waits", { from: local.release ?? 1, to: local.pending?.release ?? p.release }) : state === "installed" ? this.t("license_installed", { release: p.release }) : state === "update" ? this.t("license_update_available", { release: p.release }) : this.t("license_not_installed")}</span>
                     </div>
-                    ${state === "installed"
+                    ${local
+                      ? html`<button class="fp3d-btn fp3d-primary" @click=${() => void this.openReview(local)}>${this.t("module_review_update")}</button>`
+                      : state === "installed"
                       ? nothing
                       : html`<button class="fp3d-btn fp3d-primary" ?disabled=${!!busy} @click=${() => this.installFromShop(p)}>
                           ${busy === p.id ? "…" : this.t(state === "update" ? "license_update" : "license_install")}
@@ -584,6 +548,7 @@ export class Extensions extends LitElement {
             <span class="fp3d-sub">${p.module ? this.t("pack_module", { publisher: p.publisher }) : p.features?.length ? this.t("pack_features", { publisher: p.publisher, n: p.features.length }) : this.t("pack_by", { publisher: p.publisher, n: p.items.length })}</span>
             ${p.licensee ? html`<span class="fp3d-sub">${this.t("pack_licensed", { name: p.licensee })}${p.release && p.release > 1 ? ` · v${p.release}` : ""}</span>` : nothing}
             ${(p.features ?? []).some((f) => !knownFeature(f)) ? html`<span class="fp3d-sub fp3d-pack-error">${this.t("pack_needs_update")}</span>` : nothing}
+            ${packLacksModule(p) ? html`<span class="fp3d-sub fp3d-pack-error">${this.t("pack_needs_module")}</span>` : nothing}
           </div>
           <button class="fp3d-btn fp3d-danger" @click=${() => this.deletePack(p)}>${this.t("pack_remove")}</button>
         </div>`,
@@ -625,6 +590,7 @@ export class Extensions extends LitElement {
                 <b>${packName(p, this.hass?.language ?? "de")}</b>
                 <span class="fp3d-sub">${p.module ? this.t("pack_module", { publisher: p.publisher }) : this.t((p.features ?? []).every((f) => f.startsWith("fun_")) ? "pack_fun_module" : "pack_pro_module", { publisher: p.publisher })}${p.release && p.release > 1 ? ` · v${p.release}` : ""}</span>
                 ${(p.features ?? []).some((f) => !knownFeature(f)) ? html`<span class="fp3d-sub fp3d-pack-error">${this.t("pack_needs_update")}</span>` : nothing}
+                ${packLacksModule(p) ? html`<span class="fp3d-sub fp3d-pack-error">${this.t("pack_needs_module")}</span>` : nothing}
                 ${p.licensee ? html`<span class="fp3d-sub">${this.t("pack_licensed", { name: p.licensee })}</span>` : nothing}
                 ${p.module && p.module.approved !== true
                   ? html`<span class="fp3d-sub fp3d-module-waits">${this.t("module_waits")}</span>`
@@ -682,6 +648,8 @@ export class Extensions extends LitElement {
     if (!this.hass) return;
     this._open = new Set([...this._open, "modules"]);
     this._review = { pack, data: null, error: null, busy: true };
+    // opened from the shop list too: the review sits in the modules section further down
+    void this.updateComplete.then(() => this.renderRoot.querySelector(".fp3d-review")?.scrollIntoView({ block: "nearest", behavior: "smooth" }));
     try {
       const data = await reviewModule(this.hass, pack.id, pack.module?.approved === true && !!pack.pending);
       this._review = { pack, data, error: null, busy: false };
@@ -803,6 +771,25 @@ export class Extensions extends LitElement {
         margin: 4px 0;
       }
       .fp3d-loyalty a {
+        text-decoration: none;
+      }
+      .fp3d-print {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        margin-top: 12px;
+        padding: 10px 12px;
+        border: 1px solid color-mix(in srgb, var(--fp3d-accent) 55%, transparent);
+        border-radius: 12px;
+        background: color-mix(in srgb, var(--fp3d-accent) 8%, transparent);
+      }
+      .fp3d-print-row {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 8px;
+      }
+      .fp3d-print a {
         text-decoration: none;
       }
       .fp3d-loyalty {
@@ -937,6 +924,14 @@ export class Extensions extends LitElement {
       .fp3d-pet-row input[type="text"] {
         flex: 1;
         min-width: 110px;
+      }
+      .fp3d-ext-fit {
+        justify-self: start;
+        padding: 2px 8px;
+        border-radius: 999px;
+        font-size: 12px;
+        color: var(--fp3d-accent, #3fd5ff);
+        border: 1px solid color-mix(in srgb, var(--fp3d-accent, #3fd5ff) 45%, transparent);
       }
       .fp3d-ext-feature {
         display: grid;

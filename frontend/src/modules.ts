@@ -2,7 +2,7 @@
 // a small, versioned interface. A module is an ES module whose default export is a `NeonModule`; the backend
 // checked its signature and binding like a furniture pack's, so what runs here is what we signed.
 
-import type { Building, Furniture, OutdoorArea, PoolPipe, PoolPort, Vec2 } from "./model.ts";
+import type { Building, Floor, Furniture, OutdoorArea, PoolPipe, PoolPort, Room, Vec2 } from "./model.ts";
 import type { PipePlanner } from "./pipe-planner.ts";
 import type { HomeAssistant } from "./types.ts";
 
@@ -117,6 +117,8 @@ export interface SpokenOpening {
 /** What a module may ask the host for. */
 export interface ModuleHost {
   api: typeof MODULE_API;
+  /** What the stage can do beyond api 1: 2 = pictures on screen faces, pop-ups, uploaded pictures (Axonometra 3.0.6). */
+  stage?: number;
   hass(): HomeAssistant;
   building(): Building | null;
   /** The language of the user ("de", "en-GB" …). */
@@ -160,6 +162,49 @@ export interface ModuleHost {
   refresh?(): void;
   /** Lays pipes the way the editor's wall view does: walls, node positions, connections through holes (host geometry). */
   plan?: PipePlanner;
+
+  // --- talking to the people in the house (the 3D view's host has them) ---
+  /** Listens once with the host's microphone and Assist's speech-to-text; the words, or null (no microphone, nothing said). */
+  listen?(onListening?: () => void): Promise<string | null>;
+  /** A short note at the bottom of the view ("Durchsage an Kinderzimmer gesendet"). */
+  notify?(text: string): void;
+  /** Flies the view to each stop in turn, like a voice answer's tour (a tap ends it); `say` is spoken when `speak` is set. */
+  tour?(stops: NonNullable<VoiceAnswer["tour"]>, speak?: boolean): void;
+  /** The rooms someone is in right now: located people, and presence or motion sensors of the room's area. */
+  occupied?(): { floorId: string; roomId: string }[];
+  /** The media players of the plan (placed as a device or linked to a piece of furniture), each with its room. */
+  /** The plan's speakers; `at` where it stands (floor x, z) and `top` its height above the floor (m). */
+  speakers?(): { entity: string; name: string; floorId: string; roomId: string | null; furnitureId?: string; at?: [number, number]; top?: number }[];
+
+  // --- pop-ups, pictures and the people (the 3D view's host has them) ---
+  /** Opens one of the module's pop-ups (see `popups`); it closes by itself after `autoCloseMs` (default a minute). */
+  openPopup?(id: string, autoCloseMs?: number): void;
+  closePopup?(): void;
+  /** A stored picture (an id from an `images` field) as a URL the view can show; null while it is still fetched. */
+  imageUrl?(id: string): string | null;
+  /** Where located people stand right now (person entity ids with their room). */
+  people?(): { id: string; floorId: string; roomId: string; roomName: string }[];
+  /** The look of the view: pale (Day) or dark (Neon, Blueprint). */
+  look?(): "light" | "dark";
+  /** The tablet level (weak devices): a module takes it slower. */
+  lowPower?(): boolean;
+}
+
+/**
+ * A sheet a module opens over the 3D view – from a room's panel or from the ⭐ menu: a choice at the top, quick
+ * choices as chips, a line to type (with the microphone), a few lines of text. The host draws it in its own look
+ * and closes it after a chip or a sent line.
+ */
+export interface ModuleSheet {
+  id: string;
+  /** An emoji or a short symbol shown on the button that opens it. */
+  icon: string;
+  title: string;
+  /** A choice at the top (which rooms: this one, all of them, where someone is). */
+  choice?: { value: string; options: { id: string; label: string }[]; set(v: string): void };
+  chips?: { label: string; onTap(): void | Promise<void> }[];
+  input?: { placeholder: string; button: string; mic?: boolean; onSubmit(text: string): void | Promise<void> };
+  lines?: string[];
 }
 
 /** A piece a module adds to the 3D stage; the host draws it with its own means (a module never touches three.js). */
@@ -188,6 +233,8 @@ export type ScenePiece =
       level: number;
       /** A band of light round the item at mid height instead of its screen. */
       band?: boolean;
+      /** Its top plate glows instead (with a thin rim at its top edge): free of a fan or a grille in the middle (#917). */
+      plate?: boolean;
       /** Layers: light round the item from its foot (`color`) up to its top (this colour) – a tank warm above, cool below. */
       top?: [number, number, number];
     }
@@ -219,14 +266,20 @@ export type ScenePiece =
   | {
       /**
        * A round symbol marker on a piece of furniture, like the device markers (a technical device's symbol). A tap opens
-       * the module's card `card` (unfolds it and flies there).
+       * the module's card `card` (unfolds it and flies there), or its sheet `sheet` for a room.
        */
       kind: "marker";
       id: string;
       floorId: string;
-      furnitureId: string;
+      /** The item it sits on; without one it stands at `at` (floor coordinates x, z). */
+      furnitureId?: string;
+      at?: Vec2;
+      /** A tap opens this sheet of the module for the room (as the room panel's button does). */
+      sheet?: { roomId: string; id: string };
       /** A 24 × 24 line icon as an SVG path (stroke drawn); without one the `text` alone shows. */
       path?: string;
+      /** An emoji as the symbol instead of a line icon (📢). */
+      emoji?: string;
       /** The short state under the symbol ("heizt", "3,8 kW"). */
       text?: string;
       name: string;
@@ -235,7 +288,7 @@ export type ScenePiece =
       active?: boolean;
       /** The id of the module's card a tap opens. */
       card?: string;
-      /** Height of the marker above the floor (m; default the item's top). */
+      /** Height of the marker above the floor (m; default the item's top, 1.2 without an item). */
       y?: number;
     }
   | {
@@ -269,7 +322,51 @@ export type ScenePiece =
       floorId: string;
       areaId: string;
       flows: Record<string, { active: boolean; color: [number, number, number] }>;
+    }
+  | {
+      /** A picture on the screen face of a piece of furniture (a display, a frame): the host fits it into the face. */
+      kind: "screen";
+      furnitureId: string;
+      /** A URL or a data URL. */
+      picture: string;
+      /** Brightness 0..1 (dimmed at night); default 1. */
+      level?: number;
+      /** The pane behind a picture that does not fill the face (0..1 per channel). */
+      color?: [number, number, number];
+      /** A tap on the item opens this pop-up of the module (see `popups`). */
+      popup?: string;
     };
+
+/**
+ * A pop-up a module opens over the middle of the 3D view, built from plain sections the host draws in its own look:
+ * a picture, text, grouped rows, a check list, people, tiles, a media head, a form. The host closes it on a tap
+ * beside it or after `autoCloseMs`.
+ */
+export interface ModulePopup {
+  id: string;
+  title: string;
+  icon?: string;
+  /** Wider (a picture at full size). */
+  wide?: boolean;
+  sections: PopupSection[];
+}
+
+export type PopupSection =
+  | { kind: "image"; src: string; /** A camera entity: the host shows its stream when it can. */ live?: string }
+  | { kind: "text"; text: string; muted?: boolean }
+  | { kind: "heading"; text: string }
+  /** A line of values: a big one, a smaller one beside it, a highlighted note. */
+  | { kind: "line"; text: string; sub?: string; note?: string }
+  /** Groups of rows (days with their events): a lead (the time), the text, a small sub text, a detail shown when the group is open, a colour bar. */
+  | { kind: "groups"; groups: { key: string; title: string; strong?: boolean; open?: boolean; onToggle?(): void; rows: { lead: string; leadStrong?: boolean; text: string; sub?: string; detail?: string; color?: string }[] }[]; empty?: string }
+  | { kind: "checklist"; items: { id: string; text: string; done: boolean; onToggle(): void | Promise<void> }[]; empty?: string }
+  | { kind: "people"; items: { name: string; picture?: string | null; sub: string; bright: boolean }[] }
+  | { kind: "tiles"; items: { label: string; symbol: string; main: string; sub?: string }[] }
+  | { kind: "media"; picture?: string | null; title: string; sub?: string; buttons?: { label: string; onTap(): void | Promise<void> }[] }
+  /** A small form: fields with ids, the values come back on submit; `open` false shows only the button that opens it. */
+  | { kind: "form"; id: string; open: boolean; button: string; onOpen(): void; onCancel(): void; fields: { id: string; kind: "text" | "date" | "time" | "select"; placeholder?: string; value: string; options?: { id: string; label: string }[] }[]; submit: string; onSubmit(values: Record<string, string>): void | Promise<void> }
+  /** A line to type and send (a new item of a list). */
+  | { kind: "input"; placeholder: string; button: string; onSubmit(text: string): void | Promise<void> };
 
 /** A row of a module's glass card: a label with its value, coloured, with a position on a scale (0..100) when it has one. */
 export interface CardRow {
@@ -353,9 +450,13 @@ export type ModuleField =
   | { kind: "entity"; label: string; value: string | null; auto?: string | null; filter(id: string): boolean; set(v: string | null): void }
   | { kind: "select"; label: string; value: string; options: { id: string; label: string }[]; set(v: string): void }
   | { kind: "check"; label: string; value: boolean; set(v: boolean): void }
-  // Axonometra: a number (null when the field is left empty: the module's default applies)
-  | { kind: "number"; label: string; value: number | null; min?: number; max?: number; step?: number; placeholder?: string; set(v: number | null): void }
-  | { kind: "button"; label: string; primary?: boolean; title?: string; onTap(): void };
+  /** A plain number (a fixed flow rate stamped on a pump, #987); empty = none. Axonometra: the module's default applies. */
+  | { kind: "number"; label: string; value: number | null; step?: number; min?: number; max?: number; placeholder?: string; hint?: string; set(v: number | null): void }
+  | { kind: "button"; label: string; primary?: boolean; title?: string; onTap(): void }
+  /** A list of lines to edit, one per line (sentences, names). */
+  | { kind: "lines"; label: string; value: string[]; placeholder?: string; set(v: string[]): void }
+  /** Pictures the user uploads (stored by the host, ids in `value`); `add` is the button's label. */
+  | { kind: "images"; label: string; value: string[]; add: string; set(ids: string[]): void };
 
 /** Axonometra: a number field's typed text as its value: empty (or not a number) is null, else held within its bounds. */
 export function numberField(text: string, min?: number, max?: number): number | null {
@@ -418,12 +519,20 @@ export interface NeonModule {
   areaFields?(host: ModuleHost, area: OutdoorArea): ModuleField[];
   /** Fields the module adds to a piece of furniture's form in the editor (a device's entities, a setup assistant). */
   furnitureFields?(host: ModuleHost, item: Furniture): ModuleField[];
-  /** The module's own settings (the editor's module dialog shows them under its name). */
+  /** The module's own settings (the editor's module dialog and the 3D view's ⚙ menu show them under its name). */
   settings?(host: ModuleHost): ModuleField[];
+  /** Fields the module adds to a room's form in the editor (a room's own speaker …). */
+  roomFields?(host: ModuleHost, room: Room, floor: Floor): ModuleField[];
+  /** Sheets a room's panel offers (a button each). */
+  roomSheets?(host: ModuleHost, place: { floorId: string; roomId: string }): ModuleSheet[];
+  /** Sheets the ⭐ menu offers. */
+  menuSheets?(host: ModuleHost): ModuleSheet[];
   /** The module's knowledge about drawing pipes (the host's pipe tools show only with it). */
   pipes?: PipeRules;
   /** Pool Pro: the pools as the voice modules ask for them. */
   pools?(host: ModuleHost): SpokenPool[];
+  /** The module's pop-ups (opened by a tap on a `screen` piece, or by the module through `host.openPopup`). */
+  popups?(host: ModuleHost): ModulePopup[];
 }
 
 interface Loaded {
@@ -537,6 +646,10 @@ export function moduleScene(host: ModuleHost): ScenePiece[] {
   return collect((m) => m.scene?.(host));
 }
 
+export function modulePopups(host: ModuleHost): ModulePopup[] {
+  return [...loaded.values()].flatMap((m) => m.module.popups?.(host) ?? []);
+}
+
 export function moduleCards(host: ModuleHost): ModuleCard[] {
   return collect((m) => m.cards?.(host));
 }
@@ -555,6 +668,23 @@ export function moduleAreaFields(host: ModuleHost, area: OutdoorArea): ModuleFie
 
 export function moduleFurnitureFields(host: ModuleHost, item: Furniture): ModuleField[] {
   return collect((m) => m.furnitureFields?.(host, item));
+}
+
+export function moduleRoomFields(host: ModuleHost, room: Room, floor: Floor): ModuleField[] {
+  return collect((m) => m.roomFields?.(host, room, floor));
+}
+
+export function moduleRoomSheets(host: ModuleHost, place: { floorId: string; roomId: string }): ModuleSheet[] {
+  return collect((m) => m.roomSheets?.(host, place));
+}
+
+export function moduleMenuSheets(host: ModuleHost): ModuleSheet[] {
+  return collect((m) => m.menuSheets?.(host));
+}
+
+/** Every loaded module with settings, with its pack id (the 3D view's ⚙ menu lists them). */
+export function modulesWithSettings(): string[] {
+  return [...loaded.values()].filter((m) => !!m.module.settings).map((m) => m.id);
 }
 
 /** The settings of the module loaded from a pack (empty without a module, or one without settings). */

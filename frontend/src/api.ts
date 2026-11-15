@@ -1,22 +1,136 @@
 // Websocket calls to the backend (custom_components/axonometra/websocket.py).
 
+import type { Previews } from "./library-index.ts";
 import type { Building } from "./model.ts";
 import type { FurniturePack } from "./packs.ts";
 import type { HomeAssistant } from "./types.ts";
 
-export async function fetchBuilding(hass: HomeAssistant): Promise<{ building: Building; revision: number; version?: string }> {
-  return hass.callWS({ type: "axonometra/building/get" });
+/** The first floor plan, the one every installation had before there were several. */
+export const MAIN_PLAN = "main";
+
+// the main plan is asked for without naming it: right after an update the new frontend talks to the old backend
+// until Home Assistant restarts, and that one does not know the field
+const planOf = (plan: string | undefined) => (plan && plan !== MAIN_PLAN ? { plan } : {});
+
+export async function fetchBuilding(
+  hass: HomeAssistant,
+  plan?: string,
+): Promise<{ building: Building; revision: number; version?: string; plan?: string }> {
+  return hass.callWS({ type: "axonometra/building/get", ...planOf(plan) });
 }
 
-export async function saveBuilding(hass: HomeAssistant, building: Building): Promise<number> {
-  const res = await hass.callWS<{ revision: number }>({ type: "axonometra/building/save", building });
-  return res.revision;
+/**
+ * Save a plan. With `base` (the revision the edit was made on) Home Assistant refuses the save when the plan was
+ * saved elsewhere meanwhile – the error's code is "stale_plan" (#1059). A backend older than that does not know
+ * the field: the save is sent again without it.
+ */
+export async function saveBuilding(hass: HomeAssistant, building: Building, plan?: string, base?: number): Promise<number> {
+  const send = (withBase: boolean) => hass.callWS<{ revision: number }>({ type: "axonometra/building/save", building, ...planOf(plan), ...(withBase && base !== undefined && base >= 0 ? { base_revision: base } : {}) });
+  try {
+    return (await send(true)).revision;
+  } catch (err) {
+    if (base === undefined || !/extra keys not allowed.*base_revision/i.test(String((err as { message?: unknown })?.message ?? err))) throw err;
+    return (await send(false)).revision;
+  }
 }
 
-export function subscribeBuilding(hass: HomeAssistant, callback: (revision: number) => void): Promise<() => Promise<void>> {
+/** A save was refused because the plan was saved elsewhere meanwhile. */
+export function isStalePlan(err: unknown): boolean {
+  return !!err && typeof err === "object" && (err as { code?: unknown }).code === "stale_plan";
+}
+
+export function subscribeBuilding(hass: HomeAssistant, callback: (revision: number) => void, plan?: string): Promise<() => Promise<void>> {
   return hass.connection.subscribeMessage<{ revision: number }>((msg) => callback(msg.revision), {
     type: "axonometra/building/subscribe",
+    ...planOf(plan),
   });
+}
+
+/** Every plan's saves (their id and revision), for the views that keep the other plans at hand. */
+export function subscribeAnyPlan(hass: HomeAssistant, callback: (plan: string, revision: number) => void): Promise<() => Promise<void>> {
+  return hass.connection.subscribeMessage<{ revision: number; plan?: string }>((msg) => callback(msg.plan ?? MAIN_PLAN, msg.revision), {
+    type: "axonometra/building/subscribe",
+    plan: "*",
+  });
+}
+
+/** Where a plan stands on the property: beside the main plan, x/y metres away, turned by rot degrees. */
+export interface PlanSite {
+  on: boolean;
+  x: number;
+  y: number;
+  rot: number;
+}
+
+/** A floor plan in the list (no building): its name (null: the main plan's own word), icon and size. */
+export interface PlanEntry {
+  id: string;
+  name: string | null;
+  icon: string | null;
+  site: PlanSite | null;
+  created: number | null;
+  revision: number;
+  floors: number;
+  rooms: number;
+  furniture: number;
+  /** Unix seconds, in the bin only. */
+  deleted_at?: number;
+}
+
+export interface PlanList {
+  plans: PlanEntry[];
+  trash: PlanEntry[];
+  locate_plan: string;
+}
+
+/** The floor plans; an older backend (before a restart after the update) knows only its one plan. */
+export async function listPlans(hass: HomeAssistant): Promise<PlanList> {
+  try {
+    return await hass.callWS<PlanList>({ type: "axonometra/plans/list" });
+  } catch {
+    return { plans: [], trash: [], locate_plan: MAIN_PLAN };
+  }
+}
+
+export function subscribePlans(hass: HomeAssistant, callback: (list: PlanList) => void): Promise<() => Promise<void>> {
+  return hass.connection.subscribeMessage<PlanList>(callback, { type: "axonometra/plans/subscribe" });
+}
+
+/** A new plan: empty, a copy of another one, or one from a file. Returns its id. */
+export async function createPlan(
+  hass: HomeAssistant,
+  name: string,
+  from: { copyOf?: string; building?: Building; icon?: string | null } = {},
+): Promise<string> {
+  const res = await hass.callWS<{ plan: string }>({
+    type: "axonometra/plans/create",
+    name,
+    ...(from.icon ? { icon: from.icon } : {}),
+    ...(from.copyOf ? { copy_of: from.copyOf } : {}),
+    ...(from.building ? { building: from.building } : {}),
+  });
+  return res.plan;
+}
+
+export async function updatePlan(hass: HomeAssistant, plan: string, changes: { name?: string | null; icon?: string | null; site?: PlanSite | null }): Promise<void> {
+  await hass.callWS({ type: "axonometra/plans/update", plan, ...changes });
+}
+
+export async function orderPlans(hass: HomeAssistant, plans: string[]): Promise<void> {
+  await hass.callWS({ type: "axonometra/plans/order", plans });
+}
+
+/** Into the bin (30 days); restorePlan takes it back out. */
+export async function deletePlan(hass: HomeAssistant, plan: string): Promise<void> {
+  await hass.callWS({ type: "axonometra/plans/delete", plan });
+}
+
+export async function restorePlan(hass: HomeAssistant, plan: string): Promise<void> {
+  await hass.callWS({ type: "axonometra/plans/restore", plan });
+}
+
+export async function setLocatePlan(hass: HomeAssistant, plan: string): Promise<void> {
+  await hass.callWS({ type: "axonometra/plans/locate", plan });
 }
 
 /** A sentence Assist or the service `axonometra.ask` hands to the open views. */
@@ -33,8 +147,87 @@ export interface Ask {
   admins_only?: boolean;
 }
 
-export function subscribeAsk(hass: HomeAssistant, callback: (ask: Ask) => void): Promise<() => Promise<void>> {
-  return hass.connection.subscribeMessage<Ask>(callback, { type: "axonometra/voice/subscribe" });
+/** An announcement for the open screens (the service `axonometra.announce` with "On Axonometra screens"). */
+export interface ScreenAnnouncement {
+  id: string;
+  message: string;
+  /** Only the views with these screen names (empty: every open view). */
+  screens: string[];
+}
+
+/** The call to load the page again (the service `axonometra.reload_screens`, the editor's card templates). */
+export interface ScreenReload {
+  id: string;
+  /** Only the views of these card templates (empty: every open view). */
+  templates: string[];
+  /** Only the views of this floor plan (templates belong to their plan). */
+  plan?: string | null;
+}
+
+/** A style for the open screens (the action `axonometra.set_style`). */
+export interface ScreenStyle {
+  id: string;
+  /** A style id or name; "" or "reset": back to the screen's own setting. */
+  style: string;
+  /** Only the views with these screen names (empty: every open view). */
+  screens: string[];
+  /** For this many minutes, then back (null: until changed). */
+  minutes?: number | null;
+}
+
+/** What a view shows, for the card templates' overview of the open screens. */
+export interface ViewInfo {
+  kind: "panel" | "card" | "preview";
+  screen?: string | null;
+  template?: string | null;
+  device?: string | null;
+  version?: string | null;
+  /** The floor plan it shows (left out for the main plan). */
+  plan?: string | null;
+}
+
+/** An open Axonometra view as the overview lists it. */
+export interface OpenScreen extends ViewInfo {
+  id: string;
+  user: string | null;
+  /** Unix seconds. */
+  since: number;
+  reloadable: boolean;
+}
+
+export function subscribeAsk(
+  hass: HomeAssistant,
+  callback: (ask: Ask) => void,
+  onAnnounce?: (a: ScreenAnnouncement) => void,
+  onReload?: (r: ScreenReload) => void,
+  onStyle?: (st: ScreenStyle) => void,
+  view?: ViewInfo,
+): Promise<() => Promise<void>> {
+  return hass.connection.subscribeMessage<Ask | { announce: ScreenAnnouncement } | { reload: ScreenReload } | { style: ScreenStyle }>(
+    (ev) => {
+      if ("announce" in ev) onAnnounce?.(ev.announce);
+      else if ("reload" in ev) onReload?.(ev.reload);
+      else if ("style" in ev) onStyle?.(ev.style);
+      // a sentence (anything else, e.g. a message this view does not know yet, is left alone)
+      else if (typeof (ev as Ask).text === "string") callback(ev as Ask);
+    },
+    { type: "axonometra/voice/subscribe", ...(onAnnounce ? { announce: true } : {}), ...(onReload ? { reload: true } : {}), ...(onStyle ? { style: true } : {}), ...(view ? { view } : {}) },
+  );
+}
+
+/** The Axonometra views open now (admins). */
+export async function listScreens(hass: HomeAssistant): Promise<OpenScreen[]> {
+  return (await hass.callWS<{ screens: OpenScreen[] }>({ type: "axonometra/screens/list" })).screens;
+}
+
+/** One open view loads its page again. */
+export async function reloadScreen(hass: HomeAssistant, id: string): Promise<boolean> {
+  return (await hass.callWS<{ sent: boolean }>({ type: "axonometra/screens/reload", screen_id: id })).sent;
+}
+
+/** Lets the open views of these card templates (none: every view) load their page again. */
+export async function reloadScreens(hass: HomeAssistant, templates: string[] = []): Promise<void> {
+  await hass.callService("axonometra", "reload_screens", templates.length ? { templates } : {});
 }
 
 /** The view's answer; `taken` is false when another view was first. */
@@ -62,17 +255,17 @@ export interface Snapshot {
   furniture: number;
 }
 
-export async function listHistory(hass: HomeAssistant): Promise<Snapshot[]> {
-  const res = await hass.callWS<{ snapshots: Snapshot[] }>({ type: "axonometra/history/list" });
+export async function listHistory(hass: HomeAssistant, plan?: string): Promise<Snapshot[]> {
+  const res = await hass.callWS<{ snapshots: Snapshot[] }>({ type: "axonometra/history/list", ...planOf(plan) });
   return res.snapshots;
 }
 
-export async function takeSnapshot(hass: HomeAssistant): Promise<void> {
-  await hass.callWS({ type: "axonometra/history/snapshot" });
+export async function takeSnapshot(hass: HomeAssistant, plan?: string): Promise<void> {
+  await hass.callWS({ type: "axonometra/history/snapshot", ...planOf(plan) });
 }
 
-export async function restoreSnapshot(hass: HomeAssistant, snapshotId: string): Promise<number> {
-  const res = await hass.callWS<{ revision: number }>({ type: "axonometra/history/restore", snapshot_id: snapshotId });
+export async function restoreSnapshot(hass: HomeAssistant, snapshotId: string, plan?: string): Promise<number> {
+  const res = await hass.callWS<{ revision: number }>({ type: "axonometra/history/restore", snapshot_id: snapshotId, ...planOf(plan) });
   return res.revision;
 }
 
@@ -129,6 +322,8 @@ export interface CatalogPack {
   release: number;
   url: string;
   installed: number | null;
+  /** A module update was fetched and waits for the admin's approval (installed counts it already). */
+  waits?: boolean;
 }
 
 /** A pack or Pro add-on in the shop the customer does not own yet. */
@@ -141,6 +336,8 @@ export interface ShopOffer {
   kind: "pack" | "pro" | "bundle" | "fun";
   price: string;
   new: boolean;
+  /** The Supporter Pass (its tile mentions Axonometra Print); missing from older shops. */
+  supporter_pass?: boolean;
 }
 
 /** The customer's loyalty code: a discount on further purchases. */
@@ -226,6 +423,12 @@ export interface LicenseStatus {
   updates?: PackUpdate[];
 }
 
+/** The shop's furniture previews (pictures and names of every pack's items, never the models): the library
+ * shows the ones not owned with a lock. The integration fetches them at most once a day; empty without the shop. */
+export function getPreviews(hass: HomeAssistant): Promise<Previews> {
+  return hass.callWS<Previews>({ type: "axonometra/previews/get" });
+}
+
 export function getLicense(hass: HomeAssistant): Promise<LicenseStatus> {
   return hass.callWS<LicenseStatus>({ type: "axonometra/license/get" });
 }
@@ -246,24 +449,27 @@ export function refreshLicense(hass: HomeAssistant): Promise<LicenseStatus> {
 /** A full backup file: the plan, the packs with their signatures and every stored picture. */
 export interface BackupFile {
   format: "neonplan3d-backup";
-  version: 1;
+  /** 2: with every floor plan (`building` stays the main plan, so a version-1 reader still restores that). */
+  version: 1 | 2;
   exported_at?: string;
   building: Building;
   packs?: FurniturePack[];
   images?: Record<string, string>;
+  main?: { name: string | null; icon: string | null; site: PlanSite | null };
+  plans?: (Omit<PlanEntry, "revision" | "floors" | "rooms" | "furniture"> & { building: Building })[];
 }
 
-export function fetchBackup(hass: HomeAssistant): Promise<Pick<BackupFile, "format" | "version" | "building" | "packs">> {
+export function fetchBackup(hass: HomeAssistant): Promise<Pick<BackupFile, "format" | "version" | "building" | "packs" | "main" | "plans">> {
   return hass.callWS({ type: "axonometra/backup/export" });
 }
 
-/** Replace plan and packs from a backup (pictures follow one by one); packs that fail their check are skipped. */
+/** Replace plans and packs from a backup (pictures follow one by one); packs that fail their check are skipped. */
 export function restoreBackup(
   hass: HomeAssistant,
-  building: Building,
-  packs: FurniturePack[],
+  backup: Pick<BackupFile, "building" | "packs" | "main" | "plans">,
 ): Promise<{ revision: number; building: Building; packs: number; skipped: { id: string; reason: string }[] }> {
-  return hass.callWS({ type: "axonometra/backup/import", building, packs });
+  const { building, packs = [], main, plans } = backup;
+  return hass.callWS({ type: "axonometra/backup/import", building, packs, ...(plans ? { plans, ...(main ? { main } : {}) } : {}) });
 }
 
 /** Fetch a bought pack from the shop, signed for this installation (also updates it). */

@@ -127,6 +127,19 @@ test("a power outage: grid sensors off, helpers on, a UPS on battery, a low main
   assert.equal(alertText(hass, b, alerts[0]), "Stromausfall: Netz");
 });
 
+test("the outage picker offers grid and UPS sources, not switches or meters (#831)", async () => {
+  const { isOutageSource } = await import("./outage.ts");
+  const st = (entity_id: string, state: string, attributes: Record<string, unknown> = {}) => ({ entity_id, state, attributes });
+  assert.equal(isOutageSource(st("binary_sensor.netz", "on", { device_class: "power" })), true);
+  assert.equal(isOutageSource(st("input_boolean.stromausfall", "off")), true);
+  assert.equal(isOutageSource(st("sensor.netzspannung", "231", { unit_of_measurement: "V" })), true);
+  assert.equal(isOutageSource(st("sensor.grid_connection_status", "On Grid")), true);
+  assert.equal(isOutageSource(st("switch.sigen_phase_power_control", "on")), false);
+  assert.equal(isOutageSource(st("sensor.netzbezug", "420", { unit_of_measurement: "W" })), false);
+  assert.equal(isOutage(st("sensor.grid_connection_status", "Off Grid")), true);
+  assert.equal(isOutage(st("sensor.grid_connection_status", "On Grid")), false);
+});
+
 test("Haushalt Pro warns when a fridge door stands open too long", async () => {
   const { setPacks } = await import("./packs.ts");
   const open = new Date(Date.now() - 5 * 60_000).toISOString();
@@ -149,4 +162,19 @@ test("Haushalt Pro warns when a fridge door stands open too long", async () => {
   assert.deepEqual(alerts.map((a) => [a.kind, a.roomId]), [["fridge_door", "k"]]);
   assert.equal(alertText(hass, b, alerts[0]), "Küche · Kühlschrank offen: Kühlschranktür");
   setPacks([]);
+});
+
+test("a contact unavailable for 10 minutes warns only when switched on; a short gap passes", () => {
+  const { hass, b, links } = setup();
+  const src = alertSources(hass, b);
+  const fenster = hass.states["binary_sensor.fenster"] as { state: string; last_changed?: string };
+  fenster.state = "unavailable";
+  fenster.last_changed = new Date(Date.now() - 30 * 60_000).toISOString();
+  // off by default: nothing changes for anyone who has not switched it on
+  assert.equal(findAlerts(hass, b, src, links).length, 0);
+  b.settings.alert_unavailable = true;
+  assert.deepEqual(findAlerts(hass, b, src, links).map((a) => [a.kind, a.roomId, a.entity]), [["contact_unavailable", "k", "binary_sensor.fenster"]]);
+  // a restart of Home Assistant: unavailable for a minute is no warning
+  fenster.last_changed = new Date(Date.now() - 60_000).toISOString();
+  assert.equal(findAlerts(hass, b, src, links).length, 0);
 });

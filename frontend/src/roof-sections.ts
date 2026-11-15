@@ -19,15 +19,49 @@ export interface SectionFrame {
   at(u: number, v: number): Vec2;
 }
 
-export function sectionFrame(s: Pick<RoofSection, "x0" | "z0" | "x1" | "z1" | "axis" | "flip">): SectionFrame {
+/** A section's turn: the point it turns about and the angle's cosine and sine; null when it is not turned. */
+export interface SectionTurn {
+  p: Vec2;
+  c: number;
+  s: number;
+}
+
+type Turnable = Pick<RoofSection, "x0" | "z0" | "x1" | "z1"> & { rotation?: number | null; pivot?: Vec2 | null; points?: Vec2[] | null };
+
+export function sectionTurn(s: Turnable): SectionTurn | null {
+  const a = s.rotation ?? 0;
+  // a free-shaped flat roof is drawn as it is: its corners already lie where they should
+  if (!a || (s.points && s.points.length >= 3)) return null;
+  const r = a * DEG;
+  return { p: s.pivot ?? [(s.x0 + s.x1) / 2, (s.z0 + s.z1) / 2], c: Math.cos(r), s: Math.sin(r) };
+}
+
+/** A point of the section before its turn, where it lies after it (and back). */
+export function turnPoint(t: SectionTurn | null, q: Vec2, back = false): Vec2 {
+  if (!t) return q;
+  const dx = q[0] - t.p[0];
+  const dz = q[1] - t.p[1];
+  const sn = back ? -t.s : t.s;
+  return [t.p[0] + dx * t.c - dz * sn, t.p[1] + dx * sn + dz * t.c];
+}
+
+export function sectionFrame(s: Pick<RoofSection, "x0" | "z0" | "x1" | "z1" | "axis" | "flip"> & Partial<Pick<RoofSection, "rotation" | "pivot" | "points">>): SectionFrame {
   const x0 = Math.min(s.x0, s.x1);
   const x1 = Math.max(s.x0, s.x1);
   const z0 = Math.min(s.z0, s.z1);
   const z1 = Math.max(s.z0, s.z1);
   // flipped: v runs from the high coordinate, so side a is the bottom (or right) side
-  return s.axis === "x"
-    ? { u0: x0, u1: x1, w: z1 - z0, at: (u, v) => [u, s.flip ? z1 - v : z0 + v] }
-    : { u0: z0, u1: z1, w: x1 - x0, at: (u, v) => [s.flip ? x1 - v : x0 + v, u] };
+  const t = sectionTurn(s);
+  const plain: (u: number, v: number) => Vec2 = s.axis === "x" ? (u, v) => [u, s.flip ? z1 - v : z0 + v] : (u, v) => [s.flip ? x1 - v : x0 + v, u];
+  const at = t ? (u: number, v: number) => turnPoint(t, plain(u, v)) : plain;
+  return s.axis === "x" ? { u0: x0, u1: x1, w: z1 - z0, at } : { u0: z0, u1: z1, w: x1 - x0, at };
+}
+
+/** Whether a plan point lies on a section (with a margin, m): in its turned rectangle, or its free shape. */
+export function onSection(s: Pick<RoofSection, "x0" | "z0" | "x1" | "z1" | "axis" | "flip"> & Partial<Pick<RoofSection, "rotation" | "pivot" | "points">>, x: number, z: number, margin = 1e-6): boolean {
+  const [u, v] = sectionUV(s, x, z);
+  const fr = sectionFrame({ ...s, rotation: 0 });
+  return u >= fr.u0 - margin && u <= fr.u1 + margin && v >= -margin && v <= fr.w + margin;
 }
 
 /** Height profile across a section: the ridge position and height, and the roof height at any v. */
@@ -73,6 +107,8 @@ export function activeSections(b: RoofHolder): readonly RoofSection[] {
 
 /** Thickness of the roof slab (the walls under it end this far below the profile). */
 export const ROOF_THICK = 0.14;
+/** A roof that ends this close beside a point (m) still counts as that point's roof where a lower roof covers it. */
+const ROOF_NEAR = 0.03;
 
 /**
  * Whether a section can reach below a floor's ceiling: its wall top or one of its eaves lies lower. A low
@@ -98,6 +134,8 @@ export function sectionAbove(s: Parameters<typeof sectionProfile>[0], level: num
  */
 export function roofUnderAt(b: RoofHolder, x: number, z: number, level?: number): number | null {
   let best: number | null = null;
+  // the highest roof that ends a few centimetres beside the point (see below)
+  let beside: number | null = null;
   const o = Math.max(0, b.settings.roof.overhang ?? 0);
   // where sections overlap, the higher roof is the ceiling: a dormer or a cross gable over the main
   // slope, a lower annex roof running under a higher one
@@ -105,22 +143,33 @@ export function roofUnderAt(b: RoofHolder, x: number, z: number, level?: number)
     if (s.open) continue;
     // with a floor level: roofs lying wholly below that floor are left out (#621)
     if (level !== undefined && !sectionAbove(s, level)) continue;
-    const x0 = Math.min(s.x0, s.x1);
-    const x1 = Math.max(s.x0, s.x1);
-    const z0 = Math.min(s.z0, s.z1);
-    const z1 = Math.max(s.z0, s.z1);
-    if (x < x0 - 1e-6 || x > x1 + 1e-6 || z < z0 - 1e-6 || z > z1 + 1e-6) continue;
-    // a free-shaped flat roof covers its polygon only
-    if (s.points && s.points.length >= 3 && !pointInPolygon([x, z], s.points)) continue;
+    // a side whose overhang is set by hand (#863) covers what stands under that overhang too: a balcony's walls under
+    // a wide eave end under the roof instead of rising through it (#921); the automatic sides end at the walls, as
+    // they always did
+    const own = s.points && s.points.length >= 3 ? null : (s.overhang_sides ?? null);
+    const set = (i: number) => (typeof own?.[i] === "number" ? Math.max(0, own[i] as number) : null);
     const [u, v] = sectionUV(s, x, z);
+    const fr = sectionFrame({ ...s, rotation: 0 });
+    const m = 1e-6;
+    const [u0, u1, v0, v1] = [fr.u0 - (set(2) ?? 0), fr.u1 + (set(3) ?? 0), -(set(0) ?? 0), fr.w + (set(1) ?? 0)];
+    const off = Math.max(u0 - u, u - u1, v0 - v, v - v1);
+    const shaped = !!s.points && s.points.length >= 3;
+    if (off > (shaped ? m : ROOF_NEAR)) continue;
+    // a free-shaped flat roof covers its polygon only
+    if (shaped && !pointInPolygon([x, z], s.points!)) continue;
     // hipped ends and broken slopes: the planes decide, the profile across is the fallback
     const flat = s.shape === "flat" || s.shape === "parapet";
     const so = Math.max(0, s.overhang ?? o);
-    const planes = flat ? null : sectionHeightAt(sectionGeometry(s, { u0: so, u1: so, a: so, b: so }), u, v);
-    const y = (planes ?? sectionProfile(s).y(v)) - ROOF_THICK;
-    best = best === null ? y : Math.max(best, y);
+    const [cu, cv] = [Math.min(u1, Math.max(u0, u)), Math.min(v1, Math.max(v0, v))];
+    const planes = flat ? null : sectionHeightAt(sectionGeometry(s, { a: set(0) ?? so, b: set(1) ?? so, u0: set(2) ?? so, u1: set(3) ?? so }), cu, cv);
+    const y = (planes ?? sectionProfile(s).y(cv)) - ROOF_THICK;
+    if (off > m) beside = beside === null ? y : Math.max(beside, y);
+    else best = best === null ? y : Math.max(best, y);
   }
-  return best;
+  // a wall face a few millimetres outside its own roof, over a lower roof (a garage roof whose ridge pokes above
+  // this floor): the wall ends under its own roof's edge, not at the lower roof (#1051). Where no roof covers the
+  // point at all, nothing changes.
+  return best !== null && beside !== null && beside > best ? beside : best;
 }
 
 /**
@@ -185,13 +234,14 @@ function unitOf(p: Vec2): Vec2 {
 }
 
 /** The footprint of a section with its overhang: the free polygon, or the rectangle. */
-export function sectionPolygon(s: Pick<RoofSection, "x0" | "z0" | "x1" | "z1" | "points">, overhang: number): Vec2[] {
+export function sectionPolygon(s: Pick<RoofSection, "x0" | "z0" | "x1" | "z1" | "points"> & Partial<Pick<RoofSection, "rotation" | "pivot">>, overhang: number): Vec2[] {
   if (s.points && s.points.length >= 3) return offsetPolygon(s.points, overhang);
   const x0 = Math.min(s.x0, s.x1) - overhang;
   const x1 = Math.max(s.x0, s.x1) + overhang;
   const z0 = Math.min(s.z0, s.z1) - overhang;
   const z1 = Math.max(s.z0, s.z1) + overhang;
-  return [[x0, z0], [x1, z0], [x1, z1], [x0, z1]];
+  const t = sectionTurn(s);
+  return ([[x0, z0], [x1, z0], [x1, z1], [x0, z1]] as Vec2[]).map((p) => turnPoint(t, p));
 }
 
 /** The bounding box of a polygon as the section's x0 … z1. */
@@ -418,7 +468,26 @@ export function sectionHeightAt(geom: SectionGeometry, u: number, v: number): nu
 }
 
 /** A plan point in a section's frame: along the ridge (u) and across from side a (v). */
-export function sectionUV(s: Pick<RoofSection, "x0" | "z0" | "x1" | "z1" | "axis" | "flip">, x: number, z: number): [number, number] {
+/**
+ * A section turned on by `delta` degrees (clockwise in the plan) about the point `p`: it keeps its shape, its own
+ * turn point goes along. Turning a roof, its dormers and cross gables come along this way.
+ */
+export function turnSectionAbout(s: RoofSection, delta: number, p: Vec2): RoofSection {
+  const r = delta * DEG;
+  const t: SectionTurn = { p, c: Math.cos(r), s: Math.sin(r) };
+  if (s.points && s.points.length >= 3) return { ...s, points: s.points.map((q) => turnPoint(t, q)), ...polygonBox(s.points.map((q) => turnPoint(t, q))) };
+  const q: Vec2 = s.pivot ?? [(s.x0 + s.x1) / 2, (s.z0 + s.z1) / 2];
+  const q2 = turnPoint(t, q);
+  const dx = q2[0] - q[0];
+  const dz = q2[1] - q[1];
+  let a = ((((s.rotation ?? 0) + delta) % 360) + 360) % 360;
+  if (a > 180) a -= 360;
+  return { ...s, x0: s.x0 + dx, x1: s.x1 + dx, z0: s.z0 + dz, z1: s.z1 + dz, pivot: q2, rotation: Math.abs(a) < 1e-9 ? 0 : a };
+}
+
+export function sectionUV(s: Pick<RoofSection, "x0" | "z0" | "x1" | "z1" | "axis" | "flip"> & Partial<Pick<RoofSection, "rotation" | "pivot" | "points">>, px: number, pz: number): [number, number] {
+  // a turned section: the point turned back first
+  const [x, z] = turnPoint(sectionTurn(s), [px, pz], true);
   const x0 = Math.min(s.x0, s.x1);
   const x1 = Math.max(s.x0, s.x1);
   const z0 = Math.min(s.z0, s.z1);
@@ -435,14 +504,12 @@ function polygonBoxOf(s: Pick<RoofSection, "x0" | "z0" | "x1" | "z1">) {
  * that holds its centre; the smallest such one when several do. Null when it stands on its own.
  */
 export function dormerParent(sections: readonly RoofSection[], d: RoofSection): RoofSection | null {
-  const cx = (d.x0 + d.x1) / 2;
-  const cz = (d.z0 + d.z1) / 2;
+  const [cx, cz] = turnPoint(sectionTurn(d), [(d.x0 + d.x1) / 2, (d.z0 + d.z1) / 2]);
   const area = (s: RoofSection) => Math.abs((s.x1 - s.x0) * (s.z1 - s.z0));
   let best: RoofSection | null = null;
   for (const s of sections) {
     if (s === d || s.dormer || s.open || s.shape === "flat" || s.shape === "parapet" || area(s) < area(d) * 1.5) continue;
-    const box = polygonBoxOf(s);
-    if (cx < box.x0 || cx > box.x1 || cz < box.z0 || cz > box.z1) continue;
+    if (!onSection(s, cx, cz)) continue;
     if (!best || area(s) < area(best)) best = s;
   }
   return best;
@@ -450,12 +517,11 @@ export function dormerParent(sections: readonly RoofSection[], d: RoofSection): 
 
 /** A dormer's footprint in its parent's frame (u along the parent ridge, v across), or null when it lies outside. */
 export function dormerHole(parent: RoofSection, d: RoofSection): { u0: number; u1: number; v0: number; v1: number } | null {
-  const box = polygonBoxOf(d);
-  const corners: [number, number][] = [sectionUV(parent, box.x0, box.z0), sectionUV(parent, box.x1, box.z1)];
-  const u0 = Math.min(corners[0][0], corners[1][0]);
-  const u1 = Math.max(corners[0][0], corners[1][0]);
-  const v0 = Math.min(corners[0][1], corners[1][1]);
-  const v1 = Math.max(corners[0][1], corners[1][1]);
+  const corners = sectionPolygon(d, 0).map((p) => sectionUV(parent, p[0], p[1]));
+  const u0 = Math.min(...corners.map((c) => c[0]));
+  const u1 = Math.max(...corners.map((c) => c[0]));
+  const v0 = Math.min(...corners.map((c) => c[1]));
+  const v1 = Math.max(...corners.map((c) => c[1]));
   return u1 - u0 < 0.1 || v1 - v0 < 0.1 ? null : { u0, u1, v0, v1 };
 }
 
@@ -464,7 +530,8 @@ export function dormerHole(parent: RoofSection, d: RoofSection): { u0: number; u
  * above the section's eave, 35° gable; as deep as its ridge needs to meet the slope.
  */
 export function proposeDormer(parent: RoofSection, side: "a" | "b", id: string, along?: number): RoofSection {
-  const fr = sectionFrame(parent);
+  const turn = sectionTurn(parent);
+  const fr = sectionFrame({ ...parent, rotation: 0 });
   const pr = sectionProfile(parent);
   const W = 2;
   const u = Math.max(fr.u0 + 0.3, Math.min(fr.u1 - W - 0.3, (along ?? (fr.u0 + fr.u1) / 2) - W / 2));
@@ -495,6 +562,7 @@ export function proposeDormer(parent: RoofSection, side: "a" | "b", id: string, 
     base: Math.round(pr.y(side === "a" ? 0 : fr.w) * 100) / 100,
     overhang: 0.15,
     dormer: true,
+    ...(turn ? { rotation: parent.rotation, pivot: turn.p } : {}),
   };
 }
 
@@ -527,7 +595,8 @@ export function effectiveDormer(parent: RoofSection, d: RoofSection): RoofSectio
     }
   }
   if (Math.abs(meet - rear) < 0.05) return d;
-  const copy = { ...d };
+  const t = sectionTurn(d);
+  const copy = { ...d, ...(t ? { pivot: t.p } : {}) };
   // u runs along the dormer's own axis: x for an "x" axis, z for a "z" axis
   if (d.axis === "x") {
     if (rear === fr.u1) copy.x1 = meet;
@@ -622,21 +691,42 @@ export interface SectionOverhang {
 /**
  * Overhang per edge: none where the section meets a taller part of the house (a room right outside
  * that edge whose walls rise above the section's wall tops), so a lean-to roof ends at the wall
- * instead of running into the house.
+ * instead of running into the house. An overhang set by hand for a side (`overhang_sides`) wins.
  */
 export function sectionOverhang(b: Building, s: RoofSection, overhang: number): SectionOverhang {
   const fr = sectionFrame(s);
   const taller = b.floors.flatMap((f) => f.rooms.filter((r) => r.points.length >= 3 && f.elevation + f.height > s.base + 0.05));
-  const blocked = (pts: Vec2[]) => pts.some((p) => taller.some((r) => pointInPolygon(p, r.points)));
+  // the taller rooms out to their outer wall faces: a section drawn against the outer face of a thick
+  // wall, or a hand's breadth away from it, meets the house in its wall, not in the room (#863)
+  const ext = b.settings.wall_exterior;
+  const outer = taller.map((r) => offsetPolygon(r.points, Math.max(ext, ...(r.wall_thickness ?? []).map((t) => t ?? 0)) + 0.01));
   const d = 0.35;
-  const along = [0.15, 0.5, 0.85].map((t) => fr.u0 + (fr.u1 - fr.u0) * t);
-  const across = [0.15, 0.5, 0.85].map((t) => fr.w * t);
-  return {
-    a: blocked(along.map((u) => fr.at(u, -d))) ? 0 : overhang,
-    b: blocked(along.map((u) => fr.at(u, fr.w + d))) ? 0 : overhang,
-    u0: blocked(across.map((v) => fr.at(fr.u0 - d, v))) ? 0 : overhang,
-    u1: blocked(across.map((v) => fr.at(fr.u1 + d, v))) ? 0 : overhang,
+  // a sample point of an edge, `k` metres outwards (negative: into the section); `depth` is the section's
+  // size at right angles to the edge
+  const hits = (at: (k: number) => Vec2, depth: number) => {
+    // a room right outside the edge (as before) …
+    if (taller.some((r) => pointInPolygon(at(d), r.points))) return true;
+    // … or its wall: the section ends at or just short of a taller room's outer wall face – a room it does not
+    // stand over itself (the attic under its own roof, a dormer over the attic)
+    const inside = at(-Math.min(0.3, depth / 2));
+    return outer.some((o) => !pointInPolygon(inside, o) && [0.05, 0.2, d].some((k) => pointInPolygon(at(k), o)));
   };
+  const ts = [0.15, 0.5, 0.85];
+  const along = ts.map((t) => fr.u0 + (fr.u1 - fr.u0) * t);
+  const across = ts.map((t) => fr.w * t);
+  const blocked = (side: "a" | "b" | "u0" | "u1"): boolean => {
+    if (side === "a") return along.some((u) => hits((k) => fr.at(u, -k), fr.w));
+    if (side === "b") return along.some((u) => hits((k) => fr.at(u, fr.w + k), fr.w));
+    if (side === "u0") return across.some((v) => hits((k) => fr.at(fr.u0 - k, v), fr.u1 - fr.u0));
+    return across.some((v) => hits((k) => fr.at(fr.u1 + k, v), fr.u1 - fr.u0));
+  };
+  // a side set by hand (#863): its own overhang, whatever the house beside it
+  const own = s.overhang_sides ?? null;
+  const pick = (i: number, side: "a" | "b" | "u0" | "u1") => {
+    const set = own?.[i];
+    return typeof set === "number" ? Math.max(0, set) : blocked(side) ? 0 : overhang;
+  };
+  return { a: pick(0, "a"), b: pick(1, "b"), u0: pick(2, "u0"), u1: pick(3, "u1") };
 }
 
 /** Wall tops below a rectangle: the highest floor with a room under its middle (null = none). */
@@ -649,10 +739,27 @@ export function wallTopUnder(b: Building, x0: number, z0: number, x1: number, z1
   return tops.length ? Math.max(...tops) : null;
 }
 
-/** The floor a roof section sits on: the highest one with rooms that starts below the section's base. */
-export function sectionFloor(b: Building, sec: Pick<RoofSection, "base">): Building["floors"][number] | undefined {
+/**
+ * The floor a roof section sits on: the highest one with rooms that starts below the section's base – of those, the
+ * highest with rooms under the section. In a split-level house a floor beside it at another level carries the roof
+ * next door, not this one (#1097).
+ */
+export function sectionFloor(
+  b: Building,
+  sec: Pick<RoofSection, "base"> & Partial<Pick<RoofSection, "x0" | "z0" | "x1" | "z1" | "points" | "rotation" | "pivot">>,
+): Building["floors"][number] | undefined {
   const floors = b.floors.filter((f) => f.rooms.length > 0).sort((p, q) => p.elevation - q.elevation);
-  return [...floors].reverse().find((f) => f.elevation < sec.base - 0.05) ?? floors[0];
+  const below = [...floors].reverse().filter((f) => f.elevation < sec.base - 0.05);
+  if (sec.x0 !== undefined && sec.z0 !== undefined && sec.x1 !== undefined && sec.z1 !== undefined && below.length > 1) {
+    // probes well inside the section: its middle and points most of the way to its corners
+    const poly = sectionPolygon({ x0: sec.x0, z0: sec.z0, x1: sec.x1, z1: sec.z1, points: sec.points, rotation: sec.rotation, pivot: sec.pivot }, 0);
+    const mx = poly.reduce((a, p) => a + p[0], 0) / poly.length;
+    const mz = poly.reduce((a, p) => a + p[1], 0) / poly.length;
+    const probes: Vec2[] = [[mx, mz], ...poly.map((p) => [mx + (p[0] - mx) * 0.6, mz + (p[1] - mz) * 0.6] as Vec2)];
+    const under = below.find((f) => f.rooms.some((r) => r.points.length >= 3 && probes.some((p) => pointInPolygon(p, r.points))));
+    if (under) return under;
+  }
+  return below[0] ?? floors[0];
 }
 
 /** Height of the ridge (or of the high edge of a pent roof) above the ground. */
@@ -742,7 +849,7 @@ export function roofRider(b: Building, floor: Building["floors"][number], sectio
       r.points.length >= 3 &&
       mine.some((s) => {
         const [cx, cz] = r.points.reduce((a, p) => [a[0] + p[0] / r.points.length, a[1] + p[1] / r.points.length], [0, 0]);
-        return cx >= Math.min(s.x0, s.x1) && cx <= Math.max(s.x0, s.x1) && cz >= Math.min(s.z0, s.z1) && cz <= Math.max(s.z0, s.z1);
+        return onSection(s, cx, cz);
       }),
     );
   const riders = b.floors.filter((f) => f.elevation >= floor.elevation && f.elevation < top - 0.3 && under(f)).sort((p, q) => q.elevation - p.elevation);
@@ -955,11 +1062,39 @@ export function coversIn(s: RoofSection, covers: readonly RoofCover[]): LocalCov
   return covers.map((c) => ({ poly: c.poly.map(([x, z, y]) => [...sectionUV(s, x, z), y] as Q), depth: c.depth }));
 }
 
-/** Whether two sections cut each other where they overlap: closed sloped ones, neither a dormer on the other. */
+/**
+ * Whether two sections cut each other where they overlap: closed sloped ones, neither a dormer on the other – unless
+ * that dormer is turned: its hole in the slope would be cut as boxes across its angle, so a turned cross gable and
+ * its roof meet like two wings instead, each keeping what shows above the other (a gable at 45° on a hip roof).
+ */
 export function sectionsCut(sections: readonly RoofSection[], p: RoofSection, q: RoofSection): boolean {
   const sloped = (s: RoofSection) => !s.open && s.shape !== "flat" && s.shape !== "parapet";
   if (p === q || !sloped(p) || !sloped(q)) return false;
-  return dormerParent(sections, p) !== q && dormerParent(sections, q) !== p;
+  return (dormerParent(sections, p) !== q || crossAsWing(sections, p)) && (dormerParent(sections, q) !== p || crossAsWing(sections, q));
+}
+
+/**
+ * A section sitting on a bigger roof at an angle to it (not square to its ridge): drawn as a wing cut by that roof,
+ * not as a dormer with a hole. A dormer turned along with its turned roof (#634) is still a dormer.
+ */
+export function turnedDormer(sections: readonly RoofSection[], d: RoofSection): boolean {
+  const parent = dormerParent(sections, d);
+  if (!parent) return false;
+  const a = (((d.rotation ?? 0) - (parent.rotation ?? 0)) % 90) + 90;
+  return Math.min(a % 90, 90 - (a % 90)) > 0.5;
+}
+
+/**
+ * A section on a bigger roof that meets it like a wing – each keeps what shows above the other – instead of opening a
+ * dormer hole in it: a turned one, and a cross gable as high as its roof (#970). Such a gable's ridge runs on to the
+ * roof's ridge, and at a hipped end its slope lies in the hip's plane: a hole of strips across its depth cut the hip
+ * wrongly and left parts of both roofs standing where they should meet in a valley.
+ */
+export function crossAsWing(sections: readonly RoofSection[], d: RoofSection): boolean {
+  if (turnedDormer(sections, d)) return true;
+  const parent = dormerParent(sections, d);
+  if (!parent || d.open || d.shape === "flat" || d.shape === "parapet") return false;
+  return sectionProfile(d).rh >= sectionProfile(parent).rh - 0.05;
 }
 
 /**
@@ -969,13 +1104,13 @@ export function sectionsCut(sections: readonly RoofSection[], p: RoofSection, q:
  * its own, a dormer, a cross gable sitting on its parent's slope.
  */
 export function wingJunction(sections: readonly RoofSection[], s: RoofSection): { host: RoofSection; end: 0 | 1 } | null {
-  if (s.dormer || s.open || !sectionEnds(s) || dormerParent(sections, s)) return null;
+  if (s.dormer || s.open || !sectionEnds(s) || sectionTurn(s) || dormerParent(sections, s)) return null;
   const fr = sectionFrame(s);
   const rh = sectionProfile(s).rh;
   const area = (x: RoofSection) => Math.abs((x.x1 - x.x0) * (x.z1 - x.z0));
   let best: { host: RoofSection; end: 0 | 1 } | null = null;
   for (const h of sections) {
-    if (h === s || h.dormer || h.open || h.axis === s.axis || h.shape === "flat" || h.shape === "parapet" || h.shape === "pent") continue;
+    if (h === s || h.dormer || h.open || sectionTurn(h) || h.axis === s.axis || h.shape === "flat" || h.shape === "parapet" || h.shape === "pent") continue;
     const hrh = sectionProfile(h).rh;
     // the lower roof runs into the higher one; equally high, the smaller into the bigger
     const higher = hrh > rh + 0.02 || (Math.abs(hrh - rh) <= 0.02 && (area(h) > area(s) || (area(h) === area(s) && sections.indexOf(h) < sections.indexOf(s))));

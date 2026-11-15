@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { isLamp, newFloor, setTerrain, type Building, type Furniture } from "./model.ts";
-import { isCooktopZone, isPackCooktop, furnitureSize, isElectric, mountBase, packDisplay, packItem, packItemName, packName, packType, setPacks, type FurniturePack } from "./packs.ts";
+import { isCooktopZone, isPackCooktop, isPackSensor, furnitureSize, isElectric, mountBase, packDisplay, packItem, packItemName, packName, packType, setPacks, type FurniturePack } from "./packs.ts";
 
 const pack: FurniturePack = {
   id: "demo.pack",
@@ -61,6 +61,12 @@ test("our packs show an English name outside German, others keep theirs (#224)",
   assert.equal(packName({ id: "mastershort.office", name: "Büro & Gaming" }, "de-DE"), "Büro & Gaming");
   assert.equal(packName({ id: "mastershort.living_sample", name: "Wohnzimmer – Schnupper-Pack" }, "fr"), "Living Room – Sampler");
   assert.equal(packName({ id: "pro_weather", name: "Wetter draußen" }, "en"), "Pro: Weather Outside");
+  // #825: the newer packs, Pro add-ons and modules have English names too
+  assert.equal(packName({ id: "mastershort.announce", name: "Modul: Durchsagen" }, "en"), "Module: Announcements");
+  assert.equal(packName({ id: "pro_heat", name: "Pro: Wärme Pro" }, "en-GB"), "Pro: Heat Pro");
+  assert.equal(packName({ id: "mastershort.cabinet_kit", name: "Schränke & Regale – Baukasten" }, "en"), "Cabinets & Shelves – Kit");
+  // one newer than the table keeps its name, its kind in English
+  assert.equal(packName({ id: "mastershort.later", name: "Modul: Später" }, "en"), "Module: Später");
   assert.equal(packName({ id: "someone.else", name: "Möbel" }, "en"), "Möbel");
 });
 
@@ -117,4 +123,12 @@ test("items outside the rooms stand on the ground beneath them, also when it lie
   } finally {
     setTerrain(null);
   }
+});
+
+test("a pack's sensor models follow any sensor, other pack items and built-ins do not (#810)", () => {
+  assert.equal(isPackSensor("pack:mastershort.smarthome:motion_sensor"), true);
+  assert.equal(isPackSensor("pack:mastershort.smarthome:door_contact"), true);
+  assert.equal(isPackSensor("pack:mastershort.smarthome:presence_mmwave"), true);
+  assert.equal(isPackSensor("pack:mastershort.smarthome:smart_plug"), false);
+  assert.equal(isPackSensor("motion_sensor"), false);
 });

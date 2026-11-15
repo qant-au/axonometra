@@ -35,6 +35,7 @@ export const MASS_DEFAULTS: Record<FurnitureType, number> = {
   shelf: 25,
   plant: 10,
   rug: 8,
+  neon_sign: 3,
   table: 35,
   table_round: 30,
   chair: 6,

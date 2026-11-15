@@ -23,13 +23,14 @@ export class ReplayReadOnly extends Error {
 /** Websocket commands that only read (the rest is refused while replaying). */
 export const WS_ALLOWED: ReadonlySet<string> = new Set([
   "axonometra/building/get",
+  "axonometra/plans/list",
   "axonometra/image/get",
   "axonometra/packs/list",
   "axonometra/timetravel/history",
   "history/history_during_period",
   "recorder/statistics_during_period",
 ]);
-const SUBSCRIBE_ALLOWED: ReadonlySet<string> = new Set(["axonometra/building/subscribe"]);
+const SUBSCRIBE_ALLOWED: ReadonlySet<string> = new Set(["axonometra/building/subscribe", "axonometra/plans/subscribe"]);
 
 /** Attributes that change over time: the live values must not show in the past (the history has its own). */
 const DYNAMIC: Record<string, readonly string[]> = {
@@ -76,7 +77,9 @@ export function readOnlyHass(live: HomeAssistant, states: Record<string, HassEnt
   out.callWS = <T>(msg: Record<string, unknown>): Promise<T> => (WS_ALLOWED.has(String(msg.type)) ? live.callWS<T>(msg) : refuse(String(msg.type)));
   out.connection = {
     subscribeMessage: <T>(cb: (msg: T) => void, msg: Record<string, unknown>) =>
-      SUBSCRIBE_ALLOWED.has(String(msg.type)) ? live.connection.subscribeMessage<T>(cb, msg) : refuse(String(msg.type)),
+      // a subscription is refused quietly and as a rejected promise: the views listen for voice and announcements in
+      // the background and catch it; thrown at once it escaped them and filled the error reports
+      SUBSCRIBE_ALLOWED.has(String(msg.type)) ? live.connection.subscribeMessage<T>(cb, msg) : Promise.reject(new ReplayReadOnly(String(msg.type))),
   };
   // Home Assistant's own cards may use the REST API: reading only
   for (const name of ["callApi", "callApiRaw"]) {

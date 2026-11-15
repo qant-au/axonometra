@@ -3,13 +3,18 @@
 from __future__ import annotations
 
 from pathlib import Path
-from unittest.mock import patch
+import sys
+from types import SimpleNamespace
+from unittest.mock import AsyncMock, MagicMock, patch
 
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers import area_registry as ar
+from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers import intent
+from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.axonometra.const import DOMAIN
-from custom_components.axonometra.voice import remove_sentences, sentences_yaml, write_sentences
+from custom_components.axonometra.voice import area_device, remove_sentences, sentences_yaml, write_sentences
 
 from .test_init import _setup
 
@@ -244,3 +249,75 @@ def test_the_names_locating_knows_are_sentences(tmp_path: Path) -> None:
     # names changed: the file is ours, so it is rewritten
     _, kept, changed = write_sentences(tmp_path, "distinct", hashes, ["Frauke"])
     assert kept == [] and changed and "Torstens iPhone" not in de.read_text(encoding="utf-8")
+
+
+async def test_a_sentence_said_in_a_room_goes_to_assist_with_a_device_of_that_room(
+    hass: HomeAssistant, hass_ws_client
+) -> None:
+    """On the kitchen's tablet "Licht an" reaches Assist from a device in the kitchen (the room is its area)."""
+    await _setup(hass)
+    kitchen = ar.async_get(hass).async_create("Küche")
+    hall = ar.async_get(hass).async_create("Flur")
+    entry = MockConfigEntry(domain="hue", data={})
+    entry.add_to_hass(hass)
+    devices = dr.async_get(hass)
+    lamp = devices.async_get_or_create(config_entry_id=entry.entry_id, identifiers={("hue", "lamp")})
+    devices.async_update_device(lamp.id, area_id=kitchen.id)
+    off = devices.async_get_or_create(config_entry_id=entry.entry_id, identifiers={("hue", "off")})
+    devices.async_update_device(off.id, area_id=kitchen.id, disabled_by=dr.DeviceEntryDisabler.USER)
+    assert area_device(hass, kitchen.id) == lamp.id
+    assert area_device(hass, hall.id) is None
+    assert area_device(hass, "gone") is None
+
+    result = MagicMock()
+    result.as_dict.return_value = {"response": {"speech": {"plain": {"speech": "Licht ist an"}}}}
+    converse = AsyncMock(return_value=result)
+    client = await hass_ws_client(hass)
+    # Assist itself stands in: its requirements (hassil) are not installed for the tests
+    with patch.dict(sys.modules, {"homeassistant.components.conversation": SimpleNamespace(async_converse=converse)}):
+        await client.send_json(
+            {"id": 1, "type": "axonometra/voice/converse", "text": "Licht an", "area_id": kitchen.id, "language": "de"}
+        )
+        res = await client.receive_json()
+    assert res["success"]
+    assert res["result"]["response"]["speech"]["plain"]["speech"] == "Licht ist an"
+    assert converse.await_args.args[1] == "Licht an"
+    assert converse.await_args.kwargs == {"language": "de", "device_id": lamp.id}
+
+
+async def test_reload_screens_reaches_the_views_that_ask_for_it(hass: HomeAssistant, hass_ws_client) -> None:
+    """Card templates: the service lets the open views that ask for it load their page again."""
+    await _setup(hass)
+    new = await hass_ws_client(hass)
+    await new.send_json({"id": 1, "type": "axonometra/voice/subscribe", "announce": True, "reload": True})
+    assert (await new.receive_json())["success"]
+
+    await hass.services.async_call(DOMAIN, "reload_screens", {"templates": "kueche_fire"}, blocking=True)
+    event = (await new.receive_json())["event"]
+    assert event["reload"]["templates"] == ["kueche_fire"] and event["reload"]["id"]
+
+
+async def test_open_screens_are_listed_and_leave_with_their_view(hass: HomeAssistant, hass_ws_client) -> None:
+    """Card templates: the views say what they show; the overview lists them and can reload one."""
+    await _setup(hass)
+    tablet = await hass_ws_client(hass)
+    view = {"kind": "card", "screen": "Küche", "template": "kueche", "device": "Fire HD 10", "version": "2.3.0"}
+    await tablet.send_json({"id": 1, "type": "axonometra/voice/subscribe", "reload": True, "view": view})
+    assert (await tablet.receive_json())["success"]
+    preview = await hass_ws_client(hass)
+    await preview.send_json({"id": 1, "type": "axonometra/voice/subscribe", "view": {"kind": "preview"}})
+    assert (await preview.receive_json())["success"]
+
+    admin = await hass_ws_client(hass)
+    await admin.send_json({"id": 1, "type": "axonometra/screens/list"})
+    screens = (await admin.receive_json())["result"]["screens"]
+    assert [(x["template"], x["device"], x["reloadable"]) for x in screens] == [("kueche", "Fire HD 10", True)]
+
+    await admin.send_json({"id": 2, "type": "axonometra/screens/reload", "screen_id": screens[0]["id"]})
+    assert (await admin.receive_json())["result"] == {"sent": True}
+    assert (await tablet.receive_json())["event"]["reload"]["templates"] == []
+
+    await tablet.send_json({"id": 2, "type": "unsubscribe_events", "subscription": 1})
+    await tablet.receive_json()
+    await admin.send_json({"id": 3, "type": "axonometra/screens/list"})
+    assert (await admin.receive_json())["result"]["screens"] == []

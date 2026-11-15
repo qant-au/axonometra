@@ -172,6 +172,7 @@ export interface Pickup {
 interface CalEvent {
   summary?: string;
   start?: { date?: string; dateTime?: string } | string;
+  end?: { date?: string; dateTime?: string } | string;
 }
 
 /** The day of an event's start, local midnight. */
@@ -218,6 +219,77 @@ export async function fetchPickups(hass: HomeAssistant, calendars: readonly stri
     }),
   );
   return out;
+}
+
+/** An entry of a calendar today (the glass card "Today in the household"): all day, or from its start to its end. */
+export interface DayEvent {
+  summary: string;
+  calendar: string;
+  allDay: boolean;
+  start: Date | null;
+  end: Date | null;
+}
+
+/** The moment of an event's start or end; an all-day "2026-11-13" is local midnight. */
+function momentOf(t: CalEvent["start"]): { at: Date; allDay: boolean } | null {
+  const raw = typeof t === "string" ? t : (t?.dateTime ?? t?.date);
+  if (!raw) return null;
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(raw);
+  const at = m ? new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3])) : new Date(raw);
+  return Number.isNaN(at.getTime()) ? null : { at, allDay: !!m };
+}
+
+export function dayEventsOf(events: readonly CalEvent[], calendar: string): DayEvent[] {
+  return events
+    .map((e) => {
+      const s = momentOf(e.start);
+      const en = momentOf(e.end);
+      return { summary: String(e.summary ?? "").trim(), calendar, allDay: !!s?.allDay, start: s?.at ?? null, end: en?.at ?? null };
+    })
+    .filter((e) => e.summary);
+}
+
+/** Today's entries of the household calendars (idea: T-Eberle); a calendar that fails is left out. */
+export async function fetchDayEvents(hass: HomeAssistant, calendars: readonly string[], now = new Date()): Promise<DayEvent[]> {
+  const api = (hass as unknown as { callApi?: <T>(method: string, path: string) => Promise<T> }).callApi;
+  if (!api || !calendars.length) return [];
+  const start = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const end = addDays(start, 1);
+  const lists = await Promise.all(
+    calendars.map(async (id) => {
+      try {
+        const events = await api.call(hass, "GET", `calendars/${id}?start=${encodeURIComponent(start.toISOString())}&end=${encodeURIComponent(end.toISOString())}`);
+        return dayEventsOf(Array.isArray(events) ? (events as CalEvent[]) : [], id);
+      } catch {
+        return [];
+      }
+    }),
+  );
+  return lists.flat();
+}
+
+/**
+ * The card's lines for today's calendar entries: all-day ones first, then by their start ("14:30 Dentist"); an entry
+ * that has ended is gone, one starting within the hour is drawn in amber. At most `max` lines.
+ */
+export function calendarItems(events: readonly DayEvent[], now = new Date(), lang?: string, max = 6): HouseholdItem[] {
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const tomorrow = addDays(today, 1);
+  const time = (d: Date) => d.toLocaleTimeString(lang || undefined, { hour: "2-digit", minute: "2-digit" });
+  return events
+    .filter((e) => {
+      if (e.allDay) return (!e.start || e.start < tomorrow) && (!e.end || e.end > today);
+      if (e.end && e.end <= now) return false;
+      return !e.start || e.start < tomorrow;
+    })
+    .sort((a, b) => Number(b.allDay) - Number(a.allDay) || (a.start?.getTime() ?? 0) - (b.start?.getTime() ?? 0))
+    .filter((e, i, all) => all.findIndex((x) => x.summary === e.summary && x.start?.getTime() === e.start?.getTime()) === i)
+    .slice(0, max)
+    .map((e) => {
+      const timed = !e.allDay && e.start && e.start >= today;
+      const soon = !e.allDay && !!e.start && e.start.getTime() - now.getTime() <= 3_600_000 && (!e.end || e.end > now);
+      return { icon: "calendar-clock", text: timed ? `${time(e.start as Date)} ${e.summary}` : e.summary, entity: e.calendar, ...(soon ? { hot: true } : {}) };
+    });
 }
 
 /** What a bin shows: its next pickup in days (0 = today) and whether it glows now. */
@@ -378,7 +450,6 @@ export function binTagsShown(bins: readonly { id: string; days: number }[], o: B
   return new Set(bins.filter((b) => (ahead === null || b.days <= ahead) && (!o.nextOnly || b.days === first)).map((b) => b.id));
 }
 
-/** Days until the pickup a sensor tells: a number, a date or a timestamp, or Waste Collection Schedule's `daysTo`. */
 /**
  * A date written inside a sensor's text, as Waste Collection Schedule's own formats show it: "on Mon, 26.10.2026",
  * "Biotonne 26.10.", "2026-10-26 (Mo)", "26/10/2026" (day first unless that cannot be). A date without a year that
@@ -386,7 +457,10 @@ export function binTagsShown(bins: readonly { id: string; days: number }[], o: B
  */
 export function dateInText(text: string, now = new Date()): Date | null {
   const iso = /(\d{4})-(\d{1,2})-(\d{1,2})/.exec(text);
-  const dmy = /(?:^|[^\d])(\d{1,2})([./])(\d{1,2})\2(\d{4}|\d{2})?(?![\d])/.exec(text);
+  // a dash only with a four-digit year ("17-11-2026", Afvalbeheer, #962), so "in 2-4 days" stays no date
+  const dmy =
+    /(?:^|[^\d])(\d{1,2})([./])(\d{1,2})\2(\d{4}|\d{2})?(?![\d])/.exec(text) ??
+    /(?:^|[^\d])(\d{1,2})(-)(\d{1,2})-(\d{4})(?![\d])/.exec(text);
   let y: number;
   let m: number;
   let d: number;
@@ -407,9 +481,19 @@ export function dateInText(text: string, now = new Date()): Date | null {
   return day.getMonth() === m - 1 ? day : null;
 }
 
+/**
+ * Days until the pickup a sensor tells: a number, a date or a timestamp, Waste Collection Schedule's `daysTo` or
+ * Afvalbeheer's `Days_until`.
+ */
 export function sensorDays(st: HassEntity, now = new Date()): number | null {
   const a = st.attributes as Record<string, unknown>;
   if (typeof a.daysTo === "number") return a.daysTo;
+  // Afvalbeheer's own count (#962)
+  for (const k of ["Days_until", "days_until"]) {
+    const v = a[k];
+    if (typeof v === "number" && Number.isFinite(v)) return Math.round(v);
+    if (typeof v === "string" && /^-?\d+$/.test(v.trim())) return Number(v.trim());
+  }
   const s = String(st.state).trim();
   if (/^-?\d+(\.\d+)?$/.test(s)) return Math.round(Number(s));
   // a timestamp is read as a moment (its local day); any other text for a date written in it – the browser's own
@@ -467,6 +551,24 @@ export function householdEntities(f: Furniture): EntityRef[] {
 }
 
 // ---------------------------------------------------------------- Haushalt Pro, part 2: plants, appliances, upkeep, fridge
+
+/** An appliance that runs a programme: it tells its time left and "Done!" until its door opens. */
+export type ApplianceKind = "washer" | "dryer" | "dishwasher" | "oven";
+
+/**
+ * What programme appliance an item is: the built-in washer, dryer and dishwasher, and the pack items that are one
+ * (the kitchen pack's built-in dishwasher and oven, #973), by their id; null for anything else.
+ */
+export function applianceOf(type: string): ApplianceKind | null {
+  if (type === "washer" || type === "dryer" || type === "dishwasher") return type;
+  const id = packItem(type)?.id;
+  if (!id) return null;
+  if (/dishwasher|geschirr/.test(id)) return "dishwasher";
+  if (/dryer|trockner/.test(id)) return "dryer";
+  if (/washer|washing|waschmaschine/.test(id)) return "washer";
+  if (/oven|cooker|backofen/.test(id)) return "oven";
+  return null;
+}
 
 /** The number of an entity's state, when it is one. */
 const num = (st: HassEntity | undefined): number | null => {

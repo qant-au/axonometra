@@ -2,6 +2,7 @@
 // furniture has the type "pack:<pack id>:<item id>". Every bundle (main, editor, 3D) keeps its own
 // registry, filled with setPacks() from the packs the backend returns.
 
+import type { PackSlot, PartBind } from "./live-parts.ts";
 import { builtinBase, techBase, ELECTRIC_FURNITURE, FURNITURE_SIZE, LIFT_SPOTS, outdoorGround, pointInPolygon, spotDepth, surfaceHeight, WALL_LAMP_Y, type Floor, type Furniture } from "./model.ts";
 import type { LampModel } from "./viewer/viewer3d.ts";
 
@@ -48,6 +49,41 @@ export interface PackPart {
   axis?: "x" | "y" | "z";
   /** Turn of the part around its own centre (degrees around the vertical axis). */
   rot?: number;
+  /** An Advent candle's flame: drawn only from the n-th Sunday of Advent (1–4) until 6 January. */
+  advent?: number;
+  /**
+   * Turns while the item's fan runs (#1084): fan blades around the upright axis ("y", a ceiling fan) or the front axis
+   * ("z", a pedestal fan), about the middle of all the item's turning parts.
+   */
+  spin?: "y" | "z";
+  /** A live part (3.4): moves or lights with the entity linked to one of the item's slots (live-parts.ts). */
+  bind?: PartBind;
+}
+
+/** The axis an item's turning parts (fan blades) turn about, null without such parts. */
+export function packSpinAxis(item: Pick<PackItem, "parts"> | null | undefined): "y" | "z" | null {
+  const p = item?.parts.find((x) => x.spin === "y" || x.spin === "z");
+  return p ? (p.spin as "y" | "z") : null;
+}
+
+/**
+ * How many Advent candles burn on a day: one more each Sunday of Advent (the fourth is the Sunday before Christmas),
+ * all four until 6 January, none for the rest of the year.
+ */
+export function adventCandles(day: Date = new Date()): number {
+  const y = day.getFullYear();
+  const m = day.getMonth();
+  if (m === 0 && day.getDate() <= 6) return 4;
+  if (m < 10) return 0;
+  const today = new Date(y, m, day.getDate()).getTime();
+  // the fourth Sunday of Advent: the last Sunday before 25 December (24 December when that is a Sunday)
+  const dec24 = new Date(y, 11, 24);
+  const fourth = new Date(y, 11, 24 - dec24.getDay()).getTime();
+  const week = 7 * 24 * 3600 * 1000;
+  let n = 0;
+  // a week of daylight-saving drift cannot happen between late November and December, so plain weeks are exact
+  for (let k = 1; k <= 4; k++) if (today >= fourth - (4 - k) * week - 3600 * 1000) n = k;
+  return n;
 }
 
 export type PackSymbol =
@@ -83,6 +119,8 @@ export interface PackItem {
   /** Variants of one thing (a table in three lengths) share a family; the variant names the chip, by language. */
   family?: string;
   variant?: Record<string, string>;
+  /** Slots its live parts are tied to (3.4): the editor links an entity to each. */
+  slots?: PackSlot[];
 }
 
 export interface FurniturePack {
@@ -149,6 +187,15 @@ export function packMotion(type: string): PackMotion | null {
 /** The parts that move: the curtain's fabric; the screen's cloth and bottom bar (everything but its roller). */
 export function packMovingPart(kind: PackMotion, p: PackPart): boolean {
   return kind === "curtain" ? p.color === "fabric" : p.shape !== "cyl";
+}
+
+/**
+ * A pack's sensor model (motion, mmWave presence, contact, leak, CO₂, temperature …): it follows a sensor of its own,
+ * whatever class the integration gave it (Local Tuya's motion sensors have none, #810).
+ */
+export function isPackSensor(type: string): boolean {
+  if (!isPackType(type)) return false;
+  return packItem(type)?.family === "sensor" || /:(\w+_sensor|door_contact|presence_mmwave)$/.test(type);
 }
 
 /** A robot vacuum: the built-in dock, or one from a pack (the smart home pack's robot with its dock, #470). */
@@ -238,7 +285,14 @@ export function packItemName(item: PackItem, language: string): string {
 // English names of our own packs: a pack file carries one (German) name, the furniture inside both (#224)
 const PACK_NAMES_EN: Record<string, string> = {
   architecture: "Architecture & Fit-out",
+  balcony: "Balcony & Small Spaces",
   bath: "Bathroom",
+  cabinet_kit: "Cabinets & Shelves – Kit",
+  deco: "Decor & Plants",
+  dining_hall: "Dining Room & Hallway",
+  fun_halloween: "Fun Pack: Halloween",
+  fun_winter: "Fun Pack: Winter & Christmas",
+  fun_pets: "Fun Pack: Pets",
   bedroom: "Bedroom",
   cinema: "Home Cinema & Hi-Fi",
   exclusive: "Exclusive: Smart Fridge",
@@ -263,6 +317,13 @@ const PACK_NAMES_EN: Record<string, string> = {
   pro_screens: "Pro: Live Screens",
   pro_sound: "Pro: Sound & Cinema",
   pro_weather: "Pro: Weather Outside",
+  pro_heat: "Pro: Heat Pro",
+  pro_household: "Pro: Household Pro",
+  frames: "Digital Picture Frames",
+  homelab: "Homelab & Workshop",
+  announce: "Module: Announcements",
+  voice_answers: "Module: The house answers",
+  window_watch: "Module: Window watch",
 };
 
 /** A pack's name in the user's language: our own packs in English outside German, others as they come. */
@@ -271,7 +332,9 @@ export function packName(pack: { id: string; name: string }, language: string): 
   const key = pack.id.replace(/^mastershort\./, "");
   const sample = key.endsWith("_sample");
   const en = PACK_NAMES_EN[sample ? key.slice(0, -"_sample".length) : key];
-  return en ? (sample ? `${en} – Sampler` : en) : pack.name;
+  if (en) return sample ? `${en} – Sampler` : en;
+  // one of ours newer than this table: at least its kind in English (#825)
+  return pack.name.replace(/^Modul:/, "Module:").replace(/^Fun-Pack:/, "Fun Pack:");
 }
 
 /** Height of the bottom of a pack item, a wall light or an LED strip above the floor (0 for other built-in furniture). */
