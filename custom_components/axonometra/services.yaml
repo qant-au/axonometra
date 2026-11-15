@@ -15,3 +15,90 @@ ask:
       default: false
       selector:
         boolean:
+announce:
+  fields:
+    message:
+      required: true
+      example: "Es hat geklingelt!"
+      selector:
+        text:
+    rooms:
+      required: false
+      example: "Küche"
+      selector:
+        text:
+          multiple: true
+    floor:
+      required: false
+      example: "Obergeschoss"
+      selector:
+        text:
+    plan:
+      required: false
+      example: "Gartenhaus"
+      selector:
+        text:
+    ignore_quiet:
+      required: false
+      default: false
+      selector:
+        boolean:
+    on_screens:
+      required: false
+      default: false
+      selector:
+        boolean:
+    screens:
+      required: false
+      example: "Flur"
+      selector:
+        text:
+          multiple: true
+reload_screens:
+  fields:
+    templates:
+      required: false
+      example: "kueche_fire"
+      selector:
+        text:
+          multiple: true
+    plan:
+      required: false
+      example: "main"
+      selector:
+        text:
+set_style:
+  fields:
+    style:
+      required: true
+      example: "cozy"
+      selector:
+        select:
+          custom_value: true
+          options:
+            - "neon"
+            - "blueprint"
+            - "day"
+            - "focus"
+            - "synth"
+            - "cozy"
+            - "evening"
+            - "winter"
+            - "model"
+            - "pastel"
+            - "warm"
+            - "reset"
+    screens:
+      required: false
+      example: "Flur"
+      selector:
+        text:
+          multiple: true
+    minutes:
+      required: false
+      example: 30
+      selector:
+        number:
+          min: 1
+          max: 10080
+          unit_of_measurement: min

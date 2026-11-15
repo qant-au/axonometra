@@ -28,6 +28,72 @@
           "description": "The view speaks its answer with Assist's text-to-speech (off: it only shows it)."
         }
       }
+    },
+    "announce": {
+      "name": "Announcement",
+      "description": "Says a message on the speakers of the plan's rooms, as the Announcements module does (needs the module). Each room uses its chosen speaker, else one placed in it, else one of its area, else the default speaker from the module's settings.",
+      "fields": {
+        "message": {
+          "name": "Message",
+          "description": "What the speakers say."
+        },
+        "rooms": {
+          "name": "Rooms",
+          "description": "Room names in the plan (or their Home Assistant areas). Empty: every room (of the floor, when one is given)."
+        },
+        "floor": {
+          "name": "Floor",
+          "description": "Only the rooms of this floor (its name in the plan)."
+        },
+        "plan": {
+          "name": "Floor plan",
+          "description": "Only this floor plan (its name). Without it every plan is searched; an announcement without rooms goes to the plans on the property."
+        },
+        "ignore_quiet": {
+          "name": "Ignore quiet time",
+          "description": "Speak in rooms that have their quiet time now, too. A single room asked for by name always speaks."
+        },
+        "on_screens": {
+          "name": "On Axonometra screens",
+          "description": "Every open Axonometra screen (a wall tablet too) speaks the message itself and shows it. Without rooms or a floor only the screens speak."
+        },
+        "screens": {
+          "name": "Screens",
+          "description": "Only the Axonometra screens with these screen names (set in the view's settings or the card's option screen)."
+        }
+      }
+    },
+    "reload_screens": {
+      "name": "Reload screens",
+      "description": "The open Axonometra views of these card templates load their page again, e.g. after an update, so wall tablets get the new version. No template named: every open view.",
+      "fields": {
+        "templates": {
+          "name": "Card templates",
+          "description": "The ids of the card templates (as the editor shows them under Settings → Card templates). Empty: every open view."
+        },
+        "plan": {
+          "name": "Floor plan",
+          "description": "Only the views of this floor plan (its id, \"main\" for the first one)."
+        }
+      }
+    },
+    "set_style": {
+      "name": "Set style",
+      "description": "The open Axonometra screens show this style: Neon, Homely, Homely evening and more. Without screens: every open view. Back to the screen's own setting with the style reset.",
+      "fields": {
+        "style": {
+          "name": "Style",
+          "description": "A style id (neon, blueprint, day, focus, synth, cozy, evening, winter, model, pastel, warm) or its name; reset: back to the own setting."
+        },
+        "screens": {
+          "name": "Screens",
+          "description": "Only the Axonometra screens with these screen names (set in the view's settings or the card's option screen). Empty: every open view."
+        },
+        "minutes": {
+          "name": "Minutes",
+          "description": "For this long, then back to the own setting. Empty: until changed again."
+        }
+      }
     }
   }
 }

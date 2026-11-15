@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { emptyBuilding, newFloor, type Building, type RoofSection, type SolarField } from "./model.ts";
-import { bestFace, clampField, proposeWindow, roofWindowsOver, faceAt, faceCompass, fieldFace, fieldModules, fieldPlan, fieldCenter, groundFace, groundFloor, moveField, proposeField, proposeGroundField, proposeWallField, roofFaces, turnGroundField, wallFaces } from "./solar.ts";
+import { bestFace, clampField, proposeWindow, roofWindowsOver, faceAt, faceCompass, fieldFace, fieldModules, fieldPlan, fieldCenter, groundFace, groundFloor, moveField, proposeField, proposeGroundField, proposeWallField, roofFaces, turnGroundField, wallFaces, windowCorners } from "./solar.ts";
 
 /** A 10 × 8 m house of one floor (walls 2.5 m high) with the given roof. */
 function house(roof: Building["settings"]["roof"]): Building {
@@ -267,4 +267,27 @@ test("a roof window belongs to the room under its middle, so the room's card sho
   const inLeft = x < 5;
   assert.deepEqual(roofWindowsOver(b, inLeft ? "left" : "right").map((x) => x.id), ["w1"]);
   assert.deepEqual(roofWindowsOver(b, inLeft ? "right" : "left"), []);
+});
+
+test("a roof footprint kept in the settings wins over the rooms present: a card with some rooms keeps the whole roof (#997)", () => {
+  const b = house({ type: "gable", pitch: 35, overhang: 0.4 });
+  const whole = roofFaces(b)[1];
+  // only the front half of the house shown: the roof would shrink onto it – unless the whole footprint is kept
+  b.floors[0].rooms[0].points = [[0, 0], [10, 0], [10, 4], [0, 4]];
+  const half = roofFaces(b)[1];
+  near(half.ls, (4 + 2 * 0.64) / 2 / Math.cos((35 * Math.PI) / 180));
+  b.settings = { ...b.settings, roof: { ...b.settings.roof, frame: [0, 0, 10, 8] } };
+  const kept = roofFaces(b)[1];
+  near(kept.lu, whole.lu);
+  near(kept.ls, whole.ls);
+});
+
+test("a roof window on a flat roof lies flush, not tilted on a frame like a module (#1078)", () => {
+  const b = house({ type: "flat", pitch: 0, overhang: 0.2 });
+  const face = roofFaces(b).find((f) => f.flat);
+  assert.ok(face);
+  const c = windowCorners(face, { id: "w", face: face.key, u: 2, v: 2, w: 1.2, h: 1.5 });
+  assert.ok(c);
+  const ys = c.map((p) => p[1]);
+  near(Math.max(...ys) - Math.min(...ys), 0);
 });

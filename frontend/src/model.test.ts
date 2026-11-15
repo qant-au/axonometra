@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { emptyBuilding, lockAlong, gangEntities, gangPlateWidth, gangsOf, floorElevation, newFloor, outdoorZones, zonesOf, openingPreset, openingStyle, normalizeBuilding, outdoorDrop, outdoorGround, resizeFurniture, roomTiles, sidelightLayout, spotGrid, surfaceHeight, type Furniture } from "./model.ts";
+import { emptyBuilding, lockAlong, gangEntities, gangPlateWidth, gangsOf, floorElevation, newFloor, outdoorZones, zonesOf, openingPreset, openingStyle, normalizeBuilding, outdoorDrop, outdoorGround, outdoorSurface, furnitureCorner, resizeFurniture, roomTiles, sidelightLayout, spotGrid, surfaceHeight, syncCameraLooks, type Furniture } from "./model.ts";
 
 test("a sidelight sits opposite the hinge, on the hinge side when asked, and keeps the leaf at least half a metre", () => {
   const none = {};
@@ -110,6 +110,21 @@ test("outdoor lamps stand on the ground, or on a terrace", () => {
   assert.equal(outdoorGround({ ...newFloor("og", "OG", 2.75), outdoor: [] }, 1, 1), 0);
 });
 
+test("the surface on top where areas overlap: a terrace drawn on a lawn, a path cut out of it (#893)", () => {
+  const floor = newFloor("eg", "EG", 0);
+  floor.outdoor = [
+    { id: "l", type: "lawn", points: [[-10, -10], [10, -10], [10, 10], [-10, 10]] },
+    { id: "t", type: "terrace", points: [[0, 0], [4, 0], [4, 3], [0, 3]] },
+  ];
+  // the lawn is drawn first: the old lookup answers with it, the window light lay under the terrace
+  assert.ok(Math.abs(outdoorGround(floor, 2, 1) - (-0.2 + 0.012)) < 1e-9);
+  assert.ok(Math.abs(outdoorSurface(floor, 2, 1) - (-0.2 + 0.12)) < 1e-9);
+  assert.ok(Math.abs(outdoorSurface(floor, 8, 8) - (-0.2 + 0.012)) < 1e-9);
+  // an area cut out of the one beneath wins, even when lower
+  floor.outdoor.push({ id: "p", type: "path", cut: true, points: [[1, 1], [2, 1], [2, 2], [1, 2]] } as never);
+  assert.ok(Math.abs(outdoorSurface(floor, 1.5, 1.5) - (-0.2 + 0.02)) < 1e-9);
+});
+
 test("resizing drags one corner while the opposite corner stays", () => {
   const f: Furniture = { id: "f", type: "table", x: 1, z: 1, rotation: 0, w: 1, d: 1, h: 0.75, variant: null, entity: null, power: null };
   // pull the front-right corner from (1.5, 1.5) to (2.5, 2)
@@ -120,6 +135,17 @@ test("resizing drags one corner while the opposite corner stays", () => {
   assert.equal(turned.d, 1);
   // never smaller than 10 cm
   assert.equal(resizeFurniture(f, [1, 1], [0, 0], 0.05).w, 0.1);
+});
+
+test("a corner handle can sit out from a small item and still drag its corner (#908)", () => {
+  const f: Furniture = { id: "f", type: "sensor_motion", x: 1, z: 1, rotation: 90, w: 0.1, d: 0.1, h: 0.1, variant: null, entity: null, power: null };
+  const [cx, cz] = furnitureCorner(f, [1, 1]);
+  assert.ok(Math.abs(cx - 0.95) < 1e-9 && Math.abs(cz - 1.05) < 1e-9);
+  // 0.2 m out along both sides: the handle stands clear of the item
+  const [hx, hz] = furnitureCorner(f, [1, 1], 0.2);
+  assert.ok(Math.abs(hx - 0.75) < 1e-9 && Math.abs(hz - 1.25) < 1e-9);
+  // the editor keeps the grab offset: the pointer at the handle leaves the size as it is
+  assert.deepEqual(resizeFurniture(f, [1, 1], [hx - (hx - cx), hz - (hz - cz)], 0.05), { x: 1, z: 1, w: 0.1, d: 0.1 });
 });
 
 test("floors from Home Assistant levels are stacked by level", () => {
@@ -221,4 +247,49 @@ test("a lock sits on the main leaf of a double door, not on the seam (#645)", ()
   const lit = { type: "door" as const, style: "sidelight" as const, width: 1.6, leaves: 1 as const };
   const l = sidelightLayout(1.6, "sidelight", true, {})!;
   assert.ok(Math.abs(lockAlong(lit, true) - (l.x0 + l.x1) / 2) < 1e-9);
+});
+
+test("a camera and its look stay together: either one moved takes the other along, the camera gone takes its look (#779)", () => {
+  const make = () => {
+    const b = emptyBuilding();
+    const f = newFloor("eg", "EG", 0);
+    f.placements.push({ entity_id: "camera.flur", x: 1, z: 1, y: null, rotation: 0 });
+    f.furniture.push({ id: "look", type: "camera_dome", x: 1, z: 1, rotation: 0, w: 0.2, d: 0.2, h: 0.2, variant: null, entity: "none", look_of: "camera.flur" } as Furniture);
+    b.floors = [f];
+    return b;
+  };
+  const base = make();
+  const moved = structuredClone(base);
+  moved.floors[0].placements[0].x = 3;
+  syncCameraLooks(moved, base);
+  assert.equal(moved.floors[0].furniture[0].x, 3);
+  const dragged = structuredClone(base);
+  dragged.floors[0].furniture[0].z = 4;
+  dragged.floors[0].furniture[0].rotation = 90;
+  syncCameraLooks(dragged, base);
+  assert.equal(dragged.floors[0].placements[0].z, 4);
+  assert.equal(dragged.floors[0].placements[0].rotation, 90);
+  const gone = structuredClone(base);
+  gone.floors[0].placements = [];
+  syncCameraLooks(gone, base);
+  assert.equal(gone.floors[0].furniture.length, 0);
+});
+
+test("a camera's look hangs at the camera's height, not on the floor (#779)", () => {
+  const b = emptyBuilding();
+  const f = newFloor("eg", "EG", 0);
+  f.placements.push({ entity_id: "camera.flur", x: 1, z: 1, y: 1.8, rotation: 0 }, { entity_id: "camera.decke", x: 2, z: 2, y: null, rotation: 0, mount: "ceiling" });
+  f.furniture.push(
+    { id: "a", type: "camera_dome", x: 1, z: 1, rotation: 0, w: 0.2, d: 0.2, h: 0.2, variant: null, entity: "none", look_of: "camera.flur" } as Furniture,
+    { id: "b", type: "camera_dome", x: 2, z: 2, rotation: 0, w: 0.2, d: 0.2, h: 0.2, variant: null, entity: "none", look_of: "camera.decke" } as Furniture,
+  );
+  b.floors = [f];
+  const next = structuredClone(b);
+  syncCameraLooks(next, b);
+  assert.equal(next.floors[0].furniture[0].mount_y, 1.7);
+  assert.equal(next.floors[0].furniture[1].mount_y, 2.3);
+  next.floors[0].placements[0].y = 2.4;
+  const later = structuredClone(next);
+  syncCameraLooks(later, next);
+  assert.equal(later.floors[0].furniture[0].mount_y, 2.3);
 });

@@ -17,6 +17,11 @@ const NAMES: Record<string, RegExp> = {
   pool: /pool\s*pro|pro_pool|pool-modul|pool module/i,
   diagnostics: /diagnostics_report|debug[- ]daten|nutzungs- und fehlerberichte|usage and error reports/i,
   locate: /\bortung\b|raumortung|bluetooth[- ]ortung|\blocating\b|room locating/i,
+  fun_winter: /winter\s*(&|und|and)\s*(weihnachten|christmas)|fun_winter|adventskranz|advent wreath/i,
+  // the room bar at the bottom (not the floor and room chips at the top, which older texts call the room bar too)
+  room_bar: /raum-leiste|room_bar|no room bar|room bar at the bottom|front of the room bar/i,
+  // the frames pack (the deco pack's single "digitaler Bilderrahmen" is older and may be named)
+  frames: /digitale bilderrahmen|digital picture frames|bilderrahmen-pack|frames pack|mastershort\.frames|frames.*pack/i,
 };
 
 test("unreleased add-ons are named in no public text", () => {

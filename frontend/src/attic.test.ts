@@ -33,6 +33,20 @@ test("the roof's underside follows the section's profile, minus the slab", () =>
   assert.equal(roofUnderAt({ settings: { roof: { ...building.settings.roof, sections: [{ ...section, open: true }] } } }, 4, 3), null);
 });
 
+test("an overhang set by hand covers what stands under it: walls there end under the roof (#921)", () => {
+  const tan40 = Math.tan((40 * Math.PI) / 180);
+  // side b (z > 6.24) with 1.5 m by hand, the gable end u1 (x > 8.24) with 1 m; the others automatic
+  const wide = { settings: { roof: { ...building.settings.roof, sections: [{ ...section, overhang_sides: [null, 1.5, null, 1] }] } } };
+  // 1 m out on side b the eave has come down by tan(40°)
+  assert.ok(Math.abs(roofUnderAt(wide, 4, 7.24)! - (3.7 - tan40 - ROOF_THICK)) < 1e-9);
+  // beyond the gable end, under its 1 m: the profile across goes on
+  assert.ok(roofUnderAt(wide, 8.9, 3) !== null);
+  // past the overhang, and on the automatic sides: no roof, as before
+  assert.equal(roofUnderAt(wide, 4, 7.9), null);
+  assert.equal(roofUnderAt(wide, 4, -0.5), null);
+  assert.equal(roofUnderAt(building, 4, 7.24), null, "without a hand-set side nothing changes");
+});
+
 test("an attic floor's walls end under the slope: knee walls at the eaves, gables up to the ridge", () => {
   const floor: Floor = { ...newFloor("og", "OG", 2.75), height: 2.5, rooms: [rect("a", 0, 0, 8, 6)] };
   const under = (x: number, z: number) => {
@@ -135,4 +149,27 @@ test("a loft wider than the half-hip above it leaves no wall stub standing out o
   assert.ok(worst < 0.005, `a wall stands ${worst.toFixed(3)} m out of the roof`);
   // the walls under the ridge are still there
   assert.ok(maxY(geo.walls, (x, z) => x > 3.5 && x < 4 && z < 0.1) > 0.5, "gable wall under the ridge");
+});
+
+test("a high attic floor's wall along the eaves is cut where the slope passes through its thickness (#855)", () => {
+  // the attic room starts 2.23 m in from the eave of a 45° roof, on a floor at 5.3 m: at its outer face the
+  // roof's underside lies 15 cm below the floor, at its inner face 9 cm above it
+  const steep: RoofSection = { ...section, pitch_a: 45, pitch_b: 45, eave_a: 3.3, eave_b: 3.3, base: 3.3, z0: -0.1, z1: 8.1, x0: -0.24, x1: 8.24, axis: "x" };
+  const b = { settings: { roof: { type: "custom" as const, pitch: 45, overhang: 0.4, sections: [steep] } } };
+  const floor: Floor = { ...newFloor("db", "DB", 5.3), height: 1.9, rooms: [rect("a", 0.5, 2.13, 7.5, 5.87)] };
+  const under = (x: number, z: number) => {
+    const y = roofUnderAt(b, x, z);
+    return y === null ? null : y - floor.elevation;
+  };
+  const geo = buildFloorGeometry(floor, 0.24, 0.12, [], [], under);
+  const p = geo.walls.getAttribute("position");
+  let worst = Infinity;
+  for (let i = 0; i < p.count; i++) {
+    const r = under(p.getX(i), p.getZ(i));
+    if (r !== null) worst = Math.min(worst, r);
+  }
+  // no corner of a wall stands where the roof's underside lies deeper than the buried depth (6 cm below the floor)
+  assert.ok(worst >= -0.06 - 1e-6, `a wall corner where the roof lies ${worst.toFixed(3)} m below the floor`);
+  // the walls along the eaves are still there, cut to the slope
+  assert.ok(maxY(geo.walls, (x, z) => z < 2.2 && x > 2 && x < 6) > 0.04, "the eave wall is kept");
 });

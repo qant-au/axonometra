@@ -249,7 +249,7 @@ export function buildModel(lib: FunLib, pet: Pet): Model {
   g.fillText("z", 20, 52);
   g.font = "bold 54px system-ui, sans-serif";
   g.fillText("Z", 58, 46);
-  const zzz = new lib.Mesh(new lib.PlaneGeometry(0.3, 0.15), new lib.MeshBasicMaterial({ map: new lib.CanvasTexture(c), transparent: true, depthWrite: false, side: lib.DoubleSide }));
+  const zzz = new lib.Mesh(new lib.PlaneGeometry(0.3, 0.15), new lib.MeshBasicMaterial({ map: new lib.CanvasTexture(c), transparent: true, depthWrite: false, side: lib.DoubleSide, forceSinglePass: true }));
   zzz.rotation.x = -0.7;
   zzz.position.set(0, L.hi + h * 2 + 0.12, 0);
   zzz.visible = false;
@@ -300,6 +300,18 @@ function obstaclesOf(floor: Floor, base: (floor: Floor, f: Furniture) => number)
       const a = (f.rotation * Math.PI) / 180;
       return { c: [f.x, f.z] as Vec2, u: [Math.cos(a), Math.sin(a)] as Vec2, hw: f.w / 2, hd: f.d / 2 };
     });
+}
+
+/**
+ * Where the pets can walk on a floor: through the doors between two rooms that are not reported shut. They live
+ * indoors – the front door, a garage door and a floor-length window are no ways for them: the shortest way from room
+ * to room led round the outside of the house, through the closed garage door, hedges and fences (#1047).
+ */
+export function petMap(Maps: typeof FloorMap, plan: Building, floor: Floor, shut: ReadonlySet<string>, obstacles: readonly Obstacle[]): FloorMap {
+  const doors = floor.openings.filter((o) => o.type === "door" && !shut.has(o.id));
+  const map = new Maps(plan, { ...floor, openings: doors }, obstacles);
+  const outer = new Set(map.doors.filter((d) => !(map.roomAt(d.p[0]) && map.roomAt(d.p[1]))).map((d) => d.id));
+  return outer.size ? new Maps(plan, { ...floor, openings: doors.filter((o) => !outer.has(o.id)) }, obstacles) : map;
 }
 
 function rugsOf(floor: Floor): Rug[] {
@@ -553,10 +565,7 @@ export function startPets(ctx: PetsContext): PetsController {
     let info = floors.get(id);
     if (!info) {
       const floor = plan.floors.find((f) => f.id === id)!;
-      // shut doors are walls for the pets
-      const shut = ctx.closedDoors?.() ?? new Set<string>();
-      const walkable = shut.size ? { ...floor, openings: floor.openings.filter((o) => !shut.has(o.id)) } : floor;
-      info = { floor, map: new ctx.FloorMap(plan, walkable, obstaclesOf(floor, ctx.base)), rooms: floor.rooms.filter((r) => r.points.length >= 3), spots: new Map(), rugs: rugsOf(floor) };
+      info = { floor, map: petMap(ctx.FloorMap, plan, floor, ctx.closedDoors?.() ?? new Set<string>(), obstaclesOf(floor, ctx.base)), rooms: floor.rooms.filter((r) => r.points.length >= 3), spots: new Map(), rugs: rugsOf(floor) };
       floors.set(id, info);
     }
     return info;
@@ -713,7 +722,9 @@ export function startPets(ctx: PetsContext): PetsController {
     a.on = s;
     if (s && s.y > 0.05 && s.approach) a.jump = { from: [a.pos[0], a.y, a.pos[1]], to: [s.p[0], s.y, s.p[1]], t: 0, then: mode };
     else {
-      if (s) {
+      // a place on the floor that a table or a wall takes up (in front of a sofa with a coffee table): it lies down
+      // where it got to, beside it, instead of inside the table (#1047)
+      if (s && !(s.y <= 0.05 && a.map.blocked(s.p))) {
         a.pos = s.p;
         a.y = s.y;
       }

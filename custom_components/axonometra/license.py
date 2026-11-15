@@ -141,7 +141,9 @@ async def _post(hass: HomeAssistant, path: str, body: dict[str, Any]) -> Any:
 
 async def async_fetch_catalog(hass: HomeAssistant, key: str, instance: str) -> dict[str, Any]:
     """The customer's packs (id, name, release, shop page) and name; binds this installation to the key."""
-    text = await _post(hass, "catalog", {"key": key, "instance": instance})
+    # the language, so the shop names its offers in it (an English installation saw German shop texts, #825)
+    lang = (hass.config.language or "en")[:10]
+    text = await _post(hass, "catalog", {"key": key, "instance": instance, "lang": lang})
     try:
         data = json.loads(text)
     except ValueError as err:
@@ -194,6 +196,8 @@ def _offers(raw: Any) -> list[dict[str, Any]]:
                 "kind": o.get("kind") if o.get("kind") in ("pack", "pro", "bundle", "fun") else "pack",
                 "price": str(o.get("price") or "")[:40],
                 "new": bool(o.get("new")),
+                # the Supporter Pass: its tile mentions what comes with it (Axonometra Print)
+                "supporter_pass": bool(o.get("supporter_pass")),
             }
         )
     return out
@@ -233,15 +237,119 @@ def _supporter(raw: Any) -> dict[str, Any] | None:
     return {"code": code, "until": until if re.fullmatch(r"\d{4}-\d{2}-\d{2}", until) else None}
 
 
+# ---------------------------------------------------------------------------- previews of the shop's furniture
+
+# what every pack holds, as pictures and names only (never the models): the library shows the items not owned yet
+# with a lock, a tap leads to the pack in the shop. A plain file on the shop, the same for everyone - fetched only
+# when an admin opens the furniture library, at most once a day, and nothing about the installation is sent along.
+PREVIEW_URL = "https://mastershort.de/np-previews/index.json"
+PREVIEW_MAX_AGE = 24 * 3600
+_previews: dict[str, Any] = {"at": 0.0, "data": None}
+_ID = re.compile(r"^[a-z0-9_.-]{1,64}$")
+
+
+def _texts(raw: Any, size: int) -> dict[str, str]:
+    """A name per language: short strings under language codes."""
+    if not isinstance(raw, dict):
+        return {}
+    return {str(k)[:10]: str(v)[:size] for k, v in list(raw.items())[:24] if isinstance(v, str) and v}
+
+
+def _words(raw: Any, count: int, size: int) -> list[str]:
+    return [str(w)[:size] for w in raw[:count] if isinstance(w, str)] if isinstance(raw, list) else []
+
+
+def clean_previews(raw: Any) -> dict[str, Any]:
+    """The shop's preview list, checked: links https only, ids plain, texts short, at most 4000 items."""
+    if not isinstance(raw, dict):
+        raise LicenseError("shop_error", "unexpected answer")
+    base = _https(raw.get("base"))
+    packs = []
+    for p in raw.get("packs") or []:
+        if not isinstance(p, dict) or not _ID.match(str(p.get("id") or "")):
+            continue
+        urls = {k: v for k, v in _texts(p.get("url"), 300).items() if v.startswith("https://")}
+        name, price = _texts(p.get("name"), 80), _texts(p.get("price"), 20)
+        packs.append({"id": p["id"], "name": name, "price": price, "url": urls, "free": bool(p.get("free"))})
+    known = {p["id"] for p in packs}
+    items = []
+    for it in (raw.get("items") or [])[:4000]:
+        if not isinstance(it, dict) or it.get("p") not in known or not _ID.match(str(it.get("id") or "")):
+            continue
+        size = it.get("size")
+        sizes = size if isinstance(size, list) and len(size) == 3 else []
+        if not sizes or not all(isinstance(v, (int, float)) and 0 < v <= 100 for v in sizes):
+            continue
+        items.append(
+            {
+                "p": it["p"],
+                "id": it["id"],
+                "name": _texts(it.get("name"), 80),
+                "size": [float(v) for v in sizes],
+                "group": str(it.get("group") or "")[:20] or None,
+                "room": _words(it.get("room"), 12, 20),
+                "tags": _words(it.get("tags"), 20, 30),
+                "family": str(it.get("family") or "")[:40] or None,
+                "variant": _texts(it.get("variant"), 40) or None,
+                "electric": bool(it.get("electric")),
+                "light": bool(it.get("light")),
+                "live": bool(it.get("live")),
+            }
+        )
+    found = raw.get("bundle")
+    bundle: dict[str, Any] = found if isinstance(found, dict) else {}
+    burls = {k: v for k, v in _texts(bundle.get("url"), 300).items() if v.startswith("https://")}
+    return {
+        "base": base,
+        "packs": packs,
+        "items": items,
+        "bundle": {"name": _texts(bundle.get("name"), 80), "price": _texts(bundle.get("price"), 20), "url": burls}
+        if burls
+        else None,
+    }
+
+
+async def async_fetch_previews(hass: HomeAssistant) -> dict[str, Any]:
+    """The preview list, from the shop at most once a day (kept in memory); an empty one while the shop is away."""
+    now = time.time()
+    if _previews["data"] is not None and now - _previews["at"] < PREVIEW_MAX_AGE:
+        return _previews["data"]
+    session = async_get_clientsession(hass)
+    try:
+        headers = {"User-Agent": await _user_agent_of(hass)}
+        async with session.get(PREVIEW_URL, headers=headers, timeout=_TIMEOUT) as res:
+            if res.status >= 400:
+                raise LicenseError("shop_error", f"HTTP {res.status}")
+            data = clean_previews(json.loads(await res.text()))
+    except (TimeoutError, aiohttp.ClientError, OSError, ValueError, LicenseError) as err:
+        _LOGGER.debug("No furniture previews from the shop: %s", err)
+        # an old list stays; without one, try again in an hour
+        if _previews["data"] is not None:
+            return _previews["data"]
+        _previews["at"] = now - PREVIEW_MAX_AGE + 3600
+        return {"base": None, "packs": [], "items": [], "bundle": None}
+    _previews.update(at=now, data=data)
+    return data
+
+
 async def async_fetch_pack(hass: HomeAssistant, key: str, instance: str, pack_id: str) -> str:
     """A bought pack, signed for this installation."""
     return await _post(hass, "pack", {"key": key, "instance": instance, "pack": pack_id})
 
 
+def _pending_release(pack: dict[str, Any]) -> int:
+    """The release of a module update that waits for the admin's approval, 0 without one."""
+    pending = pack.get("pending")
+    return int(pending.get("release") or 1) if isinstance(pending, dict) else 0
+
+
 def status(data: FloorplanData, instance: str) -> dict[str, Any]:
     """What the frontend shows: the fingerprint, the connection and the catalog with installed releases."""
     lic = data.license
-    installed = {p["id"]: int(p.get("release") or 1) for p in data.packs}
+    # a module update that waits for the admin's approval counts as installed (#805, #707): the shop list shows it
+    # as waiting, not as an update a click would only fetch again
+    installed = {p["id"]: max(int(p.get("release") or 1), _pending_release(p)) for p in data.packs}
+    waits = {p["id"] for p in data.packs if _pending_release(p)}
     key = lic.get("key")
     return {
         "instance": instance,
@@ -251,7 +359,9 @@ def status(data: FloorplanData, instance: str) -> dict[str, Any]:
         "checked_at": lic.get("checked_at"),
         "error": lic.get("error"),
         "shop_url": SHOP_URL,
-        "packs": [{**p, "installed": installed.get(p["id"])} for p in lic.get("catalog", [])],
+        "packs": [
+            {**p, "installed": installed.get(p["id"]), "waits": p["id"] in waits} for p in lic.get("catalog", [])
+        ],
         "offers": lic.get("offers", []) if key else [],
         "loyalty": lic.get("loyalty") if key else None,
         "supporter": lic.get("supporter") if key else None,
@@ -368,10 +478,7 @@ async def async_refresh(hass: HomeAssistant, data: FloorplanData, install_update
     )
     if install_updates:
         # a module update that waits for the admin's approval counts as fetched
-        installed = {
-            p["id"]: max(int(p.get("release") or 1), int((p.get("pending") or {}).get("release") or 1))
-            for p in data.packs
-        }
+        installed = {p["id"]: max(int(p.get("release") or 1), _pending_release(p)) for p in data.packs}
         fetched = 0
         for p in catalog["packs"]:
             if p["id"] in installed and p["release"] > installed[p["id"]]:

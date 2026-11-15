@@ -1,0 +1,110 @@
+# The npm package @axonometra/editor, published from a tag: editor-v0.8.0, editor-v0.8.1, ...
+#
+# Its own tag prefix and its own workflow, because release.yml and the v* tags are upstream's: they release the Home
+# Assistant integration at upstream's version (custom_components/axonometra/manifest.json). The package's version is
+# fork/package/package.json's, and its notes are fork/package/CHANGELOG.md.
+#
+# Publishing uses npm Trusted Publishing: no token, the package trusts this workflow file on npmjs.com, and the
+# release carries a provenance statement.
+name: npm release
+
+on:
+  push:
+    tags:
+      - "editor-v*.*.*"
+
+permissions:
+  contents: read
+
+jobs:
+  # Fails fast, before any build, when the tag and the package disagree.
+  metadata:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Tag matches the package version
+        run: |
+          expected="editor-v$(node -p "require('./fork/package/package.json').version")"
+          if [ "$expected" != "$GITHUB_REF_NAME" ]; then
+            echo "Tag $GITHUB_REF_NAME does not match fork/package/package.json ($expected)." >&2
+            echo "Set the version in fork/package/package.json, commit, then tag." >&2
+            exit 1
+          fi
+          echo "tag $GITHUB_REF_NAME matches the package version"
+
+      - name: The package CHANGELOG has a section for this version
+        run: |
+          version="$(node -p "require('./fork/package/package.json').version")"
+          if ! grep -qF "## [$version] - " fork/package/CHANGELOG.md; then
+            echo "fork/package/CHANGELOG.md has no '## [$version] - <date>' section." >&2
+            exit 1
+          fi
+          echo "fork/package/CHANGELOG.md has a section for $version"
+
+  # The fork's checks: identity, the standalone build and its smoke checks, and the package from its tarball.
+  fork:
+    uses: ./.github/workflows/fork.yml
+
+  # The frontend's own gate (types, unit tests, budgets, committed bundles current), as on every push.
+  frontend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+      - name: Committed bundles are up to date
+        run: git diff --exit-code -- ../custom_components/axonometra/frontend
+
+  publish:
+    needs: [metadata, fork, frontend]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+          registry-url: https://registry.npmjs.org
+
+      - run: npm ci
+        working-directory: frontend
+      - run: npm run build
+        working-directory: frontend
+      - run: node ../fork/build-package.mjs
+        working-directory: frontend
+      # the exact folder about to be published, tested once more from its tarball
+      - run: node ../fork/pack-test.mjs
+        working-directory: frontend
+        env:
+          CHROME_PATH: /usr/bin/google-chrome
+
+      # A re-pushed or re-run tag whose version is already on npm has nothing to publish: succeed without
+      # publishing instead of failing on "cannot publish over".
+      - name: Skip when this version is already on npm
+        id: published
+        run: |
+          spec="$(node -p "const p=require('./dist/npm/package.json'); p.name+'@'+p.version")"
+          if [ -n "$(npm view "$spec" version 2>/dev/null)" ]; then
+            echo "$spec is already on npm; nothing to publish."
+            echo "already=true" >> "$GITHUB_OUTPUT"
+          fi
+      - if: steps.published.outputs.already != 'true'
+        run: npm install -g npm@^11.5.1
+      - if: steps.published.outputs.already != 'true'
+        run: npm publish ./dist/npm --provenance --access public

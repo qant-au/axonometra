@@ -76,6 +76,19 @@ to come.
 
 ## Embedding
 
+From npm (no runtime dependencies; see the package's own README for the full API):
+
+```sh
+npm install @axonometra/editor
+```
+
+```js
+import { mountAxonometra, browserStore } from "@axonometra/editor";
+await mountAxonometra(document.querySelector("#plan"), { store: browserStore("my-plan") });
+```
+
+Or build it from this repository:
+
 ```sh
 cd frontend && npm ci && npm run build && node ../fork/build-standalone.mjs
 ```

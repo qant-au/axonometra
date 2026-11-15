@@ -4,17 +4,17 @@
  */
 import { getPacks } from "./packs.ts";
 
-export type Feature = "camera_cockpit" | "weather" | "screens" | "energy_pro" | "sound" | "auto_pro" | "time_travel" | "pool" | "household" | "fridge_smart" | "fun_pets" | "fun_halloween";
+export type Feature = "camera_cockpit" | "weather" | "screens" | "energy_pro" | "sound" | "auto_pro" | "time_travel" | "pool" | "household" | "frames" | "fridge_smart" | "fun_pets" | "fun_halloween" | "fun_winter";
 
 /** The add-ons shown on the extensions page (sold in the shop). */
-export const FEATURES: readonly Feature[] = ["camera_cockpit", "weather", "screens", "energy_pro", "sound", "auto_pro", "time_travel", "pool", "household"];
+export const FEATURES: readonly Feature[] = ["camera_cockpit", "weather", "screens", "energy_pro", "sound", "auto_pro", "time_travel", "pool", "household", "frames"];
 /**
  * Fun packs: free extras (0 €, anyone may give what they like) picked up in the shop by customers – not Pro add-ons,
  * shown in their own section of the extensions page and switched on and off there.
  */
-export const FUN: readonly Feature[] = ["fun_pets", "fun_halloween"];
+export const FUN: readonly Feature[] = ["fun_pets", "fun_halloween", "fun_winter"];
 /** Free features built but not released yet (no pack unlocks them; only the lab switch shows them). */
-export type FreeFeature = "diagnostics" | "locate";
+export type FreeFeature = "diagnostics" | "locate" | "room_bar";
 export type Gated = Feature | FreeFeature;
 
 /**
@@ -22,7 +22,7 @@ export type Gated = Feature | FreeFeature;
  * unlocked (the tester has the pack) or the lab switch is on (localStorage "axonometra.lab" = "1").
  * A release takes a feature off this list.
  */
-export const UNRELEASED: readonly Gated[] = ["pool"];
+export const UNRELEASED: readonly Gated[] = ["pool", "room_bar"];
 
 export function labOn(): boolean {
   try {
@@ -50,7 +50,18 @@ export function projectionOn(): boolean {
 
 /** Whether an add-on may be shown and advertised: released, or unlocked, or the lab switch is on. */
 export function released(feature: Gated): boolean {
-  return !UNRELEASED.includes(feature) || (feature !== "diagnostics" && feature !== "locate" && hasFeature(feature)) || labOn();
+  return !UNRELEASED.includes(feature) || (feature !== "diagnostics" && feature !== "locate" && feature !== "room_bar" && hasFeature(feature)) || labOn();
+}
+
+/**
+ * Features whose living part a module of the pack brings (since 3.0.6): a pack with one of them but without a module
+ * is an older release of that pack – the shop connection fetches the current one, a hand-imported file must be loaded again.
+ */
+export const MODULE_FEATURES: readonly Feature[] = ["frames"];
+
+/** Whether an installed pack is such an older release without its module. */
+export function packLacksModule(pack: { features?: string[]; module?: unknown }): boolean {
+  return !pack.module && (pack.features ?? []).some((f) => (MODULE_FEATURES as readonly string[]).includes(f));
 }
 
 /** Features unlocked by a pack but not listed anywhere (exclusive items). */

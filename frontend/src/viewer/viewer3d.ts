@@ -5,49 +5,11 @@
 // flight into it). Each floor is a group with its own materials so its height and opacity can be
 // animated independently.
 
-import {
-  AdditiveBlending,
-  RingGeometry,
-  FogExp2,
-  CircleGeometry,
-  Box3,
-  CanvasTexture,
-  ClampToEdgeWrapping,
-  Color,
-  BackSide,
-  DoubleSide,
-  FrontSide,
-  Group,
-  LineBasicMaterial,
-  LineSegments,
-  Mesh,
-  MeshBasicMaterial,
-  MultiplyBlending,
-  OrthographicCamera,
-  PerspectiveCamera,
-  Points,
-  PointsMaterial,
-  PlaneGeometry,
-  Raycaster,
-  RepeatWrapping,
-  Scene,
-  SRGBColorSpace,
-  TextureLoader,
-  type Texture,
-  Float32BufferAttribute,
-  Uint32BufferAttribute,
-  DynamicDrawUsage,
-  BufferGeometry as Geometry,
-  Vector2,
-  Vector3,
-  WebGLRenderer,
-  WebGLRenderTarget,
-  type BufferGeometry,
-  type Material,
-} from "three";
-import type { Building, Floor, Furniture, Room, StartView } from "../model.ts";
-import { recolorLamps, SHADE_SENTINEL, shadeFactors } from "./lamp-colors.ts";
-import { centroid, GANG_TYPES, outdoorZones, pointInPolygon, openingStyle, setTerrain, WALL_LAMP_Y, zonesOf } from "../model.ts";
+import type { HassEntity } from "../types.ts";
+import { AdditiveBlending, CustomBlending, DstColorFactor, OneMinusDstColorFactor, NormalBlending, OneFactor, OneMinusSrcAlphaFactor, RingGeometry, Fog, CircleGeometry, Box3, CanvasTexture, ClampToEdgeWrapping, Color, BackSide, DoubleSide, FrontSide, Group, LineBasicMaterial, LineSegments, Mesh, MeshBasicMaterial, MultiplyBlending, OrthographicCamera, PerspectiveCamera, Points, PointsMaterial, PlaneGeometry, Raycaster, RepeatWrapping, Scene, SRGBColorSpace, TextureLoader, type Texture, Float32BufferAttribute, Uint32BufferAttribute, DynamicDrawUsage, BufferGeometry as Geometry, Vector2, Vector3, WebGLRenderer, WebGLRenderTarget, type Material, BufferGeometry } from "three";
+import type { Building, Floor, Furniture, Room, StartView, Vec2 } from "../model.ts";
+import { markLit, recolorLamps, SHADE_SENTINEL, shadeFactors } from "./lamp-colors.ts";
+import { centroid, GANG_TYPES, labelPoint, gateSpans, outdoorSurface, outdoorTopAt, outdoorZones, pointInPolygon, openingStyle, setTerrain, WALL_LAMP_Y, zonesOf } from "../model.ts";
 import { placeWallPlate } from "../geometry/walls.ts";
 import { buildEarth } from "./earth.ts";
 import { clampIntoRoom } from "../geometry/snap.ts";
@@ -56,8 +18,12 @@ import { buildFloorGeometry, SLAB, stairHoleParts, type FloorGeometry } from "./
 import { OrbitControls, type OrbitView } from "./controls.ts";
 import { makeFoldable, type FoldMasks } from "./fold.ts";
 import { CameraProjections, PROJECTION_LAYER, type ProjectionSurface, type ProjectorPose } from "./projection.ts";
-import { packGlowCentre, pushAwning, pushCameraModel, pushPackGlow, pushPackRobot, pushPackLamp, pushPackMotion, screenRect, pushFridgeDoors, setLightLook, hasFixedColors } from "./furniture.ts";
+import { pushPackLive } from "./furniture.ts";
+import { bindValue, hasLiveParts, liveGroups, slotEntity, type PartBind } from "../live-parts.ts";
+import { packGlowCentre, packGlowCentres, pushAwning, pushCameraModel, pushPackGlow, pushPackRobot, pushPackLamp, pushPackMotion, pushPackSpin, screenRect, screenPictureSize, pushFridgeDoors, setLightLook, hasFixedColors } from "./furniture.ts";
 import { pushPipeTube, type PipeTube } from "./pipes.ts";
+import { pushGate } from "./outdoor.ts";
+import { pinKey } from "./pin-key.ts";
 // the walk through the house at eye height (lives with the viewer it drives)
 export { FloorMap, WalkCamera, type WalkState } from "./walk.ts";
 
@@ -65,20 +31,29 @@ export { FloorMap, WalkCamera, type WalkState } from "./walk.ts";
 export const funLib = { Group, Mesh, MeshBasicMaterial, CanvasTexture, Color, PlaneGeometry, BufferGeometry: Geometry, Float32BufferAttribute, DoubleSide };
 
 export type { PipeTube };
-import { isCooktopZone, mountBase, packItem, packMotion, setPacks, type FurniturePack } from "../packs.ts";
+import { groundUnder, isCooktopZone, mountBase, packItem, packMotion, packSpinAxis, setPacks, type FurniturePack } from "../packs.ts";
 import { withVehicles } from "../parking.ts";
-import { buildRoof, type RoofWindowState } from "./roof.ts";
+import { buildRoof, type RoofGeometry, type RoofWindowState } from "./roof.ts";
+import { SunFx } from "./sun-fx.ts";
+import { blockShadows, houseShadow, shadowBox, sunEdge } from "./sun-shadow.ts";
+import { placedSurroundings, surroundKey } from "../surroundings.ts";
+import type { SunPath } from "../sun-path.ts";
+import { sunArcFrame, type SunArcFrame } from "./sun-arc.ts";
 import { GROUND, groundFace, groundFloor, roofFaces, roofWindowRoom, wallFaces } from "../solar.ts";
 import { buildSolarLive, solarLiveMaterial, writeSolarLevels, type SolarLive } from "./solar-live.ts";
+import { dotTexture, roofLightPoints, roofSnowGeometry } from "./snow.ts";
+import { Firework } from "./firework.ts";
 import { buildPools, disposePools, type PoolPiece } from "./pool-water.ts";
-import { accentOnUniform, accentUniform, parseAccent, lineBlending, themed, themeIndex, type Theme, type ThemeUniform } from "./theme.ts";
+import { accentOnUniform, accentUniform, applyStyleUniforms, floorLevelUniform, LIT_ATTRIBUTE, makeMorphMask, makeStyleUniforms, MORPH_ATTRIBUTE, MORPH_MASK_GLSL, MORPH_POLY_MAX, morphMaskUniforms, parseAccent, lineBlending, setMorphDefine, STYLE_LOOK, themed, themeIndex, type Theme, type ThemeUniform } from "./theme.ts";
+import { styleById, type StyleDef } from "../looks.ts";
+import { hexColor, setNaturalPalette } from "./palette.ts";
 
 export type { Theme } from "./theme.ts";
 import { ALWAYS, DEG, GeoBuffer, LineBuffer, pushPrism, triangulate } from "./geo.ts";
-import { buildLightSurface, lightColors, roomIndexAt, type LightKind, type LightSource, type LightSurface, zoneOf } from "./lighting.ts";
-import { buildOpeningParts, CLOSED, type OpeningState } from "./openings.ts";
+import { buildLightSurface, lightColors, roomIndexAt, shadowed, spillLength, windowCast, type LightKind, type LightSource, type LightSurface, zoneOf } from "./lighting.ts";
+import { buildOpeningParts, CLOSED, lightCover, type OpeningState } from "./openings.ts";
 import { circlePath, cleaningPath, stepRobot, type RobotInfo, type RobotMotion } from "./robot.ts";
-import { decorDelay, lowEndDevice, petDelay } from "./pace.ts";
+import { decorDelay, lowEndDevice, petDelay, SLOW_KEY, SLOW_SAMPLES, SLOW_WARMUP_MS, slowFrames } from "./pace.ts";
 
 export type { RobotInfo } from "./robot.ts";
 
@@ -92,8 +67,17 @@ export type WallMode = "auto" | "cut";
 
 export interface ViewerOptions {
   quality?: Quality;
+  /** Zoom style (test): how far the blend from the far look to the near style has come (0–1), for the page's background. */
+  onMorph?: (m: number) => void;
   /** Pull floors apart in the house view (default true). */
   explode?: boolean;
+  /**
+   * Without the newer effects – the sun's arc, the house shadow and the window light at night – for a graphics
+   * chip that lost its context on them before (#827).
+   */
+  safeFx?: boolean;
+  /** The WebGL context was lost (not by dispose()). */
+  onContextLost?: () => void;
   onRoomTap?: (floorId: string, roomId: string | null) => void;
   onFloorTap?: (floorId: string) => void;
   onBack?: () => void;
@@ -172,7 +156,7 @@ export interface DeviceMarker {
   /** A placed device fixed against moving. */
   fixed?: boolean;
   /** The marker setting of its placement or furniture item (undefined = automatic). */
-  show?: "always" | "no_power" | "never";
+  show?: "always" | "active" | "no_power" | "never";
   /** The 3D lamp can be tapped (it has an entity). */
   pickable?: boolean;
   /** Furniture item this lamp is (for moving it in 3D). */
@@ -189,6 +173,8 @@ export interface DeviceMarker {
   powerText?: string;
   /** A camera drawn in 3D (wall or ceiling); its field of view lies on the floor, red while motion is seen. */
   model?: "camera_wall" | "camera_ceiling";
+  /** A camera shown by a furniture item of its own (#779): its built-in model is not drawn (wedge and look-through stay). */
+  ownLook?: boolean;
   motion?: boolean;
   /** Camera: opening angle (degrees) and reach (m) of its field of view; default 90° / 4.5 m (dome: 360° / 3 m). */
   fov?: number;
@@ -250,6 +236,8 @@ export interface PatchPiece {
   opacity: number;
   /** Adds light instead of tinting (a heated floor glowing warm). */
   glow?: boolean;
+  /** Lies on this outdoor area's surface, `lift` metres above it, following its slope (snow on a sloping lawn, #1036). */
+  follow?: { areaId: string; lift: number };
 }
 
 /** A lit TV or monitor screen: colour of the running app and brightness (0..1). */
@@ -278,7 +266,7 @@ export interface ScreenState {
   /** Furniture with a state: glowing faces on top of the item instead of a screen – the whole top, or a half of it. */
   // (see also SoundSource below)
   // "gang": one rocker or socket of a wall switch or socket (`index` of `of`)
-  faces?: { part: "all" | "left" | "right" | "top" | "bottom" | "band" | "cabin" | "lights" | "burners" | "lid" | "beacon" | "gang" | "drum" | "apring" | "strata"; color: [number, number, number]; level: number; index?: number; of?: number; accent?: boolean; top?: [number, number, number] }[];
+  faces?: { part: "all" | "left" | "right" | "top" | "bottom" | "band" | "cabin" | "lights" | "burners" | "lid" | "beacon" | "gang" | "drum" | "apring" | "strata" | "plate"; color: [number, number, number]; level: number; index?: number; of?: number; accent?: boolean; top?: [number, number, number] }[];
 }
 
 /** Position of the sun (from sun.sun): degrees above the horizon and clockwise from north. */
@@ -369,6 +357,11 @@ const GROUND_CELLS = 32;
 const HOLD_MS = 500;
 /** Time constant of window and blind movements (ms). */
 const OPENING_TAU = 160;
+
+/** Whether one of these ids moves on a floor: an item (fridge door, awning) or a fence gate (#818). */
+function movesOn(floor: Floor, ids: ReadonlySet<string>): boolean {
+  return floor.furniture.some((f) => ids.has(f.id)) || (floor.outdoor ?? []).some((a) => (a.gates ?? []).some((g) => ids.has(g.id)));
+}
 /** Frame interval while only the energy flow moves (ms): about 30 frames per second. */
 const FLOW_FRAME_MS = 33;
 /** Cable core and the soft glow around it (m). */
@@ -469,13 +462,18 @@ interface FloorView {
   /** Sunlight falling through the windows onto the floor. */
   sunMesh: Mesh;
   sunSig: string;
+  /** At night: the light of lit rooms falling out of their windows onto the ground in front. */
+  spillMesh: Mesh;
+  spillSig: string;
   /** Soft glow around lit lamps, and light cones under spots (quality "High"). */
   haloMesh: Points;
   coneMesh: Mesh;
   /** Motion trail on the floor (discs and ribbons). */
   trailMesh: Mesh;
-  /** Doors of smart fridges (they swing open with their sensors). */
+  /** Doors of smart fridges (they swing open with their sensors), awnings and fence gates. */
   fridgeMesh: Mesh;
+  /** The fence gates' triangles in fridgeMesh, by the entity a tap goes to (#818). */
+  gateTris: { id: string; start: number; end: number }[];
   /** Pool Pro: the pipes as tubes. */
   pipeMesh: Mesh;
   pipeSig: string;
@@ -535,7 +533,18 @@ const ACTIVE_FLOOR = new Color(0x1a2a4d);
 
 export function isLowEnd(): boolean {
   const nav = navigator as Navigator & { deviceMemory?: number };
-  return lowEndDevice(navigator.userAgent, nav.deviceMemory, navigator.hardwareConcurrency);
+  return lowEndDevice(navigator.userAgent, nav.deviceMemory, navigator.hardwareConcurrency) || measuredSlow();
+}
+
+/** This browser turned the view too slowly once on "Auto" (#952); also kept here when storage is blocked. */
+let slowHere = false;
+function measuredSlow(): boolean {
+  if (slowHere) return true;
+  try {
+    return localStorage.getItem(SLOW_KEY) === "1";
+  } catch {
+    return false;
+  }
 }
 
 export class FloorplanViewer {
@@ -543,7 +552,9 @@ export class FloorplanViewer {
   private readonly options: ViewerOptions;
   private renderer: WebGLRenderer;
   private readonly scene = new Scene();
-  private readonly camera = new PerspectiveCamera(38, 1, 0.1, 400);
+  private readonly camera = new PerspectiveCamera(BASE_FOV, 1, 0.1, 400);
+  /** The field of view the camera glides to: the view's own, or a camera's while looking through it. */
+  private fovTarget = BASE_FOV;
   private controls: OrbitControls;
   private readonly labels: HTMLDivElement;
   private readonly root = new Group();
@@ -569,6 +580,18 @@ export class FloorplanViewer {
   /** Live state of the roof windows (the roof is rebuilt when it changes). */
   private roofWindows = new Map<string, RoofWindowState>();
   private roofWindowsKey = "";
+  /** The roof's parts as built last (the house's shadow lays them on the ground). */
+  private roofGeos: RoofGeometry[] = [];
+  /** The sun's arc in the sky and the house's shadow on the ground (built only when the sun has moved a little). */
+  private sunFx = new SunFx();
+  private sunPath: SunPath | null = null;
+  private shadowSig = "";
+  private arcSig = "";
+  private spillNight = "";
+  /** N, E, S, W on the compass ring, in the user's language. */
+  private compassLetters: [string, string, string, string] = ["N", "E", "S", "W"];
+  /** 12 or 24 hours for the sunrise and sunset times on the arc (the user's profile, #823). */
+  private hourCycle: { hourCycle?: "h12" | "h23" } = {};
   /** Stripe phase per cable piece, kept when its speed changes so the stripes do not jump. */
   private flowPhase = new Map<string, { speed: number; offset: number }>();
   private readonly flowTime = { value: 0 };
@@ -605,6 +628,8 @@ export class FloorplanViewer {
   private explode: boolean;
   private frame = 0;
   private lastFrame = 0;
+  /** "Auto" on the full level: frame times while the view is turned, until it is decided (#952). */
+  private slowWatch: { quality: Quality; since: number; last: number; ms: number[] } | null = null;
   private disposed = false;
   private readonly resizeObserver: ResizeObserver;
   private fpsFrames = 0;
@@ -666,6 +691,17 @@ export class FloorplanViewer {
   /** Ceiling fans (D606): their blades in a group of their own, turning with the fan's speed. */
   private fans = new Map<string, { group: Group; mesh: Mesh; r: number; speed: number; floorId: string; y: number }>();
   private fanMat: MeshBasicMaterial | null = null;
+  /**
+   * Fan blades of pack items (#1084): each item's turning parts in a group of their own at their pivot, turning about
+   * their axis with the speed the view reports (setSpinSpeeds).
+   */
+  private packSpins = new Map<string, { group: Group; spinner: Group; mesh: Mesh; axis: "y" | "z"; speed: number; floorId: string; y: number; sig: string }>();
+  private spinSpeeds = new Map<string, number>();
+  private spinMat: MeshBasicMaterial | null = null;
+  /** Live parts of pack items (3.4): a model per item and group (slot + kind) at its pivot, moved to its value. */
+  private packLive = new Map<string, { group: Group; inner: Group; mesh: Mesh; edges: LineSegments | null; mat: MeshBasicMaterial | null; bind: PartBind; depth: number; rest: number; floorId: string; y: number; sig: string; target: number; value: number }>();
+  private liveValues = new Map<string, number>();
+  private liveLast = 0;
   private fanLast = 0;
   private fanTimer: ReturnType<typeof setTimeout> | undefined;
   private floorStack: FloorStack = "dim";
@@ -700,6 +736,7 @@ export class FloorplanViewer {
   /** Furnishing: the selected device, the pin a pointer just went down on, and a device being dragged. */
   private selectedDevice: string | null = null;
   private pendingDevice: string | null = null;
+  private pendingFurniture: string | null = null;
   private deviceGrab: { id: string; floorId: string; offset: [number, number]; x: number; z: number; moved: boolean } | null = null;
   private grab: {
     floorId: string;
@@ -715,23 +752,64 @@ export class FloorplanViewer {
   private ghost: LineSegments | null = null;
   private selectedSet: string[] = [];
   private theme: Theme = "neon";
-  private readonly themeUniform: ThemeUniform = { value: 0 };
+  /** The style shown (a classic look, a palette or natural materials) and its key, to skip repeats. */
+  private style: StyleDef = styleById("neon")!;
+  private styleKey = "";
+  /** Pack items in colours of their own are drawn in full colour in the light looks and the homely styles. */
+  private lightLookOn = false;
+  /** Per floor: the shader uniforms that learn where the floor lies (wall feet, floor structure). */
+  private floorLevels = new Map<string, { value: number }[]>();
+  private readonly themeUniform: ThemeUniform = { value: 0, style: makeStyleUniforms(), morph: { value: 0 }, mask: makeMorphMask() };
+  /** Zoom style (test): the style the house turns into when zoomed in (null: off), and the blend shown now. */
+  private zoomStyle: StyleDef | null = null;
+  /** The zoom style asked for (used while the own look is a plain one). */
+  private zoomWanted: StyleDef | null = null;
+  private morphShown = -1;
+  /** The blend now, gliding after the one the camera's distance asks for. */
+  private morphNow = 0;
+  /** How late the zoom style sets in (0 early … 1 late). */
+  private zoomLate = 0.5;
+  /** Where the zoom style applies: the whole house, or only the room zoomed into (opened or under the view's centre). */
+  private zoomScope: ZoomScope = "all";
+  /** "Only the room": the room the blend shows on now ("floorId/roomId"; null: none). */
+  private maskRoom: string | null = null;
+  /** The parts outside the shader (background, ground, pattern, light, lines) show the near style. */
+  private nearOn = false;
+  /** This view's palette (natural materials, cut tops, facade): set before it builds anything, as views share the palette module. */
+  private palette = { natural: false, cutTop: null as number | null, facade: null as number | null };
   private sun: SunState | null = null;
   private weather: WeatherView | null = null;
   /** Rain streaks and snow flakes over the plot, the sun or moon disc in the sky. */
   private rain = new LineSegments(new Geometry(), new LineBasicMaterial({ color: 0x9fc8ff, transparent: true, opacity: 0.4, blending: AdditiveBlending, depthWrite: false }));
   private snow = new Points(new Geometry(), new PointsMaterial({ color: 0xf4f8ff, size: 0.14, transparent: true, opacity: 0.85, depthWrite: false }));
+  /** Fog: soft swathes of ground mist drifting around the house (the fog behind it alone is hard to see, #990). */
+  private mist = new Points(new Geometry(), new PointsMaterial({ color: 0xdde4f0, size: 13, transparent: true, opacity: 0.2, depthWrite: false, fog: false }));
   private skyDisc = new Mesh(new CircleGeometry(1, 28), new MeshBasicMaterial({ color: 0xffd98a, transparent: true, opacity: 0, blending: AdditiveBlending, depthWrite: false }));
   private weatherBox = { x0: -10, x1: 10, z0: -10, z1: 10, y0: 0, y1: 8 };
   private weatherTimer: ReturnType<typeof setTimeout> | undefined;
+  /** Fun pack "Winter & Christmas": how much snow lies on the roof (0 … 1), and its material. */
+  private roofSnow = 0;
+  private snowMat: MeshBasicMaterial | null = null;
+  /** Winter: the fairy lights along the eaves (off, warm white or colourful) and their material. */
+  private roofLights: "off" | "warm" | "color" = "off";
+  /** … only along the eaves, or the whole roof (gable edges and ridge too). */
+  private roofOutline = true;
+  private lightsMat: PointsMaterial | null = null;
+  private lightsHalo: PointsMaterial | null = null;
+  /** The New Year's firework while it flies, its frame timer and the time of its last step. */
+  private firework: Firework | null = null;
+  private fireworkTimer: ReturnType<typeof setTimeout> | undefined;
+  private fireworkAt = 0;
   private weatherLast = 0;
   /** Heatmap colour per room id (null: normal floors). */
   private roomTint: Map<string, [number, number, number]> | null = null;
   private houseRadius = 20;
   private startView: StartView | null = null;
   private keepView = false;
-  /** The next fit keeps the camera (a floor-to-floor switch with keepView). */
+  /** The next fit keeps the camera (a switch of floor or house view with keepView). */
   private keepNext = false;
+  /** A plan has been framed once (before that, keepView has nothing to keep). */
+  private fitted = false;
   private fpsStart = 0;
   private gpuName: string | null | undefined;
 
@@ -740,6 +818,9 @@ export class FloorplanViewer {
     this.options = options;
     this.explode = options.explode ?? true;
     this.renderer = this.makeRenderer(options.quality ?? "auto");
+    this.renderer.domElement.addEventListener("webglcontextlost", () => {
+      if (!this.disposed) this.options.onContextLost?.();
+    });
     this.labels = document.createElement("div");
     this.labels.className = "fp3d-labels";
     host.append(this.labels);
@@ -754,11 +835,14 @@ export class FloorplanViewer {
     this.scene.add(this.ground, this.root);
     this.rain.frustumCulled = false;
     this.snow.frustumCulled = false;
+    this.mist.frustumCulled = false;
     this.rain.visible = false;
     this.snow.visible = false;
+    this.mist.visible = false;
+    (this.mist.material as PointsMaterial).map = this.haloTexture;
     this.skyDisc.visible = false;
     this.skyDisc.renderOrder = -1;
-    this.scene.add(this.rain, this.snow, this.skyDisc);
+    this.scene.add(this.rain, this.snow, this.mist, this.skyDisc, this.sunFx.group);
     this.controls = this.makeControls();
     this.resizeObserver = new ResizeObserver(() => this.resize());
     this.resizeObserver.observe(host);
@@ -877,6 +961,7 @@ export class FloorplanViewer {
     const first = this.building === null;
     this.lastWake = performance.now();
     this.building = building;
+    this.controls.rightClickBack = !!building.settings.right_click_back;
     // this bundle's own copy of the ground (outdoor areas, earth around cellars)
     setTerrain(building);
     this.rebuild();
@@ -897,7 +982,9 @@ export class FloorplanViewer {
 
   setFloor(floorId: string | null, animate = true): void {
     this.lastWake = performance.now();
-    this.keepNext = this.keepView && floorId !== null && this.floorId !== null && floorId !== this.floorId;
+    // also between the house view and a floor (#968): a view set by hand stays where it is; only the very first
+    // framing of a plan is fitted
+    this.keepNext = this.keepView && this.fitted && floorId !== this.floorId;
     this.floorId = floorId;
     this.roomId = null;
     this.labelsDirty = true;
@@ -981,11 +1068,12 @@ export class FloorplanViewer {
     this.deviceFloor = new Map(devices.map((d) => [d.id, d.floorId]));
     const seen = new Set<string>();
     for (const d of devices) {
-      seen.add(d.id);
-      let pin = this.devicePins.get(d.id);
+      const key = pinKey(d);
+      seen.add(key);
+      let pin = this.devicePins.get(key);
       if (!pin) {
-        pin = { el: this.makeDevicePin(d.id), icon: "", text: "", watt: "", label: "", active: false, unavailable: false, glow: "", caption: "" };
-        this.devicePins.set(d.id, pin);
+        pin = { el: this.makeDevicePin(d.id, d.furnitureId), icon: "", text: "", watt: "", label: "", active: false, unavailable: false, glow: "", caption: "" };
+        this.devicePins.set(key, pin);
         this.labels.append(pin.el);
       }
       // every write below invalidates style or layout: only fields that changed are written
@@ -1092,6 +1180,7 @@ export class FloorplanViewer {
   }
 
   private buildPoolWater(fv: FloorView): void {
+    this.usePalette();
     if (fv.poolGroup) {
       disposePools(fv.poolGroup);
       fv.group.remove(fv.poolGroup);
@@ -1130,7 +1219,7 @@ export class FloorplanViewer {
         for (let i = 0; i < 3; i++) {
           const ring = new Mesh(
             new RingGeometry(0.92, 1, 48),
-            new MeshBasicMaterial({ color: 0x37e0ff, transparent: true, opacity: 0, blending: AdditiveBlending, depthWrite: false, side: DoubleSide }),
+            new MeshBasicMaterial({ color: 0x37e0ff, transparent: true, opacity: 0, blending: AdditiveBlending, depthWrite: false, side: DoubleSide, forceSinglePass: true }),
           );
           ring.rotation.x = -Math.PI / 2;
           ring.position.set(src.x, y + i * 0.002, src.z);
@@ -1203,6 +1292,44 @@ export class FloorplanViewer {
   }
 
   /** A module's see-through surfaces (a warm tint on a room's floor, soil under a lawn). */
+  /** Winter: snow on the roof (0 none … 1 all of it); the roof is built again only when the amount changes. */
+  setRoofSnow(level: number): void {
+    const l = Math.round(Math.max(0, Math.min(1, level)) * 10) / 10;
+    if (l === this.roofSnow) return;
+    this.roofSnow = l;
+    this.buildRoofMesh();
+    this.invalidate();
+  }
+
+  /** Winter: the fairy lights along the eaves; the roof is built again only when they change. */
+  setRoofLights(mode: "off" | "warm" | "color", outline = true): void {
+    if (mode === this.roofLights && outline === this.roofOutline) return;
+    this.roofLights = mode;
+    this.roofOutline = outline;
+    this.buildRoofMesh();
+    this.invalidate();
+  }
+
+  /** Winter: the New Year's firework over the house, on or off. */
+  setFirework(on: boolean): void {
+    if (on === !!this.firework) return;
+    if (!on) {
+      this.scene.remove(this.firework!.points);
+      this.firework!.dispose();
+      this.firework = null;
+      return;
+    }
+    const pts = (this.building?.floors ?? []).flatMap((f) => f.rooms.flatMap((r) => r.points));
+    if (!pts.length) return;
+    const top = Math.max(...(this.building?.floors ?? []).map((f) => f.elevation + f.height));
+    const xs = pts.map((q) => q[0]);
+    const zs = pts.map((q) => q[1]);
+    this.firework = new Firework({ x0: Math.min(...xs), z0: Math.min(...zs), x1: Math.max(...xs), z1: Math.max(...zs), top });
+    this.scene.add(this.firework.points);
+    this.fireworkAt = performance.now();
+    this.invalidate();
+  }
+
   setPatches(patches: PatchPiece[]): void {
     this.patches = patches;
     for (const fv of this.floors) this.buildPatches(fv);
@@ -1210,6 +1337,7 @@ export class FloorplanViewer {
   }
 
   private buildPatches(fv: FloorView): void {
+    this.usePalette();
     const mine = this.patches.filter((t) => t.floorId === fv.floor.id && t.points.length >= 3 && t.opacity > 0);
     const sig = JSON.stringify(mine);
     if (sig === fv.patchSig) return;
@@ -1220,9 +1348,11 @@ export class FloorplanViewer {
       for (const t of mine) {
         if (!!t.glow !== glow) continue;
         const a = Math.min(1, t.opacity);
+        const area = t.follow ? (fv.floor.outdoor ?? []).find((o) => o.id === t.follow!.areaId) : undefined;
         for (const tri of triangulate(t.points)) {
           for (const i of tri) {
-            p.push(t.points[i][0], t.y, t.points[i][1]);
+            const [px, pz] = t.points[i];
+            p.push(px, area ? outdoorTopAt(fv.floor, area, px, pz) + t.follow!.lift : t.y, pz);
             c.push(t.color[0], t.color[1], t.color[2], a);
           }
         }
@@ -1239,6 +1369,7 @@ export class FloorplanViewer {
 
 
   private buildPipes(fv: FloorView): void {
+    this.usePalette();
     const mine = this.pipes.filter((t) => t.floorId === fv.floor.id);
     const sig = JSON.stringify(mine);
     if (sig === fv.pipeSig) return;
@@ -1287,10 +1418,10 @@ export class FloorplanViewer {
       geo.setAttribute("position", new Float32BufferAttribute(p, 3));
       return geo;
     };
-    const core = new Mesh(build(0), new MeshBasicMaterial({ color, transparent: true, opacity: 0.9, depthWrite: false, side: DoubleSide }));
+    const core = new Mesh(build(0), new MeshBasicMaterial({ color, transparent: true, opacity: 0.9, depthWrite: false, side: DoubleSide, forceSinglePass: true }));
     const glow = new Mesh(
       build(0.05),
-      new MeshBasicMaterial({ color, transparent: true, opacity: 0.22, blending: AdditiveBlending, depthWrite: false, side: DoubleSide }),
+      new MeshBasicMaterial({ color, transparent: true, opacity: 0.22, blending: AdditiveBlending, depthWrite: false, side: DoubleSide, forceSinglePass: true }),
     );
     core.renderOrder = 6;
     glow.renderOrder = 5;
@@ -1400,12 +1531,198 @@ export class FloorplanViewer {
     this.invalidate();
   }
 
+  /**
+   * Zoom style (test): far away the house shows the view's own look, zoomed in it turns into `style` – blended by the
+   * camera's distance, without a rebuild while zooming. Works when the own look is a plain one (Neon, Blueprint, Day):
+   * the style's shader numbers are free then. Null switches it off.
+   */
+  setZoomStyle(style: StyleDef | null): void {
+    this.zoomWanted = style;
+    const usable = style && !this.style.palette && !this.style.natural ? style : null;
+    if (JSON.stringify(usable) === JSON.stringify(this.zoomStyle)) return;
+    this.zoomStyle = usable;
+    this.morphShown = -1;
+    this.nearOn = false;
+    this.morphNow = 0;
+    if (usable) applyStyleUniforms(usable, this.themeUniform.style);
+    else {
+      applyStyleUniforms(this.style, this.themeUniform.style);
+      this.themeUniform.morph!.value = 0;
+      this.options.onMorph?.(0);
+    }
+    this.rebuild();
+    this.invalidate();
+  }
+
+  /** How late the zoom style sets in: 0 early (from an opened floor on) … 1 late (only close up in a room). */
+  setZoomLate(late: number): void {
+    const v = Math.min(1, Math.max(0, late));
+    if (v === this.zoomLate) return;
+    this.zoomLate = v;
+    this.invalidate();
+  }
+
+  /** Where the zoom style applies: "all" rooms at once, or only the "room" zoomed into (the rest of the house keeps its look). */
+  setZoomScope(scope: ZoomScope): void {
+    if (scope === this.zoomScope) return;
+    this.zoomScope = scope;
+    // start again from the far look, the parts outside the shader follow the new scope
+    this.morphNow = 0;
+    this.morphShown = -1;
+    this.nearOn = false;
+    this.maskRoom = null;
+    this.themeUniform.mask!.uMorphN.value = 0;
+    this.invalidate();
+  }
+
+  /**
+   * "Only the room": the room zoomed into – the opened one, else the room under the view's centre on the floor it
+   * stands on (an opened floor, or the highest shown floor at or below the centre). Null when the centre is outside.
+   */
+  private zoomRoom(): { key: string; fv: FloorView; points: Vec2[] } | null {
+    const at = (fv: FloorView, r: { id: string; points: Vec2[] }) => ({ key: `${fv.floor.id}/${r.id}`, fv, points: r.points });
+    if (this.roomId !== null) {
+      for (const fv of this.floors) {
+        const r = zonesOf(fv.floor).find((z) => z.id === this.roomId);
+        if (r) return at(fv, r);
+      }
+    }
+    const t = this.controls.view.target;
+    const shown = this.floors.filter((fv) => fv.o > 0.5 && (this.floorId === null || fv.floor.id === this.floorId));
+    let best: FloorView | null = null;
+    for (const fv of shown) {
+      const y = fv.floor.elevation + fv.y;
+      if (y <= t.y + 0.3 && (!best || y > best.floor.elevation + best.y)) best = fv;
+    }
+    best ??= shown[0] ?? null;
+    if (!best) return null;
+    const r = best.floor.rooms.find((z) => pointInPolygon([t.x, t.z], z.points));
+    return r ? at(best, r) : null;
+  }
+
+  /** Puts the room's outline and its floor's heights into the shader (thinned to the most corners the shader walks). */
+  private setMask(room: { fv: FloorView; points: Vec2[] } | null): void {
+    const mask = this.themeUniform.mask!;
+    if (!room) {
+      mask.uMorphN.value = 0;
+      return;
+    }
+    let pts = room.points;
+    if (pts.length > MORPH_POLY_MAX) {
+      const step = pts.length / MORPH_POLY_MAX;
+      pts = Array.from({ length: MORPH_POLY_MAX }, (_, i) => pts[Math.floor(i * step)]);
+    }
+    pts.forEach((p, i) => mask.uMorphPoly.value[i].set(p[0], p[1]));
+    mask.uMorphPoly.value[pts.length].set(pts[0][0], pts[0][1]);
+    mask.uMorphN.value = pts.length;
+    this.stepMask(room.fv);
+  }
+
+  /** Every frame while limited to a room: its floor's heights in the world (floors move when they fan out). */
+  private stepMask(fv: FloorView): void {
+    fv.group.getWorldPosition(this.levelTmp);
+    this.themeUniform.mask!.uMorphY.value.set(this.levelTmp.y - 0.01, this.levelTmp.y + fv.floor.height + 0.01);
+  }
+
+  /**
+   * Builds something twice while a zoom style with natural materials is on: once with the natural palette, once with
+   * the view's own; every geometry of the result gets the natural colours as its second colour (same vertices – the
+   * palette only changes colours). Without a zoom style: built once, as always.
+   */
+  private dual<T>(build: () => T): T {
+    const near = this.zoomStyle;
+    if (!near?.natural) return build();
+    setNaturalPalette(true, { cutTop: near.cutDark ? 0x34373d : null, facade: hexColor(this.building?.settings.facade_color) });
+    setLightLook(true);
+    let nat: T;
+    try {
+      nat = build();
+    } finally {
+      this.usePalette();
+    }
+    const own = build();
+    pairColors(own, nat);
+    return own;
+  }
+
+  /** Every frame: the blend from the camera's distance; the parts that are no shader follow at the middle. */
+  private stepMorph(dt: number): boolean {
+    const near = this.zoomStyle;
+    if (!near) return false;
+    const r = this.controls.view.radius / Math.max(1, this.houseRadius);
+    // the house and an opened floor stay in the far look; zooming towards a room turns it, a room is (nearly) all style
+    const { far, near: close } = zoomRange(this.zoomLate);
+    const k = Math.min(1, Math.max(0, (far - r) / (far - close)));
+    let want = k * k * (3 - 2 * k);
+    const roomOnly = this.zoomScope === "room";
+    if (roomOnly) {
+      this.themeUniform.mask!.uMorphNatural.value = near.natural ? 1 : 0;
+      const room = this.zoomRoom();
+      const key = room?.key ?? null;
+      if (key !== this.maskRoom) {
+        // another room (or none): the one shown fades back first, then the next one turns
+        if (this.maskRoom !== null && this.morphNow > 0.02) want = 0;
+        else {
+          this.maskRoom = key;
+          this.morphNow = 0;
+          this.setMask(room);
+          if (!room) want = 0;
+        }
+      } else if (room) this.stepMask(room.fv);
+      else want = 0;
+    }
+    // the colours glide after the camera: no jump when a flight is quick
+    const d = want - this.morphNow;
+    this.morphNow = Math.abs(d) < 0.003 ? want : this.morphNow + d * (1 - Math.exp(-dt / MORPH_TAU));
+    const m = this.morphNow;
+    const gliding = m !== want;
+    // themed meshes built without a second colour (lamps, roof, earth) take their own colours for it
+    this.scene.traverse((o) => {
+      const mesh = o as Mesh;
+      const mat = mesh.material as Material | undefined;
+      if (!mat || Array.isArray(mat) || !mat.userData?.fp3dThemed) return;
+      setMorphDefine(mat, true);
+      const geo = mesh.geometry as BufferGeometry | undefined;
+      const color = geo?.getAttribute("color");
+      if (geo && color && !geo.getAttribute(MORPH_ATTRIBUTE)) geo.setAttribute(MORPH_ATTRIBUTE, color);
+    });
+    if (Math.abs(m - this.morphShown) < 0.002 && !(m === want && m !== this.morphShown)) return gliding;
+    // only the room: the house around it keeps its look – background, ground, floor pattern, light and lines stay
+    const nearOn = !roomOnly && m >= 0.5;
+    const crossed = nearOn !== this.nearOn;
+    this.nearOn = nearOn;
+    this.morphShown = m;
+    this.themeUniform.morph!.value = m;
+    this.options.onMorph?.(roomOnly ? 0 : m);
+    for (const fv of this.floors) {
+      fv.patternMesh.visible = !this.lowQuality && !(nearOn && near.natural);
+      const shadows = fv.group.getObjectByName("fp3d-contact-shadows");
+      if (shadows && !this.style.shadows) shadows.visible = nearOn;
+      lightOnSurfaces(fv.glowMesh.material as MeshBasicMaterial, nearOn && !!near.natural);
+      // window glass and device displays follow like the light (#1070, #1071)
+      const dimNear = nearOn && near.natural ? (near.dim ?? 0) : 0;
+      glassLook(fv.materials.glass, nearOn && !!near.natural, dimNear, fv.o);
+      screenLook(fv.materials.screens, nearOn && !!near.natural, dimNear);
+    }
+    if (crossed) {
+      const blending = lineBlending(nearOn ? near.base : this.theme);
+      for (const mat of [...this.floors.map((f) => f.materials.lines), ...(this.roof ? [this.roof.lines] : [])]) {
+        mat.blending = blending;
+        mat.needsUpdate = true;
+      }
+      this.placeGround();
+    }
+    this.invalidate();
+    return gliding;
+  }
+
   setTheme(theme: Theme): void {
     if (theme === this.theme) return;
     this.theme = theme;
     this.themeUniform.value = themeIndex(theme);
     // waste bins and pack items in colours of their own keep them in the light looks: drawn anew in full colour (#609)
-    const light = theme !== "neon";
+    const light = theme !== "neon" || this.palette.natural;
+    this.lightLookOn = light;
     setLightLook(light);
     if (this.building?.floors.some((f) => f.furniture.some((m) => m.type === "waste_bin" || hasFixedColors(m.type)))) this.rebuild();
     const blending = lineBlending(theme);
@@ -1416,8 +1733,94 @@ export class FloorplanViewer {
     }
     // the neon ground grid would vanish on the light background anyway
     this.placeGround();
+    this.buildSunFx();
     this.invalidate();
   }
+
+  /**
+   * The style: a classic look, a colour palette, or natural materials with cheap realism. Palettes and the realism
+   * switches are shader numbers (instant); natural materials, dark cut tops and the facade colour rebuild the house.
+   */
+  setStyle(style: StyleDef): void {
+    const key = JSON.stringify(style);
+    if (key === this.styleKey) return;
+    this.styleKey = key;
+    this.style = style;
+    const next = { natural: !!style.natural, cutTop: style.natural && style.cutDark ? 0x34373d : null, facade: style.natural ? hexColor(this.building?.settings.facade_color) : null };
+    const rebuild = next.natural !== this.palette.natural || next.cutTop !== this.palette.cutTop || next.facade !== this.palette.facade;
+    this.palette = next;
+    this.usePalette();
+    const lightBefore = this.lightLookOn;
+    // a theme already shown is not set again: the light look follows natural materials here as well
+    if (style.base !== this.theme) this.setTheme(style.base);
+    else {
+      this.lightLookOn = style.base !== "neon" || !!style.natural;
+      setLightLook(this.lightLookOn);
+    }
+    const plain = !style.palette && !style.natural;
+    this.themeUniform.value = plain ? themeIndex(style.base) : STYLE_LOOK;
+    applyStyleUniforms(style, this.themeUniform.style);
+    // a zoom style keeps the style numbers for its near look; a style of its own as the far look ends it
+    const zoomUsable = this.zoomWanted && !style.palette && !style.natural ? this.zoomWanted : null;
+    if (JSON.stringify(zoomUsable) !== JSON.stringify(this.zoomStyle)) {
+      this.zoomStyle = zoomUsable;
+      this.morphShown = -1;
+      this.nearOn = false;
+      this.themeUniform.morph!.value = 0;
+      this.options.onMorph?.(0);
+      this.rebuild();
+    }
+    if (this.zoomStyle) applyStyleUniforms(this.zoomStyle, this.themeUniform.style);
+    const fixedColours = this.lightLookOn !== lightBefore && !!this.building?.floors.some((f) => f.furniture.some((m) => m.type === "waste_bin" || hasFixedColors(m.type)));
+    if (rebuild || fixedColours) this.rebuild();
+    else this.styleFloors();
+    this.placeGround();
+    this.invalidate();
+  }
+
+  /** Puts this view's palette and light look in place: several views on a page share the palette module. */
+  private usePalette(): void {
+    setNaturalPalette(this.palette.natural, { cutTop: this.palette.cutTop, facade: this.palette.facade });
+    setLightLook(this.lightLookOn);
+  }
+
+  /** The style's extras per floor: contact shadows, the neon floor pattern (off on natural floors), the floor levels. */
+  private styleFloors(): void {
+    for (const fv of this.floors) {
+      fv.patternMesh.visible = !this.style.natural;
+      lightOnSurfaces(fv.glowMesh.material as MeshBasicMaterial, !!this.style.natural);
+      const dim = this.style.natural ? (this.style.dim ?? 0) : 0;
+      glassLook(fv.materials.glass, !!this.style.natural, dim, fv.o);
+      screenLook(fv.materials.screens, !!this.style.natural, dim);
+      const old = fv.group.getObjectByName("fp3d-contact-shadows");
+      if (old) {
+        fv.group.remove(old);
+        (old as Mesh).geometry.dispose();
+      }
+      if (this.style.shadows || this.zoomStyle?.shadows) {
+        const mesh = contactShadows(fv.floor);
+        if (mesh) {
+          // under a zoom style they come with the near style
+          if (!this.style.shadows) mesh.visible = this.nearOn;
+          fv.group.add(mesh);
+        }
+      }
+      const levels: { value: number }[] = [];
+      for (const m of Object.values(fv.materials)) if (m && (m as Material).isMaterial) levels.push(floorLevelUniform(m as Material));
+      this.floorLevels.set(fv.floor.id, levels);
+    }
+  }
+
+  /** Every frame: the shader learns where each floor lies now (floors move when they fan out or lift). */
+  private stepFloorLevels(): void {
+    for (const fv of this.floors) {
+      const levels = this.floorLevels.get(fv.floor.id);
+      if (!levels?.length) continue;
+      fv.group.getWorldPosition(this.levelTmp);
+      for (const u of levels) u.value = this.levelTmp.y;
+    }
+  }
+  private readonly levelTmp = new Vector3();
 
   /** Furnishing mode: dragging furniture and lamps moves them instead of turning the view. */
   setFurnishMode(on: boolean): void {
@@ -1445,7 +1848,22 @@ export class FloorplanViewer {
   setSun(sun: SunState | null): void {
     this.sun = sun;
     for (const fv of this.floors) this.buildSun(fv);
+    const night = this.nightFactor().toFixed(2);
+    if (night !== this.spillNight) {
+      this.spillNight = night;
+      for (const fv of this.floors) this.buildSpill(fv, this.lightSources(fv));
+    }
     this.placeSky();
+    this.buildSunFx();
+    this.invalidate();
+  }
+
+  /** The sun's way across the sky today (null: no place known): drawn as an arc over the house. */
+  setSunPath(path: SunPath | null, letters?: [string, string, string, string], hours?: { hourCycle?: "h12" | "h23" }): void {
+    this.sunPath = path;
+    if (letters) this.compassLetters = letters;
+    if (hours) this.hourCycle = hours;
+    this.buildSunFx();
     this.invalidate();
   }
 
@@ -1455,6 +1873,7 @@ export class FloorplanViewer {
     for (const fv of this.floors) this.buildSun(fv);
     this.applyWeather();
     this.placeSky();
+    this.buildSunFx();
     this.invalidate();
   }
 
@@ -1462,13 +1881,54 @@ export class FloorplanViewer {
     const w = this.weather;
     const on = !!w && !this.lowQuality;
     const skyColor = w ? new Color(w.sky[0] / 255, w.sky[1] / 255, w.sky[2] / 255) : null;
-    this.scene.fog = on && w.fog > 0 && skyColor ? new FogExp2(skyColor, 0.01 + 0.035 * w.fog) : null;
+    // the fog lies around the house, not in it (#854): it starts behind the house as seen from the camera
+    this.scene.fog = on && w.fog > 0 && skyColor ? new Fog(skyColor, 1, 2) : null;
+    this.placeFog();
     const rainCount = on ? Math.round(700 * w.rain) : 0;
     const snowCount = on ? Math.round(450 * w.snow) : 0;
+    const mistCount = on && w.fog > 0 ? Math.round(18 + 30 * w.fog) : 0;
     this.seedParticles(this.rain, rainCount * 2, true);
     this.seedParticles(this.snow, snowCount, false);
+    this.seedMist(mistCount);
     this.rain.visible = rainCount > 0;
     this.snow.visible = snowCount > 0;
+    this.mist.visible = mistCount > 0;
+  }
+
+  /** Swathes of mist around the house, low over the ground, none inside the house (#990). */
+  private seedMist(count: number): void {
+    const current = this.mist.geometry.getAttribute("position") as Float32BufferAttribute | undefined;
+    if ((current?.count ?? 0) === count) return;
+    const b = this.weatherBox;
+    // the weather box has a 6 m margin around the house: the mist lies in that margin and a little beyond it
+    const [hx0, hx1, hz0, hz1] = [b.x0 + 6, b.x1 - 6, b.z0 + 6, b.z1 - 6];
+    const p = new Float32Array(count * 3);
+    for (let i = 0; i < count; i++) {
+      let x = 0;
+      let z = 0;
+      for (let tries = 0; tries < 12; tries++) {
+        x = b.x0 - 3 + Math.random() * (b.x1 - b.x0 + 6);
+        z = b.z0 - 3 + Math.random() * (b.z1 - b.z0 + 6);
+        if (x < hx0 - 1 || x > hx1 + 1 || z < hz0 - 1 || z > hz1 + 1) break;
+      }
+      p.set([x, b.y0 + 0.4 + Math.random() * 1.6, z], i * 3);
+    }
+    this.mist.geometry.dispose();
+    const g = new Geometry();
+    g.setAttribute("position", new Float32BufferAttribute(p, 3));
+    this.mist.geometry = g;
+  }
+
+  /** Moves the fog's start behind the house for the current camera (cheap: two numbers per frame). */
+  private placeFog(): void {
+    const fog = this.scene.fog;
+    if (!(fog instanceof Fog)) return;
+    const b = this.weatherBox;
+    // the weather box has a 6 m margin around the house
+    const half = Math.hypot((b.x1 - b.x0) / 2 - 6, (b.z1 - b.z0) / 2 - 6, (b.y1 - b.y0) / 2);
+    const dist = this.camera.position.distanceTo(new Vector3((b.x0 + b.x1) / 2, (b.y0 + b.y1) / 2, (b.z0 + b.z1) / 2));
+    fog.near = dist + half;
+    fog.far = fog.near + 8 + 50 * (1 - (this.weather?.fog ?? 0));
   }
 
   /** Random positions over the plot (rain as pairs: a streak's top and bottom). */
@@ -1494,7 +1954,7 @@ export class FloorplanViewer {
   /** Lets rain fall and snow drift; true while something moved. */
   private stepWeather(now: number): boolean {
     const w = this.weather;
-    if (!w || (!this.rain.visible && !this.snow.visible)) {
+    if (!w || (!this.rain.visible && !this.snow.visible && !this.mist.visible)) {
       this.weatherLast = 0;
       return false;
     }
@@ -1541,6 +2001,21 @@ export class FloorplanViewer {
       }
       a.needsUpdate = true;
     }
+    if (this.mist.visible) {
+      // the swathes creep along with the wind and breathe a little; a swathe out of the box comes back on the other side
+      const a = this.mist.geometry.getAttribute("position") as Float32BufferAttribute;
+      const p = a.array as Float32Array;
+      const t = now / 1000;
+      const creep = 0.12 + drift * 0.12;
+      for (let i = 0; i < p.length; i += 3) {
+        let x = p[i] + creep * dt;
+        const z = p[i + 2] + Math.sin(t * 0.3 + i) * 0.05 * dt;
+        if (x > b.x1 + 3) x = b.x0 - 3;
+        p[i] = x;
+        p[i + 2] = z;
+      }
+      a.needsUpdate = true;
+    }
     return true;
   }
 
@@ -1557,9 +2032,7 @@ export class FloorplanViewer {
     const north = (this.building?.settings.north ?? 0) * DEG;
     const az = (night ? sun.azimuth + 180 : sun.azimuth) * DEG;
     const el = Math.max(10, Math.abs(sun.elevation)) * DEG;
-    const b = this.weatherBox;
-    const center = new Vector3((b.x0 + b.x1) / 2, b.y0, (b.z0 + b.z1) / 2);
-    const r = Math.min(300, Math.max(80, this.houseRadius * 5));
+    const { center, r } = this.skyFrame();
     const dir = new Vector3(Math.sin(north + az) * Math.cos(el), Math.sin(el), -Math.cos(north + az) * Math.cos(el));
     this.skyDisc.position.copy(center).addScaledVector(dir, r);
     this.skyDisc.scale.setScalar(r * (night ? 0.03 : 0.04));
@@ -1568,6 +2041,249 @@ export class FloorplanViewer {
     mat.color.set(night ? 0xcfd8ee : 0xffd98a);
     mat.opacity = (night ? 0.55 : 0.85) * (1 - cloud);
     this.skyDisc.visible = true;
+  }
+
+  /** The middle of the sky dome over the plot and its radius (the sun, the moon and the sun's arc lie on it). */
+  private skyFrame(): { center: Vector3; r: number } {
+    const b = this.weatherBox;
+    return { center: new Vector3((b.x0 + b.x1) / 2, b.y0, (b.z0 + b.z1) / 2), r: Math.min(300, Math.max(80, this.houseRadius * 5)) };
+  }
+
+  /**
+   * The sun's arc over the house and the house's shadow on the ground (⚙ House, on by default). The shadow belongs
+   * to the whole-house view and rests on the tablet level; the arc shows by day on every level.
+   */
+  private buildSunFx(): void {
+    this.usePalette();
+    const b = this.building;
+    const sun = this.sun;
+    const on = !!b && !!sun && b.settings.sun_shadow !== false && !this.options.safeFx;
+    const north = (b?.settings.north ?? 0) * DEG;
+    const cloud = this.weather?.cloud ?? 0;
+    const shade = on && !this.lowQuality && sun.elevation > 1 && cloud < 0.9 && !this.roomTint;
+    const sig = shade ? `${sun.elevation.toFixed(1)},${sun.azimuth.toFixed(1)},${north},${cloud.toFixed(1)},${this.theme},${this.roofGeos.length},${surroundKey(b)}` : "";
+    if (sig !== this.shadowSig) {
+      this.shadowSig = sig;
+      if (shade) this.drawShadow(b, sun, north, cloud);
+      else this.sunFx.hideShadow();
+    }
+    const path = this.sunPath;
+    const arc = on && !!path && path.points.length > 1 && sun.elevation > -3;
+    const frame = arc ? this.arcFrame() : null;
+    const arcSig = arc && frame ? `${this.theme},${sun.elevation.toFixed(1)},${sun.azimuth.toFixed(1)},${this.compassLetters.join("")},${this.hourCycle.hourCycle ?? ""},${path.points[0].t},${north},${frame.x.toFixed(2)},${frame.z.toFixed(2)},${frame.y.toFixed(2)},${frame.r.toFixed(2)},${cloud.toFixed(1)}` : "";
+    if (arcSig === this.arcSig) return;
+    this.arcSig = arcSig;
+    if (!arcSig || !frame || !path || !sun) return this.sunFx.hideArc();
+    // a dome around the house: the sun's way at its real height, sunrise and sunset on the ground
+    const at = (azimuth: number, elevation: number, lift = 0): [number, number, number] => {
+      const e = Math.max(0, elevation) * DEG;
+      const a = north + azimuth * DEG;
+      return [frame.x + Math.sin(a) * Math.cos(e) * frame.r, frame.y + Math.sin(e) * frame.r + lift, frame.z - Math.cos(a) * Math.cos(e) * frame.r];
+    };
+    const fade = 1 - 0.7 * cloud;
+    const now = Date.now();
+    const time = (t: number) => new Date(t).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", ...this.hourCycle });
+    const size = frame.r * 0.03;
+    this.sunFx.setArc({
+      points: path.points.map((p) => ({ at: at(p.azimuth, p.elevation), t: p.t, elevation: p.elevation })),
+      now,
+      hours: path.points.filter((p) => p !== path.rise && p !== path.set && new Date(p.t).getMinutes() === 0).map((p) => at(p.azimuth, p.elevation)),
+      labels: [path.rise, path.set].flatMap((p) => (p ? [{ text: time(p.t), at: at(p.azimuth, p.elevation, size * 2.2), rising: p === path.rise }] : [])),
+      sun: sun.elevation > 0 ? at(sun.azimuth, sun.elevation) : null,
+      ring: { center: [frame.x, frame.y, frame.z], r: frame.r, north, letters: this.compassLetters },
+      size,
+      fade,
+      light: this.theme !== "neon",
+    });
+  }
+
+  /** Where the sun's arc stands: around the middle of the house (or the whole plot, #833), on its ground. */
+  private arcFrame(): SunArcFrame | null {
+    const frame = sunArcFrame(this.building);
+    if (!frame || !this.building) return frame;
+    // floors pulled apart: the ring and the arc ride with the ground floor, not with the cellar below it (#998)
+    const gf = groundFloor(this.building);
+    const fv = gf ? this.floorMap.get(gf.id) : undefined;
+    return fv?.y ? { ...frame, y: frame.y + fv.y } : frame;
+  }
+
+  /** Whether the view is being turned right now: a finger or the mouse on it, a flight, or the inertia after a swipe. */
+  cameraBusy(): boolean {
+    return this.controls.busy || (this.lastFrame > 0 && performance.now() - this.lastFrame < 100);
+  }
+
+  /** How dark it is outside (0 by day, 1 from 6° below the horizon on); 0 without a sun. */
+  private nightFactor(): number {
+    const sun = this.sun;
+    return sun ? Math.min(1, Math.max(0, -sun.elevation / 6)) : 0;
+  }
+
+  /**
+   * At night the light of a lit room falls out of its windows onto the ground in front: a soft patch in the
+   * lamp's colour, fading with the distance from the lamp, less behind a lowered blind (⚙ House, on by default).
+   * Each patch is the lamp's cone through the window opening: it lies shifted away from the lamp, and the wall
+   * beside the window shades the ground in front of it (#954). Only the floors at ground level.
+   */
+  private buildSpill(fv: FloorView, sources: LightSource[]): void {
+    this.usePalette();
+    const b = this.building;
+    const night = b?.settings.window_glow === false || this.options.safeFx ? 0 : this.nightFactor();
+    const gf = b && night > 0 ? groundFloor(b) : null;
+    const ground = !!gf && Math.abs(fv.floor.elevation - gf.elevation) < 0.5;
+    // a lamp's level keeps a floor of 0.2 so a dimmed lamp still shows in its room; what falls out of the windows
+    // follows the real brightness – a lamp at 1 % lit the whole terrace in its colour (#954)
+    const cast = (level: number) => Math.pow(Math.max(0, (level - 0.2) / 0.8), 2);
+    const lamps = ground ? sources.filter((l) => cast(l.level) > 0.02) : [];
+    const covers = [...fv.openings.values()].map((o) => lightCover(o).toFixed(1)).join(",");
+    const sig = lamps.length ? `${night.toFixed(2)}|${lamps.map((l) => `${l.room}:${l.x.toFixed(2)},${l.y.toFixed(2)},${l.z.toFixed(2)},${l.level.toFixed(2)},${l.color.map((c) => c.toFixed(2)).join("/")}`).join(";")}|${covers}|${fv.lightSurface ? 1 : 0}` : "";
+    if (sig === fv.spillSig) return;
+    fv.spillSig = sig;
+    const buf = new GeoBuffer();
+    if (sig) {
+      const blockers = fv.lightSurface?.blockers ?? [];
+      // the surface on top where areas overlap (a terrace on the lawn): the light lies on it, not under it (#893);
+      // the house itself is no ground to light – the patch ends at the next wall of the house
+      const rooms = fv.floor.rooms.filter((r) => r.points.length >= 3);
+      const surfaceAt = (x: number, z: number) => {
+        const room = rooms.find((r) => pointInPolygon([x, z], r.points));
+        return room ? (room.outdoor ? 0 : 99) : outdoorSurface(fv.floor, x, z);
+      };
+      const MAX_OUT = 5;
+      const cols: [number, number][] = [[0, 0], [0.18, 1], [0.82, 1], [1, 0]];
+      for (const info of fv.geo.openings) {
+        if (info.opening.type !== "window" || !info.exterior) continue;
+        const ri = fv.floor.rooms.findIndex((r) => r.id === info.opening.room_id);
+        if (ri < 0) continue;
+        const zone = zoneOf(fv.lightZones, ri);
+        const st = fv.openings.get(info.opening.id);
+        const open = 1 - lightCover(st);
+        const height = info.top - info.sill;
+        if (open < 0.05 || height < 0.1) continue;
+        const out: [number, number] = [-info.toRoom[0], -info.toRoom[1]];
+        const point = (sx: number, d: number): [number, number] => [info.start[0] + info.axis[0] * sx + out[0] * d, info.start[1] + info.axis[1] * sx + out[1] * d];
+        const [fx, fz] = point(info.width / 2, info.faceOut + 0.05);
+        const footAtWall = surfaceAt(fx, fz);
+        if (footAtWall > 50) continue;
+        const midY = (info.sill + info.top) / 2;
+        for (const l of lamps) {
+          if (l.room !== zone) continue;
+          // the part of the window the lamp sees past the walls of its room (a lamp around the corner sees none)
+          const seen = [0.1, 0.3, 0.5, 0.7, 0.9].filter((s) => {
+            const [px, pz] = point(s * info.width, -0.02);
+            return !shadowed(l, blockers, px, midY, pz);
+          });
+          if (!seen.length) continue;
+          const s0 = Math.max(0, seen[0] - 0.1);
+          const s1 = Math.min(1, seen[seen.length - 1] + 0.1);
+          const win = { start: point(s0 * info.width, 0), axis: info.axis, out, width: (s1 - s0) * info.width, sill: info.sill, top: info.top };
+          let c = windowCast(l, win, footAtWall, MAX_OUT);
+          if (!c) continue;
+          // the patch begins outside the wall; where it lands lower or higher than at the wall (a sunken terrace),
+          // the rays run on to that ground
+          const begin = Math.max(c.d0, info.faceOut + 0.02);
+          const foot = surfaceAt(...point(s0 * info.width + win.width / 2, begin));
+          if (foot > 50) continue;
+          if (Math.abs(foot - footAtWall) > 0.1) {
+            c = windowCast(l, win, foot, MAX_OUT);
+            if (!c) continue;
+          }
+          const d0 = Math.max(c.d0, info.faceOut + 0.02);
+          if (c.d1 - d0 < 0.15) continue;
+          const lateral = (s: number, d: number) => {
+            const [e0, e1] = c!.edge(d);
+            return s0 * info.width + e0 + s * (e1 - e0);
+          };
+          // the patch ends where the ground leaves its level: at the edge of a balcony or a terrace (#822)
+          const len = spillLength((s, d) => surfaceAt(...point(lateral(s, d0 + d), d0 + d)), foot, c.d1 - d0);
+          if (len < 0.15) continue;
+          const capped = c.d1 >= MAX_OUT && d0 + len > MAX_OUT - 0.1;
+          const peak = Math.max(l.color[0], l.color[1], l.color[2], 1e-6);
+          // several lamps in the room each throw their own patch: together not much brighter than one
+          const k = (0.3 * night * cast(l.level) * open * Math.min(1, height / 1.2)) / Math.sqrt(lamps.filter((o) => o.room === zone).length);
+          const near = new Color((l.color[0] / peak) * k, (l.color[1] / peak) * k, (l.color[2] / peak) * k);
+          // fainter the further from the lamp and the flatter the light meets the ground: a ceiling lamp two metres
+          // inside gives the full patch just outside the window, one far back in the room a faint one
+          const fall = (x: number, y: number, z: number) => {
+            const d2 = (x - l.x) ** 2 + (y - l.y) ** 2 + (z - l.z) ** 2;
+            const q = 1 / (1 + d2 / 9);
+            const facing = Math.max(0, l.y - y) / Math.sqrt(d2 || 1e-6);
+            return Math.min(1, (q * Math.sqrt(q) * facing) / 0.15);
+          };
+          // each corner lies just above the ground under it: a path or lawn a few centimetres higher than the ground
+          // at the window would otherwise cover the patch – seen from close up it went missing (#893)
+          const at = (s: number, d: number): [number, number, number] => {
+            const [x, z] = point(lateral(s, d), d);
+            const g = surfaceAt(x, z);
+            return [x, (g > 50 ? foot : Math.max(foot, g)) + 0.014, z];
+          };
+          const weight = (p: [number, number, number], d: number) => {
+            const soft = Math.min(1, (d - d0) / 0.25 + 0.3);
+            const end = capped ? Math.min(1, (d0 + len - d) / 1.2) : 1;
+            return fall(p[0], p[1], p[2]) * soft * end;
+          };
+          // in rows short enough to follow a step in the ground, soft at both sides
+          const rows = Math.max(4, Math.ceil(len / 0.3));
+          for (let i = 0; i < rows; i++) {
+            const da = d0 + (len * i) / rows;
+            const db = d0 + (len * (i + 1)) / rows;
+            for (let j = 0; j + 1 < cols.length; j++) {
+              const [sa, wa] = cols[j];
+              const [sb, wb] = cols[j + 1];
+              const a = at(sa, da);
+              const bb = at(sb, da);
+              const cc = at(sb, db);
+              const dd = at(sa, db);
+              const ca = near.clone().multiplyScalar(weight(a, da) * wa);
+              const cb = near.clone().multiplyScalar(weight(bb, da) * wb);
+              const ccc = near.clone().multiplyScalar(weight(cc, db) * wb);
+              const cd = near.clone().multiplyScalar(weight(dd, db) * wa);
+              buf.tri(a, bb, cc, ca, cb, ccc);
+              buf.tri(a, cc, dd, ca, ccc, cd);
+            }
+          }
+        }
+      }
+    }
+    fv.spillMesh.geometry.dispose();
+    fv.spillMesh.geometry = buf.geometry();
+    fv.spillMesh.visible = buf.count > 0;
+  }
+
+  /** Lays the house's shadow on the ground for this sun. */
+  private drawShadow(b: Building, sun: SunState, north: number, cloud: number): void {
+    const gf = groundFloor(b);
+    const rooms = gf?.rooms.filter((r) => !r.outdoor && r.points.length >= 3) ?? [];
+    if (!gf || !rooms.length) return this.sunFx.hideShadow();
+    const xs = rooms.flatMap((r) => r.points.map((p) => p[0]));
+    const zs = rooms.flatMap((r) => r.points.map((p) => p[1]));
+    // the lawn beside the house (by default 20 cm below the floor)
+    const lawn = gf.elevation + groundUnder(gf, { x: Math.min(...xs) - 1, z: (Math.min(...zs) + Math.max(...zs)) / 2 });
+    const az = sun.azimuth * DEG;
+    const toSun: [number, number] = [Math.sin(north + az), -Math.cos(north + az)];
+    const tris = houseShadow(b, this.roofGeos, toSun, sun.elevation, lawn);
+    let box = shadowBox(tris);
+    if (!box) return this.sunFx.hideShadow();
+    // the neighbours' houses from the map throw their shadows onto the garden too – only near the house, where the
+    // shadow texture is (it keeps its sharpness for the house's own shadow)
+    const around = placedSurroundings(b);
+    if (around?.buildings.length && !around.flat) {
+      const reach = 30;
+      const region: [number, number, number, number] = [box[0] - reach, box[1] - reach, box[2] + reach, box[3] + reach];
+      const nearBy = around.buildings.filter((bd) => bd.p.some(([x, z]) => x > region[0] - reach && x < region[2] + reach && z > region[1] - reach && z < region[3] + reach));
+      const extra = blockShadows(nearBy, toSun, sun.elevation);
+      if (extra.length) {
+        tris.push(...extra);
+        const all = shadowBox(tris)!;
+        box = [Math.max(all[0], region[0]), Math.max(all[1], region[1]), Math.min(all[2], region[2]), Math.min(all[3], region[3])];
+      }
+    }
+    // on a lawn just below the floor the shadow lies at the floor's height, so it falls over the terrace too; the
+    // house's own floor stays clear of it
+    const y = gf.elevation - lawn <= 0.35 ? gf.elevation + 0.012 : lawn + 0.012;
+    const holes = b.floors.filter((f) => Math.abs(f.elevation - gf.elevation) < 0.5).flatMap((f) => f.rooms.filter((r) => !r.outdoor && r.points.length >= 3).map((r) => r.points));
+    const strength = (this.theme === "neon" ? 0.6 : 0.34) * Math.min(1, sun.elevation / 8) * (1 - 0.8 * cloud);
+    // a deep night blue on the neon look, a cool grey on the light ones: a shadow, not a hole
+    this.sunFx.setShadow(this.renderer, tris, box, holes, y, strength, this.theme === "neon" ? 0x060418 : 0x1a2433);
   }
 
   /** Heatmap: floor colour per room id, or null for the normal look. */
@@ -1583,6 +2299,7 @@ export class FloorplanViewer {
         fv.sunSig = "";
         this.buildSun(fv);
       }
+      this.buildSunFx();
     }
   }
 
@@ -1595,7 +2312,12 @@ export class FloorplanViewer {
 
   /** The room name, with a line of values below it when there is one. */
   private fillRoomPin(pin: HTMLElement, name: string, info: string | undefined): void {
-    pin.textContent = name || "–";
+    pin.textContent = "";
+    // the name in a span of its own: with the room names switched off the values still show, without the name
+    const label = document.createElement("span");
+    label.className = "fp3d-pin-name";
+    label.textContent = name || "–";
+    pin.append(label);
     if (info) {
       const small = document.createElement("small");
       small.textContent = info;
@@ -1637,7 +2359,7 @@ export class FloorplanViewer {
         for (const [id, cur] of fv.openings) {
           const to = states.get(id) ?? CLOSED;
           const next = { ...to, open2: to.open2 ?? 0, tilt2: to.tilt2 ?? 0 };
-          if (next.open === cur.open && next.open2 === (cur.open2 ?? 0) && next.tilt === cur.tilt && next.tilt2 === (cur.tilt2 ?? 0) && next.cover === cur.cover && !!next.sensed === !!cur.sensed && !!next.unlocked === !!cur.unlocked) continue;
+          if (next.open === cur.open && next.open2 === (cur.open2 ?? 0) && next.tilt === cur.tilt && next.tilt2 === (cur.tilt2 ?? 0) && next.cover === cur.cover && (next.slats ?? null) === (cur.slats ?? null) && !!next.sensed === !!cur.sensed && !!next.unlocked === !!cur.unlocked) continue;
           fv.openings.set(id, next);
           changed = true;
         }
@@ -1672,11 +2394,13 @@ export class FloorplanViewer {
    */
   private awnings = new Map<string, { cur: number; to: number; speed: number }>();
 
-  setAwnings(states: Map<string, { out: number | null; moving: -1 | 0 | 1; time: number }>): void {
+  setAwnings(states: Map<string, { out: number | null; moving: -1 | 0 | 1; time: number; settled?: boolean }>): void {
     const fresh = new Set<string>();
     for (const [id, a] of states) {
       if (!this.awnings.has(id)) fresh.add(id);
-      const st = this.awnings.get(id) ?? { cur: a.out ?? 0, to: a.out ?? 0, speed: 0 };
+      // a gate seen for the first time stands where its contact or switch says (#818)
+      const first = a.out ?? (a.settled && a.moving > 0 ? 1 : 0);
+      const st = this.awnings.get(id) ?? { cur: first, to: first, speed: 0 };
       if (a.out === null) {
         st.to = a.moving > 0 ? 1 : 0;
         st.speed = 1 / Math.max(2, a.time);
@@ -1697,7 +2421,7 @@ export class FloorplanViewer {
    */
   private showFresh(fresh: Set<string>): void {
     if (!fresh.size) return;
-    for (const fv of this.floors) if (fv.floor.furniture.some((f) => fresh.has(f.id))) this.buildFridges(fv);
+    for (const fv of this.floors) if (movesOn(fv.floor, fresh)) this.buildFridges(fv);
   }
 
   private stepAwnings(dt: number): Set<string> {
@@ -1738,11 +2462,12 @@ export class FloorplanViewer {
     }
     for (const id of this.stepAwnings(dt)) touched.add(id);
     if (!touched.size) return false;
-    for (const fv of this.floors) if (fv.floor.furniture.some((f) => touched.has(f.id))) this.buildFridges(fv);
+    for (const fv of this.floors) if (movesOn(fv.floor, touched)) this.buildFridges(fv);
     return true;
   }
 
   private buildFridges(fv: FloorView): void {
+    this.usePalette();
     const buf = new GeoBuffer();
     for (const f of fv.floor.furniture) {
       if (f.type !== "fridge_smart") continue;
@@ -1757,6 +2482,15 @@ export class FloorplanViewer {
       const item = kind ? packItem(f.type) : undefined;
       if (kind && item) pushPackMotion(buf, item, kind, f, mountBase(fv.floor, f), this.awnings.get(f.id)?.cur ?? 0);
     }
+    // and the gates in fences (#818), each a range of its own to be tapped
+    fv.gateTris = [];
+    for (const a of fv.floor.outdoor ?? [])
+      for (const span of gateSpans(a)) {
+        const start = buf.count;
+        pushGate(buf, fv.floor, a, span, this.awnings.get(span.gate.id)?.cur ?? 0);
+        const entity = span.gate.entity && span.gate.entity !== "none" ? span.gate.entity : span.gate.contact && span.gate.contact !== "none" ? span.gate.contact : null;
+        if (entity) fv.gateTris.push({ id: entity, start, end: buf.count });
+      }
     fv.fridgeMesh.geometry.dispose();
     fv.fridgeMesh.geometry = buf.geometry();
     fv.fridgeMesh.visible = buf.count > 0;
@@ -1844,6 +2578,7 @@ export class FloorplanViewer {
       o.geometry.dispose();
       (o.material as Material).dispose();
     }
+    this.sunFx.dispose();
     this.resizeObserver.disconnect();
     this.intersection?.disconnect();
     document.removeEventListener("visibilitychange", this.onVisibility);
@@ -1871,6 +2606,20 @@ export class FloorplanViewer {
     for (const f of this.fans.values()) f.mesh.geometry.dispose();
     this.fans.clear();
     this.fanMat?.dispose();
+    for (const f of this.packSpins.values()) f.mesh.geometry.dispose();
+    this.packSpins.clear();
+    this.spinMat?.dispose();
+    for (const l of this.packLive.values()) {
+      l.mesh.geometry.dispose();
+      l.edges?.geometry.dispose();
+      l.mat?.dispose();
+    }
+    this.packLive.clear();
+    this.firework?.dispose();
+    this.snowMat?.dispose();
+    this.lightsMat?.dispose();
+    this.lightsHalo?.dispose();
+    clearTimeout(this.fireworkTimer);
     this.renderer.dispose();
     // frees the GPU context now instead of when the garbage collector gets to it
     this.renderer.forceContextLoss();
@@ -1888,6 +2637,7 @@ export class FloorplanViewer {
   private makeRenderer(quality: Quality): WebGLRenderer {
     const low = quality === "low" || (quality === "auto" && isLowEnd());
     this.lowQuality = low;
+    this.slowWatch = quality === "auto" && !low ? { quality, since: performance.now(), last: 0, ms: [] } : null;
     this.applyWeather();
     this.highQuality = quality === "high";
     const renderer = new WebGLRenderer({ antialias: !low, alpha: true, powerPreference: low ? "low-power" : "default" });
@@ -1913,6 +2663,7 @@ export class FloorplanViewer {
       grab: (x, y) => this.grabFurniture(x, y),
       drag: (x, y) => this.dragFurniture(x, y),
       drop: () => this.dropFurniture(),
+      back: () => this.options.onBack?.(),
       doubleTap: (x, y) => {
         const hit = this.floorId && this.options.onRoomDoubleTap ? this.pick(x, y) : null;
         if (hit && !("entity" in hit) && hit.roomId) this.options.onRoomDoubleTap!(hit.floorId, hit.roomId);
@@ -1949,6 +2700,8 @@ export class FloorplanViewer {
     // robots share one geometry: keep them out of the floor groups while those are disposed
     for (const r of this.robots.values()) r.group.removeFromParent();
     for (const f of this.fans.values()) f.group.removeFromParent();
+    for (const f of this.packSpins.values()) f.group.removeFromParent();
+    for (const l of this.packLive.values()) l.group.removeFromParent();
     for (const fv of this.floors) {
       for (const pic of fv.screenPics.values()) {
         (pic.mesh.material as Material).dispose();
@@ -1970,7 +2723,7 @@ export class FloorplanViewer {
     for (const el of [...this.labels.children]) if (!(el as HTMLElement).dataset.entity) el.remove();
   }
 
-  private makeDevicePin(entityId: string): HTMLButtonElement {
+  private makeDevicePin(entityId: string, furnitureId?: string): HTMLButtonElement {
     const pin = document.createElement("button");
     pin.className = "fp3d-dev";
     pin.dataset.entity = entityId;
@@ -1989,6 +2742,8 @@ export class FloorplanViewer {
       if (this.furnish) {
         // the controls see this pointer too (no stopPropagation) and call grab(): the device is dragged
         this.pendingDevice = entityId;
+        // two radiators on one thermostat: the pin pressed moves its own item (#932)
+        this.pendingFurniture = furnitureId ?? null;
         return;
       }
       e.stopPropagation();
@@ -2016,6 +2771,14 @@ export class FloorplanViewer {
       if (held) return;
       const r = pin.getBoundingClientRect();
       const h = this.host.getBoundingClientRect();
+      // outside an opened room the pin's tap opens the room (or floor) under it, if that is set
+      if (this.tapOpens && this.roomless(entityId) !== "device") {
+        const at = this.placesOf(entityId)[0];
+        if (at) return this.options.onRoomTap?.(at.floorId, at.roomId);
+        return this.onTap(r.left + r.width / 2 - h.left, r.bottom - h.top);
+      }
+      const other = this.elsewhere(entityId);
+      if (other) return this.options.onRoomTap?.(other.floorId, other.roomId);
       this.options.onDeviceTap?.(entityId, r.left + r.width / 2 - h.left, r.top + r.height / 2 - h.top);
     });
     pin.addEventListener("keydown", (e) => {
@@ -2033,6 +2796,7 @@ export class FloorplanViewer {
   /** Light cones of the lights that are on, merged into one mesh per floor. */
   /** Light surface of a floor (rebuilt with the floor plan and when the detail level changes). */
   private buildLightSurface(fv: FloorView): void {
+    this.usePalette();
     const cell = this.lowQuality ? 0.5 : 0.25;
     const surface = buildLightSurface(fv.floor, fv.geo.walls2d, fv.geo.wallBuckets, fv.geo.openings, cell, fv.geo.holes, fv.geo.roofUnder);
     // rooms joined by "no wall" form one zone: a lamp lights the open neighbour as if it stood in the same room
@@ -2073,6 +2837,16 @@ export class FloorplanViewer {
    * A wall lamp from a furniture pack: the centre of its glowing parts (plan x, height, plan z), where its halo and its
    * light sit (#680); null for any other lamp and for a pack lamp without glowing parts (they keep their old places).
    */
+  /** The glowing parts of a pack lamp with several of them (a track's spots), each a light of its own (#1034). */
+  private packLightsAt(d: DeviceMarker): [number, number, number][] {
+    if (!d.pack || d.lamp === "wall" || d.lamp === "strip") return [];
+    const item = packItem(d.pack);
+    if (!item) return [];
+    const [w, dd, h] = d.size ?? LAMP_SIZE[d.lamp ?? "ceiling"];
+    const pts = packGlowCentres(item, { x: d.x, z: d.z, rotation: d.rotation ?? 0, w, d: dd, h, mirror: d.mirror }, d.base ?? 0);
+    return pts.length > 1 ? pts : [];
+  }
+
   private packLightAt(d: DeviceMarker): [number, number, number] | null {
     if (d.lamp !== "wall" || !d.pack) return null;
     const item = packItem(d.pack);
@@ -2126,6 +2900,12 @@ export class FloorplanViewer {
           }
         }
       } else {
+        // a lamp with several glowing parts (a track with three spots) lights from each of them (#1034)
+        const many = this.packLightsAt(d);
+        if (many.length) {
+          for (const p of many) out.push({ x: p[0], y: Math.min(y, p[1]), z: p[2], color, level: glow.level * 0.8, kind, room });
+          continue;
+        }
         // a wall lamp from a pack shines from its glowing parts (the lantern's glass), not from in front of it (#680)
         const at = this.packLightAt(d);
         out.push({ x: at ? at[0] : d.x, y: at ? at[1] : y, z: at ? at[2] : d.z, color, level: glow.level, kind, room });
@@ -2176,9 +2956,11 @@ export class FloorplanViewer {
 
   /** Colours of the light surface for the current lights and doors. */
   private buildGlow(fv: FloorView): void {
+    this.usePalette();
     const surface = fv.lightSurface;
     if (!surface) return;
     const sources = this.lightSources(fv);
+    this.buildSpill(fv, sources);
     const doorOpen = surface.doors.map((d) => {
       const info = fv.geo.openings.find((i) => i.opening.id === d.id);
       if (info && openingStyle(info.opening, info.exterior) === "passage") return 1;
@@ -2225,8 +3007,9 @@ export class FloorplanViewer {
 
   private makeMaterials(mask: FoldMasks): FloorMaterials {
     return {
-      floor: themed(new MeshBasicMaterial({ vertexColors: true }), this.themeUniform),
-      pattern: patternMaterial(this.patternTexture),
+      // a floor is never cyan of its own: an own accent colour turned the heatmap's cool rooms into it (#558)
+      floor: themed(new MeshBasicMaterial({ vertexColors: true }), this.themeUniform, false, false),
+      pattern: patternMaterial(this.patternTexture, this.themeUniform),
       // the walls sit a hair behind their glowing edges in depth: lines lying on a wall's top or face no longer
       // flicker in and out at corners and joints as the view turns (#417)
       wall: themed(makeFoldable(new MeshBasicMaterial({ vertexColors: true, polygonOffset: true, polygonOffsetFactor: 1, polygonOffsetUnits: 1 }), mask, "solid"), this.themeUniform),
@@ -2239,6 +3022,7 @@ export class FloorplanViewer {
         transparent: true,
         depthWrite: false,
         side: DoubleSide,
+        forceSinglePass: true,
         polygonOffset: true,
         polygonOffsetFactor: -1,
       }),
@@ -2255,6 +3039,7 @@ export class FloorplanViewer {
           blending: AdditiveBlending,
           depthWrite: false,
           side: DoubleSide,
+          forceSinglePass: true,
           polygonOffset: true,
           polygonOffsetFactor: -3,
         }),
@@ -2263,18 +3048,19 @@ export class FloorplanViewer {
       ),
       frames: themed(makeFoldable(new MeshBasicMaterial({ vertexColors: true, side: DoubleSide }), mask), this.themeUniform),
       glass: makeFoldable(
-        new MeshBasicMaterial({ vertexColors: true, transparent: true, blending: AdditiveBlending, depthWrite: false, side: DoubleSide }),
+        new MeshBasicMaterial({ vertexColors: true, transparent: true, blending: AdditiveBlending, depthWrite: false, side: DoubleSide, forceSinglePass: true }),
         mask,
       ),
       blinds: themed(makeFoldable(new MeshBasicMaterial({ map: this.blindTexture, vertexColors: true, side: DoubleSide }), mask), this.themeUniform),
-      water: themed(new MeshBasicMaterial({ vertexColors: true, transparent: true, opacity: 0.5, depthWrite: false, side: DoubleSide }), this.themeUniform),
+      water: themed(new MeshBasicMaterial({ vertexColors: true, transparent: true, opacity: 0.5, depthWrite: false, side: DoubleSide, forceSinglePass: true }), this.themeUniform),
       flow: flowMaterial(this.flowTime),
       pipeLine: pipeLineMaterial(this.flowTime),
       // a module's surfaces: colour and opacity per vertex, over the floor without hiding what stands on it
-      patch: new MeshBasicMaterial({ vertexColors: true, transparent: true, depthWrite: false, side: DoubleSide, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 }),
-      patchGlow: new MeshBasicMaterial({ vertexColors: true, transparent: true, blending: AdditiveBlending, depthWrite: false, side: DoubleSide, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 }),
+      patch: new MeshBasicMaterial({ vertexColors: true, transparent: true, depthWrite: false, side: DoubleSide, forceSinglePass: true, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 }),
+      patchGlow: new MeshBasicMaterial({ vertexColors: true, transparent: true, blending: AdditiveBlending, depthWrite: false, side: DoubleSide, forceSinglePass: true, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 }),
       solarLive: solarLiveMaterial(this.flowTime),
-      lamps: themed(new MeshBasicMaterial({ vertexColors: true }), this.themeUniform),
+      // lit shades are marked per vertex: natural styles draw them bright and unshaded (#1071)
+      lamps: Object.assign(themed(new MeshBasicMaterial({ vertexColors: true }), this.themeUniform), { defines: { FP3D_LIT: "" } }),
       halos: new PointsMaterial({
         map: this.haloTexture,
         size: 0.9,
@@ -2284,8 +3070,10 @@ export class FloorplanViewer {
         blending: AdditiveBlending,
         depthWrite: false,
       }),
-      cones: new MeshBasicMaterial({ vertexColors: true, transparent: true, blending: AdditiveBlending, depthWrite: false, side: DoubleSide }),
-      screens: new MeshBasicMaterial({ vertexColors: true, transparent: true, blending: AdditiveBlending, depthWrite: false, side: DoubleSide }),
+      // adds its colour but never covers: over the empty, see-through background a wedge fading to black stays
+      // see-through instead of drawing a black half-circle (the Day look, #955)
+      cones: coneMaterial(this.palette.natural),
+      screens: screenMaterial(),
       earth: themed(new MeshBasicMaterial({ vertexColors: true }), this.themeUniform),
       earthWell: themed(new MeshBasicMaterial({ vertexColors: true, side: DoubleSide }), this.themeUniform),
       earthLines: themed(new LineBasicMaterial({ vertexColors: true, transparent: true, depthWrite: false }), this.themeUniform, true),
@@ -2293,12 +3081,17 @@ export class FloorplanViewer {
   }
 
   private rebuild(): void {
+    if (this.palette.natural) this.palette.facade = hexColor(this.building?.settings.facade_color);
+    this.usePalette();
     const previous = new Map(this.floors.map((f) => [f.floor.id, { y: f.y, o: f.o }]));
     const previousOpenings = new Map(this.floors.map((f) => [f.floor.id, f.openings]));
     this.clear();
     const b = this.building;
     if (!b) return;
     const ordered = [...b.floors].sort((p, q) => p.elevation - q.elevation);
+    // the neighbourhood from the map lies on the ground floor's ground
+    const around = placedSurroundings(b);
+    const groundId = groundFloor(b)?.id;
     for (const floor of b.floors) {
       // solar fields in the garden stand on the ground floor, wall fields hang on their floor's walls
       const fields = b.settings.roof?.solar ?? [];
@@ -2321,7 +3114,7 @@ export class FloorplanViewer {
             return y === null ? null : y - floor.elevation;
           }
         : undefined;
-      const geo = buildFloorGeometry(withVehicles(floor, this.parked), b.settings.wall_exterior, b.settings.wall_interior, stairHoleParts(b.floors, floor), garden, roofUnder);
+      const geo = this.dual(() => buildFloorGeometry(withVehicles(floor, this.parked), b.settings.wall_exterior, b.settings.wall_interior, stairHoleParts(b.floors, floor), garden, roofUnder, floor.id === groundId ? around : null));
       const mask: FoldMasks = { standing: { value: 0xffff }, glass: { value: 0 } };
       const materials = this.makeMaterials(mask);
       const group = new Group();
@@ -2342,6 +3135,9 @@ export class FloorplanViewer {
       const sunMesh = new Mesh(new Geometry(), materials.cones);
       sunMesh.visible = false;
       sunMesh.renderOrder = 3;
+      const spillMesh = new Mesh(new Geometry(), materials.cones);
+      spillMesh.visible = false;
+      spillMesh.renderOrder = 3;
       const haloMesh = new Points(new Geometry(), materials.halos);
       haloMesh.visible = false;
       haloMesh.renderOrder = 7;
@@ -2415,6 +3211,7 @@ export class FloorplanViewer {
         pipeFloorMesh,
         lampMesh,
         sunMesh,
+        spillMesh,
         haloMesh,
         coneMesh,
         trailMesh,
@@ -2452,7 +3249,7 @@ export class FloorplanViewer {
         this.fillRoomPin(pin, room.name, this.roomInfo.get(room.id));
         pin.addEventListener("click", () => this.options.onRoomTap?.(floor.id, room.id));
         this.labels.append(pin);
-        const [cx, cz] = centroid(room.points);
+        const [cx, cz] = labelPoint(room);
         roomPins.push({ pin, room, cx, cz });
         if (room.outdoor) continue;
         for (const [x, z] of room.points) {
@@ -2487,6 +3284,8 @@ export class FloorplanViewer {
         lampMesh,
         sunMesh,
         sunSig: "",
+        spillMesh,
+        spillSig: "",
         haloMesh,
         coneMesh,
         trailMesh,
@@ -2500,6 +3299,7 @@ export class FloorplanViewer {
         coneTris: [],
         lampFurnTris: [],
         frameTris: [],
+        gateTris: [],
         glassTris: [],
         blindTris: [],
         wallMesh,
@@ -2551,10 +3351,13 @@ export class FloorplanViewer {
     this.applyHighlight();
     this.applyTierFlags();
     this.buildRoofMesh();
+    this.buildSunFx();
     this.updateGhost();
+    this.styleFloors();
   }
 
   private buildRoofMesh(): void {
+    this.usePalette();
     if (this.roof) {
       this.roof.group.traverse((o) => ((o as Mesh).geometry as BufferGeometry | undefined)?.dispose());
       this.roof.solid.dispose();
@@ -2571,6 +3374,8 @@ export class FloorplanViewer {
       this.roof = null;
     }
     const geos = this.building ? buildRoof(this.building, this.roofWindows) : [];
+    this.roofGeos = geos;
+    this.shadowSig = "";
     if (!geos.length) return;
     // the living overlays of the roof fields, each on the part its face belongs to
     const faces = new Map(roofFaces(this.building!).map((f) => [f.key, f]));
@@ -2578,15 +3383,15 @@ export class FloorplanViewer {
     const live = solarLiveMaterial(this.flowTime);
     const lives: SolarLive[] = [];
     const group = new Group();
-    const solid = themed(new MeshBasicMaterial({ vertexColors: true, transparent: true, side: DoubleSide }), this.themeUniform);
+    const solid = themed(new MeshBasicMaterial({ vertexColors: true, transparent: true, side: DoubleSide, forceSinglePass: true }), this.themeUniform);
     const lines = themed(new LineBasicMaterial({ vertexColors: true, transparent: true, blending: lineBlending(this.theme), depthWrite: false }), this.themeUniform, true);
     // canopies: faint see-through panels that do not hide what is below
-    const glass = themed(new MeshBasicMaterial({ vertexColors: true, transparent: true, side: DoubleSide, depthWrite: false }), this.themeUniform);
+    const glass = themed(new MeshBasicMaterial({ vertexColors: true, transparent: true, side: DoubleSide, forceSinglePass: true, depthWrite: false }), this.themeUniform);
     const wins = new Group();
     const winSolid = themed(new MeshBasicMaterial({ vertexColors: true, side: DoubleSide }), this.themeUniform);
     // the glass of the windows over a room: see-through like the windows in the walls (#598)
-    const winGlass = themed(new MeshBasicMaterial({ vertexColors: true, transparent: true, opacity: 0.35, side: DoubleSide, depthWrite: false }), this.themeUniform);
-    const roofWinGlass = themed(new MeshBasicMaterial({ vertexColors: true, transparent: true, opacity: 0.35, side: DoubleSide, depthWrite: false }), this.themeUniform);
+    const winGlass = themed(new MeshBasicMaterial({ vertexColors: true, transparent: true, opacity: 0.35, side: DoubleSide, forceSinglePass: true, depthWrite: false }), this.themeUniform);
+    const roofWinGlass = themed(new MeshBasicMaterial({ vertexColors: true, transparent: true, opacity: 0.35, side: DoubleSide, forceSinglePass: true, depthWrite: false }), this.themeUniform);
     const winLines = themed(new LineBasicMaterial({ vertexColors: true, transparent: true, blending: lineBlending(this.theme), depthWrite: false }), this.themeUniform, true);
     const below: { floorId: string; win: Group }[] = [];
     const parts = geos.map((geo) => {
@@ -2605,6 +3410,37 @@ export class FloorplanViewer {
         part.add(mesh);
         lives.push(overlay);
         writeSolarLevels(overlay, this.solarLevels);
+      }
+      // winter: snow on the faces of this part
+      if (this.roofSnow > 0) {
+        const mine = [...faces.values()].filter((face) => (face.section ? geo.sections?.includes(face.section) : geo === geos[0]));
+        const snow = roofSnowGeometry(mine, geo.floor.elevation + geo.base);
+        if (snow) {
+          this.snowMat ??= new MeshBasicMaterial({ color: 0xf1f5ff, transparent: true, side: DoubleSide, forceSinglePass: true, depthWrite: false });
+          this.snowMat.opacity = 0.85 * this.roofSnow;
+          const mesh = new Mesh(snow, this.snowMat);
+          // under the living solar overlay (render order 9): the modules and their figures stay readable in the snow (#1031)
+          mesh.renderOrder = 8;
+          part.add(mesh);
+        }
+      }
+      // winter: the fairy lights along the eaves of this part, riding with it
+      if (this.roofLights !== "off") {
+        const mine = [...faces.values()].filter((face) => (face.section ? geo.sections?.includes(face.section) : geo === geos[0]));
+        const bulbs = roofLightPoints(mine, geo.floor.elevation + geo.base, this.roofLights === "color", this.roofOutline);
+        if (bulbs) {
+          const g = new BufferGeometry();
+          g.setAttribute("position", new Float32BufferAttribute(bulbs.positions, 3));
+          g.setAttribute("color", new Float32BufferAttribute(bulbs.colors, 3));
+          this.lightsMat ??= new PointsMaterial({ size: 0.24, vertexColors: true, sizeAttenuation: true, map: dotTexture(), alphaTest: 0.35, transparent: true });
+          // a soft glow round each bulb, added over what lies behind
+          this.lightsHalo ??= new PointsMaterial({ size: 0.8, vertexColors: true, transparent: true, opacity: 0.4, depthWrite: false, blending: AdditiveBlending, sizeAttenuation: true, map: dotTexture() });
+          const pts = new Points(g, this.lightsMat);
+          const halo = new Points(g, this.lightsHalo);
+          pts.renderOrder = 10;
+          halo.renderOrder = 11;
+          part.add(pts, halo);
+        }
       }
       // roof windows that only show in the roof ride and fade with it
       if (geo.winRoof?.solid.count) part.add(new Mesh(geo.winRoof.solid.geometry(), winSolid), new LineSegments(geo.winRoof.lines.geometry(), winLines));
@@ -2694,7 +3530,8 @@ export class FloorplanViewer {
    */
   private applyTierFlags(): void {
     const low = this.lowQuality;
-    this.ground.visible = !low && this.theme !== "day" && this.floors.some((f) => f.floor.rooms.length > 0);
+    // the same rule as when the house is built (not under real materials either: #1106), with its texture
+    this.placeGround();
     for (const fv of this.floors) {
       fv.patternMesh.visible = !low;
       fv.shadowMesh.visible = !low && fv.o > 0.98;
@@ -2775,7 +3612,8 @@ export class FloorplanViewer {
     m.pattern.opacity = fv.o;
     m.glow.opacity = fv.o;
     m.lines.opacity = fv.o;
-    m.glass.opacity = fv.o;
+    // a natural style's glass is a light tint (glassLook): fading keeps its own opacity (#1081)
+    m.glass.opacity = fv.o * glassOpacity(m.glass);
     m.glassWall.opacity = fv.o;
     m.flow.opacity = fv.o;
     m.solarLive.opacity = fv.o;
@@ -2820,6 +3658,9 @@ export class FloorplanViewer {
       moving = true;
       this.applyFloor(fv);
     }
+    // the sun's arc stands on the ground floor and glides with it (#998); its signature holds the height, so this
+    // is cheap once everything stands still
+    if (moving && this.sunFx) this.buildSunFx();
     return moving;
   }
 
@@ -2834,7 +3675,7 @@ export class FloorplanViewer {
         const target = this.openingTargets.get(id) ?? CLOSED;
         // nothing to do for an opening that rests at its target (the usual case)
         const near = (a: number | null | undefined, b: number | null | undefined) => (a ?? null) === (b ?? null) || (typeof a === "number" && typeof b === "number" && Math.abs(a - b) < 0.003);
-        if (near(target.open, cur.open) && near(target.open2 ?? 0, cur.open2 ?? 0) && near(target.tilt, cur.tilt) && near(target.tilt2 ?? 0, cur.tilt2 ?? 0) && near(target.cover, cur.cover) && !!target.sensed === !!cur.sensed && !!target.unlocked === !!cur.unlocked) continue;
+        if (near(target.open, cur.open) && near(target.open2 ?? 0, cur.open2 ?? 0) && near(target.tilt, cur.tilt) && near(target.tilt2 ?? 0, cur.tilt2 ?? 0) && near(target.cover, cur.cover) && near(target.slats, cur.slats) && !!target.sensed === !!cur.sensed && !!target.unlocked === !!cur.unlocked) continue;
         const next = { ...cur, open2: cur.open2 ?? 0, tilt2: cur.tilt2 ?? 0, sensed: target.sensed, unlocked: target.unlocked };
         let busy = false;
         for (const key of ["open", "open2", "tilt", "tilt2"] as const) {
@@ -2856,7 +3697,15 @@ export class FloorplanViewer {
             busy = true;
           }
         }
-        if (next.open !== cur.open || next.open2 !== (cur.open2 ?? 0) || next.tilt !== cur.tilt || next.tilt2 !== (cur.tilt2 ?? 0) || next.cover !== cur.cover || !!next.sensed !== !!cur.sensed || !!next.unlocked !== !!cur.unlocked) {
+        // the slats of a venetian blind turn like the blind runs
+        const slatsTo = target.slats ?? null;
+        const slatsFrom = cur.slats ?? null;
+        if (slatsTo === null || slatsFrom === null || Math.abs(slatsTo - slatsFrom) < 0.003) next.slats = slatsTo;
+        else {
+          next.slats = slatsFrom + (slatsTo - slatsFrom) * k;
+          busy = true;
+        }
+        if (next.open !== cur.open || next.open2 !== (cur.open2 ?? 0) || next.tilt !== cur.tilt || next.tilt2 !== (cur.tilt2 ?? 0) || next.cover !== cur.cover || (next.slats ?? null) !== (cur.slats ?? null) || !!next.sensed !== !!cur.sensed || !!next.unlocked !== !!cur.unlocked) {
           fv.openings.set(id, next);
           changed = true;
         }
@@ -2898,6 +3747,7 @@ export class FloorplanViewer {
    * the mesh in place, so colour effects cost no geometry.
    */
   private buildLamps(fv: FloorView): void {
+    this.usePalette();
     const now = performance.now();
     const flash = (id: string) => {
       const until = this.flashes.get(id);
@@ -2911,9 +3761,10 @@ export class FloorplanViewer {
     const shapeSig =
       this.wallMode +
       (this.lowQuality ? "L" : this.highQuality ? "H" : "M") +
-      lamps.map((d) => `${d.id},${d.lamp ?? d.model},${d.variant},${d.x},${d.z},${d.y},${d.rotation ?? 0},${d.roll ?? 0},${d.upright ? 1 : 0},${d.rise ?? 0},${d.size?.join("/")},${d.base ?? 0},${d.pack ?? ""},${d.mirror ? 1 : 0}`).join(";");
+      lamps.map((d) => `${d.id},${d.lamp ?? d.model},${d.variant},${d.x},${d.z},${d.y},${d.rotation ?? 0},${d.roll ?? 0},${d.upright ? 1 : 0},${d.rise ?? 0},${d.size?.join("/")},${d.base ?? 0},${d.pack ?? ""},${d.mirror ? 1 : 0},${d.ownLook ? 1 : 0}`).join(";");
     const glows = lamps.map((d) => this.glowOf(d));
-    const colorSig = lamps.map((d, i) => `${flash(d.id)},${glows[i] ? `${glows[i]!.level.toFixed(3)},${glows[i]!.color.map((c) => c.toFixed(3)).join("/")}` : "off"}`).join(";");
+    // a camera's motion is in it too: its wedge on the floor (buildHalos) turns red without any lamp changing (#901)
+    const colorSig = lamps.map((d, i) => `${flash(d.id)},${glows[i] ? `${glows[i]!.level.toFixed(3)},${glows[i]!.color.map((c) => c.toFixed(3)).join("/")}` : "off"}${d.motion ? ",m" : ""}`).join(";");
     if (shapeSig !== fv.lampShapeSig || !fv.lampMesh.geometry.getAttribute("position")) {
       fv.lampShapeSig = shapeSig;
       fv.lampColorSig = "";
@@ -2930,7 +3781,9 @@ export class FloorplanViewer {
         const packed = d.pack ? packItem(d.pack) : undefined;
         const [pw, pd, ph] = d.size ?? [0.3, 0.3, 0.3];
         // shades get the sentinel colour and are recoloured below
-        if (d.model) pushCameraModel(buf, d.model, d.x, d.model === "camera_ceiling" ? H : d.y, d.z, d.rotation ?? 0);
+        if (d.model) {
+          if (!d.ownLook) pushCameraModel(buf, d.model, d.x, d.model === "camera_ceiling" ? H : d.y, d.z, d.rotation ?? 0);
+        }
         else if (packed) pushPackLamp(buf, packed, { x: d.x, z: d.z, rotation: d.rotation ?? 0, w: pw, d: pd, h: ph, mirror: d.mirror }, d.base ?? 0, SHADE_SENTINEL);
         // a ceiling fan's blades turn in a group of their own (syncFans)
         else pushLampModel(buf, { ...d, lamp: d.lamp! }, d.top ?? H, SHADE_SENTINEL, d.lamp !== "fan");
@@ -2945,12 +3798,14 @@ export class FloorplanViewer {
       fv.lampShade = shadeFactors(buf.c);
       fv.lampMesh.geometry.dispose();
       fv.lampMesh.geometry = buf.geometry();
+      fv.lampMesh.geometry.setAttribute(LIT_ATTRIBUTE, new Float32BufferAttribute(new Float32Array(fv.lampShade.length), 1));
       fv.lampMesh.visible = buf.count > 0;
     }
     if (colorSig === fv.lampColorSig) return;
     fv.lampColorSig = colorSig;
     const attr = fv.lampMesh.geometry.getAttribute("color") as Float32BufferAttribute;
     const colors = attr.array as Float32Array;
+    const litAttr = fv.lampMesh.geometry.getAttribute(LIT_ATTRIBUTE) as Float32BufferAttribute | undefined;
     lamps.forEach((d, i) => {
       const range = fv.lampRanges.get(d.furnitureId ?? d.id);
       if (!range) return;
@@ -2963,8 +3818,10 @@ export class FloorplanViewer {
       // the model's colours come from hex values: convert the same way (colour management)
       const c = new Color(shadeC.getHex());
       recolorLamps(colors, fv.lampShade, range, [c.r, c.g, c.b]);
+      if (litAttr) markLit(litAttr.array as Float32Array, fv.lampShade, range, !!glow);
     });
     attr.needsUpdate = true;
+    if (litAttr) litAttr.needsUpdate = true;
     this.buildHalos(fv);
   }
 
@@ -2973,6 +3830,7 @@ export class FloorplanViewer {
    * projected along the sun's rays onto the floor as a warm, soft patch.
    */
   private buildSun(fv: FloorView): void {
+    this.usePalette();
     // the patches of sunlight can be switched off in the settings (#266)
     const sun = this.building?.settings.sun_patches === false ? null : this.sun;
     const north = (this.building?.settings.north ?? 0) * DEG;
@@ -2980,7 +3838,7 @@ export class FloorplanViewer {
     const cloud = this.weather?.cloud ?? 0;
     // rooms joined without a wall share the sunlight too: the zones belong to the patch's signature
     const zones = lightZonesOf(fv.floor, fv.geo.openRooms);
-    const sig = sun ? `${sun.elevation.toFixed(1)},${sun.azimuth.toFixed(1)},${north},${cloud.toFixed(2)},${[...fv.openings.values()].map((o) => (o.cover ?? 0).toFixed(2)).join(",")},${zones.join(".")},${this.roofWindowsKey},${JSON.stringify(this.building?.settings.roof?.windows ?? [])}` : "";
+    const sig = sun ? `${sun.elevation.toFixed(1)},${sun.azimuth.toFixed(1)},${north},${cloud.toFixed(2)},${[...fv.openings.values()].map((o) => lightCover(o).toFixed(2)).join(",")},${zones.join(".")},${this.roofWindowsKey},${JSON.stringify(this.building?.settings.roof?.windows ?? [])}` : "";
     if (sig === fv.sunSig) return;
     fv.sunSig = sig;
     const buf = new GeoBuffer();
@@ -2991,25 +3849,36 @@ export class FloorplanViewer {
       // horizontal direction towards the sun in plan coordinates (x right, z down, "up" = -z)
       const toSun: [number, number] = [Math.sin(north + az), -Math.cos(north + az)];
       const reach = 1 / Math.tan(el);
+      // a window twice in the plan (a generated plan, #819) would light its patch twice
+      const seen = new Set<string>();
       for (const info of fv.geo.openings) {
-        if (info.opening.type !== "window" || !info.exterior) continue;
+        if (info.opening.type !== "window" || !info.exterior || !(info.width > 0.05)) continue;
         const out: [number, number] = [-info.toRoom[0], -info.toRoom[1]];
         const facing = out[0] * toSun[0] + out[1] * toSun[1];
         if (facing < 0.05) continue;
         const st = fv.openings.get(info.opening.id);
-        const top = info.top - (st?.cover ?? 0) * (info.top - info.sill);
-        if (top - info.sill < 0.05) continue;
+        const sill = Math.max(0, info.sill);
+        const top = info.top - lightCover(st) * (info.top - sill);
+        if (top - sill < 0.05) continue;
+        const key = [info.start, info.axis, info.width, sill, top].join();
+        if (seen.has(key)) continue;
+        seen.add(key);
+        const dist = (y: number) => Math.min(7, y * reach);
         const at = (s: number, y: number) => {
-          const d = Math.min(7, y * reach);
+          const d = dist(y);
           return [
             info.start[0] + info.axis[0] * s + info.toRoom[0] * info.faceRoom - toSun[0] * d,
             0.02,
             info.start[1] + info.axis[1] * s + info.toRoom[1] * info.faceRoom - toSun[1] * d,
           ];
         };
-        const k = 0.14 * day * Math.min(1, facing * 1.5);
-        const near = new Color(1 * k, 0.82 * k, 0.55 * k);
-        const far = near.clone().multiplyScalar(0.45);
+        // the blending adds the patch after the screen's colour conversion: a warmer, fainter colour stays sunlight on
+        // the dark floor instead of a grey block (#819), and the edges fade out
+        const k = 0.085 * day * Math.min(1, facing * 1.5);
+        const near = new Color(1 * k, 0.72 * k, 0.36 * k);
+        const far = near.clone().multiplyScalar(0.5);
+        const len = dist(top) - dist(sill);
+        const col = (s: number, y: number) => near.clone().lerp(far, (y - sill) / (top - sill)).multiplyScalar(sunEdge(s, info.width) * sunEdge(dist(y) - dist(sill), len));
         // the patch stays inside the window's room – and the rooms joined to it without a wall, like the
         // lamps' light (#455 reported): it is laid in small cells, and only cells whose centre lies in one
         // of them are drawn (so it never crosses walls or leaves the house)
@@ -3017,26 +3886,23 @@ export class FloorplanViewer {
         if (ri < 0 || fv.floor.rooms[ri].points.length < 3) continue;
         const zone = zones[ri];
         const lit = fv.floor.rooms.filter((r, i) => zones[i] === zone && r.points.length >= 3).map((r) => r.points);
-        const rows = Math.max(1, Math.ceil(Math.min(7, top * reach) / 0.25));
-        const cols = Math.max(1, Math.ceil(info.width / 0.3));
+        // at least two cells each way, so the faded edges leave a lit middle
+        const rows = Math.max(2, Math.ceil(Math.min(7, top * reach) / 0.25));
+        const cols = Math.max(2, Math.ceil(info.width / 0.3));
         for (let i = 0; i < rows; i++) {
-          const y0 = info.sill + ((top - info.sill) * i) / rows;
-          const y1 = info.sill + ((top - info.sill) * (i + 1)) / rows;
-          const t0 = i / rows;
-          const t1 = (i + 1) / rows;
-          const c0 = near.clone().lerp(far, t0);
-          const c1 = near.clone().lerp(far, t1);
+          const y0 = sill + ((top - sill) * i) / rows;
+          const y1 = sill + ((top - sill) * (i + 1)) / rows;
           for (let j = 0; j < cols; j++) {
             const s0 = (info.width * j) / cols;
             const s1 = (info.width * (j + 1)) / cols;
             const m = at((s0 + s1) / 2, (y0 + y1) / 2);
             if (!lit.some((pts) => pointInPolygon([m[0], m[2]], pts))) continue;
             const a = at(s0, y0);
-            const b = at(s1, y0);
             const c = at(s1, y1);
-            const d = at(s0, y1);
-            buf.tri(a, b, c, c0, c0, c1);
-            buf.tri(a, c, d, c0, c1, c1);
+            const ca = col(s0, y0);
+            const cc = col(s1, y1);
+            buf.tri(a, at(s1, y0), c, ca, col(s1, y0), cc);
+            buf.tri(a, c, at(s0, y1), ca, cc, col(s0, y1));
           }
         }
       }
@@ -3073,27 +3939,25 @@ export class FloorplanViewer {
       const ri = fv.floor.rooms.findIndex((r) => r.id === under.roomId);
       if (ri < 0) continue;
       const lit = fv.floor.rooms.filter((r, i) => zones[i] === zones[ri] && r.points.length >= 3).map((r) => r.points);
-      // a patch on the floor from the glass's four corners, kept inside the room (and rooms open to it)
+      // a patch on the floor from the glass's four corners, kept inside the room (and rooms open to it); its edges
+      // fade out like a wall window's (#819)
       const patch = (g: number[][], col: Color) => {
-        const at = (s: number, t: number) => mix(mix(g[0], g[1], s), mix(g[3], g[2], s), t);
         const n = 6;
+        const at = (i: number, j: number) => mix(mix(g[0], g[1], i / n), mix(g[3], g[2], i / n), j / n);
+        const c = (i: number, j: number) => col.clone().multiplyScalar(sunEdge(i, n, 1) * sunEdge(j, n, 1));
         for (let i = 0; i < n; i++) {
           for (let j = 0; j < n; j++) {
-            const m = at((i + 0.5) / n, (j + 0.5) / n);
+            const m = at(i + 0.5, j + 0.5);
             if (!lit.some((pts) => pointInPolygon([m[0], m[2]], pts))) continue;
-            const p0 = at(i / n, j / n);
-            const p1 = at((i + 1) / n, j / n);
-            const p2 = at((i + 1) / n, (j + 1) / n);
-            const p3 = at(i / n, (j + 1) / n);
-            buf.tri(p0, p1, p2, col, col, col);
-            buf.tri(p0, p2, p3, col, col, col);
+            buf.tri(at(i, j), at(i + 1, j), at(i + 1, j + 1), c(i, j), c(i + 1, j), c(i + 1, j + 1));
+            buf.tri(at(i, j), at(i + 1, j + 1), at(i, j + 1), c(i, j), c(i + 1, j + 1), c(i, j + 1));
           }
         }
       };
       // daylight from the sky: a soft patch straight under the window, also when the sun is on the other side
       // of the roof or so low that its patch would fall onto the walls of a small room (D340)
       const below = (p: number[]): number[] => [p[0], 0.019, p[2]];
-      const sky = 0.06 * day;
+      const sky = 0.04 * day;
       patch([below(a), below(c), below(top1), below(top0)], new Color(0.75 * sky, 0.85 * sky, 1 * sky));
       if (facing < 0.05) continue;
       // a point of the glass, followed down the sun's rays to the floor (at most 7 m away)
@@ -3101,13 +3965,14 @@ export class FloorplanViewer {
         const t = Math.min(7, (p[1] - fv.floor.elevation) / Math.tan(el));
         return [p[0] - toSun[0] * t, 0.02, p[2] - toSun[1] * t];
       };
-      const k = 0.16 * day * Math.min(1, facing * 1.5);
-      patch([ground(a), ground(c), ground(top1), ground(top0)], new Color(1 * k, 0.84 * k, 0.6 * k));
+      const k = 0.1 * day * Math.min(1, facing * 1.5);
+      patch([ground(a), ground(c), ground(top1), ground(top0)], new Color(1 * k, 0.72 * k, 0.36 * k));
     }
   }
 
   /** Glow points at lit shades (not at the tablet level) and light cones under spots (level "High"). */
   private buildHalos(fv: FloorView): void {
+    this.usePalette();
     if (this.lowQuality) {
       fv.haloMesh.visible = false;
       fv.coneMesh.visible = false;
@@ -3161,12 +4026,19 @@ export class FloorplanViewer {
           }
           return best;
         };
+        // every point of the wedge lies on the ground it falls on: the floor in a room, the lawn or the terrain
+        // outside – a camera of a sunken floor (a basement half in the ground) no longer reaches down to that floor's
+        // level outdoors (#802); a camera just inside an outer wall starts on the ground in front of it
+        const groundAt = (x: number, z: number) => y + groundUnder(fv.floor, { x, z });
         const rim = (t: number) => {
           const r = reachAt(t);
-          return [d.x + (dir[0] * Math.cos(t) - dir[1] * Math.sin(t)) * r, y, d.z + (dir[1] * Math.cos(t) + dir[0] * Math.sin(t)) * r];
+          const x = d.x + (dir[0] * Math.cos(t) - dir[1] * Math.sin(t)) * r;
+          const z = d.z + (dir[1] * Math.cos(t) + dir[0] * Math.sin(t)) * r;
+          return [x, groundAt(x, z), z];
         };
+        const apex = [d.x, Math.max(groundAt(d.x, d.z), dome ? -Infinity : groundAt(d.x + dir[0] * 0.3, d.z + dir[1] * 0.3)), d.z];
         const start = cones.count;
-        for (let i = 0; i < n; i++) cones.tri([d.x, y, d.z], rim(-half + (2 * half * (i + 1)) / n), rim(-half + (2 * half * i) / n), near, far, far);
+        for (let i = 0; i < n; i++) cones.tri(apex, rim(-half + (2 * half * (i + 1)) / n), rim(-half + (2 * half * i) / n), near, far, far);
         coneTris.push({ id: d.id, start, end: cones.count });
         continue;
       }
@@ -3192,6 +4064,7 @@ export class FloorplanViewer {
         bollard: base + h - 0.08,
         garden: base + h - 0.03,
       }[d.lamp];
+      const many = this.packLightsAt(d);
       // a wall light glows in front of the wall
       const push = (x: number, z: number, k = 1) => {
         hp.push(x, y, z);
@@ -3217,23 +4090,26 @@ export class FloorplanViewer {
           hc.push(...glow.color.map((c) => c * glow.level * 0.7));
         } else push(d.x - Math.sin(ang) * (dd / 2 + 0.05), d.z + Math.cos(ang) * (dd / 2 + 0.05));
       }
+      else if (many.length) for (const p of many) push(p[0], p[2], 0.8);
       else push(d.x, d.z);
       if (this.highQuality && (d.lamp === "downlight" || d.lamp === "spot")) {
-        // soft cone from the lamp to the floor, fading towards the floor
+        // soft cone from the lamp to the floor, fading towards the floor – one under each spot of a track (#1034)
         const top = new Color(...glow.color.map((c) => c * 0.09 * glow.level) as [number, number, number]);
         const bottom = new Color(0, 0, 0);
-        const r0 = Math.max(0.03, w / 2);
-        const r1 = 0.45 + 0.35 * glow.level;
+        const r0 = Math.max(0.03, many.length ? Math.min(w, dd) / 2 : w / 2);
+        const r1 = (0.45 + 0.35 * glow.level) * (many.length ? 0.8 : 1);
         const n = 16;
-        for (let i = 0; i < n; i++) {
-          const a0 = (i / n) * Math.PI * 2;
-          const a1 = ((i + 1) / n) * Math.PI * 2;
-          const t0 = [d.x + Math.cos(a0) * r0, y, d.z + Math.sin(a0) * r0];
-          const t1 = [d.x + Math.cos(a1) * r0, y, d.z + Math.sin(a1) * r0];
-          const b0 = [d.x + Math.cos(a0) * r1, 0.02, d.z + Math.sin(a0) * r1];
-          const b1 = [d.x + Math.cos(a1) * r1, 0.02, d.z + Math.sin(a1) * r1];
-          cones.tri(t0, b0, b1, top, bottom, bottom);
-          cones.tri(t0, b1, t1, top, bottom, top);
+        for (const [cx, cz] of many.length ? many.map((p) => [p[0], p[2]] as [number, number]) : [[d.x, d.z] as [number, number]]) {
+          for (let i = 0; i < n; i++) {
+            const a0 = (i / n) * Math.PI * 2;
+            const a1 = ((i + 1) / n) * Math.PI * 2;
+            const t0 = [cx + Math.cos(a0) * r0, y, cz + Math.sin(a0) * r0];
+            const t1 = [cx + Math.cos(a1) * r0, y, cz + Math.sin(a1) * r0];
+            const b0 = [cx + Math.cos(a0) * r1, 0.02, cz + Math.sin(a0) * r1];
+            const b1 = [cx + Math.cos(a1) * r1, 0.02, cz + Math.sin(a1) * r1];
+            cones.tri(t0, b0, b1, top, bottom, bottom);
+            cones.tri(t0, b1, t1, top, bottom, top);
+          }
         }
       }
     }
@@ -3251,6 +4127,7 @@ export class FloorplanViewer {
 
   /** Lit screens of a floor: a bright panel in the app colour and a faint glow around it. */
   private buildScreens(fv: FloorView): void {
+    this.usePalette();
     // the vehicles in the parking spots count as furniture here too (Auto Pro lights a band on them)
     const items = withVehicles(fv.floor, this.parked).furniture.filter((f) => this.screens.has(f.id));
     // (with the accent colour: a light switch's rocker glows in it)
@@ -3317,6 +4194,25 @@ export class FloorplanViewer {
                 const a1 = ((i + 1) / n) * Math.PI * 2;
                 buf.tri(P(cx, y, cz), P(cx + Math.cos(a0) * br, y, cz + Math.sin(a0) * br), P(cx + Math.cos(a1) * br, y, cz + Math.sin(a1) * br), col);
               }
+            }
+            continue;
+          }
+          if (face.part === "plate") {
+            // the top plate glows, with a thin rim round its top edge (#917): free of a fan or a grille in the middle
+            const col = new Color(...face.color.map((v) => Math.min(1, v * (0.3 + 0.45 * face.level))) as [number, number, number]);
+            const hw = Math.abs(w) / 2 + 0.008;
+            const hd = d / 2 + 0.008;
+            const yt = base + h + 0.006;
+            const sx = Math.sign(w) || 1;
+            buf.tri(P(-hw * sx, yt, -hd), P(hw * sx, yt, -hd), P(hw * sx, yt, hd), col);
+            buf.tri(P(-hw * sx, yt, -hd), P(hw * sx, yt, hd), P(-hw * sx, yt, hd), col);
+            const y0 = base + h - 0.035;
+            const corners: [number, number][] = [[-hw, -hd], [hw, -hd], [hw, hd], [-hw, hd]];
+            for (let i = 0; i < 4; i++) {
+              const a0 = corners[i];
+              const a1 = corners[(i + 1) % 4];
+              buf.tri(P(a0[0] * sx, y0, a0[1]), P(a1[0] * sx, y0, a1[1]), P(a1[0] * sx, yt, a1[1]), col);
+              buf.tri(P(a0[0] * sx, y0, a0[1]), P(a1[0] * sx, yt, a1[1]), P(a0[0] * sx, yt, a0[1]), col);
             }
             continue;
           }
@@ -3571,11 +4467,8 @@ export class FloorplanViewer {
   private placeScreenPicture(mesh: Mesh, f: Furniture, r: { x0: number; x1: number; y0: number; y1: number; z: number }, tex: Texture): void {
     const img = tex.image as { width?: number; height?: number } | undefined;
     const aspect = img?.width && img?.height ? img.width / img.height : 16 / 9;
-    const sw = r.x1 - r.x0 - 0.04;
-    const sh = r.y1 - r.y0 - 0.04;
     // contain: the whole picture is visible, letterboxed by the dark screen around it
-    const w = Math.min(sw, sh * aspect);
-    const h = w / aspect;
+    const { w, h } = screenPictureSize(r.x1 - r.x0, r.y1 - r.y0, aspect);
     const a = f.rotation * DEG;
     const cx = (r.x0 + r.x1) / 2;
     const z = r.z + 0.008;
@@ -3590,6 +4483,7 @@ export class FloorplanViewer {
 
   /** Energy cables of a floor as flat glowing ribbons (vertical pieces as two crossed ribbons). */
   private buildFlows(fv: FloorView): void {
+    this.usePalette();
     this.buildPipeLines(fv);
     const layout = this.flows
       .filter((f) => f.floorId === fv.floor.id && !f.pipe)
@@ -3675,6 +4569,7 @@ export class FloorplanViewer {
    * view go into a mesh of their own, hidden while a floor is opened; those shown only on an opened floor into another.
    */
   private buildPipeLines(fv: FloorView): void {
+    this.usePalette();
     const mine = this.flows.filter((f) => f.floorId === fv.floor.id && f.pipe);
     const sig = JSON.stringify(mine.map((f) => [f.a, f.b, f.dist, f.color, f.width, f.house, f.floor, Math.round(f.power / 50), this.flowPhase.get(flowKey(f))?.speed ?? 0]));
     if (sig === fv.pipeLineSig) return;
@@ -3750,7 +4645,8 @@ export class FloorplanViewer {
   }
 
   private buildOpenings(fv: FloorView): void {
-    const parts = buildOpeningParts(fv.geo.openings, fv.openings, Math.min(fv.floor.cut_height, fv.floor.height));
+    this.usePalette();
+    const parts = this.dual(() => buildOpeningParts(fv.geo.openings, fv.openings, Math.min(fv.floor.cut_height, fv.floor.height)));
     fv.frameTris = parts.frameTris;
     fv.glassTris = parts.glassTris;
     fv.blindTris = parts.blindTris;
@@ -3828,8 +4724,9 @@ export class FloorplanViewer {
     // the start view's framing (#206): the point it looks at, counted from the opened floor
     const at = useRadius ? start!.target : null;
     if (at) center.set(at.x, at.y + (own ? this.floorBase(this.floorId) : 0), at.z);
+    this.fitted = true;
     if (this.keepNext) {
-      // the same angle, distance and spot – only lifted to the opened floor
+      // the same angle, distance and spot – only lifted to the opened floor (or back to the house's level)
       this.keepNext = false;
       const cur = this.controls.view;
       this.controls.flyTo({ target: new Vector3(cur.target.x, center.y, cur.target.z), radius: cur.radius, phi: cur.phi, theta: cur.theta }, duration);
@@ -3847,7 +4744,15 @@ export class FloorplanViewer {
       for (const room of fv.floor.rooms) for (const [x, z] of room.points) box.expandByPoint(new Vector3(x, 0, z));
       for (const a of fv.floor.outdoor ?? []) for (const [x, z] of a.points) box.expandByPoint(new Vector3(x, 0, z));
     }
-    this.ground.visible = !box.isEmpty() && !this.lowQuality && this.theme !== "day";
+    // the neighbourhood from the map: the ground reaches under the neighbours close by (not the whole map – the
+    // grid's cells grow with the ground)
+    const around = placedSurroundings(this.building);
+    if (around && !box.isEmpty()) {
+      const mid = box.getCenter(new Vector3());
+      for (const bd of around.buildings) for (const [x, z] of bd.p) if (Math.hypot(x - mid.x, z - mid.z) < 50) box.expandByPoint(new Vector3(x, 0, z));
+    }
+    // the neon grid belongs to the neon looks: not under the light looks, nor under real materials
+    this.ground.visible = !box.isEmpty() && !this.lowQuality && this.theme !== "day" && !this.style.natural && !this.nearOn;
     if (box.isEmpty()) return;
     if (this.ground.visible && !this.groundTexture) {
       this.groundTexture = makeGroundTexture();
@@ -3882,19 +4787,23 @@ export class FloorplanViewer {
     return ray;
   }
 
-  private pick(x: number, y: number): { entity: string } | { floorId: string; roomId: string | null } | null {
+  private pick(x: number, y: number, devices = true): { entity: string } | { floorId: string; roomId: string | null } | null {
     const ray = this.rayAt(x, y);
     const floors = this.activeFloors();
-    const meshes = floors.flatMap((f) => [f.lampMesh, f.coneMesh, f.framesMesh, f.glassMesh, f.blindsMesh, f.wallMesh, f.floorMesh].filter((m) => m.visible));
+    const meshes = floors.flatMap((f) => [f.lampMesh, f.coneMesh, f.framesMesh, f.glassMesh, f.blindsMesh, f.fridgeMesh, f.wallMesh, f.floorMesh].filter((m) => m.visible));
     const inRange = (list: { id: string; start: number; end: number }[], tri: number) => list.find((r) => tri >= r.start && tri < r.end)?.id;
     for (const hit of ray.intersectObjects(meshes, false)) {
       if (hit.faceIndex == null) continue;
       const tri = hit.faceIndex;
       const fv = floors.find((f) => f.group === hit.object.parent)!;
-      if (hit.object === fv.lampMesh || hit.object === fv.coneMesh) {
+      if (hit.object === fv.fridgeMesh) {
+        // a fence gate opens with its entity; fridge doors and awnings belong to their item behind
+        const id = inRange(fv.gateTris, tri);
+        if (id && devices) return { entity: id };
+      } else if (hit.object === fv.lampMesh || hit.object === fv.coneMesh) {
         // a camera's wedge on the floor is a far bigger target than the camera itself
         const id = inRange(hit.object === fv.lampMesh ? fv.lampTris : fv.coneTris, tri);
-        if (id) return { entity: id };
+        if (id && devices) return { entity: id };
       } else if (hit.object === fv.framesMesh || hit.object === fv.blindsMesh || hit.object === fv.glassMesh) {
         // the part above the cut is folded away with its wall: a tap there is meant for what lies behind
         if (this.wallMode === "cut" && hit.face) {
@@ -3904,11 +4813,11 @@ export class FloorplanViewer {
         // the whole window counts, glass included: a small blind is a poor target
         const id = inRange(hit.object === fv.framesMesh ? fv.frameTris : hit.object === fv.glassMesh ? fv.glassTris : fv.blindTris, tri);
         const entity = id ? this.pickOpenings.get(id) : undefined;
-        if (entity) return { entity };
+        if (entity && devices) return { entity };
       } else if (hit.object === fv.wallMesh) {
         const id = inRange(fv.geo.furnitureTris, tri);
         const entity = id ? this.pickFurniture.get(id) : undefined;
-        if (entity) return { entity };
+        if (entity && devices) return { entity };
         // an outdoor area acting as a room (#100): its surface lies in the wall mesh; a tap on it opens it
         if (!id && hit.face && hit.face.normal.y > 0.7) {
           const zone = outdoorZones(fv.floor).find((z) => pointInPolygon([hit.point.x, hit.point.z], z.points));
@@ -3940,14 +4849,66 @@ export class FloorplanViewer {
     return null;
   }
 
+  /** Devices switch only in an opened room (a setting): in the house and floor views a tap opens what lies there. */
+  private get tapOpens(): boolean {
+    return !!this.building?.settings.tap_in_room && this.roomId === null && !this.furnish;
+  }
+
+  /**
+   * With "switch devices only in the opened room" and a room opened: where a device lies that is not in that room –
+   * a tap opens that place instead of switching (a blind of the house, seen from the opened garden, #896). Null when
+   * it is in the opened room, or nobody knows where it is.
+   */
+  private elsewhere(entity: string): { floorId: string; roomId: string | null } | null {
+    if (!this.building?.settings.tap_in_room || this.roomId === null || this.furnish) return null;
+    const found = this.placesOf(entity);
+    return !found.length || found.some((r) => r.roomId === this.roomId) ? null : found[0];
+  }
+
+  /**
+   * With "switch devices only in the opened room", outside a room: a device that lies in no room (a camera on the
+   * outer wall) has no room to open – on its own floor the tap is for the device itself, in the house view it
+   * opens that floor (#1103). Undefined for a device in a room: the tap opens it as before.
+   */
+  private roomless(entity: string): { floorId: string } | "device" | undefined {
+    const found = this.placesOf(entity);
+    if (!found.length || found.some((r) => r.roomId !== null)) return undefined;
+    return found.some((r) => r.floorId === this.floorId) ? "device" : { floorId: found[0].floorId };
+  }
+
+  /** Where an entity lies in the plan: its device markers, and the openings and furniture linked to it. */
+  private placesOf(entity: string): { floorId: string; roomId: string | null }[] {
+    const found: { floorId: string; roomId: string | null }[] = [];
+    for (const fv of this.floors) {
+      const zones = [...fv.floor.rooms, ...outdoorZones(fv.floor)].filter((r) => r.points.length >= 3);
+      // a device outside the rooms may stand in an outdoor area acting as a room
+      for (const m of this.devices) {
+        if (m.id === entity && m.floorId === fv.floor.id) found.push({ floorId: m.floorId, roomId: m.roomId ?? zones.find((r) => pointInPolygon([m.x, m.z], r.points))?.id ?? null });
+      }
+      for (const o of fv.floor.openings) if (this.pickOpenings.get(o.id) === entity) found.push({ floorId: fv.floor.id, roomId: o.room_id || null });
+      for (const f of fv.floor.furniture) {
+        if (this.pickFurniture.get(f.id) === entity) found.push({ floorId: fv.floor.id, roomId: zones.find((r) => pointInPolygon([f.x, f.z], r.points))?.id ?? null });
+      }
+    }
+    return found;
+  }
+
   private onTap(x: number, y: number): void {
-    const hit = this.pick(x, y);
+    let hit = this.pick(x, y, !this.tapOpens);
+    if (this.tapOpens) {
+      const device = this.pick(x, y, true);
+      const roomless = device && "entity" in device ? this.roomless(device.entity) : undefined;
+      if (roomless === "device") hit = device;
+      else if (roomless) return void this.options.onRoomTap?.(roomless.floorId, null);
+    }
     if (hit && "entity" in hit && this.furnish) {
       this.selectDevice(hit.entity);
       this.options.onDeviceSelect?.(hit.entity);
       return;
     }
     if (hit && "entity" in hit) {
+      const other = this.elsewhere(hit.entity);
+      if (other) return void this.options.onRoomTap?.(other.floorId, other.roomId);
       this.flashes.set(hit.entity, performance.now() + FLASH_MS);
       this.invalidate();
       this.options.onDeviceTap?.(hit.entity, x, y);
@@ -4038,11 +4999,13 @@ export class FloorplanViewer {
     if (!this.furnish) return false;
     // a device whose pin was pressed; the pin of a furniture item (the washer's watts) moves the item
     const pending = this.pendingDevice;
+    const pendingOwner = this.pendingFurniture;
     this.pendingDevice = null;
+    this.pendingFurniture = null;
     // a tool that only moves some furniture (energy devices): everything else stays where it is
     const only = this.furnishTypes;
     if (only) {
-      const owner = pending ? this.devices.find((m) => m.id === pending)?.furnitureId : undefined;
+      const owner = pending ? (pendingOwner ?? this.devices.find((m) => m.id === pending)?.furnitureId) : undefined;
       const hit = owner ? null : this.furnitureAt(x, y);
       const id = owner ?? hit?.id;
       const fv = id ? this.floors.find((v) => v.floor.furniture.some((m) => m.id === id)) : undefined;
@@ -4050,7 +5013,7 @@ export class FloorplanViewer {
       return !!(fv && id && type && only.has(type)) && this.grabItem(fv, id, x, y);
     }
     if (pending) {
-      const owner = this.devices.find((m) => m.id === pending)?.furnitureId;
+      const owner = pendingOwner ?? this.devices.find((m) => m.id === pending)?.furnitureId;
       const fv = owner ? this.floors.find((v) => v.floor.furniture.some((m) => m.id === owner)) : undefined;
       if (!owner || !fv) return this.grabDevice(pending, x, y);
       return this.grabItem(fv, owner, x, y);
@@ -4144,7 +5107,7 @@ export class FloorplanViewer {
       this.options.onFurnitureSelect?.(null);
     }
     this.selectedDevice = id;
-    for (const [entity, pin] of this.devicePins) pin.el.classList.toggle("fp3d-dev-sel", entity === id);
+    for (const pin of this.devicePins.values()) pin.el.classList.toggle("fp3d-dev-sel", pin.el.dataset.entity === id);
   }
 
   private dragFurniture(x: number, y: number): void {
@@ -4269,11 +5232,12 @@ export class FloorplanViewer {
     if (hit && "entity" in hit) this.options.onDeviceHold?.(hit.entity, x, y);
   }
 
-  /** A mostly vertical drag on a lamp or blind becomes a swipe (unless furnishing). */
+  /** A mostly vertical drag on a lamp or blind becomes a swipe (unless furnishing, or outside the opened room when
+   * devices switch only there: a drag over the floor would move a blind by accident, #896). */
   private swipeStart(x: number, y: number, dx: number, dy: number): boolean {
-    if (this.furnish || Math.abs(dy) < Math.abs(dx) * 1.2) return false;
+    if (this.furnish || this.tapOpens || Math.abs(dy) < Math.abs(dx) * 1.2) return false;
     const hit = this.pick(x, y);
-    if (!hit || !("entity" in hit)) return false;
+    if (!hit || !("entity" in hit) || this.elsewhere(hit.entity)) return false;
     if (this.options.onDeviceSwipe?.(hit.entity, "start", 0, x, y) !== true) return false;
     this.swipe = { entity: hit.entity, x, y };
     return true;
@@ -4518,9 +5482,239 @@ export class FloorplanViewer {
     this.fanLast = 0;
   }
 
+  /** How fast the blades of pack fans turn (0–1 by furniture id, #1084): their models follow the plan. */
+  setSpinSpeeds(speeds: Map<string, number>): void {
+    this.spinSpeeds = speeds;
+    this.syncPackSpins();
+    this.invalidate();
+  }
+
+  /**
+   * The values of the live parts of pack items (3.4), by "<furniture id>|<group key>": 0–1 (open, slid out, turning,
+   * filled, glowing) or, for a status light, 1 fine / 0 off / -1 a fault.
+   */
+  setLiveParts(values: Map<string, number>): void {
+    this.liveValues = values;
+    this.syncPackLive();
+    this.invalidate();
+  }
+
+  /** The live parts' values from Home Assistant: each group with its slot's entity (or the item's own with one slot). */
+  setLiveStates(states: Record<string, HassEntity>, own: (furnitureId: string) => string | null): void {
+    const values = new Map<string, number>();
+    for (const fv of this.floors) {
+      for (const f of fv.floor.furniture) {
+        const item = packItem(f.type);
+        if (!item || !hasLiveParts(item)) continue;
+        for (const [key, g] of liveGroups(item.parts)) {
+          const ent = slotEntity(f.binds, g.bind.slot, item.slots?.length ?? 0, own(f.id), item.slots?.find((sl) => sl.id === g.bind.slot)?.domains);
+          values.set(`${f.id}|${key}`, ent ? bindValue(g.bind.kind, states[ent]) : NaN);
+        }
+      }
+    }
+    // nothing live in the plan and nothing shown: no work
+    if (!values.size && !this.packLive.size) return;
+    this.setLiveParts(values);
+  }
+
+  /** The live parts' models: one per item and group at its pivot, rebuilt when the item or the look changes. */
+  private syncPackLive(): void {
+    const seen = new Set<string>();
+    for (const fv of this.floors) {
+      for (const f of fv.floor.furniture) {
+        const item = packItem(f.type);
+        if (!item || !hasLiveParts(item)) continue;
+        const base = mountBase(fv.floor, f);
+        for (const key of liveGroups(item.parts).keys()) {
+          const id = `${f.id}|${key}`;
+          seen.add(id);
+          const sig = [f.x, f.z, f.rotation, f.w, f.d, f.h, f.mirror ? 1 : 0, base, fv.floor.id, this.style.id, f.finish ? JSON.stringify(f.finish) : ""].join("|");
+          let live = this.packLive.get(id);
+          if (live && live.sig !== sig) {
+            live.group.removeFromParent();
+            live.mesh.geometry.dispose();
+            live.edges?.geometry.dispose();
+            live.mat?.dispose();
+            this.packLive.delete(id);
+            live = undefined;
+          }
+          if (!live) {
+            this.usePalette();
+            const buf = new GeoBuffer();
+            const lines = new LineBuffer();
+            const made = pushPackLive(buf, item, f.w, f.d, f.h, key, f, lines);
+            if (!made) continue;
+            const tinted = made.bind.kind === "blink" || made.bind.kind === "glow";
+            this.spinMat ??= new MeshBasicMaterial({ vertexColors: true, side: DoubleSide });
+            const mat = tinted ? new MeshBasicMaterial({ vertexColors: true, side: DoubleSide }) : null;
+            const mesh = new Mesh(buf.geometry(), mat ?? this.spinMat);
+            // the part's edges in the floor's line look, turning and sliding with it
+            const edges = lines.p.length ? new LineSegments(lines.geometry(), fv.materials.lines) : null;
+            if (edges) mesh.add(edges);
+            const inner = new Group();
+            inner.add(mesh);
+            inner.position.set(made.pivot[0], made.pivot[1], made.pivot[2]);
+            const group = new Group();
+            group.add(inner);
+            group.position.set(f.x, base, f.z);
+            group.rotation.y = -(f.rotation * DEG);
+            if (f.mirror) group.scale.x = -1;
+            live = { group, inner, mesh, edges, mat, bind: made.bind, depth: made.depth, rest: made.rest, floorId: fv.floor.id, y: base + made.pivot[1], sig, target: NaN, value: NaN };
+            this.packLive.set(id, live);
+            this.poseLive(live, 0);
+          }
+          live.target = this.liveValues.get(id) ?? NaN;
+        }
+      }
+    }
+    for (const [id, l] of this.packLive) {
+      if (seen.has(id)) continue;
+      l.group.removeFromParent();
+      l.mesh.geometry.dispose();
+      l.edges?.geometry.dispose();
+      l.mat?.dispose();
+      this.packLive.delete(id);
+    }
+    this.liveLast = 0;
+  }
+
+  /** A live part at its value: turned open, slid out, filled, tinted. */
+  private poseLive(l: { inner: Group; mesh: Mesh; mat: MeshBasicMaterial | null; bind: PartBind; depth: number; rest: number; value: number }, now: number): void {
+    const b = l.bind;
+    // no entity linked: the part as the item was drawn before (closed, full, in its own colour)
+    if (Number.isNaN(l.value)) {
+      l.mesh.rotation.set(0, 0, 0);
+      l.mesh.position.z = 0;
+      l.mesh.scale.y = 1;
+      l.mat?.color.setHex(l.rest);
+      return;
+    }
+    const v = l.value;
+    switch (b.kind) {
+      case "open": {
+        const a = (b.amount ?? 95) * DEG * Math.max(0, v);
+        const hinge = b.hinge ?? "left";
+        if (hinge === "left") l.mesh.rotation.set(0, -a, 0);
+        else if (hinge === "right") l.mesh.rotation.set(0, a, 0);
+        else if (hinge === "top") l.mesh.rotation.set(-a, 0, 0);
+        else l.mesh.rotation.set(a, 0, 0);
+        break;
+      }
+      case "slide":
+        l.mesh.position.z = Math.max(0, v) * (b.amount ?? 0.45) * l.depth;
+        break;
+      case "level":
+        l.mesh.scale.y = Math.max(0.02, Math.min(1, v));
+        break;
+      case "blink": {
+        // fine: green; off: a dim grey; a fault: red, pulsing
+        const pulse = 0.55 + 0.45 * Math.abs(Math.sin(now / 350));
+        l.mat?.color.setHex(v > 0.5 ? 0x3dff8a : v < -0.5 ? 0xff3b4f : 0x39414f);
+        if (v < -0.5) l.mat?.color.multiplyScalar(pulse);
+        break;
+      }
+      case "glow":
+        // its own colour, dim while off and full while on
+        l.mat?.color.setHex(l.rest).multiplyScalar(0.22 + 0.78 * Math.max(0, Math.min(1, v)));
+        break;
+      case "spin":
+        break;
+    }
+  }
+
+  /** Move the live parts towards their values (doors swing, drawers slide, tanks fill); true while one moves. */
+  private stepLive(now: number): boolean {
+    if (!this.packLive.size) return false;
+    const dt = this.liveLast ? Math.min(0.2, (now - this.liveLast) / 1000) : 0;
+    this.liveLast = now;
+    let moving = false;
+    for (const l of this.packLive.values()) {
+      const fv = this.floorMap.get(l.floorId);
+      if (!fv) continue;
+      if (l.group.parent !== fv.group) fv.group.add(l.group);
+      l.group.visible = !(this.wallMode === "cut" && l.y > Math.min(fv.floor.cut_height, fv.floor.height));
+      if (l.bind.kind === "spin") {
+        if (l.target > 0) {
+          moving = true;
+          l.value = l.target;
+          const turn = l.target * Math.PI * 2 * dt * (l.bind.amount ? l.bind.amount / 60 : 1);
+          const axis = l.bind.axis ?? "y";
+          if (axis === "x") l.mesh.rotation.x -= turn;
+          else if (axis === "z") l.mesh.rotation.z -= turn;
+          else l.mesh.rotation.y -= turn;
+        }
+        continue;
+      }
+      if (Number.isNaN(l.target) || Number.isNaN(l.value)) {
+        if (!Object.is(l.value, l.target)) {
+          l.value = Number.isNaN(l.target) ? NaN : l.bind.kind === "level" ? 1 : 0;
+          moving = true;
+        }
+      }
+      if (!Number.isNaN(l.target) && l.value !== l.target) {
+        // about a second from closed to open
+        const step = dt * 1.6;
+        l.value = Math.abs(l.target - l.value) <= step || l.bind.kind === "blink" ? l.target : l.value + Math.sign(l.target - l.value) * step;
+        moving = true;
+      }
+      if (l.bind.kind === "blink" && l.value < -0.5) moving = true;
+      this.poseLive(l, now);
+    }
+    if (!moving) this.liveLast = 0;
+    return moving;
+  }
+
+  /** The pack items with turning parts: a model each at its pivot, rebuilt when the item or the look changes. */
+  private syncPackSpins(): void {
+    const seen = new Set<string>();
+    for (const fv of this.floors) {
+      for (const f of fv.floor.furniture) {
+        const item = packItem(f.type);
+        if (!item || !packSpinAxis(item)) continue;
+        seen.add(f.id);
+        const base = mountBase(fv.floor, f);
+        const sig = [f.x, f.z, f.rotation, f.w, f.d, f.h, f.mirror ? 1 : 0, base, fv.floor.id, this.style.id].join("|");
+        let spin = this.packSpins.get(f.id);
+        if (spin && spin.sig !== sig) {
+          spin.group.removeFromParent();
+          spin.mesh.geometry.dispose();
+          this.packSpins.delete(f.id);
+          spin = undefined;
+        }
+        if (!spin) {
+          this.usePalette();
+          const buf = new GeoBuffer();
+          const made = pushPackSpin(buf, item, f.w, f.d, f.h);
+          if (!made) continue;
+          // mirrored items turn their model inside out: both faces are drawn
+          this.spinMat ??= new MeshBasicMaterial({ vertexColors: true, side: DoubleSide });
+          const mesh = new Mesh(buf.geometry(), this.spinMat);
+          const spinner = new Group();
+          spinner.add(mesh);
+          spinner.position.set(made.pivot[0], made.pivot[1], made.pivot[2]);
+          const group = new Group();
+          group.add(spinner);
+          group.position.set(f.x, base, f.z);
+          group.rotation.y = -(f.rotation * DEG);
+          if (f.mirror) group.scale.x = -1;
+          spin = { group, spinner, mesh, axis: made.axis, speed: 0, floorId: fv.floor.id, y: base + made.pivot[1], sig };
+          this.packSpins.set(f.id, spin);
+        }
+        spin.speed = Math.max(0, Math.min(1, this.spinSpeeds.get(f.id) ?? 0));
+      }
+    }
+    for (const [key, f] of this.packSpins) {
+      if (seen.has(key)) continue;
+      f.group.removeFromParent();
+      f.mesh.geometry.dispose();
+      this.packSpins.delete(key);
+    }
+    this.fanLast = 0;
+  }
+
   /** Turn the fans' blades; true while one of them runs. */
   private stepFans(now: number): boolean {
-    if (!this.fans.size) return false;
+    if (!this.fans.size && !this.packSpins.size) return false;
     const dt = this.fanLast ? Math.min(0.2, (now - this.fanLast) / 1000) : 0;
     this.fanLast = now;
     let turning = false;
@@ -4534,6 +5728,18 @@ export class FloorplanViewer {
       turning = true;
       // up to about one turn a second at full speed
       f.group.rotation.y -= f.speed * Math.PI * 2 * dt;
+    }
+    for (const f of this.packSpins.values()) {
+      const fv = this.floorMap.get(f.floorId);
+      if (!fv) continue;
+      if (f.group.parent !== fv.group) fv.group.add(f.group);
+      f.group.visible = !(this.wallMode === "cut" && f.y > Math.min(fv.floor.cut_height, fv.floor.height));
+      if (f.speed <= 0) continue;
+      turning = true;
+      // a pedestal fan's blades turn faster than a ceiling fan's
+      const turn = f.speed * Math.PI * 2 * dt * (f.axis === "z" ? 2.5 : 1);
+      if (f.axis === "z") f.spinner.rotation.z -= turn;
+      else f.spinner.rotation.y -= turn;
     }
     if (!turning) this.fanLast = 0;
     return turning;
@@ -4637,7 +5843,32 @@ export class FloorplanViewer {
     const tilt = Math.min(1.45, Math.max(0.22, (d.tilt ?? (ceiling ? 65 : 20)) * DEG));
     const y = fv.floor.elevation + fv.ty + (ceiling ? fv.floor.height - 0.1 : d.y);
     const dir = new Vector3(-Math.sin(a) * Math.cos(tilt), -Math.sin(tilt), Math.cos(a) * Math.cos(tilt));
-    this.controls.flyTo({ target: new Vector3(d.x, y, d.z).addScaledVector(dir, 3.15), radius: 3, phi: Math.PI / 2 - tilt, theta: Math.atan2(Math.sin(a), -Math.cos(a)) }, 900);
+    // the camera's own angle and height count, also under the 3D lock (#1060)
+    this.controls.flyTo({ target: new Vector3(d.x, y, d.z).addScaledVector(dir, 3.15), radius: 3, phi: Math.PI / 2 - tilt, theta: Math.atan2(Math.sin(a), -Math.cos(a)) }, 900, true);
+    // and its field of view: a wall camera sees about 90° across, the 3D view only 38° up and down – the look through
+    // it was a narrow slice that seemed to stand at eye level (#1060); a dome sees all round, it gets a wide view
+    const across = Math.min(110, Math.max(50, d.fov && d.fov < 360 ? d.fov : ceiling ? 100 : 90)) * DEG;
+    const aspect = this.camera.aspect || 1;
+    this.fovTarget = Math.min(85, Math.max(BASE_FOV, (2 * Math.atan(Math.tan(across / 2) / aspect)) / DEG));
+    this.invalidate();
+    return true;
+  }
+
+  /** Back from a look through a camera: the view's own field of view again. */
+  endLook(): void {
+    this.fovTarget = BASE_FOV;
+    this.invalidate();
+  }
+
+  /** The field of view glides with the flight to and from a camera. */
+  private stepFov(dt: number): boolean {
+    const d = this.fovTarget - this.camera.fov;
+    if (Math.abs(d) < 0.05) {
+      if (d === 0) return false;
+      this.camera.fov = this.fovTarget;
+    } else this.camera.fov += d * (1 - Math.exp(-dt / 260));
+    this.camera.updateProjectionMatrix();
+    this.labelsDirty = true;
     return true;
   }
 
@@ -4664,6 +5895,7 @@ export class FloorplanViewer {
 
   private render(now: number): void {
     this.frame = 0;
+    this.usePalette();
     if (this.disposed) return;
     const dt = this.lastFrame ? Math.min(100, now - this.lastFrame) : 16;
     let orbiting = false;
@@ -4673,7 +5905,9 @@ export class FloorplanViewer {
       orbiting = true;
     } else this.orbitLast = 0;
     const cameraMoving = this.controls.update(now);
-    const floorsMoving = this.stepFloors(dt);
+    const morphMoving = this.stepMorph(dt);
+    const floorsMoving = this.stepFloors(dt) || this.stepFov(dt);
+    this.stepFloorLevels();
     const openingsMoving = this.stepOpenings(dt) || this.stepFridges(dt);
     let flashing = false;
     if (this.flashes.size) {
@@ -4690,8 +5924,9 @@ export class FloorplanViewer {
     const roofMoving = this.placeRoof(dt);
     const robotsMoving = this.stepRobots(now);
     const fansTurning = this.stepFans(now);
+    const liveMoving = this.stepLive(now);
     const weatherMoving = this.stepWeather(now);
-    const moving = cameraMoving || floorsMoving || openingsMoving || flashing || roofMoving;
+    const moving = cameraMoving || floorsMoving || openingsMoving || flashing || roofMoving || morphMoving;
     const busy: string[] = [];
     // a finger or the mouse turning the view draws frames too, though no inertia runs yet
     if (cameraMoving || this.controls.busy) busy.push("camera");
@@ -4706,6 +5941,7 @@ export class FloorplanViewer {
     if (this.effectTick) busy.push("effect");
     if (robotsMoving) busy.push("robot");
     if (fansTurning) busy.push("fan");
+    if (liveMoving) busy.push("live");
     if (orbiting) busy.push("orbit");
     if (this.tintTick) busy.push("tint");
     this.effectTick = this.tintTick = false;
@@ -4714,6 +5950,13 @@ export class FloorplanViewer {
     if (this.soundActive) this.animateSound(now);
     this.updateWalls();
     if (this.projections.active) this.updateProjections();
+    // the house's shadow belongs to the whole house
+    this.sunFx.showShadow(this.floorId === null && this.shadowSig !== "");
+    this.placeFog();
+    if (this.firework) {
+      this.firework.step((now - this.fireworkAt) / 1000);
+      this.fireworkAt = now;
+    }
     this.renderer.render(this.scene, this.camera);
     this.disposeRetired();
     // labels are placed only when the view or something on it moved (style writes cost layout)
@@ -4723,14 +5966,16 @@ export class FloorplanViewer {
     }
     // everything that keeps drawing (also the energy flow, effects, robots) shows in the frame rate
     this.reportStats(now, busy);
+    this.watchSlow(now, cameraMoving || this.controls.busy);
     if (moving) this.invalidate();
     // tablet level: something new began to move (music, a robot, the energy flow …) – it shows for a while
     const decorNow = this.flowActive || this.solarActive || this.soundActive || this.poolActive || robotsMoving || fansTurning || this.effectFloors.size > 0;
     if (decorNow && !this.decorWas) this.lastWake = now;
     this.decorWas = decorNow;
-    // colour effects: a few steps per second are enough and keep the tablet idle in between
+    // colour effects: a few steps per second are enough and keep the tablet idle in between; while the view turns
+    // or zooms the colour holds, so every frame goes to the movement (#885)
     const effectMs = this.effectFloors.size ? this.decor(this.lowQuality ? 2 * EFFECT_MS : EFFECT_MS) : null;
-    if (effectMs !== null && !this.effectTimer && !document.hidden) {
+    if (effectMs !== null && !this.effectTimer && !document.hidden && !moving) {
       const ms = effectMs;
       this.effectTimer = setTimeout(() => {
         this.effectTimer = undefined;
@@ -4749,6 +5994,13 @@ export class FloorplanViewer {
       // the screensaver turn: about 30 frames per second, 15 on the tablet level
       this.orbitTimer = setTimeout(() => {
         this.orbitTimer = undefined;
+        this.invalidate();
+      }, this.lowQuality ? 66 : 33);
+    }
+    if (this.firework && !this.fireworkTimer && !document.hidden) {
+      // the firework: about 30 frames a second, 15 on the tablet level
+      this.fireworkTimer = setTimeout(() => {
+        this.fireworkTimer = undefined;
         this.invalidate();
       }, this.lowQuality ? 66 : 33);
     }
@@ -4989,7 +6241,7 @@ export class FloorplanViewer {
       this.place(pin, off ? null : `translate(${((v.x + 1) / 2) * w}px, ${((1 - v.y) / 2) * h}px) translate(-50%, -50%)`);
     }
     for (const d of this.devices) {
-      const pin = this.devicePins.get(d.id)?.el;
+      const pin = this.devicePins.get(pinKey(d))?.el;
       if (!pin) continue;
       const fv = this.floorMap.get(d.floorId);
       // device markers belong to the floor and room views; the house view only shows floor labels –
@@ -5014,6 +6266,31 @@ export class FloorplanViewer {
       }
       this.place(pin, `translate(${((v.x + 1) / 2) * w}px, ${((1 - v.y) / 2) * h}px) translate(-50%, -50%)`);
     }
+  }
+
+  /** "Auto": a device that turns the view at under 20 frames a second gets the tablet level, and keeps it (#952). */
+  private watchSlow(now: number, turning: boolean): void {
+    const w = this.slowWatch;
+    if (!w) return;
+    if (!turning || now - w.since < SLOW_WARMUP_MS) {
+      w.last = 0;
+      return;
+    }
+    // a pause (a long task, the tab in the background) is not a frame
+    if (w.last && now - w.last < 1000) w.ms.push(now - w.last);
+    w.last = now;
+    if (!slowFrames(w.ms)) {
+      if (w.ms.length >= 2 * SLOW_SAMPLES) this.slowWatch = null;
+      return;
+    }
+    this.slowWatch = null;
+    slowHere = true;
+    try {
+      localStorage.setItem(SLOW_KEY, "1");
+    } catch {
+      // nothing remembered: it is measured again next time
+    }
+    setTimeout(() => !this.disposed && this.setQuality(w.quality), 0);
   }
 
   private reportStats(now: number, busy: string[]): void {
@@ -5131,7 +6408,7 @@ function makePatternTexture(): CanvasTexture {
 }
 
 /** Additive floor pattern: picks the atlas tile per vertex and repeats it every metre. */
-function patternMaterial(texture: CanvasTexture): MeshBasicMaterial {
+function patternMaterial(texture: CanvasTexture, theme: ThemeUniform): MeshBasicMaterial {
   const m = new MeshBasicMaterial({
     map: texture,
     transparent: true,
@@ -5141,25 +6418,165 @@ function patternMaterial(texture: CanvasTexture): MeshBasicMaterial {
     polygonOffsetFactor: -2,
   });
   m.onBeforeCompile = (shader) => {
+    shader.uniforms.uMorph = theme.morph ?? { value: 0 };
+    Object.assign(shader.uniforms, morphMaskUniforms(theme));
     shader.vertexShader = shader.vertexShader
-      .replace("#include <common>", "#include <common>\nattribute vec2 tile;\nvarying vec2 vFp3dTile;")
-      .replace("#include <begin_vertex>", "#include <begin_vertex>\nvFp3dTile = tile;");
-    shader.fragmentShader = shader.fragmentShader.replace("#include <common>", "#include <common>\nvarying vec2 vFp3dTile;").replace(
-      "#include <map_fragment>",
-      `#ifdef USE_MAP
+      .replace("#include <common>", "#include <common>\nattribute vec2 tile;\nvarying vec2 vFp3dTile;\nvarying vec3 vFp3dWorld;")
+      .replace("#include <begin_vertex>", "#include <begin_vertex>\nvFp3dTile = tile;")
+      .replace("#include <project_vertex>", "#include <project_vertex>\nvFp3dWorld = (modelMatrix * vec4(transformed, 1.0)).xyz;");
+    shader.fragmentShader = shader.fragmentShader
+      .replace("#include <common>", `#include <common>\nvarying vec2 vFp3dTile;\nvarying vec3 vFp3dWorld;\nuniform float uMorph;\n${MORPH_MASK_GLSL}`)
+      .replace(
+        "#include <map_fragment>",
+        `#ifdef USE_MAP
         vec2 fp3dCell = fract(vMapUv);
         vec2 fp3dUv = (vFp3dTile + 0.004 + fp3dCell * 0.992) / vec2(3.0, 2.0);
         // gradients of the unwrapped coordinates avoid mip seams at the tile borders
         vec4 sampledDiffuseColor = textureGrad(map, fp3dUv, dFdx(vMapUv) / vec2(3.0, 2.0), dFdy(vMapUv) / vec2(3.0, 2.0));
         diffuseColor *= sampledDiffuseColor;
-      #endif`,
-    );
+      #endif
+      // zoom style "only the room": the neon pattern fades where the room turns into natural materials
+      if (uMorphN > 0 && uMorphNatural > 0.5) diffuseColor *= 1.0 - fp3dMorphAt(vFp3dWorld);`,
+      );
   };
   m.customProgramCacheKey = () => "fp3d-pattern";
   return m;
 }
 
 /** Blind slats: dark stripes with a faint cyan edge, repeated along v. */
+/**
+ * How lamp light lies on floors and walls. Neon and the drawn looks add it (light glows on dark surfaces); real
+ * materials are lit by it instead: the surface's own colour times (1 + light), so a blue wall stays blue and gets
+ * brighter, a wooden floor warmer – added light washed coloured walls out to white (#1054).
+ */
+/**
+ * Window glass: neon adds a faint cyan sheen to the dark behind it; on the light walls and the sky of the natural
+ * styles that sum was always white (#1070). There it is a light tint laid over what lies behind, dimmed in the evening.
+ */
+function glassLook(m: MeshBasicMaterial, natural: boolean, dim: number, fade = 1): void {
+  const blending = natural ? NormalBlending : AdditiveBlending;
+  if (m.blending !== blending) {
+    m.blending = blending;
+    m.needsUpdate = true;
+  }
+  m.userData.glassOpacity = natural ? 0.28 : 1;
+  m.opacity = fade * m.userData.glassOpacity;
+  m.color.setScalar(natural ? 1 - 0.55 * dim : 1);
+}
+
+/** The opacity of a floor's window glass in the look it has now (glassLook), before the floor fades. */
+function glassOpacity(m: MeshBasicMaterial): number {
+  const v = m.userData.glassOpacity;
+  return typeof v === "number" ? v : 1;
+}
+
+/**
+ * The display faces of running devices (a heating radiator, a TV, a coffee machine): added light glows on neon's dark
+ * bodies but turns white on a natural style's light ones (#1071). There they cover the body as much as they glow
+ * (their colour over it, the halo fading out), a little softer, and dim with the house in the evening – less than it,
+ * so a running device still shows.
+ */
+/**
+ * Light cones, window light and camera view cones: light added to what lies below. It writes premultiplied colour and
+ * an alpha as strong as its brightest channel, so where it lies on nothing (a homely style hides the ground) the
+ * canvas still shows it in every browser (#1114: desktop Chrome dropped colour with alpha 0). In the homely styles it
+ * brightens like a screen instead of adding, so a light floor does not burn out to white (#1115).
+ */
+function coneMaterial(natural: boolean): MeshBasicMaterial {
+  const m = new MeshBasicMaterial({ vertexColors: true, transparent: true, blending: CustomBlending, blendSrc: natural ? OneMinusDstColorFactor : OneFactor, blendDst: OneFactor, blendSrcAlpha: OneFactor, blendDstAlpha: OneFactor, depthWrite: false, side: DoubleSide, forceSinglePass: true });
+  m.onBeforeCompile = (shader) => {
+    shader.fragmentShader = shader.fragmentShader.replace("#include <dithering_fragment>", "#include <dithering_fragment>\n  gl_FragColor = vec4(gl_FragColor.rgb * gl_FragColor.a, max(max(gl_FragColor.r, gl_FragColor.g), gl_FragColor.b) * gl_FragColor.a);");
+  };
+  m.customProgramCacheKey = () => "fp3d-cone";
+  return m;
+}
+
+function screenMaterial(): MeshBasicMaterial {
+  const m = new MeshBasicMaterial({ vertexColors: true, transparent: true, blending: AdditiveBlending, depthWrite: false, side: DoubleSide, forceSinglePass: true });
+  m.onBeforeCompile = (shader) => {
+    shader.fragmentShader = shader.fragmentShader.replace(
+      "#include <opaque_fragment>",
+      "#include <opaque_fragment>\n#ifdef FP3D_COVER\ngl_FragColor.a = max(gl_FragColor.r, max(gl_FragColor.g, gl_FragColor.b));\n#endif",
+    );
+  };
+  return m;
+}
+
+function screenLook(m: MeshBasicMaterial, natural: boolean, dim: number): void {
+  const defines = (m.defines ??= {});
+  if (natural !== "FP3D_COVER" in defines) {
+    if (natural) defines.FP3D_COVER = "";
+    else delete defines.FP3D_COVER;
+    m.needsUpdate = true;
+  }
+  // colour plus what lies behind, less as much as the colour covers it
+  m.blending = natural ? CustomBlending : AdditiveBlending;
+  m.blendSrc = OneFactor;
+  m.blendDst = OneMinusSrcAlphaFactor;
+  m.color.setScalar(natural ? 0.8 * (1 - 0.35 * dim) : 1);
+}
+
+function lightOnSurfaces(m: MeshBasicMaterial, natural: boolean): void {
+  const blending = natural ? CustomBlending : AdditiveBlending;
+  if (m.blending === blending) return;
+  m.blending = blending;
+  if (natural) {
+    m.blendSrc = DstColorFactor;
+    m.blendDst = OneFactor;
+    // a little less than the full light: multiplied, it already brightens the surface it falls on
+    m.color.setScalar(0.85);
+  } else m.color.setScalar(1);
+  m.needsUpdate = true;
+}
+
+/** The 3D view's vertical field of view (degrees). */
+const BASE_FOV = 38;
+
+/**
+ * Zoom style: camera distance in house radii where the blend starts and ends, from how late it should set in (0 = early:
+ * from about an opened floor on; 1 = late: only close up in a room). The house view stands at 1, a floor at about 0.9,
+ * a room at 0.25–0.45.
+ */
+/** Where the zoom style applies: every room at once, or only the room zoomed into. */
+export type ZoomScope = "all" | "room";
+
+export function zoomRange(late: number): { far: number; near: number } {
+  const s = Math.min(1, Math.max(0, late));
+  const far = 0.9 - 0.5 * s;
+  return { far, near: Math.max(0.12, far - 0.4) };
+}
+/** How slowly the colours follow the camera (ms): a quick flight into a room still turns the house over a second or two. */
+const MORPH_TAU = 450;
+
+/**
+ * Gives every geometry in `own` the colours of its twin in `nat` as the second colour (found by the same key, or
+ * the same place in a list), when both have as many vertices; a geometry without a twin keeps its own colours.
+ */
+function pairColors(own: unknown, nat: unknown, depth = 0): void {
+  if (!own || !nat || typeof own !== "object" || typeof nat !== "object" || depth > 3) return;
+  if (own instanceof BufferGeometry && nat instanceof BufferGeometry) {
+    const a = own.getAttribute("color");
+    const b = nat.getAttribute("color");
+    const pa = own.getAttribute("position");
+    const pb = nat.getAttribute("position");
+    if (a && b && pa && pb && pa.count === pb.count && a.itemSize === b.itemSize) {
+      if (b.itemSize === 3) own.setAttribute(MORPH_ATTRIBUTE, b);
+      else {
+        const src = b.array as ArrayLike<number>;
+        const out = new Float32Array(b.count * 3);
+        for (let i = 0; i < b.count; i++) for (let k = 0; k < 3; k++) out[i * 3 + k] = src[i * b.itemSize + k];
+        own.setAttribute(MORPH_ATTRIBUTE, new Float32BufferAttribute(out, 3));
+      }
+    }
+    return;
+  }
+  if (Array.isArray(own) && Array.isArray(nat)) {
+    own.forEach((x, i) => pairColors(x, nat[i], depth + 1));
+    return;
+  }
+  for (const key of Object.keys(own)) pairColors((own as Record<string, unknown>)[key], (nat as Record<string, unknown>)[key], depth + 1);
+}
+
 function makeBlindTexture(): CanvasTexture {
   const canvas = document.createElement("canvas");
   canvas.width = 8;
@@ -5193,7 +6610,7 @@ function flowSpeed(power: number): number {
  * tube, a soft brightening running along the core while it flows (the direction from a to b).
  */
 function pipeLineMaterial(time: { value: number }): MeshBasicMaterial {
-  const m = new MeshBasicMaterial({ vertexColors: true, transparent: true, depthWrite: false, side: DoubleSide, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 });
+  const m = new MeshBasicMaterial({ vertexColors: true, transparent: true, depthWrite: false, side: DoubleSide, forceSinglePass: true, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 });
   m.onBeforeCompile = (shader) => {
     shader.uniforms.uFlowTime = time;
     shader.vertexShader = shader.vertexShader
@@ -5220,7 +6637,7 @@ function pipeLineMaterial(time: { value: number }): MeshBasicMaterial {
 
 /** Glowing cable with stripes running along it (uv.x = metres along the cable, uv.y = across). */
 function flowMaterial(time: { value: number }): MeshBasicMaterial {
-  const m = new MeshBasicMaterial({ vertexColors: true, transparent: true, blending: AdditiveBlending, depthWrite: false, side: DoubleSide });
+  const m = new MeshBasicMaterial({ vertexColors: true, transparent: true, blending: AdditiveBlending, depthWrite: false, side: DoubleSide, forceSinglePass: true });
   m.onBeforeCompile = (shader) => {
     shader.uniforms.uFlowTime = time;
     shader.vertexShader = shader.vertexShader
@@ -5497,4 +6914,78 @@ export function pushLampModel(
       break;
     }
   }
+}
+
+/** Soft blots under furniture: round under round things, a blurred rounded box under the rest (one shared picture). */
+let contactTexture: CanvasTexture | null = null;
+function contactShadowTexture(): CanvasTexture {
+  if (contactTexture) return contactTexture;
+  const c = document.createElement("canvas");
+  c.width = 256;
+  c.height = 128;
+  const g = c.getContext("2d")!;
+  // left half: round
+  const grad = g.createRadialGradient(64, 64, 8, 64, 64, 64);
+  grad.addColorStop(0, "rgba(0,0,0,0.5)");
+  grad.addColorStop(0.6, "rgba(0,0,0,0.3)");
+  grad.addColorStop(1, "rgba(0,0,0,0)");
+  g.fillStyle = grad;
+  g.fillRect(0, 0, 128, 128);
+  // right half: a rounded box, blurred
+  g.filter = "blur(9px)";
+  g.fillStyle = "rgba(0,0,0,0.55)";
+  g.beginPath();
+  // no roundRect on old Fire-tablet WebViews and old Safari: a plain box there (blurred, it hardly shows)
+  if (typeof g.roundRect === "function") g.roundRect(128 + 22, 22, 84, 84, 14);
+  else g.rect(128 + 22, 22, 84, 84);
+  g.fill();
+  contactTexture = new CanvasTexture(c);
+  return contactTexture;
+}
+let contactMaterial: MeshBasicMaterial | null = null;
+
+const NO_CONTACT = /^(lamp_(ceiling|downlight|spot|panel|pendant|strip|wall)|window|door|curtain|blind|picture|frame|tv_wall|clock|rug|carpet|camera|sensor|speaker_wall|ac_indoor|parking|spot_grid)/;
+const ROUND_CONTACT = /round|plant|stool|pouf|bin|tree|lamp_floor|barrel|drum|vacuum|ottoman|pot/;
+
+/** One mesh per floor with a soft shadow under each standing piece of furniture (null when none). */
+function contactShadows(floor: Floor): Mesh | null {
+  const pos: number[] = [];
+  const uv: number[] = [];
+  for (const f of floor.furniture) {
+    const item = packItem(f.type);
+    const type = f.type.replace(/^pack:[^:]+:/, "");
+    if (NO_CONTACT.test(type) || item?.mount === "ceiling" || item?.mount === "wall") continue;
+    if ((f.mount_y ?? 0) > 0.1 || f.h < 0.15 || f.w < 0.2 || f.d < 0.15) continue;
+    const round = ROUND_CONTACT.test(type);
+    // the box picture has a soft margin of its own: it is laid a little wider than the piece
+    const k = round ? 1.3 : 1.5;
+    const hw = (f.w * k + 0.08) / 2;
+    const hd = (f.d * k + 0.08) / 2;
+    const a = -(f.rotation ?? 0) * DEG;
+    const c = Math.cos(a);
+    const sn = Math.sin(a);
+    const corner = (x: number, z: number): [number, number, number] => [f.x + x * c + z * sn, 0.008, f.z - x * sn + z * c];
+    const p = [corner(-hw, -hd), corner(hw, -hd), corner(hw, hd), corner(-hw, hd)];
+    const u0 = round ? 0 : 0.5;
+    const t = [
+      [u0, 0],
+      [u0 + 0.5, 0],
+      [u0 + 0.5, 1],
+      [u0, 1],
+    ];
+    for (const i of [0, 2, 1, 0, 3, 2]) {
+      pos.push(...p[i]);
+      uv.push(...t[i]);
+    }
+  }
+  if (!pos.length) return null;
+  const geo = new BufferGeometry();
+  geo.setAttribute("position", new Float32BufferAttribute(pos, 3));
+  geo.setAttribute("uv", new Float32BufferAttribute(uv, 2));
+  contactMaterial ??= new MeshBasicMaterial({ map: contactShadowTexture(), transparent: true, depthWrite: false, opacity: 0.9, side: DoubleSide });
+  const mesh = new Mesh(geo, contactMaterial);
+  mesh.name = "fp3d-contact-shadows";
+  // after the floor's tile pattern (render order 2)
+  mesh.renderOrder = 3;
+  return mesh;
 }

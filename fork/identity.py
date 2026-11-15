@@ -110,6 +110,12 @@ OVERRIDES = {
     "frontend/src/unreleased-guard.test.ts": [
         ('"CHANGELOG.md", "ROADMAP.md", ', '"CHANGELOG.md", '),
     ],
+    # "Axonometra" is two characters longer than "NeonPlan", so the renamed bundles grow a little.
+    # Upstream's locate bundle sits just under its 160 KB budget (v3.4.1: 159.9 KB), and the
+    # rename pushed it 0.2 KB over; the budget gets the rename's margin, the code stays as written.
+    "frontend/build.mjs": [
+        ('"axonometra-locate.js": 160 * 1024', '"axonometra-locate.js": 164 * 1024'),
+    ],
 }
 # Our files copied over upstream's.
 COPIES = {

@@ -1,7 +1,7 @@
 // Devices of a room: which entities belong to an area, what kind they are, how they are placed and
 // what their state looks like. Pure functions (no Lit, no three.js) so they can be tested directly.
 
-import type { Furniture, EntityRef, Floor, LampMount, Opening, Placement, RoofWindow, Room, Vec2 } from "./model.ts";
+import type { Building, Furniture, EntityRef, FenceGate, Floor, LampMount, Opening, Placement, RoofWindow, Room, Vec2 } from "./model.ts";
 import { centroid, outdoorZones, pointInPolygon } from "./model.ts";
 import { isRobotVacuum, packMotion, packScreen } from "./packs.ts";
 import type { HassEntity, HomeAssistant } from "./types.ts";
@@ -105,11 +105,58 @@ export function coverTiltButtons(st: HassEntity | undefined): boolean {
   return typeof st.attributes.current_tilt_position === "number" || !NO_SLATS.has(String(st.attributes.device_class ?? ""));
 }
 
+/**
+ * How a cover opens, closes or stops (#920). A blind with slats only – it turns its slats but has no open and close
+ * of its own – does it by its tilt: open/close tilt when it has them, else the tilt position 100 / 0. Every other
+ * cover, and one that reports no features, as always.
+ */
+export function coverCall(st: HassEntity | undefined, what: "open" | "close" | "stop"): { service: string; data: Record<string, unknown> } {
+  const f = ((st?.attributes.supported_features as number) ?? 0) | 0;
+  const tiltOnly = f !== 0 && !(f & 3) && (f & (16 | 32 | 128)) !== 0;
+  if (!tiltOnly) return { service: what === "open" ? "open_cover" : what === "close" ? "close_cover" : "stop_cover", data: {} };
+  if (what === "stop") return { service: "stop_cover_tilt", data: {} };
+  if (f & (what === "open" ? 16 : 32)) return { service: what === "open" ? "open_cover_tilt" : "close_cover_tilt", data: {} };
+  return { service: "set_cover_tilt_position", data: { tilt_position: what === "open" ? 100 : 0 } };
+}
+
+/** Several covers at once: one call per kind of cover (roller shutters by open/close, slat-only blinds by their tilt). */
+export function coverCalls(hass: HomeAssistant, ids: readonly string[], what: "open" | "close" | "stop"): { service: string; data: Record<string, unknown> }[] {
+  const groups = new Map<string, { service: string; data: Record<string, unknown>; ids: string[] }>();
+  for (const id of ids) {
+    const c = coverCall(hass.states[id], what);
+    const key = `${c.service}|${JSON.stringify(c.data)}`;
+    const g = groups.get(key) ?? { ...c, ids: [] };
+    g.ids.push(id);
+    groups.set(key, g);
+  }
+  return [...groups.values()].map((g) => ({ service: g.service, data: { ...g.data, entity_id: g.ids } }));
+}
+
+/**
+ * A device's area: its own, else that of the device it is a channel of. Home Assistant 2026.11 moves the entities
+ * of Tuya multi-channel devices, Z-Wave endpoints and ZHA groups onto child devices, often without an area of their
+ * own; clients are to take the parent's then. Older versions have no parent: the device's own area as before.
+ */
+export function deviceAreaId(hass: HomeAssistant, deviceId: string | null | undefined): string | null {
+  const seen = new Set<string>();
+  let id = deviceId;
+  // a parent chain that runs in a circle ends instead of looping
+  while (id && !seen.has(id)) {
+    seen.add(id);
+    const device = hass.devices?.[id];
+    if (!device) return null;
+    if (device.area_id) return device.area_id;
+    id = device.parent_device_id;
+  }
+  return null;
+}
+
+/** An entity's area: its own, else its device's (or that device's parent's, see deviceAreaId). */
 export function entityAreaId(hass: HomeAssistant, entityId: string): string | null {
   const entry = hass.entities?.[entityId];
   if (!entry) return null;
   if (entry.area_id) return entry.area_id;
-  return (entry.device_id && hass.devices?.[entry.device_id]?.area_id) || null;
+  return deviceAreaId(hass, entry.device_id);
 }
 
 /**
@@ -130,7 +177,9 @@ export function isRelevant(hass: HomeAssistant, entityId: string): boolean {
   const st = hass.states[entityId];
   if (!st) return false;
   const dc = st.attributes.device_class as string | undefined;
-  if (kind === "sensor") return dc ? SENSOR_CLASSES.has(dc) : METER_UNITS.has(String(st.attributes.unit_of_measurement ?? ""));
+  const unit = String(st.attributes.unit_of_measurement ?? "");
+  // a redox / ORP probe often reports as a voltage in mV (#814); a mains voltage in V stays out
+  if (kind === "sensor") return dc ? SENSOR_CLASSES.has(dc) || (dc === "voltage" && unit === "mV") : METER_UNITS.has(unit);
   // a binary sensor without a class is mostly noise of an integration – unless its own entity was given an
   // area by hand (a "storm" flag of a home automation bus, #243): then it is meant to be seen
   if (kind === "binary") return dc ? BINARY_CLASSES.has(dc) : !!entry?.area_id;
@@ -465,6 +514,16 @@ export function onlyColor<T extends { color: [number, number, number] }>(glow: T
   return Math.min(diff, 360 - diff) <= 30 ? glow : null;
 }
 
+/**
+ * A lamp drawn in a fixed colour (#977): the light still says on/off and how bright, the colour is the chosen one –
+ * a warm white fixture whose entity reports colours, or a lamp that should simply look a certain way in the plan.
+ */
+export function fixedGlowColor<T extends { color: [number, number, number] }>(glow: T | null, hex: string | null | undefined): T | null {
+  if (!glow || !hex || !/^#[0-9a-f]{6}$/i.test(hex)) return glow;
+  const color = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255) as [number, number, number];
+  return { ...glow, color };
+}
+
 /** Colour (0..1 channels) and level (0..1) of a light that is on; null when off. */
 export function lightGlow(st: HassEntity | undefined, colorFrom?: HassEntity | undefined): { color: [number, number, number]; level: number } | null {
   if (!st || st.state !== "on") return null;
@@ -482,6 +541,17 @@ export function lightGlow(st: HassEntity | undefined, colorFrom?: HassEntity | u
     color = [1, 0.71, 0.28]; // warm neon amber (#ffb547)
   }
   return { color, level };
+}
+
+/**
+ * Whether a light can show colours at all. An "effect" on a white-only light is a mood or a scene (Loxone's
+ * LightController names the mood there, #977), not a colour loop – nothing to animate. A light that does not say
+ * its colour modes is taken as able.
+ */
+export function colorCapable(st: HassEntity): boolean {
+  const modes = st.attributes.supported_color_modes;
+  if (!Array.isArray(modes) || !modes.length) return true;
+  return modes.some((m) => ["hs", "rgb", "rgbw", "rgbww", "xy"].includes(String(m)));
 }
 
 /** Rough black-body colour for 2000–6500 K, tuned to stay warm and readable on the dark floor. */
@@ -606,6 +676,8 @@ export interface OpeningEntities {
   /** A sensor with the blind's position while it moves (0–100 % or 0–1, open = high). */
   position?: string | null;
   positionInverted?: boolean;
+  /** The cover reports its slats' tilt the other way round (0 = open). */
+  slatInvert?: boolean;
   /** A sensor with the sash's tilt angle (degrees), with the angle that counts as fully tilted, an offset and the sign. */
   tiltAngle?: string | null;
   tiltMax?: number | null;
@@ -652,6 +724,7 @@ export function openingEntities(hass: HomeAssistant, floors: readonly Floor[]): 
       // from a window turned into a door) would otherwise lower a roller shutter over a plain door (#682)
       position: cover && kindOf(cover) === "cover" && o.position && o.position !== "none" ? o.position : null,
       positionInverted: !!o.position_inverted,
+      ...(o.slat_invert ? { slatInvert: true } : {}),
       tiltAngle: o.tilt_angle && o.tilt_angle !== "none" ? o.tilt_angle : null,
       tiltMax: o.tilt_max ?? null,
       tiltOffset: o.tilt_offset ?? null,
@@ -733,7 +806,7 @@ export function openingState(
   hass: HomeAssistant,
   e: OpeningEntities,
   type: Opening["type"] = "window",
-): { open: number; open2: number; tilt: number; tilt2: number; cover: number | null; sensed: boolean; unlocked?: boolean } {
+): { open: number; open2: number; tilt: number; tilt2: number; cover: number | null; slats?: number | null; sensed: boolean; unlocked?: boolean } {
   // a drive that only gives a pulse (a switch, a button) reports nothing about the door: the contact does (#677)
   if (e.cover && isPulseDrive(e.cover)) e = { ...e, cover: null, position: null };
   // the door's smart lock: unlocked (or unlatched) gives the leaf a soft glow at its edge (#682)
@@ -771,6 +844,9 @@ export function openingState(
     if (typeof pos === "number") cover = 1 - Math.min(100, Math.max(0, pos)) / 100;
     else cover = c.state === "closed" ? 1 : c.state === "opening" || c.state === "closing" ? 0.5 : 0;
   } else if (e.cover) cover = 0;
+  // a venetian blind or Raffstore: how far its slats stand open (1 = level, 0 = shut)
+  const slatsOpen = c && !isUnavailable(c) ? slatTilt(c, !!e.slatInvert) : null;
+  const slats = slatsOpen === null ? {} : { slats: slatsOpen / 100 };
   if (type === "door") {
     const p = pos(e.contact);
     // a cover that is a gate, garage door or door is the door itself (a sliding gate on a sliding door): it moves the
@@ -780,7 +856,7 @@ export function openingState(
       return { open: leaf, open2: pos(e.contact2) === "open" ? 1 : 0, tilt: 0, tilt2: 0, cover: null, sensed: true, ...lockOpen };
     }
     // a door with a roller shutter (front door, French window, sliding door): the blind comes down over it
-    return { open: p === null ? (e.shut ? 0 : DOOR_DEFAULT_OPEN) : p === "closed" ? 0 : 1, open2: pos(e.contact2) === "open" ? 1 : 0, tilt: 0, tilt2: 0, cover, sensed: p !== null || cover !== null, ...lockOpen };
+    return { open: p === null ? (e.shut ? 0 : DOOR_DEFAULT_OPEN) : p === "closed" ? 0 : 1, open2: pos(e.contact2) === "open" ? 1 : 0, tilt: 0, tilt2: 0, cover, ...slats, sensed: p !== null || cover !== null, ...lockOpen };
   }
   if (type === "garage") {
     // a garage door without a cover shows its contact: open or closed (read like a door's, so text states and
@@ -790,7 +866,23 @@ export function openingState(
     if (cover === null) cover = p === null || p === "closed" ? 1 : 0;
     return { open: 0, open2: 0, tilt: 0, tilt2: 0, cover, sensed };
   }
-  return { open, open2, tilt: tiltFrac, tilt2: tilted2 ? 1 : 0, cover, sensed: known(e.contact) || known(e.tilt) || Number.isFinite(angleRaw), ...lockOpen };
+  return { open, open2, tilt: tiltFrac, tilt2: tilted2 ? 1 : 0, cover, ...slats, sensed: known(e.contact) || known(e.tilt) || Number.isFinite(angleRaw), ...lockOpen };
+}
+
+/**
+ * How far the slats of a cover stand open (0–100, 100 = level), as it reports them – or turned round for an
+ * integration that reports 0 for open slats. Null for a cover without slats.
+ */
+export function slatTilt(st: HassEntity | undefined, invert = false): number | null {
+  const t = st?.attributes.current_tilt_position;
+  if (typeof t !== "number" || !Number.isFinite(t)) return null;
+  const v = Math.min(100, Math.max(0, t));
+  return invert ? 100 - v : v;
+}
+
+/** Whether a window of the plan turns this cover's slats round ("Invert slats"). */
+export function slatsInverted(building: Building | null | undefined, entityId: string): boolean {
+  return !!building?.floors.some((f) => f.openings.some((o) => o.cover === entityId && o.slat_invert));
 }
 
 /**
@@ -922,6 +1014,8 @@ export interface AwningState {
   moving: -1 | 0 | 1;
   /** Seconds for a full run (to move along while no position is reported). */
   time: number;
+  /** `moving` tells where it stands, not a run (a gate's contact): seen for the first time, it stands there at once. */
+  settled?: boolean;
 }
 
 /**
@@ -952,7 +1046,26 @@ export function awningStates(hass: HomeAssistant, floors: readonly Floor[]): Map
       // without a position: open (a cover) or on (a switch that drives it) is fully out
       else out.set(f.id, { out: flip(st.state === "open" || st.state === "on" ? 1 : 0), moving: 0, time });
     }
+  for (const floor of floors) for (const a of floor.outdoor ?? []) if (a.type === "fence") for (const g of a.gates ?? []) out.set(g.id, gateState(hass, g));
   return out;
+}
+
+/**
+ * A fence gate (#818), by the awnings' rules: a cover's position, or its opening and closing at the run time; a
+ * switch or input_boolean that is on stands open. A contact wins: it says open or shut, and the leaf runs there.
+ */
+export function gateState(hass: HomeAssistant, g: FenceGate): AwningState {
+  const time = g.time ?? (g.kind === "slide" ? 15 : 4);
+  const ref = (id: EntityRef | null | undefined) => (id && id !== "none" ? hass.states[id] : undefined);
+  const contact = ref(g.contact);
+  if (contact && !isUnavailable(contact)) return { out: null, moving: contact.state === "on" || contact.state === "open" ? 1 : -1, time, settled: true };
+  const st = ref(g.entity);
+  if (!st || isUnavailable(st)) return { out: null, moving: -1, time, settled: true };
+  const raw = st.attributes.current_position;
+  if (typeof raw === "number" && Number.isFinite(raw)) return { out: Math.min(1, Math.max(0, raw / 100)), moving: 0, time };
+  if (st.state === "opening") return { out: null, moving: 1, time };
+  if (st.state === "closing") return { out: null, moving: -1, time };
+  return { out: null, moving: st.state === "open" || st.state === "on" ? 1 : -1, time, settled: true };
 }
 
 /** Smart fridges: which of their doors stand open now (a door sensor reporting "on" or "open"). */
