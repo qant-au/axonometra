@@ -28,6 +28,11 @@ export interface HullBody {
   center: number;
   /** In increasing x, at least two; the body runs from the first station to the last. */
   sections: Section[];
+  /**
+   * Heights a step in the shape lies at along the body (a transom's foot, a bulb's top), when the source knows them:
+   * a section's half-breadth jumps there, so a mesh keeps a row either side of each instead of stepping across it.
+   */
+  knuckles?: number[];
 }
 
 export interface Hull {

@@ -8,7 +8,7 @@ import type { SavedPlan, SavedPlans } from "../host/types.ts";
 import type { Building } from "../model.ts";
 import { parseExport } from "../transfer.ts";
 import { finish, MAX_ENGINES, outboardsFit, problems, ready, startState, vesselDefaults, type FirstRunResult, type FirstRunState, type Kind, type StepId, type VesselBasics } from "./flow.ts";
-import { HULL_TYPES } from "./hulls.ts";
+import { HULL_TYPES, hullType } from "./hulls.ts";
 import { CARAVAN_SIZES, MAX_LEVELS, type CaravanBasics, type CaravanType, type HouseBasics } from "./structures.ts";
 
 const EN = {
@@ -34,6 +34,7 @@ const EN = {
   hull: "Hull Type",
   length: "Length Overall (m)",
   beam: "Beam (m)",
+  hull_beam: "Hull Beam (m)",
   draft: "Draft (m)",
   engine: "Engine Type",
   engine_outboard: "Outboard",
@@ -76,6 +77,7 @@ const DE: Texts = {
   hull: "Rumpftyp",
   length: "Länge über alles (m)",
   beam: "Breite (m)",
+  hull_beam: "Breite eines Rumpfs (m)",
   draft: "Tiefgang (m)",
   engine: "Motortyp",
   engine_outboard: "Außenborder",
@@ -271,10 +273,10 @@ export class FirstRunWizard extends LitElement {
           .value=${Number.isFinite(value) ? String(value) : ""}
           @change=${(e: Event) => set((e.target as HTMLInputElement).valueAsNumber)}
       /></label>`;
-    const select = (key: string, label: string, value: string, options: { id: string; title: string; off?: boolean }[], set: (v: string) => void, wide = false) =>
+    const select = (key: string, label: string, value: string, options: { id: string; title: string }[], set: (v: string) => void, wide = false) =>
       html`<label class=${(bad.has(key) ? "bad" : "") + (wide ? " wide" : "")}
         >${label}<select data-field=${key} @change=${(e: Event) => set((e.target as HTMLSelectElement).value)}>
-          ${options.map((o) => html`<option value=${o.id} ?selected=${o.id === value} ?disabled=${o.off}>${o.title}</option>`)}
+          ${options.map((o) => html`<option value=${o.id} ?selected=${o.id === value}>${o.title}</option>`)}
         </select></label
       >`;
     let fields;
@@ -286,9 +288,11 @@ export class FirstRunWizard extends LitElement {
       if (v.engine === "outboard" && fit !== null && v.engines > fit) note = say(t.bad_outboards, { n: fit });
       fields = [
         // a hull type starts at its own size and engines
-        select("hull", t.hull, v.hull, HULL_TYPES.map((h) => ({ id: h.id, title: h.title, off: !h.spec })), (hull) => (this._state = { ...s, vessel: vesselDefaults(hull) })),
+        select("hull", t.hull, v.hull, HULL_TYPES, (hull) => (this._state = { ...s, vessel: vesselDefaults(hull) })),
         number("length", t.length, v.length, (length) => set({ length })),
         number("beam", t.beam, v.beam, (beam) => set({ beam })),
+        // a catamaran's hulls stand apart by her beam less theirs
+        ...(hullType(v.hull)?.measures.hullBeam === undefined ? [] : [number("hullBeam", t.hull_beam, v.hullBeam ?? NaN, (hullBeam) => set({ hullBeam }))]),
         number("draft", t.draft, v.draft, (draft) => set({ draft })),
         select("engine", t.engine, v.engine, [{ id: "outboard", title: t.engine_outboard }, { id: "inboard", title: t.engine_inboard }], (engine) => set({ engine: engine as VesselBasics["engine"] })),
         number("engines", t.engines, v.engines, (engines) => set({ engines }), { min: 0, max: MAX_ENGINES }),

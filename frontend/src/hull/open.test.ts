@@ -1,10 +1,12 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
+import { SHIPD_EXAMPLES } from "./examples.ts";
 import { ALUMINIUM } from "./loads.ts";
-import { meshArea } from "./mesh.ts";
+import { bodyMesh, meshArea } from "./mesh.ts";
 import { aboveWater, asFitted, drains, openBodies, openHull, outboardMounts, shellWeights, SHAFT, type OpenHullSpec } from "./open.ts";
 import { plateHull } from "./plate.ts";
-import { halfAt } from "./sections.ts";
+import { halfAt, sheerAt } from "./sections.ts";
+import { shipdBody } from "./shipd.ts";
 import { float } from "./stability.ts";
 
 const body = plateHull({ length: 6.5, beam: 2.45, transom: 2.3, chineBeam: 2.0, draft: 0.36, freeboard: 0.88, deadrise: 18 }).bodies[0];
@@ -91,4 +93,39 @@ test("open hull: height above the water follows the floating attitude", () => {
   // heeled to starboard, the starboard side is lower
   const h = { heel: 0.1, trim: 0, level: 0 };
   assert.ok(aboveWater(hull, h, [2, 0.3, 1]) < aboveWater(hull, h, [2, 0.3, -1]));
+});
+
+test("open hull: a transom no motors are cut into stays whole, and takes one on its face", () => {
+  const whole = openHull(body, spec({ height: SHAFT.xl, width: 0 }));
+  const sheer = body.sections[0].points.at(-1)![0];
+  // the lowest top edge between the motors: the cut-out's, or the sheer
+  const top = (o: typeof well) => Math.min(...points(piece(o, "transom")).filter((p, i) => i % 2 === 1 && Math.abs(p[2]) < 0.5).map((p) => p[1]));
+  assert.equal(top(whole), sheer, "up to the sheer between the motors too");
+  assert.ok(Math.abs(top(well) - well.mount) < 1e-12);
+  assert.equal(outboardMounts(whole, 1).length, 1);
+  assert.throws(() => outboardMounts(whole, 2), /do not fit/);
+});
+
+test("open hull: a hull that ends in a stern of its own keeps it in its skin, the motors on its face", () => {
+  const family = (name: string) => shipdBody(SHIPD_EXAMPLES.find((e) => e.name === name)!.bodies[0].vector);
+  // a planing hull: its transom rakes forward from its foot on the keel
+  const raked = family("planing-cruiser-12m");
+  const o = openHull(raked, spec({ height: SHAFT.xl, width: 1.4 }));
+  assert.deepEqual(o.pieces.map((p) => p.name), ["skin", "sole", "gunwale (port)", "gunwale (starboard)"], "no transom plate of its own");
+  assert.ok(o.deck > 0.3 && o.deck < 1, `the deck begins at the head of the transom's face, ${o.deck} m from its foot`);
+  assert.ok(Math.abs(sheerAt(raked, o.deck)! - 1.15) < 0.01, "at the sheer");
+  assert.ok(o.keel < -0.5 && o.keel > -0.56, `the bottom of the boat at the transom, ${o.keel}`);
+  assert.ok(Math.abs(o.mount - (o.keel + SHAFT.xl)) < 1e-12);
+  assert.ok(o.mountX > 0 && o.mountX < o.deck, `on the transom's face, ${o.mountX} m forward of its foot`);
+  assert.equal(halfAt(raked, o.mountX - 1e-3, o.mount), null, "aft of the face at the mounting height there is no hull");
+  assert.ok(piece(o, "skin").indices.length > bodyMesh(raked, 32, true, false).indices.length, "the transom's face stays in the skin");
+  assert.ok(Math.min(...points(piece(o, "gunwale (port)")).map((p) => p[0])) >= o.deck - 1e-9, "the gunwale caps the deck, not the transom");
+  assert.deepEqual(outboardMounts(o, 2).map((m) => m.at[0]), [o.mountX, o.mountX]);
+  assert.throws(() => openHull(raked, spec({ height: SHAFT.xl, width: 1.4, well: 0.75 })), /plumb transom/);
+  assert.throws(() => openHull(raked, spec({ height: 2, width: 1.4 })), /above the transom/);
+  // a counter: the bottom rises to the deck at the stern, and meets the water forward of it
+  const counter = openHull(family("trawler-14m"), spec({ height: SHAFT.xl, width: 1 }));
+  assert.equal(counter.deck, 0, "the deck runs right aft");
+  assert.ok(Math.abs(counter.keel) < 1e-3, "the bottom at the transom is where it meets the water");
+  assert.ok(!counter.pieces.some((p) => p.name === "transom"));
 });

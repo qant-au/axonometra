@@ -69,3 +69,29 @@ test("mesh: parts and tubes loft into closed meshes facing outward, whichever wa
   near(meshVolume(tm), Math.PI * 0.0625 * length, 0.1 * Math.PI * 0.0625 * length, "tube volume");
   assert.deepEqual(ringsMesh({ rings: [] }), { positions: [], indices: [] });
 });
+
+test("mesh: a deck left off forward of an x keeps what lies aft of it (a raked transom's face)", () => {
+  const three: HullBody = { center: 0, sections: [0, 5, 10].map((x) => ({ x, points: [[-1, 2], [1, 2]] })) };
+  const all = bodyMesh(three, 8).indices.length;
+  assert.equal(bodyMesh(three, 8, true).indices.length, all - 12, "the deck off both intervals");
+  assert.equal(bodyMesh(three, 8, 5).indices.length, all - 6, "the deck off the forward one only");
+  assert.equal(bodyMesh(three, 8, 0).indices.length, all - 12);
+});
+
+test("mesh: a body's knuckle keeps a row either side of it on every section", () => {
+  // a step at the waterline, 0.2 wide below and 1 above, on a bottom that deepens: the step's share of the depth changes
+  const stepped = (knuckles?: number[]): HullBody => ({
+    center: 0,
+    sections: [[0, -1], [10, -2]].map(([x, low]) => ({ x, points: [[low, 0.2], [-1e-7, 0.2], [1e-7, 1], [1, 1]] })),
+    ...(knuckles ? { knuckles } : {}),
+  });
+  const atStep = (m: { positions: number[] }) => Array.from({ length: m.positions.length / 3 }, (_, i) => m.positions.slice(i * 3, i * 3 + 3)).filter(([, y, z]) => Math.abs(y) < 1e-3 && Math.abs(z) > 1e-9);
+  assert.equal(atStep(bodyMesh(stepped(), 12)).length, 0, "rows by share of the depth pass the step by");
+  const m = bodyMesh(stepped([0]), 12);
+  // on each of the two sections, both sides: a row just under the step on the narrow part, one just over it on the wide
+  assert.deepEqual(atStep(m).map(([, y, z]) => [y < 0, Math.round(Math.abs(z) * 1000) / 1000]).sort().join(" "), [...Array(4).fill("false,1"), ...Array(4).fill("true,0.2")].join(" "));
+  near(meshVolume(m), 26, 1e-3, "the stepped body's volume");
+  assert.ok(closed(m));
+  assert.equal(m.positions.length, bodyMesh(stepped(), 12).positions.length, "the same rows, placed otherwise");
+  assert.equal(bodyMesh(stepped([5]), 12).positions.length, m.positions.length, "a knuckle outside the body is no knuckle");
+});

@@ -161,6 +161,7 @@ try {
         seen.push(step());
         await click(`[data-kind="${kind}"]`);
         seen.push(step());
+        const hulls = [...root().querySelectorAll('[data-field="hull"] option')].map((o) => o.textContent.trim() + (o.disabled ? " (off)" : ""));
         for (const [key, value] of Object.entries(fields)) {
           const field = root().querySelector(`[data-field="${key}"]`);
           if (field.type === "checkbox") field.checked = value;
@@ -176,7 +177,7 @@ try {
           if (building.floors.length) break;
           await settle();
         }
-        return { seen, open: !!root(), vessel: building.vessel ?? null, floors: building.floors.map((f) => f.name), rooms: building.floors.flatMap((f) => f.rooms.map((r) => r.name)) };
+        return { seen, hulls, open: !!root(), vessel: building.vessel ?? null, floors: building.floors.map((f) => f.name), rooms: building.floors.flatMap((f) => f.rooms.map((r) => r.name)) };
       },
       kind,
       fields,
@@ -186,6 +187,7 @@ try {
   if (boatRun) {
     if (boatRun.seen.join(",") !== "kind,basics") failures.push(`the wizard's pages for a boat were ${boatRun.seen}`);
     if (boatRun.open) failures.push("the wizard stays open after finishing");
+    if (boatRun.hulls.length !== 7 || boatRun.hulls.some((h) => h.endsWith("(off)"))) failures.push(`the hull types on offer were ${boatRun.hulls.join(", ")}`);
     if (boatRun.vessel?.hull?.plate?.length !== 6.5 || boatRun.vessel?.outboards !== 2 || boatRun.vessel?.components?.length !== 2) failures.push(`the wizard's boat came out as ${JSON.stringify(boatRun.vessel)}`);
     try {
       await page.waitForFunction(() => window.axonometra.element.shadowRoot.querySelectorAll(".fp3d-room-chip").length === 2, { timeout: 15000 });
@@ -197,6 +199,20 @@ try {
   }
   const typed = await wizard("vessel", { length: 7.2, engine: "inboard", engines: 1 });
   if (typed && (typed.vessel?.hull?.plate?.length !== 7.2 || typed.vessel?.outboards !== 0 || typed.vessel?.components?.length !== 1)) failures.push(`a boat typed in at 7.2 m with one inboard came out as ${JSON.stringify(typed?.vessel)}`);
+  // every hull type builds: a catamaran asks the beam of a hull and has a sole in each under her bridge deck, a RIB sits inside her tube
+  const cat = await wizard("vessel", { hull: "catamaran", hullBeam: 1.4 });
+  if (cat && (cat.vessel?.hull?.parametric?.hullBeam !== 1.4 || cat.floors.join(",") !== "Sole,Bridge Deck" || cat.rooms.join(",") !== "Port Hull,Starboard Hull,Bridge Deck" || cat.vessel?.components?.length !== 2)) failures.push(`the wizard's catamaran came out as ${JSON.stringify(cat)}`);
+  const rib = await wizard("vessel", { hull: "rib", length: 5.8 });
+  if (rib && (rib.vessel?.hull?.shipd?.[0] !== 5.8 || !rib.vessel?.tube || rib.vessel?.outboards !== 1 || rib.rooms.join(",") !== "Cockpit")) failures.push(`the wizard's RIB came out as ${JSON.stringify({ ...rib, vessel: { ...rib.vessel, hull: "…" } })}`);
+  if (rib) {
+    try {
+      await page.waitForFunction(() => window.axonometra.element.shadowRoot.querySelectorAll(".fp3d-room-chip").length === 1, { timeout: 15000 });
+      await new Promise((ok) => setTimeout(ok, 1500));
+      await page.screenshot({ path: join(shots, "standalone-smoke-wizard-rib.png") });
+    } catch {
+      failures.push("the wizard's RIB does not land in 3D with her cockpit");
+    }
+  }
   const house = await wizard("building", { levels: 2, basement: true });
   if (house) {
     if (house.seen.join(",") !== "kind,basics" || house.vessel || house.floors.join(",") !== "Basement,Ground Floor,First Floor" || house.rooms.length !== 3) failures.push(`the wizard's building run was ${JSON.stringify(house)}`);
@@ -334,4 +350,4 @@ if (failures.length) {
   console.error(failures.map((f) => `FAIL ${f}`).join("\n"));
   process.exit(1);
 }
-console.log(`ok   standalone planner mounts, opens the editor, keeps a saved plan, hides Home Assistant's parts unless asked, opens an example plan and an example vessel, walks the first-run wizard for a boat, a building and a caravan, opens a saved plan and a file from the start page, and takes masses with the switch off and on (${shots}/standalone-smoke*.png)`);
+console.log(`ok   standalone planner mounts, opens the editor, keeps a saved plan, hides Home Assistant's parts unless asked, opens an example plan and an example vessel, walks the first-run wizard for a boat on three of its seven hull types, a building and a caravan, opens a saved plan and a file from the start page, and takes masses with the switch off and on (${shots}/standalone-smoke*.png)`);

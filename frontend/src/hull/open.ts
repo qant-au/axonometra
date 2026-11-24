@@ -2,13 +2,14 @@
 // runabout is. Inside the plating sits the sole (the deck you stand on), above the waterline so the boat drains itself;
 // a gunwale caps the sheer; the transom is a plate of its own, cut down to the outboards' mounting height, with a
 // self-draining motor well behind a bulkhead, or left whole with the motors on a bracket or a small platform set back
-// aft of it. The outer body is unchanged, so the boat floats exactly as the closed hull does while the sole and the
-// transom's cut-out stay above the water.
+// aft of it. A body that ends in a stern of its own (a raked transom, a counter, a canoe stern) keeps it whole in its
+// skin, and the motors hang on its face. The outer body is unchanged, so the boat floats exactly as the closed hull
+// does while the sole and the transom's cut-out stay above the water.
 
 import { combine, ALUMINIUM, type Weight } from "./loads.ts";
 import { bodyMesh, meshArea, type Mesh } from "./mesh.ts";
 import type { Vec3 } from "./parts.ts";
-import { bodyRange, halfAt, sheerAt } from "./sections.ts";
+import { aftAt, bodyRange, bottomAt, deckAft, halfAt, sheerAt } from "./sections.ts";
 import { innerBody } from "./skin.ts";
 import { axes, hullMiddle, type Attitude, type Load } from "./stability.ts";
 import type { Hull, HullBody, SectionPoint } from "./types.ts";
@@ -28,9 +29,9 @@ export interface OpenHullSpec {
   transom: {
     /** Mounting height above the bottom of the boat at the transom (m): the shaft length the motors need (SHAFT). */
     height: number;
-    /** Width the motors take across the transom (m): the cut-out, or the bracket or platform. */
+    /** Width the motors take across the transom (m): the cut-out, or the bracket or platform; 0 leaves it whole. */
     width: number;
-    /** A self-draining motor well: its bulkhead this far forward of the transom (m). */
+    /** A self-draining motor well: its bulkhead this far forward of the transom (m). A plumb transom only, as is a setback. */
     well?: number;
     /**
      * Motors set back aft of a whole transom (m): on a bracket (open frame, no buoyancy), or on a platform, a pod
@@ -57,6 +58,8 @@ export interface OpenHull {
   mount: number;
   /** The motors' mounting face (m along the length): the transom, or the aft end of the setback. */
   mountX: number;
+  /** Where her open top begins aft (m along the length): the transom, or the head of a raked transom's face. */
+  deck: number;
   sole: { y: number; from: number; to: number };
   wellFloor: number | null;
   /** The plates: the skin, the transom, the sole, the gunwale, the well and the setback. */
@@ -114,33 +117,44 @@ export function openHull(body: HullBody, spec: OpenHullSpec): OpenHull {
   const inner = innerBody(body, t);
   const [x0, x1] = bodyRange(body);
   const stern = body.sections[0].points;
-  const keel = stern[0][0];
-  const sheer = stern[stern.length - 1][0];
-  const half = stern[stern.length - 1][1];
   const { height, width, well, setback } = spec.transom;
+  // a plumb transom is a plate of its own; a body whose first section is no more than a point, a line or a sliver
+  // of her depth ends in a stern of its own, and its deck ends where that stern's face begins to fall (gentler than
+  // 45° on a sugar scoop)
+  const mid = (x0 + x1) / 2;
+  const depth = (sheerAt(body, mid) ?? 0) - (bottomAt(body, mid) ?? 0);
+  const plumb = stern[stern.length - 1][0] - stern[0][0] > 0.25 * depth && stern[stern.length - 1][1] > 1e-3;
+  if (!plumb && (well || setback)) throw new Error("a motor well or a setback needs a plumb transom");
+  const deck = plumb ? x0 : deckAft(body, 0.25);
+  // the bottom of the boat at the transom: under a stern of its own, where it meets the water
+  const keel = plumb ? stern[0][0] : (bottomAt(body, aftAt(body, 0) ?? x0) ?? stern[0][0]);
+  const sheer = plumb ? stern[stern.length - 1][0] : (sheerAt(body, deck) ?? stern[stern.length - 1][0]);
+  const half = stern[stern.length - 1][1];
   const mount = keel + height;
   if (mount >= sheer) throw new Error("the mounting height is above the transom");
   const cut = setback ? null : mount;
   const pieces: Piece[] = [];
-  pieces.push({ name: "skin", mesh: bodyMesh(body, 32, true, false) });
+  pieces.push({ name: "skin", mesh: bodyMesh(body, 32, plumb || deck, false) });
 
   // the transom: strips across it from the bottom up to the top, which drops to the cut-out between the motors
-  const zs = [...new Set([...span(-half, half, 48), -width / 2, width / 2].map((z) => Math.round(z * 1e9) / 1e9))].sort((a, b) => a - b);
-  const plate: Vec3[][] = [];
-  for (let i = 0; i < zs.length - 1; i++) {
-    const [za, zb] = [zs[i], zs[i + 1]];
-    const top = cut !== null && Math.abs((za + zb) / 2) < width / 2 ? cut : sheer;
-    const low = (z: number) => Math.min(top, heightAt(stern, Math.abs(z)));
-    plate.push([[x0, low(za), za], [x0, top, za]], [[x0, low(zb), zb], [x0, top, zb]]);
+  if (plumb) {
+    const zs = [...new Set([...span(-half, half, 48), -width / 2, width / 2].map((z) => Math.round(z * 1e9) / 1e9))].sort((a, b) => a - b);
+    const plate: Vec3[][] = [];
+    for (let i = 0; i < zs.length - 1; i++) {
+      const [za, zb] = [zs[i], zs[i + 1]];
+      const top = cut !== null && Math.abs((za + zb) / 2) < width / 2 ? cut : sheer;
+      const low = (z: number) => Math.min(top, heightAt(stern, Math.abs(z)));
+      plate.push([[x0, low(za), za], [x0, top, za]], [[x0, low(zb), zb], [x0, top, zb]]);
+    }
+    const transom: Mesh = { positions: [], indices: [] };
+    for (let i = 0; i < plate.length; i += 2) {
+      const m = strips([plate[i], plate[i + 1]]);
+      const base = transom.positions.length / 3;
+      transom.positions.push(...m.positions);
+      transom.indices.push(...m.indices.map((k) => k + base));
+    }
+    pieces.push({ name: "transom", mesh: transom });
   }
-  const transom: Mesh = { positions: [], indices: [] };
-  for (let i = 0; i < plate.length; i += 2) {
-    const m = strips([plate[i], plate[i + 1]]);
-    const base = transom.positions.length / 3;
-    transom.positions.push(...m.positions);
-    transom.indices.push(...m.indices.map((k) => k + base));
-  }
-  pieces.push({ name: "transom", mesh: transom });
 
   // the sole, from the well's bulkhead (or the transom) forward to where the hull narrows
   const soleY = spec.sole;
@@ -160,7 +174,7 @@ export function openHull(body: HullBody, spec: OpenHullSpec): OpenHull {
 
   // the gunwale: a flat capping along the sheer, out from the plating
   const g = spec.gunwale ?? 0.12;
-  const capped = body.sections.filter((s) => s.points[s.points.length - 1][1] > g);
+  const capped = body.sections.filter((s) => s.x >= deck - 1e-9 && s.points[s.points.length - 1][1] > g);
   for (const side of [-1, 1])
     pieces.push({
       name: side < 0 ? "gunwale (port)" : "gunwale (starboard)",
@@ -175,7 +189,7 @@ export function openHull(body: HullBody, spec: OpenHullSpec): OpenHull {
     });
 
   // a setback: two side plates and a top; a platform is the transom's width, a bracket the motors'
-  let mountX = x0;
+  let mountX = plumb ? x0 : (aftAt(body, mount) ?? x0);
   let pod: HullBody | null = null;
   if (setback) {
     const L = setback.length;
@@ -197,7 +211,7 @@ export function openHull(body: HullBody, spec: OpenHullSpec): OpenHull {
     }
   }
 
-  return { body, pod, inner, spec, keel, mount, mountX, sole: { y: soleY, from, to }, wellFloor, pieces };
+  return { body, pod, inner, spec, keel, mount, mountX, deck, sole: { y: soleY, from, to }, wellFloor, pieces };
 }
 
 /** What floats: the hull body, and a platform's pod with it. */

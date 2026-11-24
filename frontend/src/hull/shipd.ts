@@ -802,5 +802,7 @@ export function shipdBody(vector: readonly number[], options: ShipDBodyOptions =
   for (let i = 1; i < stations.length; i++) split(stations[i - 1], stations[i], 0, Infinity);
   // stations from the stern (the original's largest x) forward, in our x from the stern
   const sections = refined.reverse().map(({ s }) => ({ x: aft + s.x, points: s.points }));
-  return { center, sections };
+  // the steps, as heights from the waterline: two samples a hair apart, of which the middle is the step
+  const knuckles = steps.filter((_, i) => i % 2 === 0).map((z) => z + hair - h.WL).filter((y) => y > -h.WL && y < h.Dd - h.WL);
+  return { center, sections, ...(knuckles.length ? { knuckles } : {}) };
 }

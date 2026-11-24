@@ -98,6 +98,30 @@ export function sectionAt(body: HullBody, x: number): Section | null {
   return { x, points: ts.map((t): SectionPoint => (both ? [bottom + (sheer - bottom) * t, at(t, -1), at(t, 1)] : [bottom + (sheer - bottom) * t, at(t, -1)])) };
 }
 
+/**
+ * Where the body begins at height y, coming from astern (m along the length): a plumb transom, the face of a raked
+ * one, the underside of a counter. Null when the body is nowhere at that height.
+ */
+export function aftAt(body: HullBody, y: number): number | null {
+  const xs = sampleXs(body);
+  const i = xs.findIndex((x) => halfAt(body, x, y) !== null);
+  if (i < 0) return null;
+  return i > 0 ? crossing(body, y, xs[i], xs[i - 1]) : xs[i];
+}
+
+/**
+ * Where the deck ends aft (m along the length). Aft of it the tops of the sections are not deck but the face of a
+ * raked transom, which falls steeper than any deck line does: walking aft from amidships, the first place the top
+ * line drops by more than `steep` for each metre aft (1 is 45°; a transom raked well forward, a sugar scoop, falls
+ * less). The stern itself on a hull whose deck runs right aft.
+ */
+export function deckAft(body: HullBody, steep = 1): number {
+  const [x0, x1] = bodyRange(body);
+  const step = (x1 - x0) / 400;
+  for (let x = (x0 + x1) / 2; x - step >= x0; x -= step) if ((sheerAt(body, x) ?? 0) - (sheerAt(body, x - step) ?? 0) > steep * step) return x;
+  return x0;
+}
+
 /** The station positions with each interval split into `split` parts: where the queries are sampled along x. */
 export function sampleXs(body: HullBody, split = 4): number[] {
   const s = body.sections;

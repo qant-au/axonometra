@@ -4,16 +4,29 @@
 // hull code in; that comes with the vessel bundle (entry.ts, loaded by load-vessel.ts).
 
 import type { OpenHullSpec } from "../hull/open.ts";
+import type { ParametricHullSpec } from "../hull/parametric.ts";
+import type { BulbSpec, FoilSpec } from "../hull/parts.ts";
 import type { PlateHullSpec } from "../hull/plate.ts";
+import type { TubeSpec } from "../hull/tube.ts";
+
+/**
+ * The hull, by what it is built from: a hard-chine plate hull; a hull in the Ship-D parameterisation (its 45 numbers,
+ * the length overall first: hull/shipd.ts); or a parametric hull from its main dimensions, a catamaran's two with it.
+ */
+export type VesselHull = { plate: PlateHullSpec } | { shipd: number[] } | { parametric: ParametricHullSpec };
 
 export interface VesselSpec {
-  /** Her name and MMSI, when the owner gave them (the first-run wizard). */
+  /** Her name and MMSI, when the owner gave them. */
   name?: string;
   mmsi?: string;
-  /** The hull: a plate hull for now (the other hull sources follow). */
-  hull: { plate: PlateHullSpec };
-  /** The open boat on it: plating, sole, transom. */
+  hull: VesselHull;
+  /** The boat in the hull: plating, sole, transom. A catamaran has it in each hull. */
   open: OpenHullSpec;
+  /** A RIB's tube round the deck edge. */
+  tube?: TubeSpec;
+  /** What hangs under her: a fin keel and a rudder, a keel's bulb. */
+  foils?: FoilSpec[];
+  bulbs?: BulbSpec[];
   /** Outboard mounts across the transom (or its setback): "outboard", or "outboard 1", "outboard 2" … */
   outboards?: number;
   /** What the boat carries that is part of her: motors, tanks, batteries. Things on the decks are the plan's own items. */
@@ -44,5 +57,6 @@ export interface Weighted {
 /** The vessel a plan is drawn in, or null for a building. */
 export function vesselOf(building: unknown): VesselSpec | null {
   const v = (building as { vessel?: Partial<VesselSpec> } | null)?.vessel;
-  return v && v.hull?.plate && v.open ? (v as VesselSpec) : null;
+  const hull = v?.hull as { plate?: unknown; shipd?: unknown; parametric?: unknown } | undefined;
+  return v && (hull?.plate || hull?.shipd || hull?.parametric) && v.open ? (v as VesselSpec) : null;
 }

@@ -44,7 +44,8 @@ const ASSETS = ["fonts", "images", "lang"];
 const HOME_ASSISTANT_ONLY = ["axonometra-card-editor.js", "axonometra-locate.js", "axonometra-timetravel.js", "axonometra-voice.js"];
 
 // size budgets: the host entry stays small; the whole folder is held to what it measured when the package was made
-const BUDGETS = { "index.js": 48 * 1024, "plans.js": 64 * 1024 };
+// plans.js 72 KB on 2026-11-24 (was 64): a vessel plan may stand on any hull source, so the Ship-D parameterisation comes with the example boat
+const BUDGETS = { "index.js": 48 * 1024, "plans.js": 72 * 1024 };
 // whole folder 6.5 MB with upstream 3.4.1 (was 5 MB, at 2.0.4): its new editor and 3D features, Slovak and Turkish,
 // the texts the new features brought in every language, and the OpenStreetMap chunk
 const TOTAL_BUDGET = 6.5 * 1024 * 1024;

@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { bodyOutlineAt, bottomAt, halfAt, outlineAt, sectionAt, sheerAt } from "./sections.ts";
+import { aftAt, bodyOutlineAt, bottomAt, deckAft, halfAt, outlineAt, sectionAt, sheerAt } from "./sections.ts";
 import type { HullBody } from "./types.ts";
 
 const near = (a: number | null, b: number, eps = 1e-9) => assert.ok(a !== null && Math.abs(a - b) < eps, `${a} ≠ ${b}`);
@@ -120,4 +120,22 @@ test("sectionAt: on a station it is that station; between stations it has every 
   near(mid.points[0][1], 0.5);
   near(mid.points[1][1], 1);
   assert.equal(sectionAt(a, 3), null);
+});
+
+test("the stern at a height, and where the deck ends aft of a raked transom", () => {
+  // a transom raked forward at its head: the foot on the keel at x = 0, the head 1 m forward at the deck
+  const raked: HullBody = {
+    center: 0,
+    sections: [
+      { x: 0, points: [[-1, 0], [-1, 0]] },
+      { x: 1, points: [[-1, 1], [1, 1]] },
+      { x: 8, points: [[-1, 1], [1, 1]] },
+    ],
+  };
+  near(aftAt(raked, -1), 0);
+  near(aftAt(raked, 0), 0.5, 1e-6);
+  assert.equal(aftAt(raked, 2), null, "nowhere that high");
+  assert.ok(Math.abs(deckAft(raked) - 1) < 0.03, "the head of the transom's face");
+  assert.equal(deckAft(raked, 3), 0, "a fall of 2 in 1 is deck to a steeper measure");
+  assert.equal(deckAft(widening), 0, "a deck that runs right aft");
 });

@@ -99,5 +99,6 @@ export function innerBody(body: HullBody, thickness: number): HullBody {
     });
     if (points.length >= 2) sections.push({ x, points });
   }
-  return { center: body.center, sections };
+  // a step lies the thickness higher on the inside when its face looks down, lower when it looks up: both are given
+  return { center: body.center, sections, ...(body.knuckles ? { knuckles: body.knuckles.flatMap((y) => [y - t, y + t]) } : {}) };
 }

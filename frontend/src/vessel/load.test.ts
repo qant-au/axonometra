@@ -103,6 +103,18 @@ for (const mass of MODES) {
   });
 }
 
+test("a catamaran floats on both her hulls: upright with an engine in each, heeled with one", () => {
+  const engine = (z: number) => ({ name: `Engine ${z}`, mass: 300, size: [1, 0.7, 0.7] as [number, number, number], at: [3, 0.35, z] as [number, number, number] });
+  const cat: VesselSpec = { hull: { parametric: { hull: "catamaran", length: 12, beam: 6.7, hullBeam: 1.5, draft: 0.7, freeboard: 0.9 } }, open: { plating: 0.005, sole: 0.15, transom: { height: 0.635, width: 0 } }, components: [engine(-2.6), engine(2.6)] };
+  const f = vesselFloat(plan(true, cat), cat);
+  assert.deepEqual(f.hull.bodies.map((b) => b.center), [-2.6, 2.6]);
+  assert.ok(Math.abs(f.load!.tcg ?? 0) < 1e-4 && Math.abs(f.attitude.heel) < 1e-4 && !f.capsizes, "the same either side, she sits upright");
+  assert.ok(f.load!.displacement * 1000 > 600 + 500, "the plating of both hulls on top of her engines");
+  assert.equal(f.drains, null, "draining is an open boat's question");
+  const one: VesselSpec = { ...cat, components: [engine(2.6)] };
+  assert.ok(vesselFloat(plan(true, one), one).attitude.heel > 1e-3, "one engine, and she lists to it");
+});
+
 test("deck weights: at the middle of each item, its own mass or its default; weightless ones left out", () => {
   const b = vesselBuilding(spec);
   b.floors[0].furniture.push(item(4.5, 0, 180), item(3, 0.5, null), item(2, -0.5, 0), item(1, 0, null, { type: "stairwell" }));

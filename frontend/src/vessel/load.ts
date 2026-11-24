@@ -4,13 +4,13 @@
 // calculates masses (mass.ts): with it off she sits at her design waterline, level, and nothing is weighed.
 
 import type { Floor, Furniture } from "../model.ts";
-import type { Weight } from "../hull/loads.ts";
-import { asFitted, drains, openBodies } from "../hull/open.ts";
+import { combine, type Weight } from "../hull/loads.ts";
+import { drains, openBodies, shellWeights } from "../hull/open.ts";
 import type { Vec3 } from "../hull/parts.ts";
 import { float, restingHeel, type Attitude, type Load } from "../hull/stability.ts";
 import type { Hull } from "../hull/types.ts";
 import { itemMass, massOn } from "./mass.ts";
-import { vesselMounts, vesselShell } from "./shell.ts";
+import { vesselMounts, vesselShells } from "./shell.ts";
 import type { VesselSpec, Weighted } from "./spec.ts";
 
 export interface Placed {
@@ -25,6 +25,7 @@ export interface VesselFloat {
   hull: Hull;
   load: Load | null;
   attitude: Attitude;
+  /** Whether she drains herself (an open boat on one hull); null for a multihull, and with masses off. */
   drains: ReturnType<typeof drains> | null;
   /** No resting heel within 60°: the load turns her over (she is drawn upright). */
   capsizes: boolean;
@@ -53,8 +54,8 @@ export const DESIGN: Attitude = { heel: 0, trim: 0, level: 0 };
 
 /** The vessel with her load (plating, components and the decks' items), or at her design waterline with masses off. */
 export function vesselFloat(building: unknown, spec: VesselSpec, mass = massOn(building)): VesselFloat {
-  const shell = vesselShell(spec);
-  const mounts = new Map(vesselMounts(spec, shell).map((m) => [m.name, m]));
+  const shells = vesselShells(spec);
+  const mounts = new Map(vesselMounts(spec, shells).map((m) => [m.name, m]));
   const placed: Placed[] = [];
   const unplaced: string[] = [];
   const weights: Weight[] = [];
@@ -72,12 +73,14 @@ export function vesselFloat(building: unknown, spec: VesselSpec, mass = massOn(b
     placed.push({ name: c.name, at, size: c.size });
     if (mass) weights.push({ name: c.name, mass: c.mass, at });
   }
-  const hull = openBodies(shell);
+  // what floats: each hull's body (and a platform's pod) where it lies across the boat
+  const hull: Hull = { bodies: shells.flatMap(({ open, center }) => openBodies(open).bodies.map((b) => ({ ...b, center: b.center + center }))) };
   if (!mass) return { mass, hull, load: null, attitude: DESIGN, drains: null, capsizes: false, weights, placed, unplaced };
   weights.push(...deckWeights((building as { floors?: Floor[] } | null)?.floors ?? []));
-  const load = asFitted(shell, weights);
+  const plating = shells.flatMap(({ open, center }) => shellWeights(open).map((w): Weight => ({ ...w, at: [w.at[0], w.at[1], w.at[2] + center] })));
+  const load = combine([...plating, ...weights]);
   // she rests where the righting lever is nil: upright with the load on her centre line, listing with it to one side
   const rest = restingHeel(hull, load);
   const attitude = (rest ?? float(hull, load, 0)).attitude;
-  return { mass, hull, load, attitude, drains: drains(shell, attitude), capsizes: !rest, weights, placed, unplaced };
+  return { mass, hull, load, attitude, drains: shells.length === 1 ? drains(shells[0].open, attitude) : null, capsizes: !rest, weights, placed, unplaced };
 }

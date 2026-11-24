@@ -11,6 +11,12 @@ CHANGELOG.md. Pre-1.0, releases step the patch number: 0.8.1, 0.8.2 and so on.
 - A new plan is two pages: what to plan (a boat, a building, or a caravan or mobile home), then its basics.
   A boat asks its hull type, length, beam, draft and engines; a building its width, depth, levels and
   basement; a caravan its type, length and width. Everything else is set once the plan is open.
+- A boat can be started on any of seven hull types, each sized by the length, beam and draft given: plate
+  alloy fishing boat, fin-keel sloop (with her keel and rudder), semi-displacement cruiser, planing cruiser,
+  RIB (inside her tube), catamaran (a hull beam too: a sole in each hull under her bridge deck) and launch.
+- A vessel plan's recipe (`vessel.hull`) may name a plate hull, a hull in the Ship-D parameterisation or
+  a parametric hull, and may carry a RIB's tube, foils and bulbs. Plans saved with a plate hull open as
+  before.
 
 ## [0.8.0] - 2026-10-30
 

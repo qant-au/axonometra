@@ -2,7 +2,7 @@
 // the deck edge from aft of the transom, round the bow and back. Given as a centre line with a radius at each point,
 // for the 3D view to sweep a circle along.
 
-import { bodyRange, halfAt, sheerAt } from "./sections.ts";
+import { bodyRange, deckAft, halfAt, sheerAt } from "./sections.ts";
 import type { HullBody } from "./types.ts";
 
 export interface TubeSpec {
@@ -38,15 +38,8 @@ export function ribTube(body: HullBody, spec: TubeSpec): Tube {
   const rise = spec.rise ?? 0.3 * spec.diameter;
   const coneEnd = spec.coneEnd ?? 0.55;
   const [xStern, x1] = bodyRange(body);
-  // where the deck ends aft: the tops of the sections aft of it are a raked transom's face, falling steeper than
-  // any deck line does, so walk aft from amidships until the top line drops at more than 45°
-  const x0 = ((): number => {
-    const step = (x1 - xStern) / 400;
-    for (let x = (xStern + x1) / 2; x - step >= xStern; x -= step) {
-      if ((sheerAt(body, x) ?? 0) - (sheerAt(body, x - step) ?? 0) > step) return x;
-    }
-    return xStern;
-  })();
+  // the tube follows the deck: aft of where it ends, the tops of the sections are a raked transom's face
+  const x0 = deckAft(body);
   const deckHalf = (x: number) => halfAt(body, x, sheerAt(body, x) ?? 0) ?? 0;
   const side = (x: number) => deckHalf(x) + out;
   // where the bow turn starts: the arc's front is at the stem (plus the offset) and its radius is the side's

@@ -187,7 +187,8 @@ function copyFonts() {
 // 3D 928 KB on 2026-11-21: a finger or the mouse on a pin, a name or a glass card turns and zooms the house (#1248, #1271)
 // Axonometra: the first-run wizard on 2026-10-26: its own bundle 64 KB (the steps, the hull library, the equipment it proposes)
 // Axonometra: 3D 930 KB on 2026-11-24: upstream 4.0.1 takes its 928 KB, and the hooks for the vessel and the standalone host add 3 KB
-const BUDGET = { "axonometra-wizard.js": 64 * 1024, "axonometra.js": 870 * 1024, "axonometra-fun.js": 40 * 1024, "axonometra-voice.js": 60 * 1024, "axonometra-locate.js": 164 * 1024, "axonometra-osm.js": 20 * 1024, "axonometra-timetravel.js": 120 * 1024, "axonometra-3d.js": 930 * 1024, "axonometra-editor.js": 1160 * 1024, "axonometra-card-editor.js": 340 * 1024, "axonometra-vessel.js": 64 * 1024 };
+// Axonometra: the wizard 92 KB on 2026-11-24 (was 64): it builds a boat on every hull type, so the Ship-D parameterisation, the family vectors and the parametric hull come with it
+const BUDGET = { "axonometra-wizard.js": 92 * 1024, "axonometra.js": 870 * 1024, "axonometra-fun.js": 40 * 1024, "axonometra-voice.js": 60 * 1024, "axonometra-locate.js": 164 * 1024, "axonometra-osm.js": 20 * 1024, "axonometra-timetravel.js": 120 * 1024, "axonometra-3d.js": 930 * 1024, "axonometra-editor.js": 1160 * 1024, "axonometra-card-editor.js": 340 * 1024, "axonometra-vessel.js": 64 * 1024 };
 
 copyFonts();
 if (watch) {

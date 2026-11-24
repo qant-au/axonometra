@@ -20,7 +20,8 @@ const engine = join(root, "custom_components/axonometra/frontend");
 const out = join(root, "dist/standalone");
 const BUDGET = 48 * 1024;
 const HULLS_BUDGET = 760 * 1024;
-const PLANS_BUDGET = 64 * 1024;
+// 72 KB on 2026-11-24 (was 64): a vessel plan may stand on any hull source, so the Ship-D parameterisation comes with the example boat
+const PLANS_BUDGET = 72 * 1024;
 
 rmSync(out, { recursive: true, force: true });
 mkdirSync(out, { recursive: true });

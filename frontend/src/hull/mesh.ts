@@ -12,18 +12,40 @@ export interface Mesh {
 }
 
 /**
+ * The rows of a body's mesh: bands of heights, each with the rows it gets. One band from the lowest point to the
+ * highest for most bodies; a body with knuckles (types.ts) has a band between each pair of them, ending a hair
+ * short of the step, with rows by its share of the depth, so every section has a row just under and just over it.
+ */
+function bands(body: HullBody, n: number): { from: number; to: number; rows: number }[] | null {
+  const lo = Math.min(...body.sections.map((s) => s.points[0][0]));
+  const hi = Math.max(...body.sections.map((s) => s.points[s.points.length - 1][0]));
+  const hair = 1e-5 * (hi - lo);
+  const at = [...new Set(body.knuckles ?? [])].filter((y) => y > lo + 4 * hair && y < hi - 4 * hair).sort((a, b) => a - b);
+  if (!at.length || n < 2 * (at.length + 1)) return null;
+  const edges = [lo, ...at, hi];
+  const out = at.concat(hi).map((_, j) => ({ from: edges[j] + (j ? hair : 0), to: edges[j + 1] - (j < at.length ? hair : 0), rows: 2 }));
+  // the rows left over go to the deepest bands, one at a time
+  for (let left = n - 2 * out.length; left > 0; left--) out.reduce((a, b) => ((b.to - b.from) / b.rows > (a.to - a.from) / a.rows ? b : a)).rows++;
+  return out;
+}
+
+/**
  * A section's half-breadths, port and starboard, at n heights spaced by the same shares of its depth on every
  * section, so that the rings of neighbouring sections join point to point (as the section queries interpolate).
+ * Within bands (a body with knuckles), by the same shares of the part of each band the section reaches: a band it
+ * does not reach has its rows together at the section's bottom or top.
  */
-function resample(s: Section, n: number): { y: number[]; port: number[]; starboard: number[] } {
+function resample(s: Section, n: number, within: ReturnType<typeof bands> = null): { y: number[]; port: number[]; starboard: number[] } {
   const p = s.points;
   const y0 = p[0][0];
   const y1 = p[p.length - 1][0];
   const y: number[] = [];
   const port: number[] = [];
   const starboard: number[] = [];
+  const clamp = (v: number) => Math.min(y1, Math.max(y0, v));
+  const heights = within ? within.flatMap((b) => Array.from({ length: b.rows }, (_, k) => clamp(b.from) + ((clamp(b.to) - clamp(b.from)) * k) / (b.rows - 1))) : Array.from({ length: n }, (_, k) => y0 + ((y1 - y0) * k) / (n - 1));
   for (let k = 0; k < n; k++) {
-    const h = y0 + ((y1 - y0) * k) / (n - 1);
+    const h = heights[k];
     let i = 1;
     while (i < p.length - 1 && p[i][0] < h) i++;
     const [ya, pa, sa] = p[i - 1];
@@ -39,16 +61,19 @@ function resample(s: Section, n: number): { y: number[]; port: number[]; starboa
 
 /**
  * The body as a mesh: each section a ring (up the starboard side, across the deck, down the port side). Closed
- * unless `open` leaves the deck off, to look into it (an inner skin, an open boat); `stern` false leaves the transom
- * uncapped too (an open boat's transom is a plate of its own, with its cut-out).
+ * unless `open` leaves the deck off, to look into it (an inner skin, an open boat): everywhere, or forward of the x
+ * given, where the deck ends aft (sections.ts deckAft) and the tops of the sections aft of it are a raked transom's
+ * face, which stays. `stern` false leaves the transom uncapped too (an open boat's transom is a plate of its own,
+ * with its cut-out).
  */
-export function bodyMesh(body: HullBody, levels = 32, open = false, stern = true): Mesh {
+export function bodyMesh(body: HullBody, levels = 32, open: boolean | number = false, stern = true): Mesh {
   const positions: number[] = [];
   const indices: number[] = [];
   const rings: Vec3[][] = [];
+  const within = bands(body, levels);
   for (const s of body.sections) {
     const x = s.x;
-    const { y, port, starboard } = resample(s, levels);
+    const { y, port, starboard } = resample(s, levels, within);
     const count = y.length;
     const ring: Vec3[] = [];
     for (let i = 0; i < count; i++) ring.push([x, y[i], body.center + starboard[i]]);
@@ -62,7 +87,7 @@ export function bodyMesh(body: HullBody, levels = 32, open = false, stern = true
   for (let k = 0; k < rings.length - 1; k++) {
     for (let i = 0; i < m; i++) {
       // the quad from the starboard sheer to the port sheer is the deck
-      if (open && i === m / 2 - 1) continue;
+      if (open !== false && i === m / 2 - 1 && (open === true || body.sections[k].x >= open - 1e-9)) continue;
       const a = k * m + i;
       const b = k * m + ((i + 1) % m);
       const c = (k + 1) * m + ((i + 1) % m);

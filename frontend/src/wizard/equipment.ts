@@ -2,8 +2,7 @@
 // vessel plan carries (a mass and a box, vessel/spec.ts), placed where such things usually go, for the editor to move
 // later. The first-run wizard asks only for the engines (flow.ts); tanks and batteries come with a boat's readings.
 
-import { outboardMounts } from "../hull/open.ts";
-import { vesselShell } from "../vessel/shell.ts";
+import { hullCount, vesselBodies, vesselMounts } from "../vessel/shell.ts";
 import type { VesselComponent, VesselSpec } from "../vessel/spec.ts";
 import type { EngineDetails, TankDetails, TankFluid, VesselDetails } from "./details.ts";
 
@@ -37,17 +36,32 @@ export function tankMass(t: TankDetails): number {
   return Math.round(cap * DENSITY[t.fluid] + 10 + cap * 50);
 }
 
-/** How many outboards the transom takes. */
+/** How many outboards her transom takes; a catamaran's two, each as many. */
 export function outboardRoom(spec: VesselSpec): number {
-  return Math.floor(spec.open.transom.width / SPACING + 1e-9) + 1;
+  return hullCount(spec) * (Math.floor(spec.open.transom.width / SPACING + 1e-9) + 1);
+}
+
+/** Her length overall and greatest beam (m), whatever her hull is given as. */
+function measures(spec: VesselSpec): { length: number; beam: number } {
+  const h = spec.hull;
+  if ("plate" in h) return h.plate;
+  if ("shipd" in h) return { length: h.shipd[0], beam: h.shipd[3] * h.shipd[0] };
+  return h.parametric;
 }
 
 /** The proposal for a boat on this hull (the recipe as fitted, without components). */
 export function proposeEquipment(details: VesselDetails, spec: VesselSpec, template: VesselComponent[] = []): ProposedComponent[] {
   if (!details.engines.length && !details.tanks.length && !details.batteries.length)
     return template.map((c, i) => ({ key: `hull:${i}`, from: "hull", include: true, component: structuredClone(c) }));
-  const p = spec.hull.plate;
+  const p = measures(spec);
   const sole = spec.open.sole;
+  // where the i-th of n stands across the boat: side by side on one hull, shared out over a multihull's
+  const centres = hullCount(spec) > 1 ? vesselBodies(spec).map((b) => b.center) : [0];
+  const abreast = (i: number, n: number, gap: number) => {
+    const m = centres.length;
+    const inHull = Math.ceil((n - (i % m)) / m);
+    return r3(centres[i % m] + (Math.floor(i / m) - (inHull - 1) / 2) * gap);
+  };
   const out: ProposedComponent[] = [];
   const outboards = details.engines.filter((e) => e.kind === "outboard" || !e.kind);
   const hung = Math.min(outboards.length, outboardRoom(spec));
@@ -58,8 +72,7 @@ export function proposeEquipment(details: VesselDetails, spec: VesselSpec, templ
   });
   const inboards = details.engines.filter((e) => e.kind && e.kind !== "outboard");
   inboards.forEach((e, i) => {
-    const z = r3((i - (inboards.length - 1) / 2) * 0.8);
-    out.push({ key: `engine:${e.id}`, from: "engine", include: true, component: { name: `Engine (${e.id})`, mass: engineMass(e), size: [1.0, 0.7, 0.7], at: [r3(p.length * 0.25), sole + 0.2, z] } });
+    out.push({ key: `engine:${e.id}`, from: "engine", include: true, component: { name: `Engine (${e.id})`, mass: engineMass(e), size: [1.0, 0.7, 0.7], at: [r3(p.length * 0.25), r3(sole + 0.2), abreast(i, inboards.length, 0.8)] } });
   });
   details.tanks.forEach((t, i) => {
     const cap = t.capacity ?? 0.1;
@@ -82,8 +95,7 @@ export function withEquipment(spec: VesselSpec, proposal: ProposedComponent[]): 
   const hung = components.filter((c) => c.mount?.startsWith("outboard"));
   hung.forEach((c, i) => (c.mount = hung.length === 1 ? "outboard" : `outboard ${i + 1}`));
   const next: VesselSpec = { ...structuredClone(spec), outboards: hung.length, components };
-  const outboards = hung.length;
-  // an outboard hangs on a mount only when the transom has room for it (outboardMounts would refuse the recipe)
-  outboardMounts(vesselShell(next), outboards);
+  // an outboard hangs on a mount only when the transom has room for it (the mounts would refuse the recipe)
+  vesselMounts(next);
   return next;
 }
