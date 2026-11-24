@@ -176,7 +176,10 @@ function copyFonts() {
 // editor 1120 KB on 2026-11-14: the extensions page lists the add-ons that fit the home first and shows their prices (two lines in every language)
 // editor 1140 KB, 3D 920 KB on 2026-11-15: furniture 3.4 – the shop's furniture as locked cards in the library, finishes (wood, fabric, fronts) and live parts of pack items (doors, drawers, levels, status lights)
 // main 709.8 KB on 2026-11-15 (was 870.0): the 1130 texts only the editor needs moved to i18n-editor.ts in the editor bundle; card editor 179 KB
-const BUDGET = { "axonometra.js": 870 * 1024, "axonometra-fun.js": 40 * 1024, "axonometra-voice.js": 60 * 1024, "axonometra-locate.js": 164 * 1024, "axonometra-osm.js": 20 * 1024, "axonometra-timetravel.js": 120 * 1024, "axonometra-3d.js": 920 * 1024, "axonometra-editor.js": 1140 * 1024, "axonometra-card-editor.js": 340 * 1024 };
+// 3D 926 KB on 2026-11-18: walls facing their own way (#1189), the sky's horizon beyond the map's far edge (#1203)
+// editor 1160 KB on 2026-11-19: the card form asks what a card is for (tablet / phone) and holds the phone bar's options and own places
+// 3D 928 KB on 2026-11-21: a finger or the mouse on a pin, a name or a glass card turns and zooms the house (#1248, #1271)
+const BUDGET = { "axonometra.js": 870 * 1024, "axonometra-fun.js": 40 * 1024, "axonometra-voice.js": 60 * 1024, "axonometra-locate.js": 164 * 1024, "axonometra-osm.js": 20 * 1024, "axonometra-timetravel.js": 120 * 1024, "axonometra-3d.js": 928 * 1024, "axonometra-editor.js": 1160 * 1024, "axonometra-card-editor.js": 340 * 1024 };
 
 copyFonts();
 if (watch) {

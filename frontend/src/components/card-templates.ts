@@ -131,8 +131,13 @@ export class Fp3dCardTemplates extends LitElement {
   }
 
   /** The height the card has on the screen: its own, or the screen below the header with "fill". */
+  /** The screen the preview is laid out for: a card for a phone always on a phone. */
+  private screenOf(tpl: CardTemplate): ScreenSize {
+    return workingConfig(tpl).phone ? "phone" : this._screen;
+  }
+
   private previewHeight(tpl: CardTemplate): number {
-    const s = SCREENS[this._screen];
+    const s = SCREENS[this.screenOf(tpl)];
     const c = workingConfig(tpl);
     return c.fill ? s.h - HEADER : Math.min(s.h - HEADER, Math.max(150, c.height ?? 420));
   }
@@ -158,7 +163,7 @@ export class Fp3dCardTemplates extends LitElement {
     const cfg = workingConfig(tpl);
     // the template's floor plan: the preview shows that plan, not the first one
     const plan = this.planLine ? { plan: this.plan! } : {};
-    const key = JSON.stringify([cfg, plan]);
+    const key = JSON.stringify([cfg, plan, this.screenOf(tpl)]);
     if (key !== this.previewKey) {
       this.previewKey = key;
       try {
@@ -167,11 +172,11 @@ export class Fp3dCardTemplates extends LitElement {
         // an option the card refuses: the form shows it, the preview keeps the last good one
       }
     }
-    if (this.hass) this.previewCard.hass = this.hass;
-    // laid out as on that screen (on a tablet the room panel beside the house, on a phone over it), then shrunk; only
-    // to look at: a tap here must not switch the house's lights
+    // the preview turns and zooms like the card, but it switches nothing: its service calls go nowhere
+    if (this.hass) this.previewCard.hass = { ...this.hass, callService: async () => undefined } as unknown as HomeAssistant;
+    // laid out as on that screen (on a tablet the room panel beside the house, on a phone over it), then shrunk
     const h = this.previewHeight(tpl);
-    const w = SCREENS[this._screen].w;
+    const w = SCREENS[this.screenOf(tpl)].w;
     return html`<div class="fp3d-tpl-stage" style="height:${Math.round(h * this._scale)}px;max-width:${Math.round(w * this._scale)}px">
         <div class="fp3d-tpl-screen" style="width:${w}px;height:${h}px;transform:scale(${this._scale})">${this.previewCard}</div>
       </div>
@@ -238,10 +243,11 @@ export class Fp3dCardTemplates extends LitElement {
     });
   }
 
-  private add(from?: CardTemplate): void {
-    const name = from ? this.t("card_template_copy_name", { name: from.name }) : this.t("card_template_new_name");
+  /** A new template: a copy of one, or an empty one for a tablet or large screen, or one for a phone. */
+  private add(from?: CardTemplate, phone = false): void {
+    const name = from ? this.t("card_template_copy_name", { name: from.name }) : this.t(phone ? "card_template_new_name_phone" : "card_template_new_name");
     const id = templateId(name, this.templates.flatMap((x) => this.idsOf(x)));
-    this.editTemplates((list) => list.push({ id, name, config: from ? structuredClone(from.config) : {} }));
+    this.editTemplates((list) => list.push({ id, name, config: from ? structuredClone(from.config) : phone ? { phone: true, fill: true } : {} }));
     this._selected = id;
   }
 
@@ -388,14 +394,23 @@ export class Fp3dCardTemplates extends LitElement {
     const admin = this.admin;
     return html`<div class="fp3d-tpl">
       <p class="fp3d-sub">${this.t("card_templates_intro")}</p>
-      <div class="fp3d-tpl-list">
-        ${list.map(
-          (x) => html`<button class="fp3d-chip" aria-pressed=${x.id === tpl?.id} @click=${() => (this._selected = x.id)}>${x.name || x.id}</button>`,
-        )}
-        ${admin ? html`<button class="fp3d-btn" @click=${() => this.add()}>+ ${this.t("card_template_new")}</button>` : nothing}
+      <div class="fp3d-tpl-layout">
+        <nav class="fp3d-tpl-side" aria-label=${this.t("card_templates_screens")}>
+          ${[false, true].map((phone) => {
+            const own = list.filter((x) => !!workingConfig(x).phone === phone);
+            return html`<div class="fp3d-tpl-group">
+              <h4>${this.t(phone ? "card_templates_phones" : "card_templates_screens")}</h4>
+              ${own.map((x) => html`<button class="fp3d-tpl-item" aria-current=${x.id === tpl?.id} @click=${() => (this._selected = x.id)}>${x.name || x.id}</button>`)}
+              ${!own.length ? html`<span class="fp3d-sub">${this.t("card_templates_none")}</span>` : nothing}
+              ${admin ? html`<button class="fp3d-tpl-item fp3d-tpl-add" @click=${() => this.add(undefined, phone)}>+ ${this.t("card_template_new")}</button>` : nothing}
+            </div>`;
+          })}
+        </nav>
+        <div class="fp3d-tpl-main">
+          ${!list.length ? html`<p class="fp3d-sub">${this.t("card_templates_empty")}</p>` : nothing}
+          ${tpl ? this.renderTemplate(tpl, admin) : nothing}
+        </div>
       </div>
-      ${!list.length ? html`<p class="fp3d-sub">${this.t("card_templates_empty")}</p>` : nothing}
-      ${tpl ? this.renderTemplate(tpl, admin) : nothing}
       ${admin
         ? html`<div class="fp3d-tpl-reload">
             <button class="fp3d-btn" ?disabled=${this._reloading} @click=${() => void this.reload([])}>
@@ -481,7 +496,7 @@ export class Fp3dCardTemplates extends LitElement {
           : nothing}
       </div>
       ${this.renderMode(tpl, admin)}
-      <label class="fp3d-field"
+      <label class="fp3d-field" style=${workingConfig(tpl).phone ? "display:none" : ""}
         >${this.t("card_template_where")}
         <select
           ?disabled=${!admin}
@@ -506,7 +521,8 @@ export class Fp3dCardTemplates extends LitElement {
             >`
           : nothing}
       </label>
-      <div class="fp3d-tpl-use">
+      <details class="fp3d-tpl-use">
+        <summary>${this.t("card_template_use_title")}</summary>
         <span class="fp3d-sub">${this.t("card_template_use")}</span>
         <pre>${yaml}</pre>
         <div class="fp3d-tpl-row">
@@ -517,12 +533,12 @@ export class Fp3dCardTemplates extends LitElement {
               </button>`
             : nothing}
         </div>
-      </div>
+      </details>
       <div class="fp3d-tpl-split ${this._preview ? "" : "fp3d-tpl-nopreview"} ${this._preview && this._big ? "fp3d-tpl-big" : ""}">
         <div class="fp3d-tpl-preview">
           <div class="fp3d-tpl-row">
             <b>${this.t("card_template_preview")}</b>
-            ${this._preview
+            ${this._preview && !workingConfig(tpl).phone
               ? html`<select class="fp3d-tpl-size" aria-label=${this.t("card_template_screen")} @change=${(e: Event) => this.setScreen((e.target as HTMLSelectElement).value as ScreenSize)}>
                   ${(Object.keys(SCREENS) as ScreenSize[]).map((k) => html`<option value=${k} ?selected=${k === this._screen}>${this.t(SCREENS[k].label)}</option>`)}
                 </select>`
@@ -600,14 +616,94 @@ export class Fp3dCardTemplates extends LitElement {
         user-select: all;
       }
       /* the preview on the left (it stays in sight while the form scrolls), the form on the right */
+      .fp3d-tpl-layout {
+        display: grid;
+        grid-template-columns: 210px minmax(0, 1fr);
+        gap: 16px;
+        align-items: start;
+      }
+      .fp3d-tpl-side {
+        position: sticky;
+        top: 0;
+        display: grid;
+        gap: 16px;
+        padding: 10px;
+        border: 1px solid var(--fp3d-line);
+        border-radius: 12px;
+        background: rgba(8, 14, 28, 0.6);
+      }
+      .fp3d-tpl-group {
+        display: grid;
+        gap: 4px;
+      }
+      .fp3d-tpl-group h4 {
+        margin: 0 0 4px;
+        font-size: 12px;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--fp3d-soft);
+      }
+      .fp3d-tpl-item {
+        padding: 8px 10px;
+        border: 1px solid transparent;
+        border-radius: 8px;
+        background: none;
+        color: var(--fp3d-text);
+        font: inherit;
+        font-size: 14px;
+        text-align: left;
+        cursor: pointer;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .fp3d-tpl-item:hover {
+        background: rgba(55, 224, 255, 0.08);
+      }
+      .fp3d-tpl-item[aria-current="true"] {
+        background: rgba(55, 224, 255, 0.14);
+        border-color: var(--fp3d-accent);
+        font-weight: 600;
+      }
+      .fp3d-tpl-add {
+        color: var(--fp3d-accent);
+      }
+      .fp3d-tpl-main {
+        min-width: 0;
+        display: grid;
+        gap: 12px;
+      }
+      details.fp3d-tpl-use > summary {
+        cursor: pointer;
+        font-weight: 600;
+      }
+      details.fp3d-tpl-use[open] > summary {
+        margin-bottom: 4px;
+      }
+      @media (max-width: 1000px) {
+        .fp3d-tpl-layout {
+          grid-template-columns: 1fr;
+        }
+        .fp3d-tpl-side {
+          position: static;
+          grid-template-columns: 1fr 1fr;
+        }
+      }
+      /* the form on the left, the preview on the right (it stays in sight while the form scrolls) */
       .fp3d-tpl-split {
         display: grid;
-        grid-template-columns: minmax(0, 1.6fr) minmax(340px, 1fr);
+        grid-template-columns: minmax(340px, 1fr) minmax(0, 1.3fr);
         gap: 16px;
         align-items: start;
       }
       .fp3d-tpl-split.fp3d-tpl-nopreview {
-        grid-template-columns: auto minmax(0, 1fr);
+        grid-template-columns: minmax(0, 1fr) auto;
+      }
+      .fp3d-tpl-split > .fp3d-tpl-preview {
+        order: 2;
+      }
+      .fp3d-tpl-split.fp3d-tpl-big > .fp3d-tpl-preview {
+        order: 0;
       }
       /* large: the preview over the whole width, the form below it */
       .fp3d-tpl-split.fp3d-tpl-big {
@@ -637,7 +733,6 @@ export class Fp3dCardTemplates extends LitElement {
         top: 0;
         left: 0;
         transform-origin: 0 0;
-        pointer-events: none;
       }
       .fp3d-tpl-size {
         margin-left: auto;

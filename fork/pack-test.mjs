@@ -46,7 +46,7 @@ const size = statSync(tarball).size;
 if (size > TARBALL_BUDGET) failures.push(`tarball is ${(size / 1048576).toFixed(2)} MB (budget ${TARBALL_BUDGET / 1048576} MB)`);
 const files = packed.files.map((f) => f.path);
 const allowed = [
-  /^(index|plans|axonometra|axonometra-(3d|editor|vessel|wizard|fun))\.js$/,
+  /^(index|plans|axonometra|axonometra-(3d|editor|vessel|wizard|fun|osm))\.js$/,
   /^types\/.+\.d\.ts$/,
   /^fonts\/[A-Za-z-]+\.(woff2|txt)$/,
   /^images\/[a-z0-9-]+\.(jpg|png|svg)$/,

@@ -29,9 +29,18 @@ export interface PackPart {
   /** Bottom and height in fractions of the item's height. */
   y: number;
   h: number;
-  /** "#rrggbb" or a palette role ("body", "fabric", "wood", …). */
+  /**
+   * "#rrggbb" or a palette role ("body", "fabric", "wood", …; "front" for door and drawer fronts since 3.5, drawn like
+   * "white" until a finish tells fronts and carcass apart, #1177).
+   */
   color: string;
   top?: string;
+  /**
+   * The finish a part follows although its colour is none of that finish's roles (3.5, #1175): it keeps its colour
+   * ("#rrggbb" or a role like "dark") until a placed item gets that finish – a gaming chair's red cover takes the fabric
+   * colour, a table's oak top the wood colour, a track light's dark housing the carcass colour.
+   */
+  finish?: "wood" | "fabric" | "front" | "body";
   /** Outline: true (soft blue), "glow" (cyan like the walls) or "faint". */
   edges?: boolean | "glow" | "faint";
   /** Lamps: shines in the colour and brightness of the linked light. */
@@ -337,6 +346,8 @@ export function packName(pack: { id: string; name: string }, language: string): 
   return pack.name.replace(/^Modul:/, "Module:").replace(/^Fun-Pack:/, "Fun Pack:");
 }
 
+const CEILING_GAP = 0.005;
+
 /** Height of the bottom of a pack item, a wall light or an LED strip above the floor (0 for other built-in furniture). */
 export function mountBase(floor: Floor, f: Pick<Furniture, "type" | "x" | "z" | "h"> & { mount_y?: number | null; variant?: string | null }): number {
   const item = packItem(f.type);
@@ -347,14 +358,21 @@ export function mountBase(floor: Floor, f: Pick<Furniture, "type" | "x" | "z" | 
   // wall lights at the usual height, LED strips just under the ceiling
   if (f.type === "lamp_wall") return WALL_LAMP_Y;
   if (LIFT_SPOTS.has(f.type)) return Math.max(0, floor.height - spotDepth(f.type, f.h));
-  if (f.type === "led_strip") return Math.max(0, floor.height - 0.04 - Math.max(0.02, f.h));
+  if (f.type === "led_strip") {
+    // under the ceiling of the room it lies in: in a room with a ceiling of its own, lower than the floor's height,
+    // it hung under the storey's height and floated above that ceiling (#1226)
+    const room = floor.rooms.find((r) => r.points.length >= 3 && pointInPolygon([f.x, f.z], r.points));
+    const ceiling = typeof room?.ceiling_height === "number" && room.ceiling_height > 0 ? room.ceiling_height : floor.height;
+    return Math.max(0, ceiling - 0.04 - Math.max(0.02, f.h));
+  }
   switch (item?.mount) {
     case "surface":
       return groundUnder(floor, f) + surfaceHeight(floor, f.x, f.z, f.h);
     case "wall":
       return item.wall_y ?? 1;
     case "ceiling":
-      return Math.max(0, floor.height - f.h);
+      // 5 mm under the ceiling: flush with it, its top lay in the floor above and showed through it there (#1191)
+      return Math.max(0, floor.height - f.h - CEILING_GAP);
     default:
       // built-in models: where they are drawn by default (a wall cabinet at 1.45 m)
       if (item) return groundUnder(floor, f);

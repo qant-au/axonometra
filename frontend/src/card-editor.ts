@@ -1,6 +1,7 @@
 // Visual editor of the dashboard card: Home Assistant shows it in the card dialog, so nobody has to
 // write YAML. It follows Home Assistant's colours (the dialog is light or dark with the user's theme).
 
+import type { PhonePlace } from "./phone.ts";
 import { styleOptions } from "./style-select.ts";
 import { setCustomStyles } from "./looks.ts";
 import { css, html, LitElement, nothing, svg } from "lit";
@@ -33,6 +34,7 @@ const DEFAULTS: Partial<CardConfig> = {
   controls: false,
   fullscreen_button: false,
   room_names: true,
+  surroundings: true,
   floor_stack: "dim",
   alerts: true,
   alert_jump: false,
@@ -73,12 +75,15 @@ export class Floorplan3dCardEditor extends LitElement {
     _showForm: { state: true },
     building: { attribute: false },
     embedded: { type: Boolean },
+    _tab: { state: true },
   };
 
   declare hass: HomeAssistant | undefined;
   /** Inside Axonometra's editor (a card template): the plan being edited, and no template choice of its own. */
   declare building: Building | null;
   declare embedded: boolean;
+  /** Inside Axonometra's editor the form stands in tabs; on a dashboard it is one page as before. */
+  private declare _tab: "for" | "view" | "show" | "features" | "kiosk";
   private declare _config: CardConfig;
   private declare _floors: { id: string; name: string; rooms: { id: string; name: string; points: [number, number][]; outdoor: boolean }[] }[];
   /** The floor plans (more than one: the card picks its plan first). */
@@ -104,6 +109,7 @@ export class Floorplan3dCardEditor extends LitElement {
     this._showForm = false;
     this.building = null;
     this.embedded = false;
+    this._tab = "for";
   }
 
   setConfig(config: CardConfig): void {
@@ -265,7 +271,7 @@ export class Floorplan3dCardEditor extends LitElement {
   }
 
   private toggle(
-    key: "explode" | "roof_fade" | "roof" | "camera_wall" | "energy" | "room_panel" | "stats" | "fullscreen_button" | "room_names" | "alerts" | "alert_jump" | "director" | "voice" | "scenes" | "idle_orbit" | "motion_trail" | "time_travel" | "household_card" | "weather" | "angle_lock" | "keep_view" | "walk" | "plain" | "room_bar" | "room_bar_favorites",
+    key: "explode" | "roof_fade" | "roof" | "camera_wall" | "energy" | "room_panel" | "stats" | "fullscreen_button" | "room_names" | "surroundings" | "alerts" | "alert_jump" | "director" | "voice" | "scenes" | "idle_orbit" | "motion_trail" | "time_travel" | "household_card" | "weather" | "angle_lock" | "keep_view" | "walk" | "plain" | "room_bar" | "room_bar_favorites",
     label: I18nKey,
     hint?: I18nKey,
   ) {
@@ -396,6 +402,123 @@ export class Floorplan3dCardEditor extends LitElement {
           ${speeds.map(([n, text]) => html`<option value=${n} ?selected=${n === v.time_travel_speed}>${text}</option>`)}
         </select>
       </label>
+    </div>`;
+  }
+
+  /**
+   * What the card is for: a tablet or a large screen, or a phone – the phone view with its bar at the bottom, and the
+   * bar's own options right below (which places it has, what it opens with).
+   */
+  private renderPurpose() {
+    const v = this.value;
+    const phone = v.phone === true;
+    const hidden = new Set(this._config.phone_hide ?? this.templateOptions.phone_hide ?? []);
+    const part = (id: "rooms" | "covers" | "favorites", label: I18nKey, hint: I18nKey) =>
+      html`<label class="toggle">
+        <input
+          type="checkbox"
+          .checked=${!hidden.has(id)}
+          @change=${(e: Event) => {
+            const next = new Set(hidden);
+            if ((e.target as HTMLInputElement).checked) next.delete(id);
+            else next.add(id);
+            this.set("phone_hide", next.size ? (["rooms", "covers", "favorites"] as const).filter((x) => next.has(x)) : undefined);
+          }}
+        />
+        <span>${this.t(label)}<small>${this.t(hint)}</small></span>
+      </label>`;
+    return html`<h3>${this.t("card_for")}</h3>
+      <div class="purpose">
+        <button type="button" aria-pressed=${!phone} @click=${() => this.set("phone", undefined)}>🖥 ${this.t("card_for_large")}</button>
+        <button
+          type="button"
+          aria-pressed=${phone}
+          @click=${() => {
+            this.set("phone", true);
+            // a phone's card fills the screen
+            this.set("fill", true);
+          }}
+        >
+          📱 ${this.t("card_for_phone")}
+        </button>
+      </div>
+      <p class="hint">${this.t(phone ? "card_for_phone_hint" : "card_for_large_hint")}</p>
+      ${phone
+        ? html`<h3>${this.t("card_section_phone")}</h3>
+            ${part("rooms", "card_phone_rooms", "card_phone_rooms_hint")} ${part("covers", "card_phone_covers", "card_phone_covers_hint")}
+            ${part("favorites", "card_phone_favorites", "card_phone_favorites_hint")}
+            ${[0, 1].map((i) => this.renderPlace(i))}
+            <p class="hint">${this.t("card_phone_place_hint")}</p>
+            <label class="toggle">
+              <input type="checkbox" .checked=${v.phone_solo === true} @change=${(e: Event) => this.set("phone_solo", (e.target as HTMLInputElement).checked || undefined)} />
+              <span>${this.t("nav_solo")}<small>${this.t("card_phone_solo_hint")}</small></span>
+            </label>
+            <label class="toggle">
+              <input type="checkbox" .checked=${v.phone_start === "now"} @change=${(e: Event) => this.set("phone_start", (e.target as HTMLInputElement).checked ? "now" : undefined)} />
+              <span>${this.t("card_phone_start_now")}<small>${this.t("card_phone_start_now_hint")}</small></span>
+            </label>`
+        : nothing}`;
+  }
+
+  /** One of the two places of one's own in the phone bar: what it is, its word and sign, and its scene or page. */
+  private renderPlace(index: number) {
+    const list = [...(this._config.phone_places ?? this.templateOptions.phone_places ?? [])];
+    const place = list[index] as PhonePlace | undefined;
+    // the second place only after the first
+    if (index > 0 && !list[index - 1]) return nothing;
+    const save = (next: PhonePlace | null) => {
+      if (next) list[index] = next;
+      else list.splice(index, 1);
+      this.set("phone_places", list.length ? list : undefined);
+    };
+    const runnable = Object.keys(this.hass?.states ?? {})
+      .filter((id) => /^(scene|script)\./.test(id))
+      .sort();
+    return html`<div class="grid place">
+      <label class="field"
+        >${this.t("card_phone_place", { n: index + 1 })}
+        <select
+          @change=${(e: Event) => {
+            const kind = (e.target as HTMLSelectElement).value as PhonePlace["kind"] | "";
+            save(kind ? { kind, name: place?.name, icon: place?.icon, ...(kind === "action" ? { entity: runnable[0] } : kind === "link" ? { path: "/lovelace/0" } : {}) } : null);
+          }}
+        >
+          <option value="" ?selected=${!place}>${this.t("card_phone_place_none")}</option>
+          ${(["lights", "climate", "action", "link"] as const).map((k) => html`<option value=${k} ?selected=${place?.kind === k}>${this.t(`card_phone_place_${k}`)}</option>`)}
+        </select>
+      </label>
+      ${place
+        ? html`<label class="field"
+              >${this.t("card_phone_place_name")}
+              <input type="text" maxlength="24" .value=${place.name ?? ""} @change=${(e: Event) => save({ ...place, name: (e.target as HTMLInputElement).value.trim() || undefined })} />
+            </label>
+            <label class="field"
+              >${this.t("card_phone_place_icon")}
+              <input type="text" maxlength="4" placeholder="💡" .value=${place.icon ?? ""} @change=${(e: Event) => save({ ...place, icon: (e.target as HTMLInputElement).value.trim() || undefined })} />
+            </label>
+            ${place.kind === "action"
+              ? html`<label class="field"
+                  >${this.t("card_phone_place_entity")}
+                  <select @change=${(e: Event) => save({ ...place, entity: (e.target as HTMLSelectElement).value })}>
+                    ${place.entity && !runnable.includes(place.entity) ? html`<option value=${place.entity} selected>${place.entity}</option>` : nothing}
+                    ${runnable.map((id) => html`<option value=${id} ?selected=${id === place.entity}>${(this.hass?.states[id]?.attributes.friendly_name as string | undefined) ?? id}</option>`)}
+                  </select>
+                </label>`
+              : place.kind === "link"
+                ? html`<label class="field"
+                    >${this.t("card_phone_place_path")}
+                    <input
+                      type="text"
+                      placeholder="/lovelace/energie"
+                      .value=${place.path ?? ""}
+                      @change=${(e: Event) => {
+                        const path = (e.target as HTMLInputElement).value.trim();
+                        if (/^\/[^/]/.test(path)) save({ ...place, path });
+                      }}
+                    />
+                  </label>`
+                : nothing}`
+        : nothing}
     </div>`;
   }
 
@@ -583,8 +706,19 @@ export class Floorplan3dCardEditor extends LitElement {
     const flows = v.flows === undefined ? "switch" : v.flows ? "on" : "off";
     const holos = v.holograms === undefined ? "switch" : v.holograms ? "on" : "off";
     if (!this.embedded && v.template) return html`${this.renderPlan()}${this.renderTemplate()}`;
+    // the wall tablet's tab is not a phone's
+    const tabs = ([["for", "card_tab_for"], ["view", "card_section_view"], ["show", "card_section_show"], ["features", "card_section_features"], ["kiosk", "card_section_kiosk"]] as const).filter(([id]) => id !== "kiosk" || !v.phone);
+    const tab = tabs.some(([id]) => id === this._tab) ? this._tab : "for";
+    const on = (id: string) => !this.embedded || tab === id;
     return html`
       ${this.embedded ? nothing : html`${this.renderPlan()}${this.renderTemplate()}`}
+      ${this.embedded
+        ? html`<div class="tabs" role="tablist">
+            ${tabs.map(([id, label]) => html`<button type="button" role="tab" aria-selected=${tab === id} @click=${() => (this._tab = id)}>${this.t(label)}</button>`)}
+          </div>`
+        : nothing}
+      <section ?hidden=${!on("for")}>${this.renderPurpose()}</section>
+      <section ?hidden=${!on("view")}>
       <h3>${this.t("card_section_view")}</h3>
       <div class="grid">
         <label class="field wide"
@@ -664,7 +798,8 @@ export class Floorplan3dCardEditor extends LitElement {
       </div>
       ${v.fill ? html`<p class="hint">${this.t("card_fill_hint")}</p>` : nothing}
       <p class="hint">${this.t("card_quality_hint")}</p>
-
+      </section>
+      <section ?hidden=${!on("show")}>
       <h3>${this.t("card_section_show")}</h3>
       <div class="grid">
         ${this.select("markers", "markers", [["none", "markers_none"], ["room", "markers_room"], ["important", "markers_important"], ["all", "markers_all"]], v.markers)}
@@ -693,18 +828,23 @@ export class Floorplan3dCardEditor extends LitElement {
           </select>
         </label>
       </div>
-      ${this.renderControls()}
+      ${v.phone ? nothing : this.renderControls()}
       ${this.toggle("angle_lock", "angle_lock", "angle_lock_hint")} ${this.toggle("keep_view", "keep_view", "keep_view_hint")}
-      ${this.toggle("walk", "card_walk", "card_walk_hint")}
-      <div class="grid">${this.select("controls_side", "controls_side", [["left", "controls_left"], ["right", "controls_right"]], v.controls_side)}</div>
-      ${this.renderThumbsToggle()} ${this.toggle("room_names", "card_room_names")}
+      ${v.phone
+        ? nothing
+        : html`${this.toggle("walk", "card_walk", "card_walk_hint")}
+            <div class="grid">${this.select("controls_side", "controls_side", [["left", "controls_left"], ["right", "controls_right"]], v.controls_side)}</div>
+            ${this.renderThumbsToggle()}`}
+      ${this.toggle("room_names", "card_room_names")}
+      ${(this.building ?? this.plan)?.settings.surroundings ? this.toggle("surroundings", "card_surroundings", "card_surroundings_hint") : nothing}
       ${this.toggle("energy", "card_energy")} ${this.toggle("room_panel", "card_room_panel", "card_room_panel_hint")}
       ${this.toggle("fullscreen_button", "card_fullscreen_button", "card_fullscreen_button_hint")}
       ${this.toggle("explode", "card_explode")} ${this.toggle("roof", "card_roof", "card_roof_hint")} ${this.toggle("roof_fade", "card_roof_fade", "card_roof_fade_hint")} ${this.toggle("plain", "card_plain", "plain_hint")}
       ${!UNRELEASED.includes("room_bar") || labOn() ? this.toggle("room_bar", "card_room_bar", "room_bar_hint") : nothing}
       ${this.value.room_bar && (!UNRELEASED.includes("room_bar") || labOn()) ? this.toggle("room_bar_favorites", "card_room_bar_favorites", "card_room_bar_favorites_hint") : nothing} ${this.toggle("stats", "card_stats", "card_stats_hint")}
-      ${this.renderFeatures()}
-      ${this.renderKiosk()}
+      </section>
+      <section ?hidden=${!on("features")}>${this.renderFeatures()}</section>
+      <section ?hidden=${!on("kiosk")}>${this.renderKiosk()}</section>
     `;
   }
 
@@ -891,6 +1031,59 @@ export class Floorplan3dCardEditor extends LitElement {
       padding: 8px 0;
       font-size: 14px;
       cursor: pointer;
+    }
+    .place {
+      margin: 8px 0;
+      padding: 10px;
+      border: 1px dashed var(--divider-color, #8884);
+      border-radius: 10px;
+    }
+    .tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      margin-bottom: 14px;
+      border-bottom: 1px solid var(--divider-color, #8884);
+    }
+    .tabs button {
+      padding: 10px 14px;
+      border: none;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+      background: none;
+      color: var(--secondary-text-color);
+      font: inherit;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    .tabs button[aria-selected="true"] {
+      color: var(--primary-text-color);
+      border-bottom-color: var(--primary-color);
+      font-weight: 600;
+    }
+    :host([embedded]) section > h3:first-child {
+      display: none;
+    }
+    .purpose {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .purpose button {
+      flex: 1 1 160px;
+      padding: 12px 10px;
+      border: 1px solid var(--divider-color, #8884);
+      border-radius: 10px;
+      background: none;
+      color: inherit;
+      font: inherit;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    .purpose button[aria-pressed="true"] {
+      border-color: var(--primary-color);
+      box-shadow: inset 0 0 0 1px var(--primary-color);
+      font-weight: 600;
     }
     .toggle input {
       flex: none;
