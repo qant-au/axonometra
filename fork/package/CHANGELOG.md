@@ -8,6 +8,9 @@ CHANGELOG.md. Pre-1.0, releases step the patch number: 0.8.1, 0.8.2 and so on.
 - The start page offers "New" or "Open Existing". "Open Existing" takes a plan file from disk, and lists
   the saved plans a host gives in the new `plans` option (`SavedPlans`: `list()` and `open(id)`).
 - `browserPlans(current?, onCurrent?)`: a store and a `plans` list over every plan saved in the browser.
+- A new plan is two pages: what to plan (a boat, a building, or a caravan or mobile home), then its basics.
+  A boat asks its hull type, length, beam, draft and engines; a building its width, depth, levels and
+  basement; a caravan its type, length and width. Everything else is set once the plan is open.
 
 ## [0.8.0] - 2026-10-30
 

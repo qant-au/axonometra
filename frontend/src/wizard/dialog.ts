@@ -1,15 +1,15 @@
 // Axonometra: the first-run wizard as a dialog over the planner. Its start page offers a new plan or an existing one
-// (the host's saved plans, or a file from disk); a new plan goes through the steps of flow.ts, and what a step needs,
-// when it is ready and what finishing writes all live there. Texts in English and German inline (the other languages
-// come when the wizard is finished).
+// (the host's saved plans, or a file from disk); a new plan has one more page, the basics of what was chosen. What
+// that page asks, when it is ready and what finishing writes all live in flow.ts. Texts in English and German inline
+// (the other languages come when the wizard is finished).
 
 import { css, html, LitElement, nothing } from "lit";
 import type { SavedPlan, SavedPlans } from "../host/types.ts";
 import type { Building } from "../model.ts";
 import { parseExport } from "../transfer.ts";
-import { noDetails, VESSEL_SOURCES, type BatteryDetails, type EngineDetails, type TankDetails, type TankFluid, type VesselDetails, type VesselSource } from "./details.ts";
-import { chosenSpec, detailsProblems, equipmentProblem, finish, nextStep, previousStep, reachable, startState, stepsFor, withDetails, withHull, type FirstRunResult, type FirstRunState, type StepId } from "./flow.ts";
-import { fitHull, rankHulls } from "./hulls.ts";
+import { finish, MAX_ENGINES, outboardsFit, problems, ready, startState, vesselDefaults, type FirstRunResult, type FirstRunState, type Kind, type StepId, type VesselBasics } from "./flow.ts";
+import { HULL_TYPES } from "./hulls.ts";
+import { CARAVAN_SIZES, MAX_LEVELS, type CaravanBasics, type CaravanType, type HouseBasics } from "./structures.ts";
 
 const EN = {
   title: "Get Started",
@@ -19,12 +19,7 @@ const EN = {
   finish: "Finish",
   mode_new: "New",
   mode_open: "Open Existing",
-  s_kind: "Start",
-  s_source: "Source",
-  s_details: "Details",
-  s_hull: "Hull",
-  s_equipment: "Equipment",
-  s_review: "Review",
+  examples: "Examples",
   kind_intro: "What would you like to plan?",
   kind_vessel: "A Boat, Ship, or Vessel",
   kind_building: "A Building, House, or Room",
@@ -35,38 +30,27 @@ const EN = {
   open_file: "Open a File from Disk",
   open_failed: "Could not open it: {reason}",
   open_bad_file: "That file is not a plan.",
-  source_intro: "Where should her details come from?",
-  source_manual: "I'll Type Them In",
-  source_example: "Example Readings (to Try the Wizard)",
-  source_reading: "Reading …",
-  source_failed: "Could not read it: {reason}",
-  details_intro: "Check her details. Measures in metres; only the length is needed.",
-  name: "Name",
-  mmsi: "MMSI",
+  basics_intro: "Enter the basics to get started. Everything else can be set up once the plan is open.",
+  hull: "Hull Type",
   length: "Length Overall (m)",
   beam: "Beam (m)",
   draft: "Draft (m)",
-  airHeight: "Air Height (m)",
-  engines: "Engines",
-  tanks: "Tanks",
-  batteries: "Batteries",
-  add_outboard: "Add Outboard",
-  add_inboard: "Add Inboard",
-  add_tank: "Add Fuel Tank",
-  add_battery: "Add Battery",
-  remove: "Remove",
-  none: "None",
-  bad_field: "Check this measure.",
-  hull_intro: "Choose her hull. The best fit is first; it is fitted to her measures.",
-  hull_more: "More hulls join the library as they are finished.",
-  fitted: "{length} m × {beam} m, draft {draft} m",
-  equipment_intro: "This is what she carries. Leave out anything she doesn't have; you can move things in the editor.",
-  equipment_none: "Nothing to confirm.",
-  kg: "{kg} kg",
-  on_mount: "on the transom",
-  review_vessel: "{name} on the hull “{hull}”, with {n} items of equipment, lands on the water in 3D. Refine her in the editor.",
-  review_building: "An empty plan opens in the editor, to draw the first floor.",
-  unnamed: "Your Boat",
+  engine: "Engine Type",
+  engine_outboard: "Outboard",
+  engine_inboard: "Inboard",
+  engines: "Number of Engines",
+  width: "Width (m)",
+  depth: "Depth (m)",
+  levels: "Levels",
+  basement: "Include a Basement",
+  caravan_type: "Type",
+  caravan_towed: "Caravan or Towed Mobile Home",
+  caravan_rigid: "Rigid Mobile Home",
+  body_length: "Length (m)",
+  body_width: "Width (m)",
+  bad_field: "Check the highlighted fields.",
+  bad_outboards: "Outboards that fit across the transom at this beam: {n}.",
+  failed: "Could not make the plan: {reason}",
 };
 type Texts = typeof EN;
 const DE: Texts = {
@@ -77,12 +61,7 @@ const DE: Texts = {
   finish: "Fertig",
   mode_new: "Neu",
   mode_open: "Vorhandenen öffnen",
-  s_kind: "Start",
-  s_source: "Quelle",
-  s_details: "Angaben",
-  s_hull: "Rumpf",
-  s_equipment: "Ausrüstung",
-  s_review: "Übersicht",
+  examples: "Beispiele",
   kind_intro: "Was möchtest du planen?",
   kind_vessel: "Ein Boot, Schiff oder Wasserfahrzeug",
   kind_building: "Ein Gebäude, Haus oder Raum",
@@ -93,47 +72,31 @@ const DE: Texts = {
   open_file: "Datei vom Datenträger öffnen",
   open_failed: "Konnte nicht geöffnet werden: {reason}",
   open_bad_file: "Diese Datei ist kein Plan.",
-  source_intro: "Woher sollen ihre Angaben kommen?",
-  source_manual: "Ich gebe sie selbst ein",
-  source_example: "Beispielwerte (zum Ausprobieren)",
-  source_reading: "Lese …",
-  source_failed: "Konnte nicht gelesen werden: {reason}",
-  details_intro: "Prüfe ihre Angaben. Maße in Metern; nötig ist nur die Länge.",
-  name: "Name",
-  mmsi: "MMSI",
+  basics_intro: "Gib die Eckdaten ein, um loszulegen. Alles Weitere stellst du ein, sobald der Plan offen ist.",
+  hull: "Rumpftyp",
   length: "Länge über alles (m)",
   beam: "Breite (m)",
   draft: "Tiefgang (m)",
-  airHeight: "Höhe über Wasser (m)",
-  engines: "Motoren",
-  tanks: "Tanks",
-  batteries: "Batterien",
-  add_outboard: "Außenborder hinzufügen",
-  add_inboard: "Einbaumotor hinzufügen",
-  add_tank: "Kraftstofftank hinzufügen",
-  add_battery: "Batterie hinzufügen",
-  remove: "Entfernen",
-  none: "Keine",
-  bad_field: "Bitte dieses Maß prüfen.",
-  hull_intro: "Wähle ihren Rumpf. Der passendste steht oben; er wird auf ihre Maße gebracht.",
-  hull_more: "Weitere Rümpfe kommen in die Bibliothek, sobald sie fertig sind.",
-  fitted: "{length} m × {beam} m, Tiefgang {draft} m",
-  equipment_intro: "Das hat sie an Bord. Lass weg, was sie nicht hat; verschieben kannst du alles im Editor.",
-  equipment_none: "Nichts zu bestätigen.",
-  kg: "{kg} kg",
-  on_mount: "am Spiegel",
-  review_vessel: "{name} auf dem Rumpf „{hull}“, mit {n} Ausrüstungsteilen, liegt in 3D auf dem Wasser. Im Editor arbeitest du sie aus.",
-  review_building: "Ein leerer Plan öffnet sich im Editor, für die erste Etage.",
-  unnamed: "Dein Boot",
+  engine: "Motortyp",
+  engine_outboard: "Außenborder",
+  engine_inboard: "Einbaumotor",
+  engines: "Anzahl der Motoren",
+  width: "Breite (m)",
+  depth: "Tiefe (m)",
+  levels: "Etagen",
+  basement: "Mit Keller",
+  caravan_type: "Typ",
+  caravan_towed: "Wohnwagen oder gezogenes Mobilheim",
+  caravan_rigid: "Wohnmobil",
+  body_length: "Länge (m)",
+  body_width: "Breite (m)",
+  bad_field: "Bitte die markierten Felder prüfen.",
+  bad_outboards: "Außenborder, die bei dieser Breite an den Spiegel passen: {n}.",
+  failed: "Der Plan konnte nicht angelegt werden: {reason}",
 };
 
-const MEASURES = ["length", "beam", "draft", "airHeight"] as const;
+const KINDS: Kind[] = ["vessel", "building", "caravan"];
 const say = (text: string, vars: Record<string, string | number> = {}) => text.replace(/\{(\w+)\}/g, (_m, k: string) => String(vars[k] ?? ""));
-const unique = (prefix: string, taken: { id: string }[]) => {
-  let i = taken.length + 1;
-  while (taken.some((t) => t.id === `${prefix}${i}`)) i++;
-  return `${prefix}${i}`;
-};
 
 export class FirstRunWizard extends LitElement {
   static properties = {
@@ -153,11 +116,10 @@ export class FirstRunWizard extends LitElement {
   /** The host's saved plans; null until it has answered. */
   declare _saved: SavedPlan[] | null;
   declare _state: FirstRunState;
+  /** The saved plan being opened. */
   declare _reading: string | null;
   declare _error: string;
 
-  /** The sources offered besides typing the details in. */
-  sources: VesselSource[] = VESSEL_SOURCES;
   /** The host's saved plans, offered under "Open Existing" besides a file from disk. */
   saved: SavedPlans | null = null;
   /** Called with the plan when the wizard finishes. */
@@ -193,6 +155,24 @@ export class FirstRunWizard extends LitElement {
     this.onClose?.();
   }
 
+  private go(step: StepId): void {
+    this._error = "";
+    this._step = step;
+  }
+
+  private done(): void {
+    let result: FirstRunResult;
+    try {
+      result = finish(this._state);
+    } catch (e) {
+      // measures no hull can be made at
+      this._error = say(this.t.failed, { reason: (e as Error).message ?? String(e) });
+      return;
+    }
+    this.onFinish?.(result);
+    this.close();
+  }
+
   /** An existing plan was chosen: the planner shows it. */
   private opened(building: Building): void {
     this.onFinish?.({ building, open: "view" });
@@ -225,51 +205,9 @@ export class FirstRunWizard extends LitElement {
     }
   }
 
-  private set(next: FirstRunState): void {
-    this._state = next;
-  }
-
-  private go(step: StepId | null): void {
-    if (step) this._step = step;
-  }
-
-  private done(): void {
-    const result = finish(this._state);
-    this.onFinish?.(result);
-    this.close();
-  }
-
-  private async pickSource(id: string): Promise<void> {
-    this._error = "";
-    if (id === "manual") {
-      this.set(withDetails({ ...this._state, source: "manual" }, this._state.source === "manual" ? this._state.details : noDetails()));
-      return;
-    }
-    const source = this.sources.find((s) => s.id === id);
-    if (!source) return;
-    this._reading = id;
-    try {
-      const can = await source.available();
-      if (!can.ok) throw new Error(can.reason);
-      this.set(withDetails({ ...this._state, source: id }, await source.read()));
-      this.go(nextStep(this._state, "source"));
-    } catch (e) {
-      this._error = say(this.t.source_failed, { reason: (e as Error).message ?? String(e) });
-      this.set({ ...this._state, source: null });
-    } finally {
-      this._reading = null;
-    }
-  }
-
-  private editDetails(change: Partial<VesselDetails>): void {
-    this.set(withDetails(this._state, { ...this._state.details, ...change }));
-  }
-
   protected render() {
     const t = this.t;
     const s = this._state;
-    const steps = stepsFor(s);
-    const last = steps[steps.length - 1] === this._step;
     const start = this._step === "kind";
     const mode = (m: "new" | "open") => html`<button data-mode=${m} class=${this._mode === m ? "on" : ""} @click=${() => ((this._error = ""), (this._mode = m))}>${t[`mode_${m}`]}</button>`;
     return html`<div class="box" role="dialog" aria-modal="true" aria-label=${t.title}>
@@ -277,52 +215,32 @@ export class FirstRunWizard extends LitElement {
         <b>${t.title}</b>
         <button class="x" data-close @click=${() => this.close()} aria-label=${t.close}>✕</button>
       </header>
-      <nav>
-        ${start
-          ? [mode("new"), mode("open")]
-          : steps.map((id) => html`<button data-step=${id} class=${this._step === id ? "on" : ""} ?disabled=${!reachable(s, id)} @click=${() => (this._step = id)}>${t[`s_${id}`]}</button>`)}
-      </nav>
-      <section data-body=${this._step}>${this.renderStep()}</section>
+      ${start
+        ? html`<nav>
+            ${mode("new")}${mode("open")}
+            <!-- sample plans of the kind chosen: still to come -->
+            <button class="end" data-examples disabled>${t.examples}</button>
+          </nav>`
+        : nothing}
+      <section data-body=${this._step}>${start ? (this._mode === "open" ? this.renderOpen() : this.renderKind()) : this.renderBasics()}</section>
       ${this._error ? html`<p class="err">${this._error}</p>` : nothing}
       <footer ?hidden=${start && this._mode === "open"}>
-        <button data-back ?disabled=${!previousStep(s, this._step)} @click=${() => this.go(previousStep(s, this._step))}>${t.back}</button>
-        ${last
-          ? html`<button class="primary" data-finish @click=${() => this.done()}>${t.finish}</button>`
-          : html`<button class="primary" data-next ?disabled=${!nextStep(s, this._step)} @click=${() => this.go(nextStep(s, this._step))}>${t.next}</button>`}
+        <button data-back ?disabled=${start} @click=${() => this.go("kind")}>${t.back}</button>
+        ${start
+          ? html`<button class="primary" data-next ?disabled=${!ready(s, "kind")} @click=${() => this.go("basics")}>${t.next}</button>`
+          : html`<button class="primary" data-finish ?disabled=${!ready(s, "basics")} @click=${() => this.done()}>${t.finish}</button>`}
       </footer>
     </div>`;
   }
 
-  private renderStep() {
-    switch (this._step) {
-      case "kind":
-        return this.renderKind();
-      case "source":
-        return this.renderSource();
-      case "details":
-        return this.renderDetails();
-      case "hull":
-        return this.renderHull();
-      case "equipment":
-        return this.renderEquipment();
-      default:
-        return this.renderReview();
-    }
-  }
-
   private renderKind() {
     const t = this.t;
-    if (this._mode === "open") return this.renderOpen();
-    const pick = (kind: "vessel" | "building") => {
-      this.set({ ...this._state, kind });
-      this.go(nextStep(this._state, "kind"));
+    const pick = (kind: Kind) => {
+      this._state = { ...this._state, kind };
+      this.go("basics");
     };
     return html`<p>${t.kind_intro}</p>
-      <div class="choices">
-        <button data-kind="vessel" class=${this._state.kind === "vessel" ? "on" : ""} @click=${() => pick("vessel")}><b>${t.kind_vessel}</b></button>
-        <button data-kind="building" class=${this._state.kind === "building" ? "on" : ""} @click=${() => pick("building")}><b>${t.kind_building}</b></button>
-        <button data-kind="caravan" disabled><b>${t.kind_caravan}</b></button>
-      </div>
+      <div class="choices">${KINDS.map((k) => html`<button data-kind=${k} class=${this._state.kind === k ? "on" : ""} @click=${() => pick(k)}><b>${t[`kind_${k}`]}</b></button>`)}</div>
       <p class="muted" data-agents>${t.agents}</p>`;
   }
 
@@ -337,103 +255,67 @@ export class FirstRunWizard extends LitElement {
       <input data-file type="file" accept="application/json,.json" hidden @change=${(e: Event) => void this.openFile(e)} />`;
   }
 
-  private renderSource() {
-    const t = this.t;
-    const label = (s: VesselSource) => (s.id === "example" ? t.source_example : s.label);
-    return html`<p>${t.source_intro}</p>
-      <div class="choices">
-        ${this.sources.map(
-          (src) =>
-            html`<button data-source=${src.id} class=${this._state.source === src.id ? "on" : ""} ?disabled=${this._reading !== null} @click=${() => void this.pickSource(src.id)}>
-              <b>${label(src)}</b>${this._reading === src.id ? html`<small>${t.source_reading}</small>` : nothing}
-            </button>`,
-        )}
-        <button
-          data-source="manual"
-          class=${this._state.source === "manual" ? "on" : ""}
-          ?disabled=${this._reading !== null}
-          @click=${() => {
-            void this.pickSource("manual");
-            this.go("details");
-          }}
-        >
-          <b>${t.source_manual}</b>
-        </button>
-      </div>`;
-  }
-
-  private renderDetails() {
-    const t = this.t;
-    const d = this._state.details;
-    const bad = new Set(detailsProblems(d));
-    const num = (v: string) => (v.trim() === "" ? undefined : Number(v));
-    const text = (key: "name" | "mmsi") =>
-      html`<label>${t[key]}<input data-field=${key} .value=${d[key] ?? ""} @change=${(e: Event) => this.editDetails({ [key]: (e.target as HTMLInputElement).value.trim() || undefined })} /></label>`;
-    const measure = (key: (typeof MEASURES)[number]) =>
-      html`<label class=${bad.has(key) ? "bad" : ""}>${t[key]}<input data-field=${key} type="number" min="0" step="0.01" .value=${d[key] === undefined ? "" : String(d[key])} @change=${(e: Event) => this.editDetails({ [key]: num((e.target as HTMLInputElement).value) })} /></label>`;
-    const list = <T extends { id: string }>(title: string, kind: "engines" | "tanks" | "batteries", items: T[], describe: (x: T) => string, adds: [string, () => T][]) =>
-      html`<fieldset data-list=${kind}>
-        <legend>${title}</legend>
-        ${items.length ? items.map((x) => html`<div class="row"><span>${describe(x)}</span><button @click=${() => this.editDetails({ [kind]: items.filter((y) => y !== x) })}>${t.remove}</button></div>`) : html`<div class="row muted">${t.none}</div>`}
-        <div class="row">${adds.map(([label, make]) => html`<button data-add=${label} @click=${() => this.editDetails({ [kind]: [...items, make()] })}>${label}</button>`)}</div>
-      </fieldset>`;
-    const engine = (kind: EngineDetails["kind"]) => (): EngineDetails => ({ id: unique(kind === "outboard" ? "outboard " : "engine ", d.engines), kind });
-    const tank = (fluid: TankFluid) => (): TankDetails => ({ id: unique(`${fluid}.`, d.tanks), fluid, capacity: 0.1 });
-    const battery = (): BatteryDetails => ({ id: unique("battery ", d.batteries), capacity: 100 });
-    return html`<p>${t.details_intro}</p>
-      <div class="grid">${text("name")}${text("mmsi")}${MEASURES.map(measure)}</div>
-      ${bad.size ? html`<p class="err">${t.bad_field}</p>` : nothing}
-      ${list(t.engines, "engines", d.engines, (e) => `${e.id}${e.kind ? ` · ${e.kind}` : ""}${e.power ? ` · ${Math.round(e.power / 1000)} kW` : ""}`, [
-        [t.add_outboard, engine("outboard")],
-        [t.add_inboard, engine("inboard")],
-      ])}
-      ${list(t.tanks, "tanks", d.tanks, (x) => `${x.id}${x.capacity ? ` · ${Math.round(x.capacity * 1000)} L` : ""}`, [[t.add_tank, tank("fuel")]])}
-      ${list(t.batteries, "batteries", d.batteries, (b) => `${b.id}${b.capacity ? ` · ${b.capacity} Ah` : ""}`, [[t.add_battery, battery]])}`;
-  }
-
-  private renderHull() {
+  private renderBasics() {
     const t = this.t;
     const s = this._state;
-    return html`<p>${t.hull_intro}</p>
-      <div class="choices">
-        ${rankHulls(s.details).map((h) => {
-          const p = fitHull(h, s.details).hull.plate;
-          return html`<button data-hull=${h.id} class=${s.hull === h.id ? "on" : ""} @click=${() => this.set(withHull(s, h.id))}>
-            <b>${h.title}</b><small>${h.note}</small><small>${say(t.fitted, { length: p.length, beam: p.beam, draft: p.draft })}</small>
-          </button>`;
-        })}
-      </div>
-      <p class="muted">${t.hull_more}</p>`;
-  }
-
-  private renderEquipment() {
-    const t = this.t;
-    const s = this._state;
-    const problem = equipmentProblem(s);
-    return html`<p>${t.equipment_intro}</p>
-      ${s.equipment.length
-        ? s.equipment.map(
-            (p, i) =>
-              html`<label class="row" data-equipment=${p.key}
-                ><input
-                  type="checkbox"
-                  .checked=${p.include}
-                  @change=${(e: Event) => this.set({ ...s, equipment: s.equipment.map((q, j) => (j === i ? { ...q, include: (e.target as HTMLInputElement).checked } : q)) })}
-                /><span>${p.component.name}</span><small>${say(t.kg, { kg: p.component.mass })}${p.component.mount ? ` · ${t.on_mount}` : ""}</small></label
-              >`,
-          )
-        : html`<p class="muted">${t.equipment_none}</p>`}
-      ${problem ? html`<p class="err">${problem}</p>` : nothing}`;
-  }
-
-  private renderReview() {
-    const t = this.t;
-    const s = this._state;
-    if (s.kind !== "vessel") return html`<p data-review="building">${t.review_building}</p>`;
-    const spec = chosenSpec(s);
-    const hull = rankHulls(s.details).find((h) => h.id === s.hull);
-    return html`<p data-review="vessel">${say(t.review_vessel, { name: s.details.name || t.unnamed, hull: hull?.title ?? "", n: s.equipment.filter((e) => e.include).length })}</p>
-      ${spec ? html`<p class="muted">${say(t.fitted, { length: spec.hull.plate.length, beam: spec.hull.plate.beam, draft: spec.hull.plate.draft })}</p>` : nothing}`;
+    const kind = s.kind ?? "building";
+    const bad = new Set(problems(s));
+    const number = (key: string, label: string, value: number, set: (v: number) => void, whole?: { min: number; max: number }) =>
+      html`<label class=${bad.has(key) ? "bad" : ""}
+        >${label}<input
+          data-field=${key}
+          type="number"
+          min=${whole?.min ?? 0}
+          max=${whole?.max ?? nothing}
+          step=${whole ? 1 : 0.01}
+          .value=${Number.isFinite(value) ? String(value) : ""}
+          @change=${(e: Event) => set((e.target as HTMLInputElement).valueAsNumber)}
+      /></label>`;
+    const select = (key: string, label: string, value: string, options: { id: string; title: string; off?: boolean }[], set: (v: string) => void, wide = false) =>
+      html`<label class=${(bad.has(key) ? "bad" : "") + (wide ? " wide" : "")}
+        >${label}<select data-field=${key} @change=${(e: Event) => set((e.target as HTMLSelectElement).value)}>
+          ${options.map((o) => html`<option value=${o.id} ?selected=${o.id === value} ?disabled=${o.off}>${o.title}</option>`)}
+        </select></label
+      >`;
+    let fields;
+    let note: string | null = null;
+    if (kind === "vessel") {
+      const v = s.vessel;
+      const set = (change: Partial<VesselBasics>) => (this._state = { ...s, vessel: { ...v, ...change } });
+      const fit = outboardsFit(v);
+      if (v.engine === "outboard" && fit !== null && v.engines > fit) note = say(t.bad_outboards, { n: fit });
+      fields = [
+        // a hull type starts at its own size and engines
+        select("hull", t.hull, v.hull, HULL_TYPES.map((h) => ({ id: h.id, title: h.title, off: !h.spec })), (hull) => (this._state = { ...s, vessel: vesselDefaults(hull) })),
+        number("length", t.length, v.length, (length) => set({ length })),
+        number("beam", t.beam, v.beam, (beam) => set({ beam })),
+        number("draft", t.draft, v.draft, (draft) => set({ draft })),
+        select("engine", t.engine, v.engine, [{ id: "outboard", title: t.engine_outboard }, { id: "inboard", title: t.engine_inboard }], (engine) => set({ engine: engine as VesselBasics["engine"] })),
+        number("engines", t.engines, v.engines, (engines) => set({ engines }), { min: 0, max: MAX_ENGINES }),
+      ];
+    } else if (kind === "caravan") {
+      const c = s.caravan;
+      const set = (change: Partial<CaravanBasics>) => (this._state = { ...s, caravan: { ...c, ...change } });
+      fields = [
+        // a type starts at its own size
+        select("type", t.caravan_type, c.type, [{ id: "towed", title: t.caravan_towed }, { id: "rigid", title: t.caravan_rigid }], (type) => set({ type: type as CaravanType, ...CARAVAN_SIZES[type as CaravanType] }), true),
+        number("length", t.body_length, c.length, (length) => set({ length })),
+        number("width", t.body_width, c.width, (width) => set({ width })),
+      ];
+    } else {
+      const b = s.building;
+      const set = (change: Partial<HouseBasics>) => (this._state = { ...s, building: { ...b, ...change } });
+      fields = [
+        number("width", t.width, b.width, (width) => set({ width })),
+        number("depth", t.depth, b.depth, (depth) => set({ depth })),
+        number("levels", t.levels, b.levels, (levels) => set({ levels }), { min: 1, max: MAX_LEVELS }),
+        html`<label class="check"><input data-field="basement" type="checkbox" .checked=${b.basement} @change=${(e: Event) => set({ basement: (e.target as HTMLInputElement).checked })} />${t.basement}</label>`,
+      ];
+    }
+    return html`<h2>${t[`kind_${kind}`]}</h2>
+      <p>${t.basics_intro}</p>
+      <div class="grid">${fields}</div>
+      ${bad.size ? html`<p class="err" data-bad>${note ?? t.bad_field}</p>` : nothing}`;
   }
 
   static styles = css`
@@ -474,8 +356,16 @@ export class FirstRunWizard extends LitElement {
       gap: 4px;
       margin: 10px 0;
     }
+    nav .end {
+      margin-left: auto;
+    }
+    h2 {
+      font-size: 17px;
+      margin: 12px 0 0;
+    }
     button,
-    input {
+    input,
+    select {
       font: inherit;
       color: #e6f7ff;
       background: #16233d;
@@ -515,10 +405,6 @@ export class FirstRunWizard extends LitElement {
     [hidden] {
       display: none;
     }
-    small {
-      opacity: 0.8;
-      font-weight: 400;
-    }
     .grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
@@ -527,25 +413,27 @@ export class FirstRunWizard extends LitElement {
     label {
       display: grid;
       gap: 4px;
+      min-width: 0;
     }
-    label.bad input {
+    /* a field keeps to its column, however long a select's longest option is */
+    .grid input:not([type="checkbox"]),
+    .grid select {
+      width: 100%;
+      box-sizing: border-box;
+    }
+    label.wide {
+      grid-column: 1 / -1;
+    }
+    label.bad input,
+    label.bad select {
       border-color: #ff6b6b;
     }
-    fieldset {
-      border: 1px solid #37e0ff33;
-      border-radius: 10px;
-      margin: 10px 0 0;
-      padding: 8px 10px;
-    }
-    .row {
+    label.check {
       display: flex;
       align-items: center;
       gap: 8px;
-      flex-wrap: wrap;
-      margin: 4px 0;
-    }
-    .row span {
-      flex: 1;
+      align-self: end;
+      padding: 7px 0;
     }
     .muted {
       opacity: 0.7;

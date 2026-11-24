@@ -1,7 +1,6 @@
-// Axonometra: what the first-run wizard knows about a boat before there is a plan of her. A source reads it (a boat's
-// own data server, later; for now the wizard's example readings, or nothing and the owner types it in), the owner
-// checks it, and the wizard turns it into a plan. Measures in SI units, as a boat's data server gives them: metres,
-// cubic metres, kilograms.
+// Axonometra: what is known about a boat before there is a plan of her: her measures and what she carries. The
+// first-run wizard fills in the measures and the engines from its page of basics (flow.ts); a boat's own data server
+// can give the rest later. Measures in SI units, as a boat's data server gives them: metres, cubic metres, kilograms.
 
 /** What a tank holds (the names a boat's data server uses for its tanks). */
 export type TankFluid = "fuel" | "freshWater" | "wasteWater" | "blackWater" | "liveWell" | "lubrication" | "gas";
@@ -50,21 +49,7 @@ export function noDetails(): VesselDetails {
 }
 
 /**
- * Where the wizard reads a boat from. A boat's data server becomes one of these (read once, at the wizard's first
- * step); the wizard does not care where the details came from, only that the owner can check and change them.
- */
-export interface VesselSource {
-  id: string;
-  /** Shown on the source step; the wizard's texts name the built-in ones. */
-  label: string;
-  /** Whether it can be read here and now (a server that is not connected says no, with a reason). */
-  available(): Promise<{ ok: true } | { ok: false; reason: string }>;
-  read(): Promise<VesselDetails>;
-}
-
-/**
- * Made-up readings for an open alloy boat with twin outboards, to try the wizard without a boat: no real boat's
- * name or number.
+ * Made-up readings for an open alloy boat with twin outboards, for the tests: no real boat's name or number.
  */
 export const EXAMPLE_DETAILS: VesselDetails = {
   name: "Example",
@@ -80,14 +65,3 @@ export const EXAMPLE_DETAILS: VesselDetails = {
   ],
   batteries: [{ id: "start", capacity: 100 }],
 };
-
-/** The example readings as a source. */
-export const EXAMPLE_SOURCE: VesselSource = {
-  id: "example",
-  label: "Example Readings",
-  available: async () => ({ ok: true }),
-  read: async () => structuredClone(EXAMPLE_DETAILS),
-};
-
-/** The sources the wizard offers; typing the details in is always there besides these. */
-export const VESSEL_SOURCES: VesselSource[] = [EXAMPLE_SOURCE];

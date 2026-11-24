@@ -1,38 +1,39 @@
-// Axonometra: the hulls the first-run wizard offers, and how one is fitted to the boat's measures. The library is the
-// example vessels for now (one plate alloy boat); each further hull that can carry a vessel plan joins it here. A
-// choice is a recipe, scaled to the length, beam and draft the owner gave: the shape stays, the size is hers.
+// Axonometra: the hull types the first-run wizard offers, and how one is fitted to the boat's measures. A type that
+// can carry a vessel plan has a recipe (one plate alloy boat for now); the hull families still to come are listed
+// without one, so the wizard shows them and cannot choose them. A recipe is scaled to the length, beam and draft the
+// owner gave: the shape stays, the size is hers.
 
 import { EXAMPLE_VESSELS } from "../plans/examples.ts";
 import type { VesselSpec } from "../vessel/spec.ts";
 import type { VesselDetails } from "./details.ts";
 
-export interface HullChoice {
+export interface HullType {
   id: string;
   title: string;
-  note: string;
-  /** The recipe at its own size. */
-  spec: VesselSpec;
+  /** The recipe at its own size; absent while a vessel plan cannot be drawn in this hull yet. */
+  spec?: VesselSpec;
 }
 
-export const HULL_CHOICES: HullChoice[] = Object.entries(EXAMPLE_VESSELS).map(([id, v]) => ({ id, title: v.title, note: v.note, spec: v.spec }));
+export const HULL_TYPES: HullType[] = [
+  ...Object.entries(EXAMPLE_VESSELS).map(([id, v]) => ({ id, title: v.title, spec: v.spec })),
+  { id: "fin-keel-sloop", title: "Fin-Keel Sloop" },
+  { id: "semi-displacement-cruiser", title: "Semi-Displacement Cruiser" },
+  { id: "planing-cruiser", title: "Planing Cruiser" },
+  { id: "rib", title: "RIB" },
+  { id: "catamaran", title: "Catamaran" },
+  { id: "launch", title: "Launch" },
+];
 
-/** How far a hull is from the boat's measures (0 is a perfect fit; measures not given do not count). */
-export function hullDistance(choice: HullChoice, details: VesselDetails): number {
-  const p = choice.spec.hull.plate;
-  const off = (given: number | undefined, own: number) => (given && given > 0 ? Math.abs(Math.log(given / own)) : 0);
-  return off(details.length, p.length) + off(details.beam, p.beam) + off(details.draft, p.draft);
-}
-
-/** The library, the best fit first. */
-export function rankHulls(details: VesselDetails, choices = HULL_CHOICES): HullChoice[] {
-  return [...choices].sort((a, b) => hullDistance(a, details) - hullDistance(b, details));
+/** The recipe of a hull type that has one. */
+export function hullRecipe(id: string): VesselSpec | null {
+  return HULL_TYPES.find((h) => h.id === id)?.spec ?? null;
 }
 
 const r3 = (v: number) => Math.round(v * 1000) / 1000;
 
-/** The choice's recipe at the boat's size: along by her length, across by her beam, down by her draft. */
-export function fitHull(choice: HullChoice, details: VesselDetails): VesselSpec {
-  const spec = structuredClone(choice.spec);
+/** A recipe at the boat's size: along by her length, across by her beam, down by her draft. */
+export function fitHull(recipe: VesselSpec, details: Pick<VesselDetails, "length" | "beam" | "draft">): VesselSpec {
+  const spec = structuredClone(recipe);
   const p = spec.hull.plate;
   const ratio = (given: number | undefined, own: number) => (given && given > 0 ? given / own : 1);
   const along = ratio(details.length, p.length);
@@ -45,7 +46,7 @@ export function fitHull(choice: HullChoice, details: VesselDetails): VesselSpec 
     ...(spec.open.soleTo ? { soleTo: r3(spec.open.soleTo * along) } : {}),
     transom: { ...t, width: r3(Math.min(t.width * across, spec.hull.plate.transom)), ...(t.well ? { well: r3(t.well * along) } : {}) },
   };
-  // her own equipment comes from the wizard's equipment step
+  // her own engines come from the wizard's basics
   delete spec.components;
   return spec;
 }

@@ -135,9 +135,10 @@ try {
 
   // the example boat, kept for the mass checks below (the wizard runs replace the page's plan)
   const boat = await page.evaluate(async () => (await window.axonometra.element.hass.callWS({ type: "axonometra/building/get" })).building);
-  // the first-run wizard (frontend/src/wizard/): an empty plan opens it by itself; a boat from the example readings
-  // goes through every step and lands on the water with her decks; a building lands in the editor, empty
-  const wizard = async (kind, source) => {
+  // the first-run wizard (frontend/src/wizard/): an empty plan opens it by itself, on its start page; each kind has one
+  // page of basics after it. A boat lands on the water with her decks and engines; a building and a caravan land in
+  // the editor with their outline
+  const wizard = async (kind, fields = {}) => {
     await page.goto(url, { waitUntil: "networkidle0" });
     try {
       await page.waitForFunction(() => window.axonometra?.element?.shadowRoot?.querySelector("axonometra-first-run")?.shadowRoot?.querySelector("[data-kind]"), { timeout: 15000 });
@@ -146,7 +147,7 @@ try {
       return null;
     }
     return page.evaluate(
-      async (kind, source) => {
+      async (kind, fields) => {
         const settle = () => new Promise((ok) => setTimeout(ok, 150));
         const root = () => window.axonometra?.element?.shadowRoot?.querySelector("axonometra-first-run")?.shadowRoot;
         const seen = [];
@@ -159,40 +160,33 @@ try {
         const step = () => root().querySelector("section").dataset.body;
         seen.push(step());
         await click(`[data-kind="${kind}"]`);
-        if (kind === "vessel") {
-          seen.push(step());
-          await click(`[data-source="${source}"]`);
-          if (source === "manual") {
-            const len = root().querySelector('[data-field="length"]');
-            len.value = "7.2";
-            len.dispatchEvent(new Event("change"));
-            await settle();
-          }
-          while (root().querySelector("[data-next]")) {
-            seen.push(step());
-            await click("[data-next]");
-          }
-        }
         seen.push(step());
+        for (const [key, value] of Object.entries(fields)) {
+          const field = root().querySelector(`[data-field="${key}"]`);
+          if (field.type === "checkbox") field.checked = value;
+          else field.value = String(value);
+          field.dispatchEvent(new Event("change"));
+          await settle();
+        }
         await click("[data-finish]");
         // the planner saves an edit after a short pause
         let building;
         for (let i = 0; i < 40; i++) {
           ({ building } = await window.axonometra.element.hass.callWS({ type: "axonometra/building/get" }));
-          if (kind !== "vessel" || building.vessel) break;
+          if (building.floors.length) break;
           await settle();
         }
-        return { seen, open: !!root(), vessel: building.vessel ?? null, floors: building.floors.length };
+        return { seen, open: !!root(), vessel: building.vessel ?? null, floors: building.floors.map((f) => f.name), rooms: building.floors.flatMap((f) => f.rooms.map((r) => r.name)) };
       },
       kind,
-      source,
+      fields,
     );
   };
-  const boatRun = await wizard("vessel", "example");
+  const boatRun = await wizard("vessel");
   if (boatRun) {
-    if (boatRun.seen.join(",") !== "kind,source,details,hull,equipment,review") failures.push(`the wizard's steps for a boat were ${boatRun.seen}`);
+    if (boatRun.seen.join(",") !== "kind,basics") failures.push(`the wizard's pages for a boat were ${boatRun.seen}`);
     if (boatRun.open) failures.push("the wizard stays open after finishing");
-    if (boatRun.vessel?.name !== "Example" || boatRun.vessel?.outboards !== 2 || boatRun.vessel?.components?.length !== 4) failures.push(`the wizard's boat came out as ${JSON.stringify(boatRun.vessel)}`);
+    if (boatRun.vessel?.hull?.plate?.length !== 6.5 || boatRun.vessel?.outboards !== 2 || boatRun.vessel?.components?.length !== 2) failures.push(`the wizard's boat came out as ${JSON.stringify(boatRun.vessel)}`);
     try {
       await page.waitForFunction(() => window.axonometra.element.shadowRoot.querySelectorAll(".fp3d-room-chip").length === 2, { timeout: 15000 });
     } catch {
@@ -201,20 +195,22 @@ try {
     await new Promise((ok) => setTimeout(ok, 1500));
     await page.screenshot({ path: join(shots, "standalone-smoke-wizard-boat.png") });
   }
-  const typed = await wizard("vessel", "manual");
-  if (typed && typed.vessel?.hull?.plate?.length !== 7.2) failures.push(`a boat typed in at 7.2 m came out as ${JSON.stringify(typed?.vessel?.hull)}`);
-  const house = await wizard("building");
+  const typed = await wizard("vessel", { length: 7.2, engine: "inboard", engines: 1 });
+  if (typed && (typed.vessel?.hull?.plate?.length !== 7.2 || typed.vessel?.outboards !== 0 || typed.vessel?.components?.length !== 1)) failures.push(`a boat typed in at 7.2 m with one inboard came out as ${JSON.stringify(typed?.vessel)}`);
+  const house = await wizard("building", { levels: 2, basement: true });
   if (house) {
-    if (house.seen.join(",") !== "kind,review" || house.vessel || house.floors !== 0) failures.push(`the wizard's building run was ${JSON.stringify(house)}`);
+    if (house.seen.join(",") !== "kind,basics" || house.vessel || house.floors.join(",") !== "Basement,Ground Floor,First Floor" || house.rooms.length !== 3) failures.push(`the wizard's building run was ${JSON.stringify(house)}`);
     try {
       await page.waitForFunction(() => window.axonometra.element.shadowRoot.querySelector("axonometra-editor"), { timeout: 15000 });
     } catch {
       failures.push("finishing the wizard with a building does not open the editor");
     }
   }
+  const caravan = await wizard("caravan", { type: "rigid" });
+  if (caravan && (caravan.floors.join(",") !== "Mobile Home" || caravan.rooms.join(",") !== "Cab,Living Area")) failures.push(`the wizard's rigid mobile home was ${JSON.stringify(caravan)}`);
 
-  // the start page: with no plan named, a new boat is named after her and the address follows; back at the bare
-  // address "Open Existing" lists her and opens her; a file from disk opens too, and a file that is no plan is refused
+  // the start page: with no plan named, a new boat is named and the address follows; back at the bare address
+  // "Open Existing" lists her and opens her; a file from disk opens too, and a file that is no plan is refused
   const startPage = async (address) => {
     await page.goto(address, { waitUntil: "networkidle0" });
     await page.waitForFunction(() => window.axonometra?.element?.shadowRoot?.querySelector("axonometra-first-run")?.shadowRoot?.querySelector("[data-mode]"), { timeout: 15000 });
@@ -235,28 +231,27 @@ try {
   try {
     await startPage(bare);
     const start = await inWizard(async (root, click) => {
-      const out = { modes: [...root().querySelectorAll("[data-mode]")].map((b) => b.textContent.trim()), caravan: root().querySelector('[data-kind="caravan"]')?.disabled, note: !!root().querySelector("[data-agents]") };
+      const out = { modes: [...root().querySelectorAll("[data-mode]")].map((b) => b.textContent.trim()), examples: root().querySelector("[data-examples]")?.disabled, note: !!root().querySelector("[data-agents]") };
       await click('[data-kind="vessel"]');
-      await click('[data-source="example"]');
-      while (root().querySelector("[data-next]")) await click("[data-next]");
       await click("[data-finish]");
       return out;
     });
-    if (start.modes.join(",") !== "New,Open Existing" || start.caravan !== true || !start.note) failures.push(`the start page came out as ${JSON.stringify(start)}`);
+    // the examples are still to come
+    if (start.modes.join(",") !== "New,Open Existing" || start.examples !== true || !start.note) failures.push(`the start page came out as ${JSON.stringify(start)}`);
     await rooms(2);
-    await page.waitForFunction(() => new URLSearchParams(location.search).get("plan") === "Example", { timeout: 15000 });
+    await page.waitForFunction(() => new URLSearchParams(location.search).get("plan") === "Plan", { timeout: 15000 });
     await startPage(bare);
     const listed = await inWizard(async (root, click, settle) => {
       await click('[data-mode="open"]');
-      for (let i = 0; i < 40 && !root().querySelector('[data-saved="Example"]'); i++) await settle();
+      for (let i = 0; i < 40 && !root().querySelector('[data-saved="Plan"]'); i++) await settle();
       const names = [...root().querySelectorAll("[data-saved]")].map((b) => b.textContent.trim());
-      if (names.includes("Example")) await click('[data-saved="Example"]');
+      if (names.includes("Plan")) await click('[data-saved="Plan"]');
       return names;
     });
     // the plans the checks above kept in this browser are listed with her
-    if (!listed.includes("Example")) failures.push(`"Open Existing" listed ${JSON.stringify(listed)}`);
+    if (!listed.includes("Plan")) failures.push(`"Open Existing" listed ${JSON.stringify(listed)}`);
     await rooms(2);
-    if (new URL(page.url()).searchParams.get("plan") !== "Example") failures.push(`an opened plan left the address at ${page.url()}`);
+    if (new URL(page.url()).searchParams.get("plan") !== "Plan") failures.push(`an opened plan left the address at ${page.url()}`);
 
     const files = mkdtempSync(join(tmpdir(), "axonometra-smoke-"));
     writeFileSync(join(files, "boat.json"), JSON.stringify({ format: "neonplan3d", version: 1, exported_at: "2026-01-01T00:00:00.000Z", building: boat }));
@@ -339,4 +334,4 @@ if (failures.length) {
   console.error(failures.map((f) => `FAIL ${f}`).join("\n"));
   process.exit(1);
 }
-console.log(`ok   standalone planner mounts, opens the editor, keeps a saved plan, hides Home Assistant's parts unless asked, opens an example plan and an example vessel, walks the first-run wizard for a boat and a building, opens a saved plan and a file from the start page, and takes masses with the switch off and on (${shots}/standalone-smoke*.png)`);
+console.log(`ok   standalone planner mounts, opens the editor, keeps a saved plan, hides Home Assistant's parts unless asked, opens an example plan and an example vessel, walks the first-run wizard for a boat, a building and a caravan, opens a saved plan and a file from the start page, and takes masses with the switch off and on (${shots}/standalone-smoke*.png)`);

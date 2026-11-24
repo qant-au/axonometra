@@ -34,5 +34,5 @@ export function savedPlans(hass: HomeAssistant): SavedPlans {
 
 /** The empty planner's button that opens the wizard. */
 export function firstRunLabel(language: string | undefined): string {
-  return (language ?? "en").toLowerCase().startsWith("de") ? "Boot oder Gebäude anlegen" : "Set Up a Boat or a Building";
+  return (language ?? "en").toLowerCase().startsWith("de") ? "Los geht’s" : "Get Started";
 }
