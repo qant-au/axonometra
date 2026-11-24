@@ -1,6 +1,9 @@
 // Axonometra: the first-run wizard's bundle loads only when it opens (wizard/entry.ts), over a planner with an empty
-// plan. Its button's label is here, so the main bundle needs nothing else of it.
+// plan. Its button's label and its questions to the host are here, so the main bundle needs nothing else of it.
 
+import type { SavedPlan, SavedPlans } from "./host/types.ts";
+import { normalizeBuilding, type Building } from "./model.ts";
+import type { HomeAssistant } from "./types.ts";
 import type * as WizardBundle from "./wizard/entry.ts";
 
 /** Content hash of the wizard bundle, set by the build (see build.mjs). */
@@ -17,7 +20,19 @@ export function loadWizard(): Promise<typeof WizardBundle> {
   return loading;
 }
 
+/** The host's saved plans, for the wizard's "Open Existing": a host that keeps no list (Home Assistant) has none. */
+export function savedPlans(hass: HomeAssistant): SavedPlans {
+  return {
+    list: () =>
+      hass.callWS<{ plans: SavedPlan[] }>({ type: "axonometra/saved/list" }).then(
+        (r) => r.plans,
+        () => [],
+      ),
+    open: async (id) => normalizeBuilding((await hass.callWS<{ building: Building }>({ type: "axonometra/saved/open", id })).building),
+  };
+}
+
 /** The empty planner's button that opens the wizard. */
 export function firstRunLabel(language: string | undefined): string {
-  return (language ?? "en").toLowerCase().startsWith("de") ? "Boot oder Gebäude anlegen" : "Set up a boat or a building";
+  return (language ?? "en").toLowerCase().startsWith("de") ? "Boot oder Gebäude anlegen" : "Set Up a Boat or a Building";
 }

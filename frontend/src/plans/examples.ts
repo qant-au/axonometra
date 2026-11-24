@@ -499,7 +499,7 @@ export const EXAMPLE_PLANS: Record<string, ExamplePlan> = {
 /** Plans drawn in a vessel (vessel/): the boat's recipe, its decks made from it. */
 export const EXAMPLE_VESSELS: Record<string, { title: string; note: string; spec: VesselSpec }> = {
   "fishing-boat-6.5m": {
-    title: "Plate alloy fishing boat",
+    title: "Plate Alloy Fishing Boat",
     note: "A 6.5 m open plate aluminium boat: a self-draining sole, and a motor well behind the transom's cut-out for twin outboards",
     spec: {
       hull: { plate: PLATE_FISHING_6_5 },
@@ -509,7 +509,7 @@ export const EXAMPLE_VESSELS: Record<string, { title: string; note: string; spec
         // twin 150 hp outboards on their mounts, the leg down past the bottom of the boat
         { name: "Outboard 1", mass: 230, size: [0.8, 1.6, 0.6], mount: "outboard 1", offset: [-0.45, 0.1, 0] },
         { name: "Outboard 2", mass: 230, size: [0.8, 1.6, 0.6], mount: "outboard 2", offset: [-0.45, 0.1, 0] },
-        { name: "Fuel tank, 200 L", mass: 160, size: [1.2, 0.3, 0.8], at: [2.0, -0.05, 0] },
+        { name: "Fuel Tank, 200 L", mass: 160, size: [1.2, 0.3, 0.8], at: [2.0, -0.05, 0] },
         { name: "Battery", mass: 30, size: [0.35, 0.25, 0.2], at: [0.4, 0.38, 0.5] },
       ],
     },

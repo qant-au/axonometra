@@ -93,7 +93,7 @@ test("first run: finishing a boat writes a vessel plan with her name, hull and c
   assert.equal(v.name, "Example");
   assert.equal(v.mmsi, "000000000");
   assert.equal(v.outboards, 2);
-  assert.deepEqual(v.components!.map((c) => c.name), ["Outboard (port)", "Outboard (starboard)", "Fuel tank (fuel.main), 200 L"]);
+  assert.deepEqual(v.components!.map((c) => c.name), ["Outboard (port)", "Outboard (starboard)", "Fuel Tank (fuel.main), 200 L"]);
   assert.ok(building.floors[0].rooms.length > 0, "her decks");
 });
 

@@ -10,7 +10,7 @@ import "./components/phone-shell.ts";
 import type { Fp3dPhoneShell } from "./components/phone-shell.ts";
 import type { NavMoreItem } from "./components/phone-nav.ts";
 import { loadEditor } from "./load-editor.ts";
-import { firstRunLabel, loadWizard } from "./load-wizard.ts";
+import { firstRunLabel, loadWizard, savedPlans } from "./load-wizard.ts";
 import "./components/plan-overview.ts";
 import "./components/plan-picker.ts";
 import { alertText, type Alert } from "./alerts.ts";
@@ -361,6 +361,7 @@ export class Floorplan3dPanel extends LitElement {
         },
         undefined,
         this.renderRoot,
+        this.hass ? savedPlans(this.hass) : null,
       ),
     );
   }

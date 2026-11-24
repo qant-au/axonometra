@@ -3,6 +3,12 @@
 Releases of the npm package. The engine's upstream history (NeonPlan 3D) is in the repository's own
 CHANGELOG.md. Pre-1.0, releases step the patch number: 0.8.1, 0.8.2 and so on.
 
+## Unreleased
+
+- The start page offers "New" or "Open Existing". "Open Existing" takes a plan file from disk, and lists
+  the saved plans a host gives in the new `plans` option (`SavedPlans`: `list()` and `open(id)`).
+- `browserPlans(current?, onCurrent?)`: a store and a `plans` list over every plan saved in the browser.
+
 ## [0.8.0] - 2026-10-30
 
 The first release of Axonometra as a 3D planning engine.

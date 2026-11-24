@@ -9,8 +9,9 @@
 // (fork/pack-test.mjs runs it against the npm package installed from its tarball).
 
 import { createServer } from "node:http";
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { createRequire } from "node:module";
+import { tmpdir } from "node:os";
 import { dirname, extname, join, normalize } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -212,6 +213,67 @@ try {
     }
   }
 
+  // the start page: with no plan named, a new boat is named after her and the address follows; back at the bare
+  // address "Open Existing" lists her and opens her; a file from disk opens too, and a file that is no plan is refused
+  const startPage = async (address) => {
+    await page.goto(address, { waitUntil: "networkidle0" });
+    await page.waitForFunction(() => window.axonometra?.element?.shadowRoot?.querySelector("axonometra-first-run")?.shadowRoot?.querySelector("[data-mode]"), { timeout: 15000 });
+  };
+  const inWizard = (fn, ...args) =>
+    page.evaluate(
+      async (fn, args) => {
+        const root = () => window.axonometra?.element?.shadowRoot?.querySelector("axonometra-first-run")?.shadowRoot;
+        const settle = (ms = 200) => new Promise((ok) => setTimeout(ok, ms));
+        const click = async (sel) => (root().querySelector(sel).click(), settle());
+        return new Function("root", "click", "settle", "args", `return (${fn})(root, click, settle, ...args)`)(root, click, settle, args);
+      },
+      fn.toString(),
+      args,
+    );
+  const rooms = (n) => page.waitForFunction((n) => window.axonometra.element.shadowRoot.querySelectorAll(".fp3d-room-chip").length === n && !window.axonometra.element.shadowRoot.querySelector("axonometra-first-run"), { timeout: 15000 }, n);
+  const bare = url.replace("?fresh&", "?");
+  try {
+    await startPage(bare);
+    const start = await inWizard(async (root, click) => {
+      const out = { modes: [...root().querySelectorAll("[data-mode]")].map((b) => b.textContent.trim()), caravan: root().querySelector('[data-kind="caravan"]')?.disabled, note: !!root().querySelector("[data-agents]") };
+      await click('[data-kind="vessel"]');
+      await click('[data-source="example"]');
+      while (root().querySelector("[data-next]")) await click("[data-next]");
+      await click("[data-finish]");
+      return out;
+    });
+    if (start.modes.join(",") !== "New,Open Existing" || start.caravan !== true || !start.note) failures.push(`the start page came out as ${JSON.stringify(start)}`);
+    await rooms(2);
+    await page.waitForFunction(() => new URLSearchParams(location.search).get("plan") === "Example", { timeout: 15000 });
+    await startPage(bare);
+    const listed = await inWizard(async (root, click, settle) => {
+      await click('[data-mode="open"]');
+      for (let i = 0; i < 40 && !root().querySelector('[data-saved="Example"]'); i++) await settle();
+      const names = [...root().querySelectorAll("[data-saved]")].map((b) => b.textContent.trim());
+      if (names.includes("Example")) await click('[data-saved="Example"]');
+      return names;
+    });
+    // the plans the checks above kept in this browser are listed with her
+    if (!listed.includes("Example")) failures.push(`"Open Existing" listed ${JSON.stringify(listed)}`);
+    await rooms(2);
+    if (new URL(page.url()).searchParams.get("plan") !== "Example") failures.push(`an opened plan left the address at ${page.url()}`);
+
+    const files = mkdtempSync(join(tmpdir(), "axonometra-smoke-"));
+    writeFileSync(join(files, "boat.json"), JSON.stringify({ format: "neonplan3d", version: 1, exported_at: "2026-01-01T00:00:00.000Z", building: boat }));
+    writeFileSync(join(files, "other.json"), JSON.stringify({ hello: "world" }));
+    await startPage(url);
+    const memory = await inWizard(async (root, click) => (await click('[data-mode="open"]'), root().querySelectorAll("[data-saved]").length));
+    if (memory !== 0) failures.push(`a plan in memory offers ${memory} saved plans`);
+    const input = await page.evaluateHandle(() => window.axonometra.element.shadowRoot.querySelector("axonometra-first-run").shadowRoot.querySelector("[data-file]"));
+    await input.uploadFile(join(files, "other.json"));
+    await page.waitForFunction(() => window.axonometra.element.shadowRoot.querySelector("axonometra-first-run")?.shadowRoot?.querySelector(".err"), { timeout: 15000 });
+    await input.uploadFile(join(files, "boat.json"));
+    await rooms(2);
+    rmSync(files, { recursive: true, force: true });
+  } catch (err) {
+    failures.push(`the start page: ${err.message}`);
+  }
+
   // mass calculation, off and on (frontend/src/vessel/mass.ts): the house settings show the switch as the plan has
   // it; with it on, an item on the deck has a mass field showing its default, and a mass typed in is saved with it
   for (const mass of [false, true]) {
@@ -277,4 +339,4 @@ if (failures.length) {
   console.error(failures.map((f) => `FAIL ${f}`).join("\n"));
   process.exit(1);
 }
-console.log(`ok   standalone planner mounts, opens the editor, keeps a saved plan, hides Home Assistant's parts unless asked, opens an example plan and an example vessel, walks the first-run wizard for a boat and a building, and takes masses with the switch off and on (${shots}/standalone-smoke*.png)`);
+console.log(`ok   standalone planner mounts, opens the editor, keeps a saved plan, hides Home Assistant's parts unless asked, opens an example plan and an example vessel, walks the first-run wizard for a boat and a building, opens a saved plan and a file from the start page, and takes masses with the switch off and on (${shots}/standalone-smoke*.png)`);

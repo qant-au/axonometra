@@ -17,7 +17,7 @@ export interface ProposedComponent {
 
 /** What a full tank's contents weigh (kg/m³). */
 const DENSITY: Record<TankFluid, number> = { fuel: 740, freshWater: 1000, wasteWater: 1010, blackWater: 1020, liveWell: 1025, lubrication: 880, gas: 550 };
-const FLUID: Record<TankFluid, string> = { fuel: "Fuel", freshWater: "Fresh water", wasteWater: "Grey water", blackWater: "Black water", liveWell: "Live well", lubrication: "Oil", gas: "Gas" };
+const FLUID: Record<TankFluid, string> = { fuel: "Fuel", freshWater: "Fresh Water", wasteWater: "Grey Water", blackWater: "Black Water", liveWell: "Live Well", lubrication: "Oil", gas: "Gas" };
 /** Mount spacing of twin and triple outboards (hull/open.ts). */
 const SPACING = 0.66;
 
@@ -67,7 +67,7 @@ export function proposeEquipment(details: VesselDetails, spec: VesselSpec, templ
     const w = Math.min(p.beam * 0.4, Math.sqrt(cap / h));
     const l = cap / h / w;
     const z = r3((i - (details.tanks.length - 1) / 2) * (w + 0.05));
-    out.push({ key: `tank:${t.id}`, from: "tank", include: true, component: { name: `${FLUID[t.fluid]} tank (${t.id}), ${Math.round(cap * 1000)} L`, mass: tankMass(t), size: [r3(l), h, r3(w)], at: [r3(p.length * 0.31), r3(sole - 0.2), z] } });
+    out.push({ key: `tank:${t.id}`, from: "tank", include: true, component: { name: `${FLUID[t.fluid]} Tank (${t.id}), ${Math.round(cap * 1000)} L`, mass: tankMass(t), size: [r3(l), h, r3(w)], at: [r3(p.length * 0.31), r3(sole - 0.2), z] } });
   });
   details.batteries.forEach((b, i) => {
     out.push({ key: `battery:${b.id}`, from: "battery", include: true, component: { name: `Battery (${b.id})`, mass: r1(b.capacity ? b.capacity * 0.28 : 30), size: [0.35, 0.25, 0.2], at: [r3(p.length * 0.06), r3(sole + 0.23), r3(p.beam * 0.2 - i * 0.25)] } });

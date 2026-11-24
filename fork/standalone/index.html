@@ -20,20 +20,27 @@
   <body>
     <div id="plan"></div>
     <script type="module">
-      // The planner on its own: the plan is kept in this browser, and there is no live data.
-      // ?plan=<name> keeps a separate plan; ?fresh starts an empty one in memory (nothing kept); ?ha shows the parts that
-      // need a Home Assistant behind the host (off by default: there is none here); ?example=<name> opens one of the
-      // example plans in memory (frontend/src/plans/examples.ts).
-      import { browserStore, memoryStore, mountAxonometra } from "./axonometra-host.js";
+      // The planner on its own: the plans are kept in this browser, and there is no live data.
+      // With no plan named it opens on the start page: a new plan, which is named and kept at its first save, or one
+      // of the plans saved here ("Open Existing"). ?plan=<name> opens that plan, and the address follows the plan
+      // being worked on. ?fresh starts an empty one in memory (nothing kept); ?ha shows the parts that need a Home
+      // Assistant behind the host (off by default: there is none here); ?example=<name> opens one of the example
+      // plans in memory (frontend/src/plans/examples.ts).
+      import { browserPlans, memoryStore, mountAxonometra } from "./axonometra-host.js";
 
       const params = new URLSearchParams(location.search);
       const example = params.get("example");
-      const store = example
-        ? memoryStore({ building: (await import("./axonometra-plans.js")).examplePlan(example).building })
-        : params.has("fresh")
-          ? memoryStore()
-          : browserStore(params.get("plan") ?? "default");
-      window.axonometra = await mountAxonometra(document.querySelector("#plan"), { store, language: params.get("lang") ?? undefined, homeAssistant: params.has("ha") });
+      const memory = example ? memoryStore({ building: (await import("./axonometra-plans.js")).examplePlan(example).building }) : params.has("fresh") ? memoryStore() : null;
+      const kept = browserPlans(params.get("plan"), (name) => {
+        params.set("plan", name);
+        history.replaceState(null, "", `?${params}`);
+      });
+      // a plan in memory offers no saved ones: opening one would not keep its edits
+      window.axonometra = await mountAxonometra(document.querySelector("#plan"), {
+        ...(memory ? { store: memory } : kept),
+        language: params.get("lang") ?? undefined,
+        homeAssistant: params.has("ha"),
+      });
     </script>
   </body>
 </html>

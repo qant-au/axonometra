@@ -1,48 +1,59 @@
-// Axonometra: the first-run wizard as a dialog over the planner. It draws the steps of flow.ts and nothing else: what a
-// step needs, when it is ready and what finishing writes all live there. Texts in English and German inline (the
-// other languages come when the wizard is finished).
+// Axonometra: the first-run wizard as a dialog over the planner. Its start page offers a new plan or an existing one
+// (the host's saved plans, or a file from disk); a new plan goes through the steps of flow.ts, and what a step needs,
+// when it is ready and what finishing writes all live there. Texts in English and German inline (the other languages
+// come when the wizard is finished).
 
 import { css, html, LitElement, nothing } from "lit";
+import type { SavedPlan, SavedPlans } from "../host/types.ts";
+import type { Building } from "../model.ts";
+import { parseExport } from "../transfer.ts";
 import { noDetails, VESSEL_SOURCES, type BatteryDetails, type EngineDetails, type TankDetails, type TankFluid, type VesselDetails, type VesselSource } from "./details.ts";
 import { chosenSpec, detailsProblems, equipmentProblem, finish, nextStep, previousStep, reachable, startState, stepsFor, withDetails, withHull, type FirstRunResult, type FirstRunState, type StepId } from "./flow.ts";
 import { fitHull, rankHulls } from "./hulls.ts";
 
 const EN = {
-  title: "Get started",
+  title: "Get Started",
   close: "Close",
   back: "Back",
   next: "Next",
   finish: "Finish",
-  s_kind: "Plan",
+  mode_new: "New",
+  mode_open: "Open Existing",
+  s_kind: "Start",
   s_source: "Source",
   s_details: "Details",
   s_hull: "Hull",
   s_equipment: "Equipment",
   s_review: "Review",
   kind_intro: "What would you like to plan?",
-  kind_vessel: "A boat",
-  kind_vessel_note: "Her hull from the library, fitted to her measures, with her engines, tanks and batteries.",
-  kind_building: "A building or rooms",
-  kind_building_note: "Draw the floors and rooms yourself in the editor.",
+  kind_vessel: "A Boat, Ship, or Vessel",
+  kind_building: "A Building, House, or Room",
+  kind_caravan: "A Caravan or Mobile Home",
+  agents: "To build your plan with an AI agent (Claude, ChatGPT, Gemini, Copilot, Cursor, and others), choose an option here, then connect the agent over MCP on the first page.",
+  open_intro: "Which plan would you like to open?",
+  open_none: "Nothing is saved here yet.",
+  open_file: "Open a File from Disk",
+  open_failed: "Could not open it: {reason}",
+  open_bad_file: "That file is not a plan.",
   source_intro: "Where should her details come from?",
-  source_manual: "I'll type them in",
-  source_example: "Example readings (to try the wizard)",
+  source_manual: "I'll Type Them In",
+  source_example: "Example Readings (to Try the Wizard)",
   source_reading: "Reading …",
   source_failed: "Could not read it: {reason}",
   details_intro: "Check her details. Measures in metres; only the length is needed.",
   name: "Name",
   mmsi: "MMSI",
-  length: "Length overall (m)",
+  length: "Length Overall (m)",
   beam: "Beam (m)",
   draft: "Draft (m)",
-  airHeight: "Air height (m)",
+  airHeight: "Air Height (m)",
   engines: "Engines",
   tanks: "Tanks",
   batteries: "Batteries",
-  add_outboard: "Add outboard",
-  add_inboard: "Add inboard",
-  add_tank: "Add fuel tank",
-  add_battery: "Add battery",
+  add_outboard: "Add Outboard",
+  add_inboard: "Add Inboard",
+  add_tank: "Add Fuel Tank",
+  add_battery: "Add Battery",
   remove: "Remove",
   none: "None",
   bad_field: "Check this measure.",
@@ -55,7 +66,7 @@ const EN = {
   on_mount: "on the transom",
   review_vessel: "{name} on the hull “{hull}”, with {n} items of equipment, lands on the water in 3D. Refine her in the editor.",
   review_building: "An empty plan opens in the editor, to draw the first floor.",
-  unnamed: "Your boat",
+  unnamed: "Your Boat",
 };
 type Texts = typeof EN;
 const DE: Texts = {
@@ -64,17 +75,24 @@ const DE: Texts = {
   back: "Zurück",
   next: "Weiter",
   finish: "Fertig",
-  s_kind: "Plan",
+  mode_new: "Neu",
+  mode_open: "Vorhandenen öffnen",
+  s_kind: "Start",
   s_source: "Quelle",
   s_details: "Angaben",
   s_hull: "Rumpf",
   s_equipment: "Ausrüstung",
   s_review: "Übersicht",
   kind_intro: "Was möchtest du planen?",
-  kind_vessel: "Ein Boot",
-  kind_vessel_note: "Ihr Rumpf aus der Bibliothek, auf ihre Maße gebracht, mit Motoren, Tanks und Batterien.",
-  kind_building: "Ein Gebäude oder Räume",
-  kind_building_note: "Etagen und Räume zeichnest du selbst im Editor.",
+  kind_vessel: "Ein Boot, Schiff oder Wasserfahrzeug",
+  kind_building: "Ein Gebäude, Haus oder Raum",
+  kind_caravan: "Ein Wohnwagen oder Mobilheim",
+  agents: "Um deinen Plan mit einem KI-Agenten zu bauen (Claude, ChatGPT, Gemini, Copilot, Cursor und andere), wähle hier eine Option und verbinde den Agenten dann auf der ersten Seite über MCP.",
+  open_intro: "Welchen Plan möchtest du öffnen?",
+  open_none: "Hier ist noch nichts gespeichert.",
+  open_file: "Datei vom Datenträger öffnen",
+  open_failed: "Konnte nicht geöffnet werden: {reason}",
+  open_bad_file: "Diese Datei ist kein Plan.",
   source_intro: "Woher sollen ihre Angaben kommen?",
   source_manual: "Ich gebe sie selbst ein",
   source_example: "Beispielwerte (zum Ausprobieren)",
@@ -121,6 +139,8 @@ export class FirstRunWizard extends LitElement {
   static properties = {
     language: {},
     _step: { state: true },
+    _mode: { state: true },
+    _saved: { state: true },
     _state: { state: true },
     _reading: { state: true },
     _error: { state: true },
@@ -128,12 +148,18 @@ export class FirstRunWizard extends LitElement {
 
   declare language: string;
   declare _step: StepId;
+  /** The start page's side: a new plan, or an existing one. */
+  declare _mode: "new" | "open";
+  /** The host's saved plans; null until it has answered. */
+  declare _saved: SavedPlan[] | null;
   declare _state: FirstRunState;
   declare _reading: string | null;
   declare _error: string;
 
   /** The sources offered besides typing the details in. */
   sources: VesselSource[] = VESSEL_SOURCES;
+  /** The host's saved plans, offered under "Open Existing" besides a file from disk. */
+  saved: SavedPlans | null = null;
   /** Called with the plan when the wizard finishes. */
   onFinish: ((result: FirstRunResult) => void) | null = null;
   /** Called when the wizard closes, finished or not. */
@@ -143,6 +169,8 @@ export class FirstRunWizard extends LitElement {
     super();
     this.language = "en";
     this._step = "kind";
+    this._mode = "new";
+    this._saved = null;
     this._state = startState();
     this._reading = null;
     this._error = "";
@@ -152,9 +180,49 @@ export class FirstRunWizard extends LitElement {
     return this.language.toLowerCase().startsWith("de") ? DE : EN;
   }
 
+  connectedCallback(): void {
+    super.connectedCallback();
+    void (this.saved?.list() ?? Promise.resolve([])).then(
+      (list) => (this._saved = list),
+      () => (this._saved = []),
+    );
+  }
+
   close(): void {
     this.remove();
     this.onClose?.();
+  }
+
+  /** An existing plan was chosen: the planner shows it. */
+  private opened(building: Building): void {
+    this.onFinish?.({ building, open: "view" });
+    this.close();
+  }
+
+  private async openSaved(id: string): Promise<void> {
+    if (!this.saved) return;
+    this._error = "";
+    this._reading = id;
+    try {
+      this.opened(await this.saved.open(id));
+    } catch (e) {
+      this._error = say(this.t.open_failed, { reason: (e as Error).message ?? String(e) });
+    } finally {
+      this._reading = null;
+    }
+  }
+
+  private async openFile(e: Event): Promise<void> {
+    const input = e.target as HTMLInputElement;
+    const file = input.files?.[0];
+    input.value = "";
+    if (!file) return;
+    this._error = "";
+    try {
+      this.opened(parseExport(await file.text()));
+    } catch {
+      this._error = this.t.open_bad_file;
+    }
   }
 
   private set(next: FirstRunState): void {
@@ -202,17 +270,21 @@ export class FirstRunWizard extends LitElement {
     const s = this._state;
     const steps = stepsFor(s);
     const last = steps[steps.length - 1] === this._step;
+    const start = this._step === "kind";
+    const mode = (m: "new" | "open") => html`<button data-mode=${m} class=${this._mode === m ? "on" : ""} @click=${() => ((this._error = ""), (this._mode = m))}>${t[`mode_${m}`]}</button>`;
     return html`<div class="box" role="dialog" aria-modal="true" aria-label=${t.title}>
       <header>
         <b>${t.title}</b>
         <button class="x" data-close @click=${() => this.close()} aria-label=${t.close}>✕</button>
       </header>
       <nav>
-        ${steps.map((id) => html`<button data-step=${id} class=${this._step === id ? "on" : ""} ?disabled=${!reachable(s, id)} @click=${() => (this._step = id)}>${t[`s_${id}`]}</button>`)}
+        ${start
+          ? [mode("new"), mode("open")]
+          : steps.map((id) => html`<button data-step=${id} class=${this._step === id ? "on" : ""} ?disabled=${!reachable(s, id)} @click=${() => (this._step = id)}>${t[`s_${id}`]}</button>`)}
       </nav>
       <section data-body=${this._step}>${this.renderStep()}</section>
       ${this._error ? html`<p class="err">${this._error}</p>` : nothing}
-      <footer>
+      <footer ?hidden=${start && this._mode === "open"}>
         <button data-back ?disabled=${!previousStep(s, this._step)} @click=${() => this.go(previousStep(s, this._step))}>${t.back}</button>
         ${last
           ? html`<button class="primary" data-finish @click=${() => this.done()}>${t.finish}</button>`
@@ -240,15 +312,29 @@ export class FirstRunWizard extends LitElement {
 
   private renderKind() {
     const t = this.t;
+    if (this._mode === "open") return this.renderOpen();
     const pick = (kind: "vessel" | "building") => {
       this.set({ ...this._state, kind });
       this.go(nextStep(this._state, "kind"));
     };
     return html`<p>${t.kind_intro}</p>
       <div class="choices">
-        <button data-kind="vessel" class=${this._state.kind === "vessel" ? "on" : ""} @click=${() => pick("vessel")}><b>${t.kind_vessel}</b><small>${t.kind_vessel_note}</small></button>
-        <button data-kind="building" class=${this._state.kind === "building" ? "on" : ""} @click=${() => pick("building")}><b>${t.kind_building}</b><small>${t.kind_building_note}</small></button>
-      </div>`;
+        <button data-kind="vessel" class=${this._state.kind === "vessel" ? "on" : ""} @click=${() => pick("vessel")}><b>${t.kind_vessel}</b></button>
+        <button data-kind="building" class=${this._state.kind === "building" ? "on" : ""} @click=${() => pick("building")}><b>${t.kind_building}</b></button>
+        <button data-kind="caravan" disabled><b>${t.kind_caravan}</b></button>
+      </div>
+      <p class="muted" data-agents>${t.agents}</p>`;
+  }
+
+  private renderOpen() {
+    const t = this.t;
+    return html`<p>${t.open_intro}</p>
+      <div class="choices">
+        ${(this._saved ?? []).map((p) => html`<button data-saved=${p.id} ?disabled=${this._reading !== null} @click=${() => void this.openSaved(p.id)}><b>${p.name}</b></button>`)}
+        ${this._saved?.length === 0 ? html`<p class="muted" data-saved-none>${t.open_none}</p>` : nothing}
+        <button data-open-file ?disabled=${this._reading !== null} @click=${() => this.renderRoot.querySelector<HTMLInputElement>("[data-file]")?.click()}><b>${t.open_file}</b></button>
+      </div>
+      <input data-file type="file" accept="application/json,.json" hidden @change=${(e: Event) => void this.openFile(e)} />`;
   }
 
   private renderSource() {
@@ -418,7 +504,16 @@ export class FirstRunWizard extends LitElement {
       display: grid;
       gap: 2px;
       text-align: left;
-      padding: 10px 12px;
+      padding: 12px 14px;
+    }
+    .choices b {
+      font-size: 17px;
+    }
+    .choices p {
+      margin: 0;
+    }
+    [hidden] {
+      display: none;
     }
     small {
       opacity: 0.8;

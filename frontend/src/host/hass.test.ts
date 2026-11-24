@@ -70,6 +70,24 @@ test("signals become states, and each change brings a new object", async () => {
   assert.deepEqual(changes, ["61"]);
 });
 
+test("the start page's saved plans are the embedder's: listed, opened, and none without a list", async () => {
+  const boat = { ...emptyBuilding(), floors: [newFloor("a", "Deck", 0)] };
+  const opened: string[] = [];
+  const plans = {
+    list: async () => [{ id: "b1", name: "Sea Breeze" }],
+    open: async (id: string) => (opened.push(id), boat),
+  };
+  const { hass } = await createHass({ store: memoryStore(), plans });
+  assert.deepEqual(await hass.callWS({ type: "axonometra/saved/list" }), { plans: [{ id: "b1", name: "Sea Breeze" }] });
+  const got = await hass.callWS<{ building: { floors: { name: string }[] } }>({ type: "axonometra/saved/open", id: "b1" });
+  assert.equal(got.building.floors[0].name, "Deck");
+  assert.deepEqual(opened, ["b1"]);
+
+  const bare = (await createHass({ store: memoryStore() })).hass;
+  assert.deepEqual(await bare.callWS({ type: "axonometra/saved/list" }), { plans: [] });
+  await assert.rejects(bare.callWS({ type: "axonometra/saved/open", id: "b1" }), { code: "not_supported" });
+});
+
 test("a source that takes commands receives the plan's service calls", async () => {
   const calls: string[] = [];
   const signals = { ...staticSignals(), act: async (domain: string, service: string, data: Record<string, unknown>) => void calls.push(`${domain}.${service} ${String(data.entity_id)}`) };

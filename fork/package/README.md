@@ -38,6 +38,7 @@ side lists crowd). A target with no height of its own gets the full height of th
 | Option | Meaning |
 |---|---|
 | `store` | Where the plan lives (required). See [Plan stores](#plan-stores). |
+| `plans` | The saved plans the start page offers under "Open Existing". Absent: a file from disk only. See [Saved plans](#saved-plans). |
 | `signals` | Live data for the plan. Absent: a plan with no live data. |
 | `language` | BCP 47 language. English, German, Czech, Danish, Spanish, Finnish, French, Hungarian, Italian, Norwegian (Bokmål and Nynorsk), Dutch, Polish, Portuguese, Romanian, Slovenian, Swedish and Chinese are included. Default: the browser's. |
 | `admin` | Whether the viewer may open the editor. Default `true`. |
@@ -76,6 +77,34 @@ interface PlanStore {
 
 Two come with the package: `browserStore(name)` keeps the plan in the browser's IndexedDB, one database
 per name, and `memoryStore(initial?)` keeps it for the session only (tests and demos).
+
+## Saved Plans
+
+A planner with an empty plan opens on a start page: a new plan, or an existing one. "Open Existing" always
+takes a plan file from disk. Give `plans` and it also lists the plans your application keeps, so each person
+is offered their own:
+
+```ts
+interface SavedPlans {
+  list(): Promise<{ id: string; name: string }[]>;
+  open(id: string): Promise<Building>;
+}
+```
+
+The planner shows the plan `open` returns and saves it to the store, so make the store save to the plan
+that was opened.
+
+`browserPlans(current?, onCurrent?)` is both halves for a page with no server: `store` is the plan being
+worked on (the one named `current`, or a new plan that is named and kept at its first save) and `plans` is
+every plan saved in the browser. `onCurrent` hears the name whenever it changes.
+
+```js
+import { mountAxonometra, browserPlans } from "@axonometra/editor";
+
+const params = new URLSearchParams(location.search);
+const kept = browserPlans(params.get("plan"), (name) => history.replaceState(null, "", `?plan=${encodeURIComponent(name)}`));
+await mountAxonometra(target, kept); // { store, plans }
+```
 
 ## Live data
 

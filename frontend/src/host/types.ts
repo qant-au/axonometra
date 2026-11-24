@@ -14,6 +14,23 @@ export interface PlanStore {
   saveImage(id: string, data: string): Promise<void>;
 }
 
+/** A saved plan, as the start page lists it under "Open Existing". */
+export interface SavedPlan {
+  id: string;
+  name: string;
+}
+
+/**
+ * The saved plans a person may open from the start page, besides a file from disk. The embedding application
+ * decides whose they are, so different people are offered different plans.
+ */
+export interface SavedPlans {
+  /** In the order they are shown. */
+  list(): Promise<SavedPlan[]>;
+  /** The plan with this id. The planner shows it and saves it to the store, so the store is where it is kept from then on. */
+  open(id: string): Promise<Building>;
+}
+
 /**
  * The outside world the plan reacts to: one state per signal, in Home Assistant's entity shape so the
  * engine's device bindings work unchanged. A Signal K source maps paths to signals; a simulator invents them.
@@ -29,6 +46,8 @@ export interface SignalSource {
 
 export interface HostOptions {
   store: PlanStore;
+  /** The saved plans the start page offers under "Open Existing". Absent: a file from disk only. */
+  plans?: SavedPlans;
   /** Absent: a plan with no live data (pure planning). */
   signals?: SignalSource;
   /** BCP 47 language: English and German are built in, 16 more load from lang/ when chosen; others fall back to English. Default: the browser's. */

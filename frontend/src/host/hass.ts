@@ -66,6 +66,12 @@ export async function createHass(options: HostOptions): Promise<HassHandle> {
         if (!snap) throw { code: "not_found", message: "Restore point not found" };
         return callWS({ type: "axonometra/building/save", building: snap.building });
       }
+      // the start page's "Open Existing" (wizard/): the embedder's saved plans, none when it gives no list
+      case "axonometra/saved/list":
+        return { plans: (await options.plans?.list()) ?? [] };
+      case "axonometra/saved/open":
+        if (!options.plans) throw unsupported(msg.type);
+        return { building: await options.plans.open(String(msg.id)) };
       // furniture packs: none installed in this host yet (importing them is a later step)
       case "axonometra/packs/list":
         return { packs: [] };

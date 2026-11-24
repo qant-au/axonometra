@@ -11,9 +11,9 @@ import { createHass } from "./hass.ts";
 import type { HostOptions } from "./types.ts";
 
 export { createHass } from "./hass.ts";
-export { browserStore, memoryStore } from "./store.ts";
+export { browserPlans, browserStore, memoryStore } from "./store.ts";
 export { staticSignals } from "./signals.ts";
-export type { HostOptions, PlanStore, SignalSource } from "./types.ts";
+export type { HostOptions, PlanStore, SavedPlan, SavedPlans, SignalSource } from "./types.ts";
 
 export interface MountOptions extends HostOptions {
   /** URL of the engine's main bundle (axonometra.js). Default: beside this file. */

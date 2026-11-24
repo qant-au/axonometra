@@ -84,7 +84,7 @@ export const EXAMPLE_DETAILS: VesselDetails = {
 /** The example readings as a source. */
 export const EXAMPLE_SOURCE: VesselSource = {
   id: "example",
-  label: "Example readings",
+  label: "Example Readings",
   available: async () => ({ ok: true }),
   read: async () => structuredClone(EXAMPLE_DETAILS),
 };
