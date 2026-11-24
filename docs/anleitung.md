@@ -35,21 +35,23 @@ Diese Anleitung beschreibt alle Funktionen der aktuellen Version. Was sich in we
 - Ein Browser mit WebGL. Das sind alle aktuellen Browser, die Home-Assistant-App und auch Amazon-Fire-Tablets.
 - Für das Bearbeiten ein Benutzer mit Administratorrechten. Alle anderen Benutzer sehen und bedienen den Plan, ändern ihn aber nicht.
 
-### Über HACS
+### Über den Marketplace
 
-[![Axonometra in HACS öffnen](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=Mastershort&repository=axonometra&category=integration)
+[![Axonometra im Marketplace öffnen](https://my.home-assistant.io/badges/marketplace_repository.svg)](https://my.home-assistant.io/redirect/marketplace_repository/?owner=Mastershort&repository=axonometra&category=integration)
 
-Der Knopf öffnet Axonometra direkt in HACS deiner Installation. Axonometra steht in der offiziellen HACS-Liste, ein benutzerdefiniertes Repository brauchst du nicht. Von Hand geht es so:
+Seit Home Assistant 2026.11 ist HACS als **Marketplace** fest eingebaut. Der Knopf öffnet Axonometra direkt im Marketplace deiner Installation. Axonometra steht in der offiziellen Liste, über einen Link hinzufügen musst du es nicht. Von Hand geht es so:
 
-1. In Home Assistant **HACS** öffnen.
-2. **Axonometra** suchen, installieren und Home Assistant neu starten.
+1. **Einstellungen → Marketplace** öffnen. Beim ersten Mal den Hinweis zu Inhalten aus der Community bestätigen.
+2. **Axonometra** suchen, **Installieren** wählen und Home Assistant neu starten.
 3. **Einstellungen → Geräte & Dienste → Integration hinzufügen → Axonometra**, oder direkt über diesen Knopf:
 
    [![Axonometra einrichten](https://my.home-assistant.io/badges/config_flow_start.svg)](https://my.home-assistant.io/redirect/config_flow_start/?domain=axonometra)
 
 Danach steht **Axonometra** in der Seitenleiste. Die Dashboard-Karte ist ebenfalls sofort verfügbar, eine Ressource musst du nicht eintragen.
 
-Hast du Axonometra früher als benutzerdefiniertes Repository eingetragen, musst du nichts tun: Updates kommen weiter wie gewohnt.
+**Home Assistant vor 2026.11:** Dort geht es genauso über **HACS**: HACS öffnen, **Axonometra** suchen, herunterladen und neu starten, oder [direkt in HACS öffnen](https://my.home-assistant.io/redirect/hacs_repository/?owner=Mastershort&repository=axonometra&category=integration).
+
+Hast du Axonometra früher über HACS installiert, auch als benutzerdefiniertes Repository, musst du nichts tun: Beim Update auf Home Assistant 2026.11 übernimmt der Marketplace es, und Updates kommen weiter wie gewohnt.
 
 ### Von Hand
 
@@ -57,7 +59,7 @@ Den Ordner `custom_components/axonometra` aus dem Repository nach `config/custom
 
 ### Updates
 
-HACS meldet neue Versionen von selbst. Nach jedem Update Home Assistant neu starten. Bis dahin zeigt Axonometra oben einen Hinweis, dass ein Neustart aussteht. Dein Plan bleibt bei Updates immer erhalten, auch wenn du die Integration entfernst und neu hinzufügst.
+Der Marketplace (oder HACS) meldet neue Versionen von selbst unter **Einstellungen → System → Updates**. Nach jedem Update Home Assistant neu starten. Bis dahin zeigt Axonometra oben einen Hinweis, dass ein Neustart aussteht. Dein Plan bleibt bei Updates immer erhalten, auch wenn du die Integration entfernst und neu hinzufügst.
 
 ---
 
@@ -121,7 +123,7 @@ Ein Gruppenknopf zeigt, welches Werkzeug gerade läuft, etwa „Raum: Freie Form
 
 **Seitenleiste einklappen:** **Einklappen ›** oben in der Seitenleiste macht sie zu einem schmalen Streifen – der Grundriss bekommt den ganzen Platz, etwa zum Verschieben von Möbeln. **‹** klappt sie wieder auf, ein leuchtendes **⚙** im Streifen öffnet die Einstellungen der Auswahl. Wählst du ein anderes Werkzeug, klappt sie von selbst wieder auf. Der Browser merkt sich die Wahl.
 
-**Maus und Touch:** Mit zwei Fingern ziehst du die Ansicht, mit zwei Fingern zoomst du. Mit der Maus zoomt das Mausrad, die Ansicht ziehst du auf einer leeren Stelle oder überall mit der **rechten oder mittleren Maustaste** (ein Rechtsklick ohne Ziehen öffnet weiter das Menü). **Strg+Z** macht rückgängig, **Strg+Y** oder **Strg+Umschalt+Z** wiederholt, **Entf** löscht das Ausgewählte, **Esc** bricht ab. Die **Pfeiltasten** verschieben das Ausgewählte (Raum, Ecke, Möbel, Gerät, Wand, Außenfläche) um einen Rasterschritt, mit **Umschalt** um 10 cm, mit **Alt** um 1 cm; Türen und Fenster wandern dabei entlang ihrer Wand.
+**Maus und Touch:** Mit zwei Fingern ziehst du die Ansicht, mit zwei Fingern zoomst du. Mit der Maus zoomt das Mausrad, die Ansicht ziehst du auf einer leeren Stelle oder überall mit der **rechten oder mittleren Maustaste** (ein Rechtsklick ohne Ziehen öffnet weiter das Menü). Bei gehaltener **Leertaste** verschiebt Ziehen mit der linken Maustaste immer nur die Ansicht, auch über Räumen und Möbeln (seit 3.5.0). **Strg+Z** macht rückgängig, **Strg+Y** oder **Strg+Umschalt+Z** wiederholt, **Entf** löscht das Ausgewählte, **Esc** bricht ab. Die **Pfeiltasten** verschieben das Ausgewählte (Raum, Ecke, Möbel, Gerät, Wand, Außenfläche) um einen Rasterschritt, mit **Umschalt** um 10 cm, mit **Alt** um 1 cm; Türen und Fenster wandern dabei entlang ihrer Wand.
 
 **Grundriss sperren und fixieren:** **Grundriss sperren** in den Etagen-Einstellungen (siehe [4.2](#42-etagen)) oder per Rechtsklick auf einen Raum sperrt alle Räume, Wände, Türen, Fenster und Außenflächen, auch neu gezeichnete; ein ausgewählter Raum zeigt dann „🔒 Grundriss gesperrt“, ein Klick darauf entsperrt. Möbel und Geräte fixierst du einzeln, sobald sie an ihrem Platz stehen: mit dem Schloss **🔓 Fixieren** oben im Formular, mit der Taste **L** oder per **Rechtsklick** (auf dem Tablet langes Drücken). Das Rechtsklick-Menü bietet außerdem **Duplizieren**, **Drehen 90°** und **Löschen**. Gesperrtes lässt sich auswählen und im Formular bearbeiten, aber nicht mehr ziehen, nicht mit den Pfeiltasten schieben und nur nach Rückfrage löschen; Ziehen bewegt dann die Ansicht. Fixierte Möbel und Geräte bleiben auch in der 3D-Hälfte stehen.
 
@@ -185,22 +187,28 @@ Wände entstehen automatisch: Jede gemeinsame Kante zweier Räume wird eine Inne
 
 ### 4.5 Das ⚙ Einstellungen-Menü
 
-Alles, was zum ganzen Plan gehört und nicht zu einer Etage, einem Raum oder einem Möbel, steht in einem Menü: **⚙ Einstellungen ▾** rechts in der Werkzeugleiste (auf schmalen Bildschirmen nur das Zahnrad). Jeder Punkt öffnet ein Fenster über dem Plan, auch während etwas ausgewählt ist; **✕** oder **Esc** schließt es. Die Seitenleiste ohne Auswahl zeigt nur noch die Räume der Etage, das Grundriss-Bild und die Hilfe.
+Alles, was zum ganzen Plan gehört und nicht zu einer Etage, einem Raum oder einem Möbel, steht an einem Ort: **⚙ Einstellungen** rechts in der Werkzeugleiste (auf schmalen Bildschirmen nur das Zahnrad). Der Knopf öffnet ein Fenster über dem Plan, auch während etwas ausgewählt ist: links die Themen in fünf Gruppen, rechts das gewählte Thema. Das Fenster öffnet dort, wo du zuletzt warst; **✕**, **Esc** oder ein Klick daneben schließt es. In einem schmalen Fenster stehen die Themen als Auswahl oben.
 
-| Menüpunkt | Inhalt |
-|---|---|
-| **🏠 Haus** | Wandstärken, Raster, Längen, Nordrichtung (die Zeilen darunter) |
-| **🌦 Wetter & Warnungen** | Wetter-Entität und -Effekte, Regenwarnung, Warnungsnamen, Stromausfall-Sensor, Sonnenflecken |
-| **🎬 Live-Regie** | siehe [6.1](#61-kamera-cockpit) |
-| **🎙 Sprachsteuerung** | siehe [5.10](#510-sprachsteuerung-neu) |
-| **⭐ Favoriten** | das Zentral-Menü der 3D-Ansicht (unten) |
-| **🎨 Stile** | Stile, eigene Stile, Tageszeiten und Fassade, siehe [5.12](#512-stile-neu-in-31) |
-| **🖼 Hintergrund** | was hinter dem 3D-Haus liegt (unten) |
-| **⛰ Gelände** | siehe [4.21](#421-keller-und-gelände) |
-| **🗺 Umgebung** | die Nachbarschaft aus der Karte, siehe [4.26](#426-die-umgebung-aus-der-karte-neu) |
-| **💾 Sicherung** | Export, Import, Wiederherstellen, siehe Kapitel 9 |
-| **🧩 Module** | die eingespielten Module (Code aus dem Shop, etwa „Das Haus antwortet“) und **Modul einspielen …** für die .fp3dpack-Datei |
-| **🖥 Karten-Vorlagen** | fertige Dashboard-Karten für die Wandtablets, siehe [8.1](#81-karten-vorlagen) |
+![Einstellungen](images/settings.jpg)
+
+| Gruppe | Thema | Inhalt |
+|---|---|---|
+| **Haus & Plan** | **Grundrisse** | mehrere Grundrisse, siehe [4.25](#425-mehrere-grundrisse-und-das-grundstück-neu-in-30) |
+| | **Haus** | Wandstärken, Raster, Längen, Nordrichtung (die Zeilen darunter) |
+| | **Gelände** | siehe [4.21](#421-keller-und-gelände) |
+| | **Umgebung** | die Nachbarschaft aus der Karte, siehe [4.26](#426-die-umgebung-aus-der-karte-neu) |
+| | **Hintergrund** | was hinter dem 3D-Haus liegt (unten) |
+| **Aussehen** | **Stile** | Stile, eigene Stile, Tageszeiten und Fassade, siehe [5.12](#512-stile-neu-in-31) |
+| | **Wetter & Warnungen** | Wetter-Entität und -Effekte, Regenwarnung, Warnungsnamen, Stromausfall-Sensor, Sonnenflecken |
+| | **Favoriten** | das Zentral-Menü der 3D-Ansicht (unten) |
+| **Bildschirme** | **Karten-Vorlagen** | fertige Dashboard-Karten für Wandtablets und Handys, siehe [8.1](#81-karten-vorlagen) |
+| | **Live-Regie** | siehe [6.1](#61-kamera-cockpit) |
+| **Erweiterungen** | **Module** | die eingespielten Module (Code aus dem Shop, etwa „Das Haus antwortet“) und **Modul einspielen …** für die .fp3dpack-Datei |
+| | **Fun-Packs** | Haustiere und die Packs der Jahreszeiten |
+| | **Sprachsteuerung** | siehe [5.10](#510-sprachsteuerung-neu) |
+| | **Ortung** | siehe [5.11](#511-ortung-neu) |
+| **System** | **Sicherung** | Export, Import, Wiederherstellen, siehe Kapitel 9 |
+| | **Hilf mit** | Diagnose-Berichte |
 
 Die **Dachform** (kein Dach, Flachdach, Satteldach, First, Neigung, Überstand) steht beim Dach-Werkzeug, siehe [4.19](#419-dach). Die **Startansicht** merkst du dir in der 3D-Ansicht: Haus drehen und zoomen, dann in den Ansicht-Einstellungen (Zahnrad oben rechts) **📌** antippen; **📌✕** setzt sie zurück. 3D-Ansicht, Karte und Kiosk öffnen das Haus dann so, und eine geöffnete Etage wird von derselben Seite gezeigt.
 
@@ -292,7 +300,7 @@ Die **Arbeitsplatte** (Küche) ist eine freie Platte ohne Unterbau, für Lücken
 - Rechts stellst du Breite, Tiefe, Höhe, Drehung und **Höhe über Boden** ein. **Spiegeln** vertauscht links und rechts – das L-Sofa andersherum, der Schrank mit der Tür auf der anderen Seite; der Punkt steht auch im Rechtsklick-Menü und in der Möbelleiste der 3D-Ansicht. Mit der Höhe über Boden hängst du einen Netzwerkschrank oder ein Regal an die Wand oder stellst einen Trockner auf die Waschmaschine. Sie zählt immer vom Boden: Ein Oberschrank steht von sich aus auf 1,45 m, ein Wand-Fernseher mittig auf 1,3 m; du kannst beide höher oder tiefer setzen. **Höhe automatisch** setzt sie zurück. Außerhalb der Räume darf die Höhe auch unter 0 liegen (bis −5 m): Außentreppen hinunter zu einer tiefer liegenden Terrasse oder einem Lichtschacht.
 - **Zustand von:** Jedes Möbel kann eine Entität zeigen, die an, belegt oder zu Hause meldet – dann leuchtet seine Oberseite: das Bett mit Belegungsmatte, der Sessel, die Sauna. Eine zweite Entität beleuchtet die andere Hälfte (links/rechts, beim Hochbett unten/oben); stellst du die erste auf *keine*, rückt die zweite an ihre Stelle. Lampen, Energiegeräte und Bildschirme haben ihre eigenen Felder dafür.
 - **Nur zeigen, wenn …** (neu): Das Stück steht in 3D nur, solange eine Entität in einem Zustand ist – der Weihnachtsbaum, solange `input_boolean.weihnachten` an ist, die Gartendeko nur, wenn ein Saison-Sensor „summer“ meldet. Mehrere Zustände trennst du mit Komma, `<20` oder `>80` vergleicht eine Zahl, ein `!` davor dreht es um; leer heißt „on“. Ausgeblendet verschwinden auch sein Licht und sein Symbol. Im Editor bleibt das Stück immer sichtbar, solange es in 3D fehlt, ist es im Plan blass. So stellst du Deko einmal hin und schaltest sie jedes Jahr per Schalter oder Automation ein.
-- **🎨 Ausführung** (neu in 3.4): Eigene Farben für **Holz**, **Stoff** und **Fronten** – ein Sofa in Blau, ein Tisch in Nussbaum, eine Küche in Salbei. Zu sehen in den wohnlichen Stilen; die Neon-Looks färben jedes Möbel selbst. Es gilt für die eingebauten Möbel und alle Pack-Möbel, die aus diesen Teilen bestehen; **Standard** nimmt wieder die Farben des Stils. **Für alle gleichen im Plan** gibt allen Möbeln dieser Art dieselbe Ausführung.
+- **🎨 Ausführung** (neu in 3.4): Eigene Farben für **Holz**, **Stoff** und **Fronten** – ein Sofa in Blau, ein Tisch in Nussbaum, eine Küche in Salbei. Zu sehen in den wohnlichen Stilen; die Neon-Looks färben jedes Möbel selbst. Es gilt für die eingebauten Möbel und alle Pack-Möbel, die aus diesen Teilen bestehen; **Standard** nimmt wieder die Farben des Stils. Seit 3.5.0 gibt es bei Schränken, Kommoden und Küchen zusätzlich **Korpus**: Solange du dort nichts wählst, färbt **Fronten** wie bisher den ganzen Schrank; mit einer eigenen Korpus-Farbe bekommen Seiten, Deckel und Boden diese Farbe und nur Türen und Schubladen die Frontfarbe. Arbeitsplatten nehmen die Holzfarbe, Pack-Leuchten ihre Gehäusefarbe (Pack-Updates ab 3.5.0). **Für alle gleichen im Plan** gibt allen Möbeln dieser Art dieselbe Ausführung.
 - **⚡ Lebende Teile** (neu in 3.4, bei Pack-Möbeln, die welche haben): Teile bewegen sich mit Home Assistant – die Tür des Serverschranks öffnet mit ihrem Kontakt, der Druck im 3D-Drucker wächst mit dem Fortschritt, der Akkuspeicher füllt sich mit dem Ladestand, Status-Lämpchen zeigen grün, aus oder pulsierend rot, Lüfter drehen, Teile leuchten. Wähle für jedes Teil die passende Entität; hat ein Möbel nur eines, nimmt es ohne Wahl die Entität des Möbels. Ohne Entität steht alles wie gezeichnet.
 - **Wandansicht:** **Wandansicht** oben in der Werkzeugleiste und dann in einen Raum klicken (nah an einer Wand öffnet sich genau diese Wand) – oder **▦ Wände dieses Raums von vorne ansehen** im Raumformular, **▦ Wandansicht** im Möbelformular und im Rechtsklick-Menü, **▦** bei jeder Wand unter *Wandhöhen* – zeigt die Wand von vorne – mit Türen und Fenstern und allem, was an ihr steht oder hängt, als echte Ansicht der Möbel von vorne: Schränke, Regale, Oberschränke, Fernseher, Wandleuchten. Ein Möbel ziehst du dort entlang der Wand und, wenn es hängt, in der Höhe; dabei zeigen Maßlinien den Abstand zu den Wandenden und zum Boden, und Kanten rasten an Wandenden, Türen, Fenstern und anderen Möbeln ein (**Alt** zieht frei). Pfeiltasten schieben um 1 cm, mit **Umschalt** um 10 cm; unten stehen **Abstand von links** und **Höhe über Boden** zum Eintippen. Die Pfeile **‹** und **›** links und rechts (ohne gewähltes Möbel auch **←** und **→**) drehen dich zur Wand, die links bzw. rechts anschließt – so gehst du einmal rundherum durch den Raum. Ein Doppelklick öffnet das Möbel im Grundriss. Oben rechts wechselst du zwischen **3D im Raum** und **Wand von vorne**: In 3D stehst du in der Raummitte auf Augenhöhe und schaust auf die Wand – mit allem im Raum, auch dem Tisch vor der Eckbank. Ein Möbel antippen wählt es aus, Ziehen verschiebt es auf dem Boden, der runde Griff **↕** über dem gewählten Möbel hebt oder senkt es (mit Höhenanzeige), Mausrad oder zwei Finger gehen näher heran oder weiter weg, die mittlere oder rechte Maustaste (am Tablet zwei Finger) schaut sich um – die linke Maustaste bleibt so den Möbeln vorbehalten; unten stehen **Abstand von links**, **Abstand zur Wand** und **Höhe über Boden** zum Eintippen, dazu **↺ 45°** / **↻ 45°** und die **Drehung** in Grad – an der Wand gedreht rückt das Möbel von selbst in den Raum. Ein fixiertes Möbel zeigt unten **🔒 Lösen**: erst lösen, dann lässt es sich ziehen. **Wand von vorne** ist die flache Ansicht zum zentimetergenauen Ausrichten an der Wand. Dort zoomst du mit dem Mausrad (dorthin, wo die Maus steht), am Tablet mit zwei Fingern oder mit **＋** / **−** unten rechts; **⤢** zeigt wieder die ganze Wand, vergrößert schieben die Pfeile daneben den Ausschnitt. Mit **Energie Pro** setzt eine Leiste links Stromzähler, Wechselrichter, Stromspeicher und Wallbox direkt an die gezeigte Wand.
 
@@ -451,7 +459,7 @@ Ein einfaches Haus bekommt unter **Bauen → Dach** bei **Dachform** ein Flach- 
 - Wähle unter **Dach** die Option **Dachflächen (frei)** oder das Werkzeug **Dach**. Beim ersten Mal schlägt Axonometra die Dachflächen aus deinen Räumen vor: je Etage die Teile, über denen keine höhere Etage liegt, jeweils mit Satteldach. Danach passt du sie an.
 - Im Werkzeug **Dach** ziehst du eine neue Dachfläche im Plan auf. Antippen wählt eine aus, ziehen verschiebt sie, die Ecken ändern die Größe. Oben wählst du die Etage, deren Räume im Plan liegen. Daneben öffnet sich die 3D-Ansicht mit dem ganzen Haus, so siehst du jede Änderung sofort.
 - Mit dem Schloss **🔓 Fixieren** (oder der Taste **L**) sitzt eine fertige Dachfläche fest und verrutscht nicht mehr beim Antippen; **Grundriss sperren** sperrt alle Dachflächen mit.
-- Jede Dachfläche hat eine **Form** – Sattel, Walm, Krüppelwalm (oben abgewalmter Giebel), Zelt (vier Flächen zur Spitze), Mansard (steil unten, flach oben), Pult, Flach und Attika (Flachdach mit Brüstung) – und eine **Firstrichtung** (↔ oder ↕).
+- Jede Dachfläche hat eine **Form** – Sattel, Walm, Krüppelwalm (oben abgewalmter Giebel), Zelt (vier Flächen zur Spitze), Mansard (steil unten, flach oben; die Neigung oben stellst du seit 3.5.0 unter **Neigung Oberdach** ein, Standard 30°), Pult, Flach und Attika (Flachdach mit Brüstung) – und eine **Firstrichtung** (↔ oder ↕).
 - Bei Sattel, Walm und Krüppelwalm wählst du unter **Ende links/rechts** (bzw. **oben/unten**) für jedes Ende des Firsts eigens Giebel, Walm oder Krüppelwalm – zum Beispiel ein Walmdach mit einem senkrechten Giebel am anderen Ende. **wie die Form** lässt das Ende so, wie die Form es vorgibt.
 - **Traufe** und **Neigung** stellst du für beide Seiten getrennt ein. Alle Höhen zählen vom Boden. Eine Seite mit tieferer Traufe zieht weiter herunter, so entsteht etwa ein Abschleppdach über einem niedrigen Anbau. Ein Pultdach steigt von der ersten Seite an; **Seiten tauschen** dreht es um.
 - **Drehung:** Steht ein Anbau oder Flügel schräg zum Haus, drehst du seine Dachfläche mit **Drehung** (oder ↺ 15° / ↻ 15°) im Uhrzeigersinn. Gauben und Zwerchgiebel darauf drehen mit, Dachfenster und Solarfelder bleiben auf ihr. Eine gedrehte Fläche verschiebst du durch Ziehen; die Ecken zum Ändern der Größe gibt es erst wieder bei 0° (zurückdrehen, Größe ändern, wieder drehen). Wo ein gedrehter Flügel in ein anderes Dach läuft, schneidet ihn dessen Dachfläche ab. Das gilt seit 3.0.5 auch für eine kleine gedrehte Fläche, die auf einem größeren Dach sitzt (ein um 45° gedrehter Giebel über einem spitzen Erker im Walmdach): Sie wird mit dem Dach darunter verschnitten statt als Gaube ein Loch hineinzuschneiden – Form Sattel, zur Erkerspitze hin **Ende Giebel**, das andere Ende einfach ins Hauptdach laufen lassen. Ab Werk steht jede Dachfläche auf 0°.
@@ -588,6 +596,8 @@ Unter **⚙ Einstellungen → 🗺 Umgebung** holt Axonometra die Nachbarschaft 
 - **In 3D zeigen** blendet die Umgebung aus und ein, **Entfernen** löscht sie aus dem Plan. Raumkarten zeigen nur ihre Räume, ohne Umgebung.
 - Unter **Häuser ein- und ausblenden** zeigt eine kleine Karte dein Haus und die Häuser drumherum. Tippst du ein Haus an, wird es aus- oder wieder eingeblendet (gelb gestrichelt = ausgeblendet). Gebäude der Karte, die zum größten Teil auf dem stehen, was du selbst gezeichnet hast, blendet Axonometra selbst aus: auf deinen Räumen (auch auf einer eigenen Etage für den Garten), unter deinen Dachabschnitten (ein Carport, ein Gartenhaus) oder auf einer Pergola – etwa eine Garage, die auf der Karte ein eigenes Gebäude ist. Seit 3.3.1 zeigt der Grundriss die Karte auf jeder Etage in Höhe des Erdgeschosses.
 - **Nachbarhäuser nur als Grundriss** zeigt die Häuser der Nachbarn flach als Umriss auf dem Boden statt als Block; sie werfen dann keine Schatten.
+- **Nachbarhäuser mit Satteldach** gibt den Häusern der Nachbarn ein einfaches Dach mit dem First entlang ihrer längeren Seite statt einer flachen Oberseite. Die Höhe aus der Karte ist dann der First. Hallen, Wohnblöcke und verwinkelte Gebäude bleiben Blöcke. Die Karte kennt nur Umriss und Höhe; wie das Dach wirklich aussieht, weiß sie nicht.
+- **Höhe der Umgebung (m)** verschiebt die ganze Karte nach oben (+) oder unten (−) – für eine Straße, die höher oder tiefer liegt als das Erdgeschoss (Hanglage, schräge Einfahrt). Standard 0.
 
 Unten rechts in der 3D-Ansicht steht „© OpenStreetMap“: Die Kartendaten stammen von den OpenStreetMap-Mitwirkenden und stehen unter der Open Database Licence.
 
@@ -716,6 +726,10 @@ Die Lupe unten links öffnet **„Wo ist …?“**. Tippe einen Gerätenamen ode
 Ist die Nordrichtung eingestellt, fällt das Sonnenlicht aus `sun.sun` durch die Fenster, die zur Sonne zeigen, als weiche Flecken auf den Boden. Heruntergelassene Rollläden verkleinern die Flecken. Wer die Flecken nicht mag, schaltet sie unter **Einstellungen** mit **Sonnenlicht durch die Fenster** ab. Tagsüber wird der Himmel hinter dem Haus heller.
 
 **Sonnenbahn und Hausschatten (seit 2.0.7):** Ein gepunkteter Bogen um das Haus zeigt den Weg der Sonne heute, mit den Uhrzeiten von Sonnenauf- und -untergang an seinen Enden. Ein glühender Punkt darauf ist die Sonne jetzt, ein heller Punkt markiert jede volle Stunde. Auf dem Boden liegt der Schatten des Hauses und wandert mit der Sonne: So siehst du, wann die Terrasse Sonne hat. Der Schatten zeigt sich in der Ansicht **Alle Etagen** und nicht auf der Stufe **Tablet**, der Bogen auf jeder Stufe. Beides braucht die Nordrichtung und den Ort in Home Assistant; abschalten im ⭐ Zentral-Menü unter **⚙ Einstellungen** (oder im Editor unter Einstellungen) mit **Sonnenbahn und Hausschatten**. Auf einem großen Grundstück legt **Sonnenbogen um: das ganze Grundstück** (an derselben Stelle, seit 2.2) Bogen und Kompassring um alles Gezeichnete – Räume, Außenflächen, Zäune und freie Wände – statt nur um das Haus.
+
+**Echter Himmel (seit 3.5.0):** Hinter dem Haus steht ein Himmel nach dem echten Sonnenstand: Abendrot, die blaue Stunde, nachts Sterne, die mit der Nacht wandern, und der Mond in seiner echten Phase. Er dreht sich mit, wenn du die Ansicht drehst. Mit **Wetter draußen** (6.2) ziehen Wolken nach dem echten Wetter mit dem Wind. In den wohnlichen Tag-Stilen malt er den ganzen Himmel, im Neon-Look und in den Abend-Stilen kommen Sterne, Mond, Abendrot und Wolken über den eigenen Hintergrund des Looks. Aus mit einem eigenen Hintergrund und im Bauplan-Look; auf der Stufe **Tablet** ein ruhiges Standbild. Abschalten im Editor unter **Einstellungen → Wetter & Warnungen** mit **Echter Himmel** (in der 3D-Ansicht auch unter ☆ → **⚙ Einstellungen**).
+
+**Anflug aus dem All (seit 3.5.0, Option):** Mit **Anflug aus dem All** (im Editor unter **Einstellungen → Wetter & Warnungen**, direkt unter **Echter Himmel**; in der 3D-Ansicht auch unter ☆ → **⚙ Einstellungen**) dreht sich beim Öffnen ein Neon-Globus zu deinem Zuhause (dem Ort in Home Assistant), ein Lichtstrahl markiert es, die Ansicht taucht hinein und die Kamera fliegt von hoch oben aufs Haus. Einmal pro Laden der Seite, ein Tipp überspringt ihn. Nicht im Editor und nicht auf der Stufe **Tablet**; eingeschaltet spielt er einmal sofort.
 
 **Fenster leuchten nachts nach draußen (seit 2.0.7):** Ist es draußen dunkel, fällt das Licht beleuchteter Räume im Erdgeschoss als warmer Schein durch die Fenster auf Rasen und Terrasse davor, in der Farbe der Lampe. Seit 3.0.5 ist der Schein der Lichtkegel der einzelnen Lampe durch die Fensteröffnung: Er liegt von der Lampe weg versetzt (eine Lampe links vom Fenster beleuchtet den Boden rechts davor), wird mit dem Abstand zur Lampe schwächer, und eine Lampe um die Ecke, die das Fenster hinter einer Wand nicht sieht, wirft nichts hinaus. Eine gedimmte Lampe leuchtet entsprechend schwächer nach draußen. Heruntergelassene Rollläden dämpfen ihn. Ein Fenster über einem Balkon beleuchtet den Balkon; der Schein endet an seiner Kante. Abschalten im ⭐ Zentral-Menü unter **⚙ Einstellungen** (oder im Editor unter Einstellungen) mit **Fenster leuchten nachts nach draußen**.
 
@@ -963,6 +977,108 @@ data:
 
 **Was gewinnt?** Die neueste Einstellung. Ein Stil per Sprache oder Aktion gilt, bis du ihn zurücksetzt, die Minuten ablaufen oder du für den Bildschirm (Gerät, Karte oder Vorlage) einen Stil neu wählst. Danach kommen die Helfer-Entität und dann der eingestellte Stil.
 
+### 5.13 Am Handy: die Handy-Ansicht (neu)
+
+Axonometra ist für Wandtablet und PC gebaut. Am Handy will man zwei Dinge: schnell sehen, ob zu Hause alles in Ordnung ist, und mit dem Daumen in jeden Raum kommen. Dafür gibt es die Handy-Ansicht: das Haus ohne Kopfzeile und lose Knöpfe, unten eine Leiste.
+
+| Das Haus | Die Räume | „Was ist los?“ |
+| --- | --- | --- |
+| ![Handy-Ansicht](images/phone-start.jpg) | ![Räume](images/phone-rooms.jpg) | ![Was ist los?](images/phone-now.jpg) |
+
+**Einschalten:** Am Handy fragt Axonometra einmal, ob du sie ausprobieren willst. Am PC oder Tablet schaltest du sie oben unter **⚙ → 📱 Handy-Ansicht** ein, zurück geht es mit **Mehr → Handy-Ansicht aus**. Die Wahl gilt nur für dieses Gerät.
+
+**In der Dashboard-Karte:** Mit `phone: true` läuft die Karte in der Handy-Ansicht – am besten zusammen mit `fill: true` auf einer eigenen Ansicht des Dashboards:
+
+```yaml
+type: custom:axonometra-card
+phone: true
+fill: true
+```
+
+**Die Leiste unten:**
+
+| Platz | Was er öffnet | Zahl daran |
+| --- | --- | --- |
+| **Jetzt** | Die Liste „Was ist los?“ | Was einen Blick braucht; der Punkt ist grün, gelb oder rot |
+| **Etage** bzw. **Räume** | Die Räume als Kacheln mit Temperatur, Lichtern, offenen Fenstern und Musik. Ein Haus mit zwei Etagen hat für jede einen Platz, sonst teilen sich alle den Platz **Räume** | Eingeschaltete Lichter |
+| **Rollläden** | Alle Rollläden nach Etage, mit **Alle auf**, **Alle zu** und ▲ ■ ▼ je Rollladen | Geschlossene Rollläden |
+| **Mehr** | Suchen, Haus-Check, Ganzes Haus, Raum einzeln, in der Integration außerdem Anzeige, Zeitreise und das Menü von Home Assistant | – |
+
+Braucht etwas einen Blick, steht es zusätzlich in einer Zeile über der Leiste („2 Fenster und Türen offen · 4 Lichter an“).
+
+**In einen Raum springen:** Ein Tipp auf eine Kachel fliegt im Haus in den Raum und öffnet sein Raumfenster ([5.4](#54-das-raumfenster)) mit Licht, Rollläden, Klima und Medien. **Ganze Etage** zeigt die Etage. Mit **Mehr → Raum einzeln** steht ein Raum, in den du springst, allein im Bild, ohne den Rest des Hauses.
+
+**Die Liste „Was ist los?“** zeigt das Dringende zuerst:
+
+| Zeile | Was sie zeigt |
+| --- | --- |
+| ⚠️ Warnungen | Rauch, Wasser, Alarm, Regen bei offenem Fenster – alles aus [5.8](#58-warnungen) |
+| 🪟 Offen | Fenster, Türen und Garagentore mit Kontakt, die offen oder gekippt sind |
+| 🔓 Nicht abgeschlossen | Türen mit Schloss, mit dem Knopf **Abschließen** |
+| 👤 Wer ist da | Die Personen aus Home Assistant: zu Hause (mit Raum, wenn Axonometra ihn kennt) und unterwegs |
+| 🧺 Haushalt | Die Zeilen der Karte „Heute im Haushalt“: fertige Waschmaschine, Tonne, Post, Pflanzen |
+| 💡 Licht | Wie viele Lichter in welchen Räumen an sind, mit dem Knopf **Alle aus** |
+| 🚗 Auto, ⚡ Energie | Ladestand und Laden, Verbrauch, Solar, Netz und Akku (mit den passenden Erweiterungen) |
+
+Oben auf der Liste stehen die **Favoriten** des Hauses als Knöpfe. Ist nichts zu tun, steht dort **Alles in Ordnung**. Bist du selbst nicht zu Hause, rückt „Wer ist da“ direkt hinter die Warnungen. Ein Tipp auf eine Zeile schließt die Liste und zeigt die Stelle im Haus; hat eine Zeile mehrere Stellen (sechs offene Fenster), klappt sie auf, und du wählst eine.
+
+**Haus-Check:** Der Knopf unten in der Liste (auch unter **Mehr**) geht vor dem Gehen oder Schlafen alles durch, was offen oder an ist: erst die Fenster und Türen (die schließt du von Hand), dann die Schlösser, dann Raum für Raum die Lichter. Das Haus zeigt jede Stelle, darunter steht **Alle aus** bzw. **Abschließen** und **Weiter**. Ab dem ersten Raum mit Licht gibt es **Alle Lichter aus** für den Rest.
+
+**Das Raumfenster am Handy:** Es öffnet eingeklappt – Name, Temperatur und seine Knöpfe –, damit der Raum zu sehen bleibt und du seine Geräte im Haus antippen kannst. **Geräte zeigen** klappt die Liste auf, höchstens bis etwa 60 % der Höhe.
+
+**Die Leiste selbst gestalten (Dashboard-Karte):** Im Kartenformular wählst du oben **Handy** statt **Tablet oder großer Bildschirm**. Dann stehen dort die Optionen der Leiste:
+
+| Option | YAML | Bedeutung |
+| --- | --- | --- |
+| Räume / Rollläden in der Leiste, Favoriten auf der Liste | `phone_hide: [rooms, covers, favorites]` | lässt den Platz bzw. die Favoriten weg, etwa in einem Haus ohne Rollläden |
+| Raum einzeln | `phone_solo: true` | ein Raum, in den du springst, steht allein im Bild |
+| Mit der Liste öffnen | `phone_start: now` | die Karte öffnet mit „Was ist los?“ statt mit dem Haus |
+| Eigener Platz 1 und 2 | `phone_places` | bis zu zwei eigene Plätze, siehe unten |
+| Umgebung aus der Karte zeigen | `surroundings: false` | diese Karte zeichnet das Haus ohne die Umgebung (der Plan behält sie) |
+
+Ein **eigener Platz** ist eines von vier Dingen, jeweils mit eigenem Wort (`name`) und Symbol (`icon`):
+
+| `kind` | Was der Platz tut | Braucht |
+| --- | --- | --- |
+| `lights` | öffnet alle Lampen nach Etage, mit **Alle an** / **Alle aus**; am Platz steht die Zahl der Lichter, die an sind | – |
+| `climate` | öffnet alle Thermostate nach Etage | – |
+| `action` | führt eine Szene oder ein Skript aus | `entity` |
+| `link` | öffnet eine Seite eines Dashboards | `path` |
+
+```yaml
+type: custom:axonometra-card
+phone: true
+fill: true
+phone_hide: [covers]        # ein Haus ohne Rollläden
+phone_places:
+  - kind: lights
+  - kind: action
+    name: Gute Nacht
+    entity: script.gute_nacht
+```
+
+Die Leiste hat höchstens fünf Plätze. Wird es mehr, teilen sich zuerst zwei Etagen den Platz **Räume**, danach wandern eigene Plätze und die Rollläden unter **Mehr**. Ein Platz ohne passende Geräte bleibt weg.
+
+**Aus einer Benachrichtigung direkt an die Stelle:** Die Integration öffnet sich mit diesen Adressen am richtigen Ort:
+
+| Adresse | Öffnet |
+| --- | --- |
+| `/axonometra?view=now` | die Liste „Was ist los?“ |
+| `/axonometra?room=Bad` | den Raum (Name oder ID) |
+| `/axonometra?show=binary_sensor.fenster_bad` | fliegt zu diesem Gerät, Fenster oder dieser Tür |
+
+So sieht das in einer Automation für die Companion-App aus – ein Tipp auf die Meldung zeigt das Fenster im Haus:
+
+```yaml
+action: notify.mobile_app_mein_handy
+data:
+  title: Fenster offen
+  message: Das Fenster im Bad ist seit 30 Minuten offen.
+  data:
+    clickAction: /axonometra?show=binary_sensor.fenster_bad   # Android
+    url: /axonometra?show=binary_sensor.fenster_bad           # iPhone
+```
+
 ## 6. Pro-Erweiterungen
 
 Pro-Erweiterungen sind kostenpflichtige Zusatzfunktionen, einzeln im Shop erhältlich. Ohne Erweiterung zeigen die Schalter ein 🔒, und ein Hinweis führt zum Shop. Wie du sie installierst, steht in [Kapitel 7](#7-erweiterungen-shop-und-möbel-packs).
@@ -998,6 +1114,8 @@ Pro-Erweiterungen sind kostenpflichtige Zusatzfunktionen, einzeln im Shop erhäl
 2. **Auf welchem Bildschirm:** im selben Abschnitt **Auf diesem Gerät einschalten**. Das gilt nur für diesen Browser, also zum Beispiel das Wandtablet mit dem Axonometra-Panel. Auf einer Dashboard-Karte schaltest du stattdessen **Live-Regie** in den Karten-Einstellungen ein (`director: true`).
 
 Wer das Tablet gerade bedient, wird nur von der Klingel und von Warnungen unterbrochen. Berührst du den Bildschirm, während die Regie etwas zeigt, bleibt die Ansicht, wo sie ist. Teil des Kamera-Cockpits.
+
+**Personen aus Kameras (Release 2, seit Axonometra 3.5.0):** Sieht eine Kamera eine Person, ein Auto oder ein Tier, steht auf dem Grundstück eine Figur – eine Person als Neon-Silhouette, Auto und Tier als Symbol. Mit **Frigate** (Frigate-Integration) genau dort, wo sie ist, und die Figur läuft mit: Axonometra rechnet den Fußpunkt aus Frigates Erkennung mit der Kamera im Plan (Ort, Höhe, Drehung, Neigung, Öffnungswinkel) auf den Boden um – stell diese Werte möglichst genau ein. Mit anderen Kameras (Reolink, UniFi Protect …) steht die Figur im Blickfeld der Kamera, solange ihr Personen-, Fahrzeug- oder Tier-Sensor meldet. Ein Tipp auf die Figur öffnet die Kamera. Abschalten unter **⚙ Einstellungen** im Abschnitt **Personen aus Kameras**. Das Update kommt über die Shop-Verbindung; das Modul muss einmal unter **Erweiterungen → Module** freigegeben werden.
 
 ### 6.2 Wetter draußen
 
@@ -1115,6 +1233,8 @@ Was ein Player mitbringen sollte: den Zustand `playing`/`paused`, `media_title` 
 
 **Echo-Geräte (Alexa Media Player):** Abspielen, Pause und Titelwechsel gehen. Die **Lautstärke** lässt sich je nach Gerät und Version von Alexa Media Player nicht oder nur verzögert setzen, und der neue Wert kommt oft erst Minuten später zurück. Das liegt an der inoffiziellen Amazon-Schnittstelle, nicht an Axonometra; dieselbe Grenze hat das Media-Player-Fenster von Home Assistant. Echos, die du über Music Assistant steuerst, folgen der Lautstärke in der Regel zuverlässiger.
 
+**Musik folgt dir (Release 2, seit Axonometra 3.5.0):** Gehst du in einen anderen Raum, kommt die Musik mit: Sobald der Raum mit der Musik leer ist, spielt sie im neuen Raum weiter, und in 3D fliegen Noten von einem Lautsprecher zum anderen. Dafür braucht es **Music Assistant**: Die Lautsprecher im Plan müssen Music-Assistant-Player sein, und jeder Raum braucht einen Präsenz- oder Bewegungsmelder in seinem Bereich. Unter **⚙ Einstellungen → Musik folgt dir** zeigt Axonometra, welche Räume bereit sind, und **Einrichten** legt in Home Assistant die Automation „Axonometra – Musik folgt dir“ an – sie läuft auch, wenn kein Tablet offen ist. Ändern sich Räume oder Lautsprecher, einmal **Neu einrichten**. Das Modul muss einmal unter **Erweiterungen → Module** freigegeben werden.
+
 ### 6.6 Auto Pro
 
 Auto Pro holt das Auto in den Plan, so wie es seine Integration meldet (Tesla, VW We Connect, BMW, Hyundai/Kia, Renault, Smart, Polestar, Audi, Skoda, Cupra, Ford …). Voraussetzung ist ein **Stellplatz** mit Fahrzeug (4.10) und die Integration des Autos in Home Assistant.
@@ -1213,6 +1333,8 @@ Haushalt Pro zeigt im Haus, was im Haushalt ansteht – dort, wo es passiert. Di
 - **Kühlschrank:** Steht eine Tür länger offen als eingestellt (Standard 2 Minuten), warnt Axonometra oben im Bild. Dazu gehört der **Smart-Kühlschrank** (Side-by-Side mit beweglichen Türen) in der Möbel-Bibliothek.
 - **Kalender (seit 3.2):** Unter **⚙ Einstellungen → Haus → Kalender in „Heute im Haushalt“** hakst du Kalender an. Ihre heutigen Termine stehen auf der Karte, ganztägige zuerst, dann nach Uhrzeit („14:30 Zahnarzt“). Vorbei ist vorbei; was in der nächsten Stunde beginnt, steht gelb. Ein Tipp öffnet den Kalender.
 - **Heute im Haushalt:** Eine Glaskarte oben rechts listet, was gerade ansteht – Tonnen heute und morgen, Post, fertige Geräte, durstige Pflanzen, fällige Wartung, offene Kühlschranktüren. Ein Tipp öffnet das Gerät, der Kopf klappt sie ein. In der Dashboard-Karte schaltet `household_card: false` sie ab.
+
+**Saug genau hier (Release 2, seit Axonometra 3.5.0):** Im ⭐ Zentral-Menü schickt **🧹 Saug genau hier** den Saugroboter an eine Stelle: **📍 Stelle antippen** und dann im Plan auf die Krümel tippen – er reinigt ein Quadrat darum (1, 1,5, 2 oder 3 m). Einmal pro Roboter wird er eingemessen: Er steht in seiner Station – **1 · Station antippen** und die Station im Plan antippen; dann steht er an einer anderen Stelle (mindestens 2 m weiter) – **2 · Zweite Stelle antippen**. Mit **Testfahrt** prüfst du, ob er genau hinfährt; liegt er spiegelverkehrt, hilft **Karte gespiegelt**. Geht mit **Roborock**, **Dreame** (Dreame Vacuum) und **Xiaomi** (mit dem Xiaomi Cloud Map Extractor); andere Roboter behalten die Raumreinigung. Das Modul muss einmal unter **Erweiterungen → Module** freigegeben werden.
 
 ### 6.9 Digitale Bilderrahmen
 
@@ -1372,7 +1494,11 @@ Die Karte `custom:axonometra-card` bringt die 3D-Ansicht in jedes Dashboard. Sie
 
 ### 8.1 Karten-Vorlagen
 
-Statt jede Karte auf jedem Tablet einzeln einzustellen, baust du sie einmal im Editor: **⚙ Einstellungen → 🖥 Karten-Vorlagen → + Neue Vorlage**. Gib ihr einen Namen (etwa „Küche Fire-Tablet“) und stell darunter alles ein, mit demselben Formular wie im Kartendialog von Home Assistant. **Duplizieren** macht eine Kopie als Ausgangspunkt für das nächste Tablet.
+Statt jede Karte auf jedem Tablet einzeln einzustellen, baust du sie einmal im Editor: **⚙ Einstellungen → Karten-Vorlagen**. Links stehen die Vorlagen, getrennt nach **Bildschirme** und **Handys**, jeweils mit **+ Neue Vorlage**. Gib der Vorlage einen Namen (etwa „Küche Fire-Tablet“) und stell sie in den Reitern **Allgemein**, **Ansicht**, **Anzeigen**, **Funktionen** und **Wandtablet (Kiosk)** ein – dieselben Optionen wie im Kartendialog von Home Assistant. **Duplizieren** macht eine Kopie als Ausgangspunkt für das nächste Gerät.
+
+Rechts steht die **Vorschau** auf dem gewählten Bildschirm (eine Handy-Vorlage auf einem Handy). Du kannst darin drehen, zoomen und Räume öffnen wie auf der Karte; geschaltet wird in der Vorschau nichts. Damit Formular und Vorschau Platz haben, klappen die Themen der Einstellungen hier weg – **Alle Einstellungen** oben holt sie zurück. Eine Vorlage **für ein Handy** hat die Optionen der Leiste, siehe [5.13](#513-am-handy-die-handy-ansicht-neu).
+
+![Karten-Vorlagen](images/card-templates.jpg)
 
 **Auf dem Tablet:** Karte hinzufügen, nach „Axonometra“ suchen und ganz oben unter **Vorlage** die Vorlage wählen, fertig. Das Formular darunter fällt weg. Im YAML stehen nur zwei Zeilen:
 
@@ -1531,7 +1657,7 @@ Das normale Backup von Home Assistant sichert Axonometra ebenfalls vollständig 
 **Hilfe und Rückmeldung:** Einen Fehler meldest du am besten als [Issue auf GitHub](https://github.com/Mastershort/neonplan3d/issues/new/choose), eine Idee als [Diskussion](https://github.com/Mastershort/neonplan3d/discussions/categories/ideas). So geht nichts verloren, alle sehen den Stand, und du wirst in den Release-Notizen genannt, wenn es umgesetzt ist. Die beiden Knöpfe dafür stehen auch im Editor unten in der Seitenleiste und auf der Seite Erweiterungen.
 
 **Wie bekomme ich das neueste Update?**
-Einstellungen → System → Updates. HACS sucht nur alle paar Stunden nach neuen Versionen, deshalb fehlt ein frisches Update dort manchmal noch. Dann: HACS → Axonometra → ⋮ → **Informationen aktualisieren** → **Herunterladen**. Danach Home Assistant neu starten und die Seite neu laden (Strg+F5, in der Companion-App: Einstellungen → Companion-App → Frontend-Cache zurücksetzen).
+Einstellungen → System → Updates. Der Marketplace sucht nur alle paar Stunden nach neuen Versionen, deshalb fehlt ein frisches Update dort manchmal noch; dann etwas später noch einmal nachsehen. Mit HACS (Home Assistant vor 2026.11) geht es sofort: HACS → Axonometra → ⋮ → **Informationen aktualisieren** → **Herunterladen**. Danach Home Assistant neu starten und die Seite neu laden (Strg+F5, in der Companion-App: Einstellungen → Companion-App → Frontend-Cache zurücksetzen).
 
 **Kann ich Helfer statt echter Sensoren nehmen?**
 Ja. Überall, wo Axonometra einen Zahlenwert erwartet (Leistung, Ladestand, Reichweite, Position …), stehen auch `input_number`- und `number`-Helfer zur Wahl, und wo ein Ein/Aus erwartet wird (Kontakt, Anwesenheit …), auch `input_boolean`. Für Leistung braucht der Helfer die Einheit W oder kW.

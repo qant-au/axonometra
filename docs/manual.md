@@ -35,21 +35,23 @@ This manual describes every feature of the current version. What changed in whic
 - A browser with WebGL. That is every current browser, the Home Assistant app and Amazon Fire tablets.
 - An administrator to edit. All other users see and control the plan but do not change it.
 
-### With HACS
+### With the Marketplace
 
-[![Open your Home Assistant instance and open the Axonometra repository inside HACS.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=Mastershort&repository=axonometra&category=integration)
+[![Open your Home Assistant instance and open the Axonometra repository in the Marketplace.](https://my.home-assistant.io/badges/marketplace_repository.svg)](https://my.home-assistant.io/redirect/marketplace_repository/?owner=Mastershort&repository=axonometra&category=integration)
 
-The button opens Axonometra straight in the HACS of your installation. Axonometra is in the official HACS list, no custom repository needed. By hand:
+Since Home Assistant 2026.11, HACS is built in as the **Marketplace**. The button opens Axonometra straight in the Marketplace of your installation. Axonometra is in the official list, no need to add it from a link. By hand:
 
-1. Open **HACS** in Home Assistant.
-2. Search for **Axonometra**, install it and restart Home Assistant.
+1. Open **Settings → Marketplace**. The first time, accept the note about community content.
+2. Search for **Axonometra**, select **Install** and restart Home Assistant.
 3. **Settings → Devices & services → Add integration → Axonometra**, or straight with this button:
 
    [![Open your Home Assistant instance and start setting up Axonometra.](https://my.home-assistant.io/badges/config_flow_start.svg)](https://my.home-assistant.io/redirect/config_flow_start/?domain=axonometra)
 
 **Axonometra** now appears in the sidebar. The dashboard card is available right away, no resource needed.
 
-If you added Axonometra as a custom repository before, there is nothing to do: updates keep coming as usual.
+**Home Assistant before 2026.11:** it works the same with **HACS**: open HACS, search for **Axonometra**, download it and restart, or [open it straight in HACS](https://my.home-assistant.io/redirect/hacs_repository/?owner=Mastershort&repository=axonometra&category=integration).
+
+If you installed Axonometra with HACS before, also as a custom repository, there is nothing to do: when you update to Home Assistant 2026.11 the Marketplace takes it over, and updates keep coming as usual.
 
 ### By hand
 
@@ -57,7 +59,7 @@ Copy the folder `custom_components/axonometra` from the repository into `config/
 
 ### Updates
 
-HACS reports new versions by itself. Restart Home Assistant after every update. Until then Axonometra shows a note at the top that a restart is pending. Your plan always stays, even if you remove the integration and add it again.
+The Marketplace (or HACS) reports new versions by itself under **Settings → System → Updates**. Restart Home Assistant after every update. Until then Axonometra shows a note at the top that a restart is pending. Your plan always stays, even if you remove the integration and add it again.
 
 ---
 
@@ -119,7 +121,7 @@ A group's button names the tool in use, e.g. "Room: Free shape" or "Outdoor: Law
 
 **Collapsing the sidebar:** **Collapse ›** at the top of the sidebar folds it to a narrow strip – the plan gets all the room, e.g. for moving furniture. **‹** unfolds it, a glowing **⚙** in the strip opens the settings of the selection. Choosing another tool unfolds it again by itself. The browser remembers the choice.
 
-**Mouse and touch:** Two fingers pan and zoom. With a mouse, the wheel zooms; drag an empty spot or anywhere with the **right or middle mouse button** to pan (a right click without dragging still opens the menu). **Ctrl+Z** undoes, **Ctrl+Y** or **Ctrl+Shift+Z** redoes, **Del** deletes the selection, **Esc** cancels. The **arrow keys** nudge the selection (room, corner, furniture, device, wall, outdoor area) by one grid step, with **Shift** by 10 cm, with **Alt** by 1 cm; doors and windows slide along their wall.
+**Mouse and touch:** Two fingers pan and zoom. With a mouse, the wheel zooms; drag an empty spot or anywhere with the **right or middle mouse button** to pan (a right click without dragging still opens the menu). With the **space bar** held, dragging with the left button always pans, also over rooms and furniture (since 3.5.0). **Ctrl+Z** undoes, **Ctrl+Y** or **Ctrl+Shift+Z** redoes, **Del** deletes the selection, **Esc** cancels. The **arrow keys** nudge the selection (room, corner, furniture, device, wall, outdoor area) by one grid step, with **Shift** by 10 cm, with **Alt** by 1 cm; doors and windows slide along their wall.
 
 **Locking the floor plan and fixing:** **Lock floor plan** in the floor settings (see [4.2](#42-floors)) or by right-clicking a room locks all rooms, walls, doors, windows and outdoor areas, newly drawn ones too; a selected room then shows "🔒 Floor plan locked", a click on it unlocks. Furniture and devices are fixed one by one once they are in place: with the lock **🔓 Fix** at the top of the form, with the key **L** or by **right-click** (long press on a tablet). The right-click menu also offers **Duplicate**, **Turn 90°** and **Delete**. Locked items can be selected and edited in their form, but not dragged, not nudged with the arrow keys and only deleted after asking; dragging then moves the view. Fixed furniture and devices also stay put in the 3D half.
 
@@ -185,22 +187,28 @@ Walls are created automatically: every shared edge of two rooms becomes an inter
 
 ### 4.5 The ⚙ settings menu
 
-Everything that belongs to the whole plan rather than to a floor, a room or an item sits in one menu: **⚙ Settings ▾** on the right of the toolbar (only the gear on narrow screens). Each entry opens a dialog over the plan, also while something is selected; **✕** or **Esc** closes it. The side bar without a selection only keeps the floor's rooms, the floor-plan picture and the help.
+Everything that belongs to the whole plan rather than to a floor, a room or an item sits in one place: **⚙ Settings** on the right of the toolbar (only the gear on narrow screens). The button opens a dialog over the plan, also while something is selected: the topics in five groups on the left, the chosen topic on the right. The dialog opens where you left it; **✕**, **Esc** or a click beside it closes it. In a narrow window the topics are a choice on top.
 
-| Entry | Content |
-|---|---|
-| **🏠 House** | wall thicknesses, grid, lengths, north (the rows below) |
-| **🌦 Weather & warnings** | weather entity and effects, rain warning, warning names, outage sensor, sun patches |
-| **🎬 Live director** | see [6.1](#61-camera-cockpit) |
-| **🎙 Voice control** | see [5.10](#510-voice-control-new) |
-| **⭐ Favourites** | the central menu of the 3D view (below) |
-| **🎨 Styles** | styles, own styles, times of day and facade, see [5.12](#512-styles-new-in-31) |
-| **🖼 Background** | what lies behind the 3D house (below) |
-| **⛰ Ground** | see [4.21](#421-cellar-and-ground) |
-| **🗺 Surroundings** | the neighbourhood from the map, see [4.26](#426-the-surroundings-from-the-map-new) |
-| **💾 Backup** | export, import, restore, see chapter 9 |
-| **🧩 Modules** | the modules installed (code from the shop, e.g. "The house answers") and **Import a module …** for the .fp3dpack file |
-| **🖥 Card templates** | ready-made dashboard cards for the wall tablets, see [8.1](#81-card-templates) |
+![Settings](images/settings.jpg)
+
+| Group | Topic | Content |
+|---|---|---|
+| **House & plan** | **Floor plans** | several floor plans, see [4.25](#425-several-floor-plans-and-the-property-new-in-30) |
+| | **House** | wall thicknesses, grid, lengths, north (the rows below) |
+| | **Ground** | see [4.21](#421-cellar-and-ground) |
+| | **Surroundings** | the neighbourhood from the map, see [4.26](#426-the-surroundings-from-the-map-new) |
+| | **Background** | what lies behind the 3D house (below) |
+| **Look** | **Styles** | styles, own styles, times of day and facade, see [5.12](#512-styles-new-in-31) |
+| | **Weather & warnings** | weather entity and effects, rain warning, warning names, outage sensor, sun patches |
+| | **Favourites** | the central menu of the 3D view (below) |
+| **Screens** | **Card templates** | ready-made dashboard cards for wall tablets and phones, see [8.1](#81-card-templates) |
+| | **Live director** | see [6.1](#61-camera-cockpit) |
+| **Extensions** | **Modules** | the modules installed (code from the shop, e.g. "The house answers") and **Import a module …** for the .fp3dpack file |
+| | **Fun packs** | pets and the packs of the seasons |
+| | **Voice control** | see [5.10](#510-voice-control-new) |
+| | **Locating** | see [5.11](#511-locating-new) |
+| **System** | **Backup** | export, import, restore, see chapter 9 |
+| | **Help improve** | diagnostic reports |
 
 The **roof shape** (none, flat, gable, ridge, pitch, overhang) sits with the roof tool, see [4.19](#419-roof). The **start view** is remembered in the 3D view: turn and zoom the house, then tap **📌** in the view settings (gear at the top right); **📌✕** resets it. The 3D view, the card and the kiosk then open the house like that, and an opened floor is shown from the same side.
 
@@ -296,7 +304,7 @@ The **Worktop** (Kitchen) is a free top without a base, for gaps in the kitchen 
 
 - **State from:** any piece of furniture can show an entity that reports on, occupied or home – its top then glows: the bed with an occupancy mat, the armchair, the sauna. A second entity lights the other half (left/right, bottom/top for a bunk bed); set the first one to *none* and the second moves up into its place. Lamps, energy devices and screens have fields of their own for this.
 - **Only show while …** (new): the piece stands in 3D only while an entity is in a state – the Christmas tree while `input_boolean.christmas` is on, the garden decoration only while a season sensor says "summer". Separate several states with commas, `<20` or `>80` compares a number, a `!` in front turns it round; empty means "on". Hidden, its light and its marker go too. The editor always shows the piece; while it is missing in 3D it is faint in the plan. So you place decoration once and switch it on every year with a switch or an automation.
-- **🎨 Finish** (new in 3.4): own colours for **wood**, **fabric** and **fronts** – a sofa in blue, a table in walnut, a kitchen in sage. Shown in the homely styles; the neon looks colour every item themselves. It works for the built-in furniture and every pack item made of these parts; **Standard** goes back to the style's colours. **For all the same in the plan** gives every item of this kind the same finish.
+- **🎨 Finish** (new in 3.4): own colours for **wood**, **fabric** and **fronts** – a sofa in blue, a table in walnut, a kitchen in sage. Shown in the homely styles; the neon looks colour every item themselves. It works for the built-in furniture and every pack item made of these parts; **Standard** goes back to the style's colours. Since 3.5.0 cabinets, dressers and kitchens also have **Carcass**: as long as you choose nothing there, **Fronts** colours the whole cabinet as before; with an own carcass colour the sides, top and bottom take it and only doors and drawers take the front colour. Worktops take the wood colour, pack lamps their body colour (pack updates for 3.5.0). **For all the same in the plan** gives every item of this kind the same finish.
 - **⚡ Live parts** (new in 3.4, on pack items that have them): parts move with Home Assistant – the server rack's door opens with its contact, the print in the 3D printer grows with its progress, the home battery fills with its charge, status lights show green, off or a pulsing red, fans turn, parts glow. Pick the fitting entity for each part; an item with only one takes the item's entity without a choice. Without an entity everything stands as drawn.
 - **Duplicate** and **Delete** are there too.
 
@@ -451,7 +459,7 @@ A simple house gets a flat or gable roof over the whole top floor under **Build 
 - Choose **Roof sections (custom)** under **Roof**, or the **Roof** tool. The first time, Axonometra proposes the sections from your rooms: per floor the parts no higher floor covers, each with a gable roof. Then you adjust them.
 - In the **Roof** tool you drag a new section in the plan. Tap selects one, dragging moves it, the corners resize it. At the top you choose the floor whose rooms the plan shows. The 3D view opens beside it with the whole house, so you see every change at once.
 - With the lock **🔓 Fix** (or the key **L**) a finished section stays put and no longer slips when you tap it; **Lock floor plan** locks all sections too.
-- Each section has a **shape** – gable, hip, half-hip (a gable hipped at the top), pyramid (four slopes to a point), mansard (steep below, flatter above), pent, flat and parapet (a flat roof with a wall ring) – and a **ridge direction** (↔ or ↕).
+- Each section has a **shape** – gable, hip, half-hip (a gable hipped at the top), pyramid (four slopes to a point), mansard (steep below, flatter above; set the upper pitch under **Upper roof pitch** since 3.5.0, default 30°), pent, flat and parapet (a flat roof with a wall ring) – and a **ridge direction** (↔ or ↕).
 - For gable, hip and half-hip, **End left/right** (or **top/bottom**) sets each end of the ridge on its own to a gable, a hip or a half-hip – a hip roof with an upright gable at the other end, for example. **as the shape** leaves the end as the shape has it.
 - **Eave** and **pitch** are set for both sides separately. All heights count from the ground. A side with a lower eave reaches further down, e.g. a catslide over a low extension. A pent roof rises from the first side; **Swap sides** turns it round.
 - **Turn:** if an extension or wing stands at an angle to the house, turn its section with **Turn** (or ↺ 15° / ↻ 15°), clockwise. Dormers and cross gables on it turn along, roof windows and solar fields stay on it. A turned section is moved by dragging; the corners for resizing come back at 0° (turn back, resize, turn again). Where a turned wing runs into another roof, that roof's slopes cut it off. Since 3.0.5 that also holds for a small turned section sitting on a bigger roof (a gable turned 45° over a pointed bay in a hip roof): it meets the roof below like a wing instead of cutting a dormer's hole into it – shape gable, **end gable** towards the bay's point, the other end simply running into the main roof. By default every section stays at 0°.
@@ -588,6 +596,8 @@ Under **⚙ Settings → 🗺 Surroundings** Axonometra brings in your house's n
 - **Show in 3D** hides and shows the surroundings, **Remove** deletes them from the plan. Room cards show only their rooms, without surroundings.
 - Under **Show and hide houses** a small map shows your house and the houses around it. Tap a house to hide it or show it again (dashed yellow = hidden). Map buildings standing mostly on what you drew yourself are hidden by Axonometra itself: on your rooms (on a floor of its own for the garden too), under your roof sections (a carport, a garden house) or on a pergola – such as a garage the map keeps as a building of its own. Since 3.3.1 the plan shows the map on every floor at the ground floor's level.
 - **Neighbours' houses as outlines only** shows the neighbours' houses flat as an outline on the ground instead of as blocks; they then cast no shadows.
+- **Neighbours' houses with a gable roof** gives the neighbours' houses a simple roof with the ridge along their longer side instead of a flat top. The map's height is then the ridge. Halls, blocks of flats and winding buildings stay blocks. The map only knows outline and height, not what the roof really looks like.
+- **Height of the surroundings (m)** moves the whole map up (+) or down (−) – for a street that lies higher or lower than the ground floor (a slope, a sloping drive). Default 0.
 
 Bottom right in the 3D view it says "© OpenStreetMap": the map data comes from the OpenStreetMap contributors under the Open Database Licence.
 
@@ -716,6 +726,10 @@ The magnifier at the bottom left opens **"Where is …?"**. Type a device or roo
 With north set, sunlight from `sun.sun` falls through the windows facing the sun as soft patches on the floor. Lowered blinds make the patches smaller. If you do not like the patches, switch off **Sunlight through the windows** in **Settings**. By day the sky behind the house gets lighter.
 
 **Sun arc and house shadow (since 2.0.7):** a dotted arc around the house shows the sun's way today, with the times of sunrise and sunset at its ends. A glowing dot on it is the sun now, a brighter dot marks every full hour. The house's shadow lies on the ground and moves with the sun, so you can see when the terrace gets sun. The shadow shows in the **All floors** view and not on the **Tablet** level, the arc on every level. Both need the north direction and the home's location in Home Assistant; switch them off in the ⭐ central menu under **⚙ Settings** (or in the editor's settings) with **Sun arc and house shadow**. On a large plot, **Sun arc around: the whole plot** (in the same place, since 2.2.0) puts the arc and the compass ring around everything drawn – rooms, outdoor areas, fences and free walls – instead of only the house.
+
+**Real sky (since 3.5.0):** behind the house stands a sky that follows the real sun: sunset colours, the blue hour, at night stars that move through the night and the moon in its real phase. It turns with the view. With **Weather outside** (6.2) clouds drift with the real weather and wind. In the homely day styles it paints the whole sky; in the neon look and the evening styles stars, moon, sunset glow and clouds come over the look's own background. Off with an own background and in the blueprint look; a still picture on the **Tablet** level. Switch it off in the editor under **Settings → Weather & warnings** with **Real sky** (in the 3D view also under ☆ → **⚙ Settings**).
+
+**Fly in from space (since 3.5.0, option):** with **Fly in from space** (in the editor under **Settings → Weather & warnings**, right below **Real sky**; in the 3D view also under ☆ → **⚙ Settings**), a neon globe turns to your home (the location in Home Assistant) when the view opens, a beam marks it, the view dives in and the camera comes down from high above onto the house. Once per page load, a tap skips it. Not in the editor and not on the **Tablet** level; switched on, it plays once right away.
 
 **Windows glow outside at night (since 2.0.7):** when it is dark outside, the light of lit rooms on the ground floor falls out of the windows as a warm glow onto the lawn and terrace in front, in the lamp's colour. Since 3.0.5 the glow is each lamp's cone through the window opening: it lies shifted away from the lamp (a lamp to the left of the window lights the ground to its right), fades with the distance from the lamp, and a lamp around the corner that cannot see the window past a wall throws nothing out. A dimmed lamp glows correspondingly less outside. Lowered blinds dim it. A window over a balcony lights the balcony; the glow ends at its edge. Switch it off in the ⭐ central menu under **⚙ Settings** (or in the editor's settings) with **Windows glow outside at night**.
 
@@ -963,6 +977,108 @@ data:
 
 **What wins?** The newest setting. A style set by voice or an action applies until you reset it, its minutes run out, or you choose a style anew for the screen (device, card or template). After that comes the helper entity, then the style set.
 
+### 5.13 On the phone: the phone view (new)
+
+Axonometra is made for wall tablets and PCs. On a phone you want two things: see at a glance whether all is well at home, and reach every room with your thumb. That is what the phone view is for: the house without the header and loose buttons, and a bar at the bottom.
+
+| The house | The rooms | "What is going on?" |
+| --- | --- | --- |
+| ![Phone view](images/phone-start.jpg) | ![Rooms](images/phone-rooms.jpg) | ![What is going on?](images/phone-now.jpg) |
+
+**Switching it on:** on a phone Axonometra asks once whether you want to try it. On a PC or tablet you switch it on at the top under **⚙ → 📱 Phone view**; **More → Phone view off** takes you back. The choice counts for this device only.
+
+**In the dashboard card:** with `phone: true` the card runs in the phone view – best together with `fill: true` on a dashboard view of its own:
+
+```yaml
+type: custom:axonometra-card
+phone: true
+fill: true
+```
+
+**The bar at the bottom:**
+
+| Place | What it opens | The number on it |
+| --- | --- | --- |
+| **Now** | the list "What's going on?" | what needs a look; the dot is green, yellow or red |
+| **Floor** or **Rooms** | the rooms as tiles with temperature, lights, open windows and music. A house with two floors has a place for each, otherwise all share the place **Rooms** | lights that are on |
+| **Blinds** | all blinds by floor, with **All up**, **All down** and ▲ ■ ▼ per blind | blinds that are shut |
+| **More** | search, house check, whole house, room on its own; in the integration also the show menu, time travel and Home Assistant's menu | – |
+
+When something needs a look, it also stands in a line above the bar ("2 windows and doors open · 4 lights on").
+
+**Jumping into a room:** a tap on a tile flies into the room in the house and opens its room panel ([5.4](#54-the-room-panel)) with lights, blinds, climate and media. **Whole floor** shows the floor. With **More → Room on its own** a room you jump into stands alone in the picture, without the rest of the house.
+
+**The list "What's going on?"** shows the urgent first:
+
+| Line | What it shows |
+| --- | --- |
+| ⚠️ Warnings | smoke, water, alarm, rain on an open window – everything from [5.8](#58-warnings) |
+| 🪟 Open | windows, doors and garage doors with a contact that stand open or are tilted |
+| 🔓 Not locked | doors with a lock, with the button **Lock** |
+| 👤 Who is in | Home Assistant's persons: at home (with the room when Axonometra knows it) and away |
+| 🧺 Household | the lines of the card "Today in the household": a finished washing machine, bins, post, plants |
+| 💡 Lights | how many lights are on in which rooms, with the button **All off** |
+| 🚗 Car, ⚡ Energy | charge and charging, consumption, solar, grid and battery (with the matching add-ons) |
+
+The house's **favourites** stand as buttons on top of the list. With nothing to do, it says **All is well**. When you are not at home yourself, "Who is in" comes right after the warnings. A tap on a line closes the list and shows the place in the house; a line with several places (six open windows) unfolds, and you pick one.
+
+**House check:** the button at the bottom of the list (also under **More**) goes through everything open or switched on before you leave or go to bed: first the windows and doors (you shut those by hand), then the locks, then the lights room by room. The house shows each place, with **All off** or **Lock** and **Next** below it. From the first lit room on there is **All lights off** for the rest.
+
+**The room panel on a phone:** it opens folded – the name, the temperature and its buttons – so the room stays in sight and you can tap its devices in the house. **Show devices** unfolds the list, up to about 60 % of the height.
+
+**Designing the bar yourself (dashboard card):** in the card form choose **Phone** instead of **Tablet or large screen** at the top. The bar's options then stand there:
+
+| Option | YAML | Meaning |
+| --- | --- | --- |
+| Rooms / blinds in the bar, favourites on the list | `phone_hide: [rooms, covers, favorites]` | leaves the place or the favourites out, e.g. in a house without blinds |
+| Room on its own | `phone_solo: true` | a room you jump into stands alone in the picture |
+| Open with the list | `phone_start: now` | the card opens with "What is going on?" instead of the house |
+| Own place 1 and 2 | `phone_places` | up to two places of your own, see below |
+| Show the surroundings from the map | `surroundings: false` | this card draws the house without the surroundings (the plan keeps them) |
+
+An **own place** is one of four things, each with a word (`name`) and a symbol (`icon`) of its own:
+
+| `kind` | What the place does | Needs |
+| --- | --- | --- |
+| `lights` | opens all lamps by floor, with **All on** / **All off**; the place shows the number of lights that are on | – |
+| `climate` | opens all thermostats by floor | – |
+| `action` | runs a scene or a script | `entity` |
+| `link` | opens a page of a dashboard | `path` |
+
+```yaml
+type: custom:axonometra-card
+phone: true
+fill: true
+phone_hide: [covers]        # a house without blinds
+phone_places:
+  - kind: lights
+  - kind: action
+    name: Good night
+    entity: script.good_night
+```
+
+The bar holds at most five places. With more, two floors first share the place **Rooms**, then own places and the blinds move under **More**. A place with no matching devices stays away.
+
+**From a notification straight to the place:** these addresses open the integration in the right spot:
+
+| Address | Opens |
+| --- | --- |
+| `/axonometra?view=now` | the list "What's going on?" |
+| `/axonometra?room=Bath` | the room (name or id) |
+| `/axonometra?show=binary_sensor.window_bath` | flies to this device, window or door |
+
+In an automation for the Companion app it looks like this – a tap on the message shows the window in the house:
+
+```yaml
+action: notify.mobile_app_my_phone
+data:
+  title: Window open
+  message: The bathroom window has been open for 30 minutes.
+  data:
+    clickAction: /axonometra?show=binary_sensor.window_bath   # Android
+    url: /axonometra?show=binary_sensor.window_bath           # iPhone
+```
+
 ## 6. Pro add-ons
 
 Pro add-ons are paid extra features, sold singly in the shop. Without an add-on, the switches show a 🔒 and a hint leads to the shop. How to install them is in [chapter 7](#7-extensions-shop-and-furniture-packs).
@@ -998,6 +1114,8 @@ Pro add-ons are paid extra features, sold singly in the shop. Without an add-on,
 2. **On which screen:** in the same section, **Switch on on this device**. This only applies to this browser, e.g. the wall tablet with the Axonometra panel. On a dashboard card you switch on **Live director** in the card settings instead (`director: true`).
 
 Someone using the tablet is only interrupted by the doorbell and by warnings. If you touch the screen while the director shows something, the view stays where it is. Part of the camera cockpit.
+
+**People from cameras (release 2, since Axonometra 3.5.0):** when a camera sees a person, a car or an animal, a figure stands on the plot – a person as a neon silhouette, a car and an animal as a symbol. With **Frigate** (the Frigate integration) right where it is, and the figure moves along: Axonometra turns the foot point of Frigate's detection into a spot on the ground using the camera in the plan (place, height, turn, tilt, angle) – set these as exactly as you can. With other cameras (Reolink, UniFi Protect …) the figure stands in the camera's view while its person, vehicle or animal sensor reports. A tap on the figure opens the camera. Switch it off under **⚙ Settings** in the section **People from cameras**. The update comes over the shop connection; the module has to be approved once under **Extensions → Modules**.
 
 ### 6.2 Weather outside
 
@@ -1115,6 +1233,8 @@ What a player should bring: the state `playing`/`paused`, `media_title` and `med
 
 **Echo devices (Alexa Media Player):** play, pause and track change work. The **volume** cannot be set on some devices and versions of Alexa Media Player, or only with a delay, and the new value often comes back minutes later. This is down to the unofficial Amazon interface, not Axonometra; Home Assistant's own media player dialog has the same limit. Echos controlled through Music Assistant usually follow the volume more reliably.
 
+**Music follows you (release 2, since Axonometra 3.5.0):** walk into another room and the music comes along: once the room with the music is empty, it plays on in the new room, and in 3D notes fly from one speaker to the other. It needs **Music Assistant**: the speakers in the plan have to be Music Assistant players, and every room needs a presence or motion sensor in its area. Under **⚙ Settings → Music follows you** Axonometra shows which rooms are ready, and **Set up** creates the automation "Axonometra – Music follows you" in Home Assistant – it runs even when no tablet is open. When rooms or speakers change, **Set up again** once. The module has to be approved once under **Extensions → Modules**.
+
 ### 6.6 Car Pro
 
 Car Pro brings the car into the plan the way its integration reports it (Tesla, VW We Connect, BMW, Hyundai/Kia, Renault, Smart, Polestar, Audi, Skoda, Cupra, Ford …). It needs a **parking spot** with a vehicle (4.10) and the car's integration in Home Assistant.
@@ -1213,6 +1333,8 @@ Household Pro shows what is due in the household, right where it happens. The wa
 - **Fridge:** when a door stands open longer than set (default 2 minutes), Axonometra warns at the top of the view. The **smart fridge** (side-by-side with moving doors) in the furniture library comes with it.
 - **Calendars (since 3.2):** under **⚙ Settings → House → Calendars in "Today in the household"** tick calendars. Their entries of today stand on the card, all-day ones first, then by time ("14:30 Dentist"). Ended ones drop off; one starting within the hour stands in amber. A tap opens the calendar.
 - **Today in the household:** a glass card at the top right lists what is due – bins today and tomorrow, post, finished appliances, thirsty plants, services due, open fridge doors. A tap opens the device, its header folds it. In the dashboard card `household_card: false` switches it off.
+
+**Clean right here (release 2, since Axonometra 3.5.0):** in the ⭐ central menu, **🧹 Clean right here** sends the robot vacuum to a spot: **📍 Tap the spot** and then tap the crumbs in the plan – it cleans a square round it (1, 1.5, 2 or 3 m). Each robot is measured in once: it stands in its dock – **1 · Tap the dock** and tap the dock in the plan; then it stands somewhere else (at least 2 m away) – **2 · Tap a second spot**. **Test drive** checks that it drives exactly there; if it is mirrored, **Map mirrored** helps. Works with **Roborock**, **Dreame** (Dreame Vacuum) and **Xiaomi** (with the Xiaomi Cloud Map Extractor); other robots keep room cleaning. The module has to be approved once under **Extensions → Modules**.
 
 ### 6.9 Digital picture frames
 
@@ -1372,7 +1494,11 @@ The card `custom:axonometra-card` brings the 3D view into any dashboard. It load
 
 ### 8.1 Card templates
 
-Instead of setting up every card on every tablet, you build it once in the editor: **⚙ Settings → 🖥 Card templates → + New template**. Give it a name (e.g. "Kitchen Fire tablet") and set everything below, with the same form as in Home Assistant's card dialog. **Duplicate** makes a copy to start the next tablet from.
+Instead of setting up every card on every tablet, you build it once in the editor: **⚙ Settings → Card templates**. The templates stand on the left, by **Screens** and **Phones**, each with **+ New template**. Give the template a name (e.g. "Kitchen Fire tablet") and set it up in the tabs **General**, **View**, **Show**, **Features** and **Wall tablet (kiosk)** – the same options as in Home Assistant's card dialog. **Duplicate** makes a copy to start the next device from.
+
+On the right stands the **preview** on the chosen screen (a phone template on a phone). You can turn, zoom and open rooms in it as on the card; the preview switches nothing. So that the form and the preview have room, the settings' topics fold away here – **All settings** at the top brings them back. A template **for a phone** has the bar's options, see [5.13](#513-on-the-phone-the-phone-view-new).
+
+![Card templates](images/card-templates.jpg)
 
 **On the tablet:** add a card, search for "Axonometra" and pick the template under **Template** at the very top, done. The form below goes away. The YAML has two lines only:
 
@@ -1531,7 +1657,7 @@ Home Assistant's own backup includes Axonometra completely as well.
 **Help and feedback:** report a bug as an [issue on GitHub](https://github.com/Mastershort/neonplan3d/issues/new/choose) and an idea as a [discussion](https://github.com/Mastershort/neonplan3d/discussions/categories/ideas). Nothing gets lost, everyone sees the state, and you are credited in the release notes once it is built. The two buttons for it are also at the bottom of the editor's sidebar and on the Extensions page.
 
 **How do I get the latest update?**
-Settings → System → Updates. HACS only looks for new versions every few hours, so a fresh update may not show there yet. Then: HACS → Axonometra → ⋮ → **Update information** → **Download**. Then restart Home Assistant and reload the page (Ctrl+F5; in the Companion app: Settings → Companion app → reset frontend cache).
+Settings → System → Updates. The Marketplace only looks for new versions every few hours, so a fresh update may not show there yet; then look again a little later. With HACS (Home Assistant before 2026.11) it works right away: HACS → Axonometra → ⋮ → **Update information** → **Download**. Then restart Home Assistant and reload the page (Ctrl+F5; in the Companion app: Settings → Companion app → reset frontend cache).
 
 **Can I use helpers instead of real sensors?**
 Yes. Wherever Axonometra expects a number (power, charge, range, position …), `input_number` and `number` helpers can be picked too, and wherever it expects on/off (contact, presence …), `input_boolean` as well. For power the helper needs the unit W or kW.

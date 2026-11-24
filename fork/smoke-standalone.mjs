@@ -237,7 +237,7 @@ try {
       const settle = () => new Promise((ok) => setTimeout(ok, 200));
       ed.shadowRoot.querySelector(".fp3d-seg-settings button").click();
       await settle();
-      [...ed.shadowRoot.querySelectorAll(".fp3d-menu-item")].find((b) => b.textContent.includes("House"))?.click();
+      [...ed.shadowRoot.querySelectorAll(".fp3d-set-item")].find((b) => b.textContent.includes("House"))?.click();
       await settle();
       ed.shadowRoot.querySelector(".fp3d-dialog details")?.setAttribute("open", "");
       await settle();

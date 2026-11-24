@@ -241,8 +241,11 @@ export interface Furniture {
   bin_kind?: "rest" | "bio" | "paper" | "plastic" | "glass" | "garden" | "recycling" | "other" | null;
   /** Waste bin: its body colour ("#rrggbb"; null = the usual one of its kind in the country). */
   bin_color?: string | null;
-  /** Own colours in the homely styles (finishes.ts): wood, fabric (and cushions) and fronts, "#rrggbb" each; missing = the look's own. */
-  finish?: { wood?: string | null; fabric?: string | null; front?: string | null } | null;
+  /**
+   * Own colours in the homely styles (finishes.ts): wood, fabric (and cushions), fronts and the carcass ("body"),
+   * "#rrggbb" each; missing = the look's own (the carcass follows the fronts while it has none).
+   */
+  finish?: { wood?: string | null; fabric?: string | null; front?: string | null; body?: string | null } | null;
   /** Live parts of a pack item (3.4): the entity of each of its slots (slot id -> entity id). */
   binds?: Record<string, string> | null;
   /** Neon sign: its own text (one or two lines, split with |) and the colour of its tubes while no light gives one. */
@@ -498,6 +501,11 @@ export interface RoofSection {
   /** Slopes in degrees. */
   pitch_a: number;
   pitch_b: number;
+  /**
+   * Mansard only: the slope of the upper, flatter part up to the ridge in degrees (5 … 60); pitch_a and pitch_b
+   * set the steep lower part. Null or missing = 30°, as every mansard drawn before (#1183).
+   */
+  pitch_upper?: number | null;
   /** Top of the walls below: gable and knee walls are built from here up to the roof. */
   base: number;
   /** Overhang beyond the walls (null = the roof setting). */
@@ -808,6 +816,10 @@ export interface BuildingSettings extends StylePlan {
   sun_patches?: boolean;
   /** The sun's arc over the house and the house's shadow on the ground (default on). */
   sun_shadow?: boolean;
+  /** The real sky behind the house: sunset colours, stars, the moon in its phase, clouds with the weather (default on). */
+  sky?: boolean;
+  /** "Anflug aus dem All": the view opens with a globe that dives in onto the house (default off). */
+  flyin?: boolean;
   /** What the sun's arc and its compass ring stand around: the house (null, default) or everything drawn on the plot (#833). */
   sun_arc?: "house" | "plot" | null;
   /** At night lit rooms throw their light out of the windows onto the ground in front (default on). */
@@ -886,6 +898,10 @@ export interface Surroundings {
   show?: number[];
   /** The neighbours' houses only as their outline on the ground instead of blocks. */
   flat?: boolean;
+  /** The neighbours' houses with a simple gable roof instead of a flat top (large buildings stay blocks). */
+  roofs?: boolean;
+  /** The whole map shifted up or down (m), where the street lies higher or lower than the ground floor (#1148). */
+  y?: number;
   buildings: SurroundBuilding[];
   ways: SurroundWay[];
   areas: SurroundArea[];
@@ -2037,7 +2053,7 @@ export function normalizeBuilding(b: Building): Building {
     f.rooms = f.rooms.map((r) => ({ ...r, panel: r.panel ?? [] }));
     f.ha_floor = f.ha_floor ?? null;
     f.placements = f.placements.map((p) => ({ ...p, mount: p.mount ?? null, rotation: p.rotation ?? 0 }));
-    f.furniture = f.furniture.map((m) => ({ ...m, entity: m.entity ?? null, power: m.power ?? null }));
+    f.furniture = f.furniture.map((m) => ({ ...m, entity: m.entity ?? null, power: m.power ?? null, ...(m.show_if && !m.show_if.entity ? { show_if: null } : {}) }));
     // lights placed as devices (before lamps existed) become lamps of their mount type
     // (a light turned back into a pin on purpose stays a pin)
     const lights = f.placements.filter((p) => p.entity_id.startsWith("light.") && !p.pin);

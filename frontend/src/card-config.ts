@@ -1,5 +1,6 @@
 // Configuration of the dashboard card, shared by the card and its visual editor (a bundle of its own).
 
+import type { PhonePlace } from "./phone.ts";
 import type { Building, CardTemplate, StartView } from "./model.ts";
 import type { Quality, WallMode } from "./viewer/viewer3d.ts";
 
@@ -95,6 +96,19 @@ export interface CardConfig {
   room_panel?: boolean;
   /** Fill the screen below the dashboard header instead of a fixed height. */
   fill?: boolean;
+  /**
+   * The phone view: a bar at the bottom (Now, the rooms by floor, the blinds, More) with the list "What is going on?"
+   * and the house check; the card's own bars and buttons make way. Best with `fill: true` on a view of its own.
+   */
+  phone?: boolean;
+  /** Phone view: places and parts left out – the rooms and the blinds in the bar, the favourites on top of the list. */
+  phone_hide?: ("rooms" | "covers" | "favorites")[];
+  /** Phone view: a room jumped into stands alone (the default; each device can switch it under More). */
+  phone_solo?: boolean;
+  /** Phone view: "now" opens with the list "What is going on?" instead of the house. */
+  phone_start?: "house" | "now";
+  /** Phone view: up to two places of one's own in the bar – a group of devices, a scene or script, a dashboard page. */
+  phone_places?: PhonePlace[];
   /** Switches in the card: all (true) or a list of walls, floors, temperature, humidity, co2. */
   controls?: boolean | CardControl[];
   /** Start with every bar and overlay hidden (the eye button brings them back); false shows the eye, hidden by default. */
@@ -103,6 +117,8 @@ export interface CardConfig {
   controls_hide_after?: number;
   /** Room names in 3D (default true). */
   room_names?: boolean;
+  /** Draw the surroundings from the map (default true); false leaves them out on this card. */
+  surroundings?: boolean;
   /** An opened floor with the floors below it dimmed (default), stacked, or on its own. */
   floor_stack?: "dim" | "stacked" | "single";
   /** A button for full screen (hides the dashboard around the card). */

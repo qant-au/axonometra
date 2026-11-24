@@ -26,7 +26,8 @@ const pkgDir = join(root, "dist/npm");
 const work = join(root, "dist/pack-test");
 const consumer = join(work, "consumer");
 const shots = join(work, "shots");
-const TARBALL_BUDGET = 2 * 1024 * 1024;
+// 2.1 MB on 2026-11-24: upstream 4.0.1 (the phone view, the settings page) packs to 2.02 MB
+const TARBALL_BUDGET = 2.1 * 1024 * 1024;
 const HOME_ASSISTANT_ONLY = ["axonometra-card-editor.js", "axonometra-locate.js", "axonometra-timetravel.js", "axonometra-voice.js"];
 const failures = [];
 const ok = (msg) => console.log(`ok   ${msg}`);

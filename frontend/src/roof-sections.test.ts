@@ -3,6 +3,7 @@ import { test } from "node:test";
 import { emptyBuilding, newFloor, ROOF_SHAPES, type Room, type RoofSection } from "./model.ts";
 import { onSection, sectionTurn, turnPoint, turnSectionAbout, coversIn, crossAsWing, cutHole, cutUnder, dormerHole, dormerHoles, dormerParent, sectionsCut, turnedDormer, floorOutline, lineOutside, sectionCovers, sectionEnds, sectionUV, wingJunction, wingSection, offsetPolygon, polygonBox, proposeDormer, ridgeHeight, roofRider, roofSectionsFromRooms, roofUnderAt, sectionFrame, sectionGeometry, sectionHeightAt, sectionOverhang, sectionPolygon, sectionProfile, wallTopUnder } from "./roof-sections.ts";
 import { buildRoof } from "./viewer/roof.ts";
+import { roofFaces } from "./solar.ts";
 
 const near = (a: number, b: number, eps = 1e-6) => assert.ok(Math.abs(a - b) < eps, `${a} != ${b}`);
 const rect = (id: string, x0: number, z0: number, x1: number, z1: number): Room => ({ id, name: id, area_id: null, points: [[x0, z0], [x1, z0], [x1, z1], [x0, z1]], floor_material: "wood" });
@@ -243,6 +244,47 @@ test("pyramid, half-hip and mansard: apex, shortened ridge and broken slopes; th
   near(mp.y(mp.vr), mp.rh);
   // the parapet roof is flat
   near(sectionProfile(section({ shape: "parapet", eave_a: 3, eave_b: 3 })).y(5), 3);
+});
+
+test("a mansard's upper slope is 30° unless set; a steeper one lifts the ridge, the break stays (#1183)", () => {
+  const ov = { u0: 0, u1: 0, a: 0, b: 0 };
+  const t = (deg: number) => Math.tan((deg * Math.PI) / 180);
+  // 8 m wide, eaves 3 m, 70° below: the break 2.4 m up, 2.4 / tan 70° in from each eave; the ridge in the middle
+  const vl = 2.4 / t(70);
+  const base = sectionProfile(section({ shape: "mansard", pitch_a: 70, pitch_b: 70 }));
+  near(base.vr, 4);
+  near(base.rh, 5.4 + (4 - vl) * t(30));
+  near(base.y(vl), 5.4);
+  // no field, null and an explicit 30° draw the same roof as before
+  for (const pitch_upper of [null, undefined, 30]) {
+    const p = sectionProfile(section({ shape: "mansard", pitch_a: 70, pitch_b: 70, pitch_upper }));
+    near(p.rh, base.rh);
+    for (const v of [0, 0.5, vl, 2, 4, 6, 7.5, 8]) near(p.y(v), base.y(v));
+  }
+  // 45° above: the break stays where it was, the ridge rises
+  const steep = sectionProfile(section({ shape: "mansard", pitch_a: 70, pitch_b: 70, pitch_upper: 45 }));
+  near(steep.vr, 4);
+  near(steep.rh, 5.4 + (4 - vl));
+  assert.ok(steep.rh > base.rh + 1, "a steeper upper slope gives a higher ridge");
+  near(steep.y(vl), 5.4);
+  near(steep.y(8 - vl), 5.4);
+  near(steep.y(0.5), base.y(0.5));
+  // the planes follow: the ridge line and the height in the middle of the roof
+  const g = sectionGeometry(section({ shape: "mansard", pitch_a: 70, pitch_b: 70, pitch_upper: 45 }), ov);
+  near(g.ridges[0][0][2], steep.rh);
+  near(sectionHeightAt(g, 6, 4)!, steep.rh);
+  near(sectionHeightAt(g, 6, 3)!, steep.y(3));
+  assert.ok(g.gable && Math.abs(Math.max(...g.gable.map((q) => q[1])) - steep.rh) < 1e-6, "the gable wall reaches the new ridge");
+  // flatter than before lowers it; out of range is kept in 5 … 60
+  assert.ok(sectionProfile(section({ shape: "mansard", pitch_a: 70, pitch_b: 70, pitch_upper: 15 })).rh < base.rh);
+  near(sectionProfile(section({ shape: "mansard", pitch_a: 70, pitch_b: 70, pitch_upper: 89 })).rh, 5.4 + (4 - vl) * t(60));
+  near(sectionProfile(section({ shape: "mansard", pitch_a: 70, pitch_b: 70, pitch_upper: 0 })).rh, 5.4 + (4 - vl) * t(5));
+  // uneven eaves: the upper slopes still meet at one ridge, at the same height from both sides
+  const uneven = sectionProfile(section({ shape: "mansard", pitch_a: 70, pitch_b: 70, eave_b: 2.5, pitch_upper: 50 }));
+  near(uneven.y(uneven.vr - 1e-9), uneven.y(uneven.vr + 1e-9), 1e-6);
+  near(uneven.y(uneven.vr), uneven.rh);
+  // other shapes ignore the field
+  near(sectionProfile(section({ pitch_upper: 60 })).rh, sectionProfile(section()).rh);
 });
 
 test("a dormer sits on a side of its section, opens the slope under it and lifts the ceiling there", () => {
@@ -576,4 +618,66 @@ test("a cross gable as high as a roof with a hipped end meets it like a wing, no
     assert.ok(y >= Math.max(hm, hw) - 0.05, `a face at (${x.toFixed(2)}, ${z.toFixed(2)}) stands ${(Math.max(hm, hw) - y).toFixed(2)} m under the other roof`);
   }
   assert.ok(both >= 4, `faces where both roofs are: ${both}`);
+});
+
+test("a flat roof opens under its roof windows: the glass looks into the room below, not onto the slab (#1078)", () => {
+  const b = emptyBuilding();
+  b.floors = [{ ...newFloor("eg", "EG", 0), rooms: [rect("a", 0, 0, 12, 8)] }];
+  const flat = section({ id: "f", shape: "flat", base: 2.5, eave_a: 2.5, eave_b: 2.5, pitch_a: 0, pitch_b: 0, overhang: 0 });
+  // the slab's faces crossing the vertical line through a plan point (x, z)
+  const hits = (x: number, z: number) => {
+    const p = buildRoof(b)[0].solid.p;
+    let n = 0;
+    for (let i = 0; i < p.length; i += 9) {
+      const [ax, az, bx, bz, cx, cz] = [p[i], p[i + 2], p[i + 3], p[i + 5], p[i + 6], p[i + 8]];
+      const d = (bx - ax) * (cz - az) - (cx - ax) * (bz - az);
+      if (Math.abs(d) < 1e-12) continue;
+      const s = ((x - ax) * (cz - az) - (cx - ax) * (z - az)) / d;
+      const t = ((bx - ax) * (z - az) - (x - ax) * (bz - az)) / d;
+      if (s > 0 && t > 0 && s + t < 1) n++;
+    }
+    return n;
+  };
+  b.settings.roof = { type: "custom", pitch: 40, overhang: 0, sections: [flat] };
+  // the slab: its top and its underside
+  assert.equal(hits(4, 3), 2);
+  const face = roofFaces(b).find((f) => f.flat)!;
+  // a 1 × 1 m window with its lower left corner 3 m along and 2 m across the face
+  b.settings.roof.windows = [{ id: "w", face: face.key, u: 3, v: 2, w: 1, h: 1, cover: null, contact: null, tilt: null }];
+  const at = (u: number, v: number) => [face.o[0] + face.eu[0] * u + face.es[0] * v, face.o[2] + face.eu[2] * u + face.es[2] * v];
+  const [mx, mz] = at(3.5, 2.5);
+  assert.equal(hits(mx, mz), 0, "the slab is open under the window");
+  // beside the window the slab is closed as before
+  const [ox, oz] = at(5, 2.5);
+  assert.equal(hits(ox, oz), 2);
+  // a window reaching past the slab's rim leaves the slab closed (no cut through the edge)
+  b.settings.roof.windows = [{ id: "w", face: face.key, u: face.lu - 0.5, v: 2, w: 1, h: 1, cover: null, contact: null, tilt: null }];
+  const [ex, ez] = at(face.lu - 0.2, 2.5);
+  assert.ok(hits(ex, ez) >= 2);
+});
+
+test("the single flat roof opens under its roof windows too (#1078)", () => {
+  const b = emptyBuilding();
+  b.floors = [{ ...newFloor("eg", "EG", 0), rooms: [rect("a", 0, 0, 12, 8)] }];
+  b.settings.roof = { type: "flat", pitch: 0, overhang: 0.3 };
+  const face = roofFaces(b).find((f) => f.flat)!;
+  const solid = () => buildRoof(b)[0].solid.p.length;
+  const closed = solid();
+  b.settings.roof.windows = [{ id: "w", face: face.key, u: 3, v: 2, w: 1, h: 1, cover: null, contact: null, tilt: null }];
+  // the slab gains the opening's sides and is triangulated round it
+  assert.ok(solid() > closed);
+});
+
+test("a roof that begins at a floor's own level sits on that floor: its rooms are the attic (#1199)", async () => {
+  const { sectionFloor } = await import("./roof-sections.ts");
+  const { emptyBuilding, newFloor } = await import("./model.ts");
+  const b = emptyBuilding();
+  const room = (id: string, x0: number, z0: number, x1: number, z1: number) => ({ id, name: id, area_id: null, points: [[x0, z0], [x1, z0], [x1, z1], [x0, z1]] as [number, number][], floor_material: "wood" as const });
+  b.floors = [
+    { ...newFloor("eg", "EG", 0), height: 2.4, rooms: [room("a", 0, 0, 13, 9), room("g", 13, 0, 20, 6)] },
+    { ...newFloor("og", "OG", 2.6), height: 2.4, rooms: [room("b", 0, 0, 13, 9)] },
+  ];
+  assert.equal(sectionFloor(b, { base: 2.6, x0: -0.5, z0: -0.5, x1: 13.5, z1: 9.5 })?.id, "og");
+  // the garage roof beside it at the same height has no room of the upper floor under it
+  assert.equal(sectionFloor(b, { base: 2.6, x0: 13, z0: 0, x1: 20, z1: 6 })?.id, "eg");
 });

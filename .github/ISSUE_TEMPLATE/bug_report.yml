@@ -25,7 +25,7 @@ body:
     id: version
     attributes:
       label: Axonometra version / Version
-      description: HACS → Axonometra, or Settings → Devices & services → Axonometra.
+      description: Settings → Marketplace → Axonometra (HACS before HA 2026.11), or Settings → Devices & services → Axonometra.
       placeholder: "1.2.0"
     validations:
       required: true

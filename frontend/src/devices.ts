@@ -391,9 +391,17 @@ export function powerSensorsOf(hass: HomeAssistant, deviceId: string): string[] 
 }
 
 /** Friendly name without a leading area name ("Wohnzimmer Deckenlicht" in the Wohnzimmer -> "Deckenlicht"). */
-export function entityName(hass: HomeAssistant, entityId: string, areaName?: string): string {
+export function entityName(hass: HomeAssistant, entityId: string, areaName?: string, dropDevice = false): string {
   const st = hass.states[entityId];
-  const name = (st?.attributes.friendly_name as string | undefined) ?? hass.entities?.[entityId]?.name ?? entityId;
+  const entry = hass.entities?.[entityId];
+  let name = (st?.attributes.friendly_name as string | undefined) ?? entry?.name ?? entityId;
+  // Home Assistant 2026.11: friendly_name is the legacy "device + entity" name; where the device stands apart
+  // (the room panel), show the entity's own name as Home Assistant's dialogs do ("switch_living_a Ceiling light" -> "Ceiling light")
+  if (dropDevice && entry?.name && entry.device_id) {
+    const dev = hass.devices?.[entry.device_id];
+    const devName = (dev?.name_by_user || dev?.name || "").trim();
+    if (devName && name.toLowerCase() === `${devName} ${entry.name}`.toLowerCase()) name = entry.name;
+  }
   if (areaName && name.length > areaName.length + 1 && name.toLowerCase().startsWith(areaName.toLowerCase() + " ")) {
     const rest = name.slice(areaName.length + 1);
     return rest.charAt(0).toUpperCase() + rest.slice(1);
@@ -414,6 +422,19 @@ export function heatSensorOn(hass: HomeAssistant, ref: EntityRef | undefined): b
   if (["off", "closed", "idle", "false", "inactive", "standby"].includes(s)) return false;
   const v = Number(s);
   return Number.isFinite(v) ? v > 0 : null;
+}
+
+/**
+ * A charger's status text read as charging and plugged in. Whole words only: "not_charging", "ready_to_charge" and
+ * "charger_free" are no charging, "disconnected" and "unplugged" no car at the cable.
+ */
+export function chargerStatus(raw: string): { charging: boolean; plugged: boolean } {
+  const s = raw.toLowerCase().trim().replace(/[\s-]+/g, "_");
+  const not = /(^|_)(not|no|nicht|kein|keine|un|dis)_?(charging|charge|connected|plugged|verbunden|angesteckt)/.test(s);
+  const free = /charger_free|^available$|^idle$|frei|abgesteckt|no_car|kein_fahrzeug/.test(s);
+  const charging = !not && !/ready_to_charge|charger_|complete|finish|charged|fertig|beendet|voll$|full/.test(s) && /(^|_)(charging|charge|laden|lädt|ladend|lade)($|_)/.test(s);
+  const plugged = charging || (!not && !free && /connect|plug|ready|insert|angesteckt|verbunden|wait|paused|suspend|preparing|complete|finish|charged|fertig|full|voll/.test(s));
+  return { charging, plugged };
 }
 
 export function isUnavailable(st: HassEntity | undefined): boolean {
@@ -867,6 +888,16 @@ export function openingState(
     return { open: 0, open2: 0, tilt: 0, tilt2: 0, cover, sensed };
   }
   return { open, open2, tilt: tiltFrac, tilt2: tilted2 ? 1 : 0, cover, ...slats, sensed: known(e.contact) || known(e.tilt) || Number.isFinite(angleRaw), ...lockOpen };
+}
+
+/**
+ * Whether an opening stands open, as the 3D view draws it: a sash or leaf turned, a garage door up. A garage door's
+ * `cover` says how far it is DOWN (1 = closed), so it stands open below 0.98 – read the other way round it counted
+ * every closed garage door as open (#1261). Without a sensor a garage door is closed. A tilted window is not "open".
+ */
+export function openingOpen(s: ReturnType<typeof openingState>, type: Opening["type"]): boolean {
+  if (type === "garage") return (s.cover ?? 1) < 0.98;
+  return s.open > 0.02 || s.open2 > 0.02;
 }
 
 /**
@@ -1421,6 +1452,21 @@ export function floorControls(hass: HomeAssistant, floor: Floor): { lights: stri
   return { lights: [...lights], covers: [...covers] };
 }
 
+/** The thermostats of a floor (a page of the phone bar): from its rooms' areas, placed devices and linked furniture. */
+export function floorClimates(hass: HomeAssistant, floor: Floor): string[] {
+  const out = new Set<string>();
+  const add = (id: string | null | undefined) => {
+    if (id && id.startsWith("climate.") && hass.states[id]) out.add(id);
+  };
+  for (const room of floor.rooms) {
+    const hidden = new Set(room.hidden ?? []);
+    for (const id of areaEntities(hass, room.area_id)) if (!hidden.has(id)) add(id);
+  }
+  for (const pl of floor.placements) add(pl.entity_id);
+  for (const f of floor.furniture) add(f.entity);
+  return [...out];
+}
+
 /** The service a favourite runs when tapped: scenes and scripts start, buttons are pressed, the rest toggles. */
 export function favoriteCall(entityId: string): [domain: string, service: string] {
   const domain = entityId.split(".")[0];
@@ -1431,14 +1477,23 @@ export function favoriteCall(entityId: string): [domain: string, service: string
 }
 
 /**
+ * Opens a path inside Home Assistant without a reload, the way its own navigate() does: the new history entry
+ * names the page it came from (`from`), so a subview's ← goes back here instead of to the dashboard's first view (#1171).
+ */
+export function haNavigate(path: string): void {
+  if (path === location.pathname + location.search) return;
+  history.pushState({ from: location.pathname }, "", path);
+  window.dispatchEvent(new CustomEvent("location-changed", { bubbles: true, composed: true, detail: { replace: false } }));
+}
+
+/**
  * Run an own button (D143) from an element inside the dashboard: navigate, more-info, a service, or a
  * DOM event – "ll-custom" is what Home Assistant's fire-dom-event sends, and browser_mod listens for it.
  */
 export function runButton(hass: HomeAssistant, from: HTMLElement, b: { action: string; target?: string | null; data?: Record<string, unknown> | null }): void {
   const target = b.target?.trim() ?? "";
   if (b.action === "navigate" && target) {
-    history.pushState(null, "", target);
-    window.dispatchEvent(new CustomEvent("location-changed", { detail: { replace: false } }));
+    haNavigate(target);
   } else if (b.action === "more_info" && target) {
     from.dispatchEvent(new CustomEvent("hass-more-info", { detail: { entityId: target }, bubbles: true, composed: true }));
   } else if (b.action === "service" && target.includes(".")) {
